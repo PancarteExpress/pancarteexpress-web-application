@@ -39,11 +39,10 @@
     justify-content: space-between;
     align-items: center;
     background-color: #F8FAFD;
-    margin-top: 20px;
+    margin-top: 15px;
     padding: 10px;
     border-radius: 10px;
 
-    border: 1px solid red;
 }
 
 .mainContainer .orderResume label {
@@ -64,7 +63,7 @@
 
 .mainContainer .orderResume button {
     all: unset;
-
+    cursor: pointer;
     font-weight: 700;
     font-size: 1.2rem;
     padding: 7px;
@@ -74,6 +73,12 @@
     color: #0E4D9A;
 }
 
+.mainContainer .orderResume button:first-child {
+    background-color: #fbeaea;
+    border: 3px solid #efc5c5;
+    color: red;
+}
+
 .mainContainer .accessibility {   
     margin: 10px 0;
     display: flex;
@@ -81,7 +86,7 @@
 
 .mainContainer .accessibility label {
     background-color: #E8F1FB;
-    color: #0E4D9A;
+    color: #092E5B;
     font-size: 1.1rem;
     font-weight: 700;
     text-transform: capitalize;
@@ -89,24 +94,60 @@
     border-radius: 10px;
 }
 
-.mainContainer .materialsDetail {
+.mainContainer .serviceDetails {
     background-color: #F8FAFD;
-    padding: 10px;
+    border: 1px solid #EEF4FB;
+    padding: 20px;
     margin-top: 10px;
     border-radius: 10px;
-    border: 1px solid red;
 }
 
-.mainContainer .materialsDetail .details {
+.mainContainer .serviceDetails .details {
 }
 
-.mainContainer .materialsDetail .details .material {
+.mainContainer .serviceDetails .details .material {
     display: flex;
     justify-content: space-between;
 }
 
-.mainContainer .materialsDetail .details .material label:first-child {
+.mainContainer .serviceDetails .details .material label:first-child {
     font-weight: 900;
     text-transform: capitalize;
+    font-size: 1.2rem;
     color: #0E4D9A;
+}
+
+.mainContainer .serviceDetails .details .section {
+    border: 3px solid #D8E8F8;
+    padding: 10px;
+    margin: 10px 0;
+    display: flex;
+}
+
+.mainContainer .serviceDetails .details .section .title {
+    flex: 3;
+    color: #5F7FA8;
+    font-weight: 700;
+}
+
+.mainContainer .serviceDetails .details .materialPlacement,
+.mainContainer .serviceDetails .details .section label:last-child {
+    flex: 10;
+    font-weight: 700;
+}
+
+.mainContainer .serviceDetails .details .materialPlacement {
+    border: 1px solid red;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mainContainer .serviceDetails .details .detailsPerMaterial {
+
+    border: 1px solid #D8E8F8;
+    background-color: white;
+    margin: 5px 0;
+    padding: 10px;
+
 }

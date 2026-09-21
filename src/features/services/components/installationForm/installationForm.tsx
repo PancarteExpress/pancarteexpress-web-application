@@ -50,16 +50,13 @@ export default function InstallationForm({ onDataChange, initialData }: Props) {
         const config = MATERIAL_CONFIGS[material];
         const defaults: Record<string, unknown> = {};
         
-        // Cas spécial pour addonsOpenHouse
-        if (material === 'addonsOpenHouse') {
-            return { date: '', hours: [] };
-        }
+       
 
         config?.fields.forEach(field => {
             if (field.key === 'rentAddons') {
-            defaults[field.key] = Array(quantity).fill(false);
+                defaults[field.key] = Array(quantity).fill(false);
             } else {
-            defaults[field.key] = field.type === 'radio' ? false : field.type === 'number' ? 1 : '';
+                defaults[field.key] = field.type === 'radio' ? false : field.type === 'number' ? 1 : '';
             }
         });
         
