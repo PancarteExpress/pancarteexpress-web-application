@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import styles from './AddressManager.module.css';
 import AddressAutocomplete from '@/shared/components/addressAutocomplete/addressAutocomplete';
-import { createStreetAddress } from '../../types/address';
+import { createStreetAddress, createTerrainAddress } from '../../types/address';
 import { useAddresses } from '../../hooks/useAddresses';
 
 export default function AddressManager() {
@@ -17,10 +17,21 @@ export default function AddressManager() {
   const [city, setCity] = useState<string>('');
   const [postalCode, setPostalCode] = useState<string>('');
 
+  const [terrainDescription, setTerrainDescription] = useState('');
+  const [terrainCity, setTerrainCity] = useState('');
+  const [terrainAddress, setTerrainAddress] = useState('');
+
   const [addNewAddress, setAddNewAddress] = useState<boolean>(false);
+  const [previousSelectedId, setPreviousSelectedId] = useState<string | null>(null);
 
   const handleApartmentChange = (val: string) => {
     setApartmentNumber(val === '' || val === '0' ? null : val);
+  };
+
+
+  const handleAddNewAddress = () => {
+    setPreviousSelectedId(selectedAddressId);  // ← Sauvegarde l'ID actuel
+    setAddNewAddress(true);
   };
 
   const handleCancel = () => {
@@ -31,34 +42,68 @@ export default function AddressManager() {
     setPostalCode('');
 
     setAddNewAddress(false);
+    if (previousSelectedId) {
+      setSelectedAddressId(previousSelectedId);  // ← Reviens à l'ID précédent
+    }
   };
 
   const handleSave = () => {
-    if (!address.trim()) {
-      alert('Veuillez entrer une adresse');
-      return;
+
+    let newAddressId: string | null = null;
+
+    if (typeAddress === "streetAddress") {
+      if (!address.trim()) {
+        alert('Veuillez entrer une adresse');
+        return;
+      }
+
+      if (!city.trim()) {
+        alert('Veuillez entrer une ville');
+        return;
+      }
+
+      if (!postalCode.trim()) {
+        alert('Veuillez entrer un code postal');
+        return;
+      }
+
+      const streetAddress = createStreetAddress({
+        streetNumber: address.split(' ')[0] || '',
+        streetName: address.substring(address.indexOf(' ') + 1) || '',
+        apartment: apartmentNumber || undefined,
+        city,
+        postalCode,
+      });
+
+      newAddressId = addAddress(streetAddress);
+    }
+    
+    if (typeAddress === "terrainAddress") {
+      if (!terrainDescription.trim()) {
+        alert('Veuillez entrer une description du terrain');
+        return;
+      }
+
+      if (!terrainCity.trim()) {
+        alert('Veuillez entrer une ville');
+        return;
+      }
+
+      const terrain = createTerrainAddress({
+        description: terrainDescription,
+        city: terrainCity,
+        ...(terrainAddress && { nearbyAddress: terrainAddress }),
+      });
+
+      newAddressId = addAddress(terrain);
     }
 
-    if (!city.trim()) {
-      alert('Veuillez entrer une ville');
-      return;
+    if (newAddressId) {
+      setSelectedAddressId(newAddressId);      
     }
-
-    if (!postalCode.trim()) {
-      alert('Veuillez entrer un code postal');
-      return;
-    }
-
-    const streetAddress = createStreetAddress({
-      streetNumber: address.split(' ')[0] || '',
-      streetName: address.substring(address.indexOf(' ') + 1) || '',
-      apartment: apartmentNumber || undefined,
-      city,
-      postalCode,
-    });
-
-    addAddress(streetAddress);
+    
     handleCancel();
+    
   };
 
   return (
@@ -92,7 +137,9 @@ export default function AddressManager() {
                 ))
               )}
         </div>
-        <button type='button' className={styles.addAddressButton} onClick={() => setAddNewAddress(true)}>Ajouter une adresse</button>
+        <button type='button' className={styles.addAddressButton} onClick={handleAddNewAddress}>
+          Ajouter une adresse
+        </button>
     </fieldset>
 
     {addNewAddress &&
@@ -140,6 +187,33 @@ export default function AddressManager() {
                     }
                   }}
                 />
+          </div>
+        </div>
+      </div>
+      </>}
+      
+      {typeAddress === 'terrainAddress' &&<>
+      <div className={styles.addTerrain}>
+        <label>Veuillez nous donner des details sur lemplacement du terrain</label>
+
+        <div className={styles.terrainDetails}>
+          <div>
+              <label htmlFor="terrainDescription">Description de lemplacement du terrain <span style={{color: 'red'}}>*</span></label>
+              <textarea id="terrainDescription" value={terrainDescription} onChange={(e) => setTerrainDescription(e.target.value)}/>
+          </div>
+      
+          <div>
+              <label htmlFor="terrainCity">Ville <span style={{color: 'red'}}>*</span></label>
+              <input id="terrainCity" type="text" value={terrainCity} onChange={(e) => setTerrainCity(e.target.value)}/>
+          </div>
+
+          <div className={styles.inputs}>
+              <div>
+                  <label htmlFor="terrainAddress">
+                    Adresse complète <span className={styles.info}>Vous pouvez ajouter une adresse avoisinante pour faciliter la localisation du terrain</span>
+                  </label>
+                  <AddressAutocomplete id="terrainAddress" value={terrainAddress} onChange={setTerrainAddress}/>
+              </div>
           </div>
         </div>
       </div>

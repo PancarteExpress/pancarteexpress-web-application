@@ -8,7 +8,7 @@ import { Service } from '../types/services';
 interface AddressStore {
   addresses: Address[];
   selectedAddressId: string | null;
-  addAddress: (address: StreetAddress | TerrainAddress) => void;
+  addAddress: (address: StreetAddress | TerrainAddress) => string;
   removeAddress: (id: string) => void;
   updateAddress: (id: string, address: StreetAddress | TerrainAddress) => void;
   addServiceToAddress: (addressId: string, service: Service) => void;
@@ -34,6 +34,8 @@ export const useAddressStore = create<AddressStore>()(
         set((state) => ({
           addresses: [...state.addresses, newAddress],
         }));
+
+        return id;
       },
 
       removeAddress: (id) => {

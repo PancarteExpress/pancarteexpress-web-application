@@ -22,8 +22,6 @@
     width: 60%;
 
     color: white;
-
-    border: 1px solid red;
 }
 
 @media (max-width: 1650px) { .topHeader .container { width: 80%; } }
@@ -240,10 +238,10 @@
 .navbar .navItem:nth-child(7) {
     flex: 2;
     
-    color: white;
 
     background-color: #0E4D9A;
     font-weight: 900;
+    color: white !important;
 }
 
 .navbar .navItem:hover {

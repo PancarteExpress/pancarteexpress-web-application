@@ -129,7 +129,7 @@ export default function ServiceForm() {
 
                 <AddressManager />
                 
-                <fieldset>
+                {selectedAddress && <fieldset>
                     <legend>De quels services avez vous besoin quon fasse a ladresse selectionner</legend>
                     
                     {selectedAddress && selectedAddress.type === 'address' && (
@@ -164,12 +164,13 @@ export default function ServiceForm() {
                             Correction
                         </label>
                     </div>
-                </fieldset>
+                </fieldset>}
 
+                {selectedServices.installation &&
                 <InstallationForm 
                     onDataChange={handleInstallationData}
                     initialData={installationInitialData}
-                />
+                />}
 
                 {error && <p style={{ color: 'red' }}>{error}</p>}
 

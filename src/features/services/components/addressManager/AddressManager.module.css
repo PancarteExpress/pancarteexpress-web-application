@@ -59,14 +59,16 @@
     background-color: #E8F1FB;
 }
 
-.addAddress {
+.addAddress,
+.addTerrain {
     display: flex;
     gap: 10px;
     flex-direction: column;
     padding: 20px 0;
 }
 
-.addAddress label {
+.addAddress label,
+.addTerrain label {
     font-size: 1.2rem;
     color: #5F7FA8;
     font-weight: 900;
@@ -91,7 +93,8 @@
     flex: 1;
 }
 
-.addAddress .addressDetails div label {
+.addAddress .addressDetails div label,
+.addTerrain .terrainDetails div label {
     font-size: 0.8rem;
     font-weight: 600;
     color: #5F7FA8;
@@ -99,11 +102,43 @@
     letter-spacing: .05em;
 }
 
-.addAddress .addressDetails div input {
+.addAddress .addressDetails div input,
+.addTerrain .terrainDetails div input,
+.addTerrain .terrainDetails div textarea {
     border: 1px solid #C5D8EF;
     border-radius: 10px;
     padding: 5px;
     font-size: 1.2rem;
+}
+
+.addTerrain {
+    display: flex;
+    flex-direction: column;
+}
+
+.addTerrain .terrainDetails div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 5px 0;
+}
+
+.addTerrain .terrainDetails .inputs label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+}
+
+.addTerrain .terrainDetails .info {
+    
+    color: #876816;
+    background-color: #FFEECF;
+    padding: 3px;
+    font-weight: 700;
+    border: 1px solid #FFA500;
+    border-radius: 10px;
+    
 }
 
 .btnSave {

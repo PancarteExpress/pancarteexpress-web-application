@@ -25,6 +25,7 @@ export default function ServicesList({ address, onRemoveService }: Props) {
       <div className={styles.header}>
         <label>
           {address.type === 'address' && `${address.streetNumber} ${address.streetName}, ${address.city}`}
+          {address.type === 'terrain' && `${address.city} ${address.nearbyAddress}`}
         </label>
 
         <label>
