@@ -1,0 +1,65 @@
+.mainContainer {
+    width: 60%;
+    margin: 0 auto;
+    padding: 50px 0;
+}
+
+@media (max-width: 1650px) { .mainContainer { width: 80%; } }
+
+@media (max-width: 1300px) { .mainContainer { width: 95%; } }
+
+.mainContainer .existingService {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    
+    padding: 12px 14px;
+
+    background: #E8F1FB;
+    border-radius: 10px;
+}
+
+.mainContainer .existingService label {
+    font-size: 1.2rem;
+    color: #5F7FA8;
+    font-weight: 900;
+}
+
+.mainContainer .serviceForm {
+}
+
+.mainContainer .serviceForm fieldset {
+    padding: 10px;
+    border: none;
+}
+
+.mainContainer .serviceForm fieldset legend {
+    font-size: 1.2rem;
+    color: #5F7FA8;
+    font-weight: 900;
+}
+
+.mainContainer .serviceForm fieldset .userChoice {
+    display: flex;
+    gap: 10px;
+}
+
+.mainContainer .serviceForm fieldset .userChoice label {
+    flex: 1;
+    font-weight: 700;
+    text-transform: uppercase;
+    text-align: center;
+    padding: 5px;
+    font-size: 1.2rem;
+    color: black;
+    border-radius: 10px;
+    border: 2px solid #0E4D9A;
+}
+
+.mainContainer .serviceForm fieldset .userChoice label input {
+    display: none;
+}
+
+.mainContainer .serviceForm fieldset .userChoice label.checked {
+    background-color: #E8F1FB;
+}

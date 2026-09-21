@@ -1,0 +1,17 @@
+.languageSwitcher {
+  display: flex;
+  gap: 5px;
+}
+
+.languageSwitcher button {
+  background-color:  white;
+  border: 1px solid #0E4D98;
+  color: #0E4D98;
+  border-radius: 10px;
+  padding: 2px 5px;
+  cursor: pointer;
+
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+}

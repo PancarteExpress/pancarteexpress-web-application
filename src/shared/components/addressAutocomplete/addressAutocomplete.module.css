@@ -1,0 +1,8 @@
+.addressInput {
+    padding: 5px;
+    font-size: 1.2rem;
+    color: #0E4D9A;
+    border-radius: 10px;
+    border: 2px solid #0E4D9A;
+    background-color: transparent;
+}

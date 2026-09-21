@@ -1,0 +1,90 @@
+.footer {
+    display: flex;
+    background-color: #092E5B;
+    color: white;
+}
+
+.footer .whitespace {
+    flex: 1;
+}
+
+.footer .details {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+
+    padding: 50px;
+
+}
+
+.footer .contacts {
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+    
+    gap: 20px;
+    padding: 50px;
+}
+
+.contacts h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+}
+
+.contacts h5 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+    font-size: 1.2rem;
+    padding-bottom: 10px;
+}
+
+.footer .contacts a {
+    text-decoration: none;
+    font-weight: 900;
+    
+}
+
+.footer .contacts div a:first-of-type {
+    color: #00A5E6;
+    font-size: 1rem;
+}
+
+.footer .contacts div a:last-of-type {
+    color: white;
+    font-size: 1rem;
+}
+
+.footer .contacts .serviceResidentiel, .footer .contacts .serviceCommercial, .footer .contacts .serviceFacturation {
+    display: flex;
+    flex-direction: column;
+    align-items: left;
+}
+
+.footer .partners {
+    flex: 1;
+
+    padding: 50px;
+    
+
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.footer .partners h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+}
+
+@media (max-width: 1300px) {
+    .footer {
+        flex-direction: column;
+    }
+
+    .footer .whitespace {
+        display: none;
+    }
+}

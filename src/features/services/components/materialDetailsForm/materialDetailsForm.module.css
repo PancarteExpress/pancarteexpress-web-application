@@ -1,0 +1,105 @@
+.fieldset .radioGroup {
+}
+
+.fieldset .radioGroup .buttons {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.fieldset .radioGroup .buttons button {
+    flex: 1;
+
+    border: 2px solid #0E4D9A;
+    background-color: white;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+.fieldset .radioGroup .buttons .active {
+    background-color: #E8F1FB;
+}
+
+.fieldset .pickup {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    
+    margin: 15px 0;
+    padding: 12px 14px;
+
+    background: #E8F1FB;
+    border-radius: 10px;
+    margin-bottom: 50px;
+}
+
+.fieldset .pickup label {
+    font-size: 1.2rem;
+    color: #5F7FA8;
+    font-weight: 900;
+}
+
+.fieldset .radioGroup {
+    
+}
+
+.fieldset .addonSection {
+
+}
+
+.fieldset .addonSection .radioGroup .checkboxGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.fieldset .addonSection .radioGroup .checkboxGroup .addonsItem {
+    margin: 20px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.fieldset .addonSection .radioGroup .checkboxGroup .addonsItem label {
+    border: 2px solid #0E4D9A;
+    background-color: white;
+    border-radius: 10px;
+    padding: 5px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.fieldset .addonSection .radioGroup .checkboxGroup .addonsItem .active {
+    background-color: #E8F1FB;
+}
+
+.fieldset .addonSection .radioGroup .checkboxGroup .addonsItem input {
+    display: none;
+}
+
+.fieldset .specialInstructions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.fieldset .specialInstructions .addonsInstruction {
+    border: 3px solid #FFA500;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    color: #876816;
+    background-color: #FFEECF;
+    font-size: 1.2rem;
+    
+}
+
+.fieldset .specialInstructions label {
+    font-weight: 900;
+}
+
+.fieldset .specialInstructions textarea {
+    border-radius: 10px;
+    border: 2px solid #0E4D9A;
+
+    padding: 10px;
+}

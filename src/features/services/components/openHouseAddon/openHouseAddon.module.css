@@ -1,0 +1,67 @@
+.mainContainer {
+    border: 1px solid red;
+}
+
+.mainContainer .monthlyCalendar {
+    flex: 1;
+}
+
+.mainContainer .monthlyCalendar .header {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px;
+}
+
+.mainContainer .monthlyCalendar .header .navigationButtons {
+    display: flex;
+    gap: 8px;
+}
+
+.mainContainer .monthlyCalendar .weekDays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px; /* Si tu veux du gap comme les days */
+}
+
+.mainContainer .monthlyCalendar .weekDays .weekDay {
+    text-align: center;
+}
+
+.mainContainer .monthlyCalendar .daysGrid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+}
+
+.mainContainer .monthlyCalendar .daysGrid .day {
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #e0e0e0;
+    background: white;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: black;
+}
+
+.mainContainer .monthlyCalendar .daysGrid .day.otherMonth {
+    color: #ddd;
+    background: #fafafa;
+    border-color: #f0f0f0;
+}
+
+.mainContainer .monthlyCalendar .daysGrid .day.selected {
+    background: #0E4D9A;
+    color: white;
+    border-color: #0E4D9A;
+    font-weight: 600;
+}
+
+.mainContainer .monthlyCalendar .daysGrid .day.selected:hover {
+    background: #333;
+    border-color: #333;
+}

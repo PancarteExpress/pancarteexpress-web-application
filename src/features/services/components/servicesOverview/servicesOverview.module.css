@@ -1,0 +1,112 @@
+.mainContainer {
+
+    margin: 20px 0;
+    padding: 10px;
+
+    border-radius: 12px;
+    padding: 20px;
+    border: 3px solid #0E4D9A;
+}
+
+.mainContainer:hover {
+    box-shadow: 0px 0px 17px #0E4D9A;
+}
+
+.mainContainer .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+}
+
+.mainContainer .header label:first-child {
+    font-weight: 900;
+    font-size: 1.2rem;
+}
+
+.mainContainer .header label:last-child {
+    font-weight: 900;
+    text-transform: uppercase;
+    padding: 10px;
+    border-color: 1px solid #0E4D9A;
+    border-radius: 10px;
+    background-color: #E8F1FB;
+    color: #0E4D9A;
+}
+
+.mainContainer .orderResume {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #F8FAFD;
+    margin-top: 20px;
+    padding: 10px;
+    border-radius: 10px;
+
+    border: 1px solid red;
+}
+
+.mainContainer .orderResume label {
+    font-weight: 900;
+    font-size: 1.2rem;
+    text-transform: capitalize;
+    display: flex;
+    align-items: center;
+}
+
+.mainContainer .orderResume label span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    display: inline-block;
+}
+
+.mainContainer .orderResume button {
+    all: unset;
+
+    font-weight: 700;
+    font-size: 1.2rem;
+    padding: 7px;
+    border-radius: 10px;
+    border: 3px solid #C5D8EF;
+    background-color: #F8FAFD;
+    color: #0E4D9A;
+}
+
+.mainContainer .accessibility {   
+    margin: 10px 0;
+    display: flex;
+}
+
+.mainContainer .accessibility label {
+    background-color: #E8F1FB;
+    color: #0E4D9A;
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.mainContainer .materialsDetail {
+    background-color: #F8FAFD;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+    border: 1px solid red;
+}
+
+.mainContainer .materialsDetail .details {
+}
+
+.mainContainer .materialsDetail .details .material {
+    display: flex;
+    justify-content: space-between;
+}
+
+.mainContainer .materialsDetail .details .material label:first-child {
+    font-weight: 900;
+    text-transform: capitalize;
+    color: #0E4D9A;
+}
