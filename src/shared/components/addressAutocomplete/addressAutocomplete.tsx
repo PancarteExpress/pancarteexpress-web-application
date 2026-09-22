@@ -10,12 +10,13 @@ type GoogleAddressComponent = {
 };
 
 interface Props {
+    id?: string;
     value: string;
     onChange: (value: string) => void;
     onCityChange?: (city: string) => void;
     onPostalCodeChange?: (postalCode: string) => void;
     onStreetAddressChange?: (streetAddress: string) => void;
-    id?: string;
+    
 }
 
 export default function AddressAutocomplete({ value, onChange, onCityChange, onPostalCodeChange, onStreetAddressChange, id }: Props) {

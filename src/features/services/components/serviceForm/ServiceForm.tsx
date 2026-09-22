@@ -14,7 +14,7 @@ export default function ServiceForm() {
     const [error, setError] = useState('');
     const [requestType, setRequestType] = useState<"residential" | "commercial" | null>(null);
 
-    const { addresses, selectedAddressId, removeServiceFromAddress, addServiceToAddress } = useAddresses();
+    const { addresses, selectedAddressId, removeServiceFromAddress, addServiceToAddress, getAddresses } = useAddresses();
     const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
 
     const [installationInitialData, setInstallationInitialData] = useState<Omit<Installation, 'type'> | undefined>();
@@ -185,10 +185,10 @@ export default function ServiceForm() {
                 )}
             </form>
 
-            {selectedAddress && selectedAddress.services?.length > 0 && (
+            {addresses.some(addr => addr.services?.length > 0) && (
             <ServicesList 
-                address={selectedAddress}
-                onRemoveService={(serviceId) => removeServiceFromAddress(selectedAddressId!, serviceId)}
+                addresses={addresses}  // ← Passe toutes les adresses
+                onRemoveService={(addressId, serviceId) => removeServiceFromAddress(addressId, serviceId)}
             />
             )}
         </div>
