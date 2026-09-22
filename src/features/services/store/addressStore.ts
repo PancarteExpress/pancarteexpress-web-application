@@ -47,7 +47,9 @@ export const useAddressStore = create<AddressStore>()(
       updateAddress: (id, updatedAddress) => {
         set((state) => ({
           addresses: state.addresses.map((addr) =>
-            addr.id === id ? ({ ...updatedAddress, id } as Address) : addr
+            addr.id === id 
+              ? { ...updatedAddress, id, services: addr.services || [] }
+              : addr
           ),
         }));
       },
@@ -56,7 +58,7 @@ export const useAddressStore = create<AddressStore>()(
         set((state) => ({
           addresses: state.addresses.map((addr) =>
             addr.id === addressId
-              ? { ...addr, services: [...addr.services, service] }
+              ? { ...addr, services: [...(addr.services || []), service] }
               : addr
           ),
         }));
@@ -66,7 +68,7 @@ export const useAddressStore = create<AddressStore>()(
         set((state) => ({
           addresses: state.addresses.map((addr) =>
             addr.id === addressId
-              ? { ...addr, services: addr.services.filter((s) => s.id !== serviceId) }
+              ? { ...addr, services: (addr.services || []).filter((s) => s.id !== serviceId) }
               : addr
           ),
         }));
@@ -85,6 +87,15 @@ export const useAddressStore = create<AddressStore>()(
     }),
     {
       name: 'address-storage',
+      onRehydrateStorage: () => (state) => {
+        // S'exécute après le chargement du localStorage
+        if (state?.addresses) {
+          state.addresses = state.addresses.map((addr) => ({
+            ...addr,
+            services: Array.isArray(addr.services) ? addr.services : [],
+          }));
+        }
+      },
     }
   )
 );

@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import styles from './AddressManager.module.css';
 import AddressAutocomplete from '@/shared/components/addressAutocomplete/addressAutocomplete';
-import { createStreetAddress, createTerrainAddress } from '../../types/address';
+import { createStreetAddress, createTerrainAddress, StreetAddress, TerrainAddress } from '../../types/address';
 import { useAddresses } from '../../hooks/useAddresses';
 
 export default function AddressManager() {
 
-  const { addresses, selectedAddressId, setSelectedAddressId, addAddress, removeAddress } = useAddresses();
+  const { addresses, selectedAddressId, setSelectedAddressId, addAddress, removeAddress, updateAddress } = useAddresses();
 
   const [typeAddress, setTypeAddress] = useState<"streetAddress" | "terrainAddress" | null>(null);
 
@@ -22,34 +22,59 @@ export default function AddressManager() {
   const [terrainAddress, setTerrainAddress] = useState('');
 
   const [addNewAddress, setAddNewAddress] = useState<boolean>(false);
-  const [previousSelectedId, setPreviousSelectedId] = useState<string | null>(null);
+  const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
 
   const handleApartmentChange = (val: string) => {
     setApartmentNumber(val === '' || val === '0' ? null : val);
   };
 
-
   const handleAddNewAddress = () => {
-    setPreviousSelectedId(selectedAddressId);  // ← Sauvegarde l'ID actuel
+    setAddNewAddress(true);
+  };
+
+  const handleEdit = (addressId: string) => {
+    setEditingAddressId(addressId);
+    setSelectedAddressId(addressId);
+
+    const addressToEdit = addresses.find(addr => addr.id === addressId);
+
+    if (addressToEdit) {
+      if (addressToEdit.type === 'address') {
+        setTypeAddress('streetAddress');
+        setAddress(`${addressToEdit.streetNumber} ${addressToEdit.streetName}`);
+        setCity(addressToEdit.city);
+        setPostalCode(addressToEdit.postalCode);
+        setApartmentNumber(addressToEdit.apartment || null);
+      } else if (addressToEdit.type === 'terrain') {
+        setTypeAddress('terrainAddress');
+        setTerrainDescription(addressToEdit.description);
+        setTerrainCity(addressToEdit.city);
+        setTerrainAddress(addressToEdit.nearbyAddress || '');
+      }
+    }
+
     setAddNewAddress(true);
   };
 
   const handleCancel = () => {
     setTypeAddress(null);
+
     setAddress('');
     setApartmentNumber(null);
     setCity('');
     setPostalCode('');
+    
+    setTerrainDescription('');
+    setTerrainCity('');
+    setTerrainAddress('');
 
     setAddNewAddress(false);
-    if (previousSelectedId) {
-      setSelectedAddressId(previousSelectedId);  // ← Reviens à l'ID précédent
-    }
+    setEditingAddressId(null);
   };
 
   const handleSave = () => {
 
-    let newAddressId: string | null = null;
+    let addressData: StreetAddress | TerrainAddress | null = null;
 
     if (typeAddress === "streetAddress") {
       if (!address.trim()) {
@@ -67,15 +92,13 @@ export default function AddressManager() {
         return;
       }
 
-      const streetAddress = createStreetAddress({
+      addressData = createStreetAddress({
         streetNumber: address.split(' ')[0] || '',
         streetName: address.substring(address.indexOf(' ') + 1) || '',
         apartment: apartmentNumber || undefined,
         city,
         postalCode,
       });
-
-      newAddressId = addAddress(streetAddress);
     }
     
     if (typeAddress === "terrainAddress") {
@@ -89,21 +112,23 @@ export default function AddressManager() {
         return;
       }
 
-      const terrain = createTerrainAddress({
+      addressData = createTerrainAddress({
         description: terrainDescription,
         city: terrainCity,
         ...(terrainAddress && { nearbyAddress: terrainAddress }),
       });
-
-      newAddressId = addAddress(terrain);
     }
 
-    if (newAddressId) {
-      setSelectedAddressId(newAddressId);      
+    if (addressData) {
+      if (editingAddressId) {
+        updateAddress(editingAddressId, addressData);
+      } else {
+        const newId = addAddress(addressData);  // ← Capture l'ID
+        setSelectedAddressId(newId);  // ← Sélectionne-la
+      }
+
+      handleCancel();
     }
-    
-    handleCancel();
-    
   };
 
   return (
@@ -122,6 +147,7 @@ export default function AddressManager() {
                       name="address" 
                       value={addr.id}
                       checked={selectedAddressId === addr.id}
+                      disabled={editingAddressId !== null && editingAddressId !== addr.id}
                       onChange={() => setSelectedAddressId(addr.id)} />
                       Adresse: {addr.type === 'address' 
                         ? `${addr.streetNumber} ${addr.streetName} ${addr.apartment ? `#${addr.apartment}` : ''}`
@@ -130,7 +156,7 @@ export default function AddressManager() {
                     </div>
 
                     <div className={styles.addressBtn}>
-                      <button type="button" className={styles.editButton}>Modifier</button>
+                      <button type="button" className={styles.editButton} onClick={() => handleEdit(addr.id)}>Modifier</button>
                       <button type="button" className={styles.deleteButton} onClick={() => removeAddress(addr.id)}>Supprimer</button>
                     </div>
                   </label>

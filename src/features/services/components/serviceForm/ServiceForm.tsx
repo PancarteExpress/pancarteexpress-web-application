@@ -99,7 +99,7 @@ export default function ServiceForm() {
                 setInstallationInitialData(undefined);
             }
         }
-    }, [selectedAddress]);
+    }, [selectedAddress?.id]);
 
     return (
         <div className={styles.mainContainer}>
@@ -166,7 +166,7 @@ export default function ServiceForm() {
                     </div>
                 </fieldset>}
 
-                {selectedServices.installation &&
+                {selectedAddress && selectedServices.installation &&
                 <InstallationForm 
                     onDataChange={handleInstallationData}
                     initialData={installationInitialData}
@@ -185,10 +185,12 @@ export default function ServiceForm() {
                 )}
             </form>
 
+            {selectedAddress && selectedAddress.services?.length > 0 && (
             <ServicesList 
-                address={selectedAddress || null}
+                address={selectedAddress}
                 onRemoveService={(serviceId) => removeServiceFromAddress(selectedAddressId!, serviceId)}
             />
+            )}
         </div>
     );
 }
