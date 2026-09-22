@@ -7,7 +7,8 @@ export async function hashPassword(password: string): Promise<string> {
 
 export async function bcryptCompare(
   password: string,
-  hash: string
+  hash: string | null
 ): Promise<boolean> {
+  if (!hash) return false;
   return bcrypt.compare(password, hash);
 }

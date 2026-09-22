@@ -13,7 +13,8 @@ model User {
   name          String?
   email         String    @unique
   emailVerified DateTime?
-  password      String
+  password      String?
+  image         String?
 
   role          UserRole  @default(user)
   groupId       String?
