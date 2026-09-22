@@ -1,6 +1,6 @@
 'use client'
 
-import AddressAutocomplete from '@/shared/components/addressAutocomplete/addressAutocomplete';
+import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
 import { MATERIAL_CONFIGS } from '../../constants/materialOptions';
 import styles from './materialDetailsForm.module.css';
 import { ADDONS_LIST } from '../../constants/addonsOptions';

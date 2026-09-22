@@ -1,0 +1,35 @@
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.button {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: var(--color-surface-muted, #f3f4f6);
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.input {
+  width: 2.75rem;
+  height: 2rem;
+  border: none;
+  text-align: center;
+  font: inherit;
+}
+
+.button:focus-visible,
+.input:focus-visible {
+  outline: 2px solid var(--color-primary, #0E4D9A);
+  outline-offset: -2px;
+}

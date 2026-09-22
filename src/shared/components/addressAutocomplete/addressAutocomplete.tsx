@@ -1,7 +1,10 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type ChangeEvent } from 'react';
 
-import styles from "./addressAutocomplete.module.css";
+import styles from "./AddressAutocomplete.module.css";
+import { loadGoogleMaps } from "@/shared/utils/googleMapsLoader";
+import { ParsedAddress } from "@/shared/types/address";
+import { parsePlace } from '@/shared/utils/parsePlace';
 
 type GoogleAddressComponent = {
   types: string[];
@@ -10,79 +13,105 @@ type GoogleAddressComponent = {
 };
 
 interface Props {
-    id?: string;
-    value: string;
-    onChange: (value: string) => void;
-    onCityChange?: (city: string) => void;
-    onPostalCodeChange?: (postalCode: string) => void;
-    onStreetAddressChange?: (streetAddress: string) => void;
-    
+  id?: string;
+  value: string;
+  onChange: (value: string) => void;
+  onSelect?: (address: ParsedAddress | null) => void;
+  placeholder?: string;
+  disabled?: boolean;
+  'aria-invalid'?: boolean;
+  'aria-describedby'?: string;
 }
 
-export default function AddressAutocomplete({ value, onChange, onCityChange, onPostalCodeChange, onStreetAddressChange, id }: Props) {
+export default function AddressAutocomplete({ 
+    id,
+    value,
+    onChange,
+    onSelect,
+    placeholder = 'Commencez à taper votre adresse',
+    disabled,
+    ...aria
+}: Props) {
     
     const inputRef = useRef<HTMLInputElement>(null);
+    const hasSelectionRef = useRef(false);
+    const [loadError, setLoadError] = useState<string | null>(null);
+
+    const onChangeRef = useRef(onChange);
+    const onSelectRef = useRef(onSelect);
+    useEffect(() => {
+        onChangeRef.current = onChange;
+        onSelectRef.current = onSelect;
+    });
 
     useEffect(() => {
-        // Attendre que window.google soit disponible
-        const checkGoogleLoaded = setInterval(() => {
-            // @ts-expect-error Google Maps API loaded globally
-            if (window.google) {
-            clearInterval(checkGoogleLoaded);
-            initAutocomplete();
-            }
-        }, 100);
+        let cancelled = false;
+        let autocomplete: google.maps.places.Autocomplete | null = null;
 
-        function initAutocomplete() {
-            // @ts-expect-error Google Maps API not typed globally
-            if (!inputRef.current || !window.google) return;
+        loadGoogleMaps()
+        .then(() => {
+            if (cancelled || !inputRef.current) return;
 
-            // @ts-expect-error Google Maps Autocomplete class
-            const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
+            autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
             types: ['address'],
             componentRestrictions: { country: 'ca' },
+            // Limite les champs facturés par Google au strict nécessaire
+            fields: ['address_components', 'formatted_address'],
             });
 
             autocomplete.addListener('place_changed', () => {
+            if (!autocomplete) return;
             const place = autocomplete.getPlace();
+            const parsed = parsePlace(place);
 
-            if (place.formatted_address) {
-                onChange(place.formatted_address);
-            }
-
-            const streetNumber = place.address_components?.find((c: GoogleAddressComponent) => c.types.includes('street_number'))?.long_name ?? '';
-            const route = place.address_components?.find((c: GoogleAddressComponent) => c.types.includes('route'))?.long_name ?? '';
-            const streetAddress = `${streetNumber} ${route}`.trim();
-            if (streetAddress) {
-                onStreetAddressChange?.(streetAddress);
-            }
-
-            const cityComponent = place.address_components?.find((c: GoogleAddressComponent) => c.types.includes('locality'));
-            if (cityComponent) {
-                onCityChange?.(cityComponent.long_name);
-            }
-
-            const postalComponent = place.address_components?.find((c: GoogleAddressComponent) => c.types.includes('postal_code'));
-            if (postalComponent) {
-                onPostalCodeChange?.(postalComponent.long_name);
-            }
+            if (place.formatted_address) onChangeRef.current(place.formatted_address);
+            hasSelectionRef.current = parsed !== null;
+            onSelectRef.current?.(parsed);
             });
-        }
+        })
+        .catch(() => {
+            if (!cancelled) setLoadError("L'autocomplétion est indisponible. Vérifiez votre adresse manuellement.");
+        });
 
-        return () => clearInterval(checkGoogleLoaded);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+        return () => {
+        cancelled = true;
+        if (autocomplete) google.maps.event.clearInstanceListeners(autocomplete);
+        };
     }, []);
 
+    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+        onChange(e.target.value);
+        // Texte modifié après une sélection : l'adresse structurée n'est plus fiable
+        if (hasSelectionRef.current) {
+        hasSelectionRef.current = false;
+        onSelectRef.current?.(null);
+        }
+    };
+
+    // Entrée dans la liste de suggestions : sélectionne sans soumettre le formulaire parent
+    const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+        if (e.key !== 'Enter') return;
+        const suggestionsOpen = Array.from(document.querySelectorAll<HTMLElement>('.pac-container'))
+        .some((el) => el.offsetParent !== null);
+        if (suggestionsOpen) e.preventDefault();
+    };
+
     return (
+        <>
         <input
-            className={styles.addressinput}
             ref={inputRef}
             id={id}
             type="text"
-            value={value ?? ''}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder="Commencer a tapper votre adresse"
+            className={styles.addressInput}
+            value={value}
+            onChange={handleChange}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder}
+            disabled={disabled}
             autoComplete="off"
+            {...aria}
         />
+        {loadError && <p className={styles.loadError}>{loadError}</p>}
+        </>
     );
 }

@@ -2,9 +2,10 @@
 
 import { useState } from 'react';
 import styles from './AddressManager.module.css';
-import AddressAutocomplete from '@/shared/components/addressAutocomplete/addressAutocomplete';
 import { createStreetAddress, createTerrainAddress, StreetAddress, TerrainAddress } from '../../types/address';
 import { useAddresses } from '../../hooks/useAddresses';
+import { ParsedAddress } from '@/shared/types/address';
+import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
 
 export default function AddressManager() {
 
@@ -14,8 +15,8 @@ export default function AddressManager() {
 
   const [address, setAddress] = useState<string>('');
   const [apartmentNumber, setApartmentNumber] = useState<string | null>(null);
-  const [city, setCity] = useState<string>('');
-  const [postalCode, setPostalCode] = useState<string>('');
+  
+  const [parsedAddress, setParsedAddress] = useState<ParsedAddress | null>(null);
 
   const [terrainDescription, setTerrainDescription] = useState('');
   const [terrainCity, setTerrainCity] = useState('');
@@ -42,8 +43,14 @@ export default function AddressManager() {
       if (addressToEdit.type === 'address') {
         setTypeAddress('streetAddress');
         setAddress(`${addressToEdit.streetNumber} ${addressToEdit.streetName}`);
-        setCity(addressToEdit.city);
-        setPostalCode(addressToEdit.postalCode);
+        setParsedAddress({
+          streetNumber: addressToEdit.streetNumber,
+          streetName: addressToEdit.streetName,
+          city: addressToEdit.city,
+          province: 'QC',
+          postalCode: addressToEdit.postalCode,
+          formatted: `${addressToEdit.streetNumber} ${addressToEdit.streetName}, ${addressToEdit.city}`,
+        });
         setApartmentNumber(addressToEdit.apartment || null);
       } else if (addressToEdit.type === 'terrain') {
         setTypeAddress('terrainAddress');
@@ -61,8 +68,7 @@ export default function AddressManager() {
 
     setAddress('');
     setApartmentNumber(null);
-    setCity('');
-    setPostalCode('');
+    setParsedAddress(null);
     
     setTerrainDescription('');
     setTerrainCity('');
@@ -77,27 +83,22 @@ export default function AddressManager() {
     let addressData: StreetAddress | TerrainAddress | null = null;
 
     if (typeAddress === "streetAddress") {
-      if (!address.trim()) {
-        alert('Veuillez entrer une adresse');
+
+      if (!parsedAddress) {
+        alert('Veuillez sélectionner une adresse dans la liste');
         return;
       }
-
-      if (!city.trim()) {
-        alert('Veuillez entrer une ville');
+      if (!parsedAddress.streetNumber || !parsedAddress.postalCode) {
+        alert('Adresse incomplète : numéro civique ou code postal manquant');
         return;
       }
-
-      if (!postalCode.trim()) {
-        alert('Veuillez entrer un code postal');
-        return;
-      }
-
+      
       addressData = createStreetAddress({
-        streetNumber: address.split(' ')[0] || '',
-        streetName: address.substring(address.indexOf(' ') + 1) || '',
+        streetNumber: parsedAddress.streetNumber,
+        streetName: parsedAddress.streetName,
         apartment: apartmentNumber || undefined,
-        city,
-        postalCode,
+        city: parsedAddress.city,
+        postalCode: parsedAddress.postalCode,
       });
     }
     
@@ -188,14 +189,11 @@ export default function AddressManager() {
         <div className={styles.addressDetails}>
           <div>
               <label htmlFor="civicAddress">Adresse complète <span style={{color: 'red'}}>*</span></label>
-              <AddressAutocomplete 
-                id="addAddress" 
-                value={address} 
+              <AddressAutocomplete
+                value={address}
                 onChange={setAddress}
-                onCityChange={setCity}
-                onPostalCodeChange={setPostalCode}
-                //onStreetAddressChange={setStreetAddress}
-                />
+                onSelect={setParsedAddress}
+              />
           </div>
           
           <div>

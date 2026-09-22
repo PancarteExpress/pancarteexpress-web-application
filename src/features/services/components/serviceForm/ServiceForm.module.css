@@ -66,3 +66,26 @@
 .mainContainer .serviceForm fieldset .userChoice label.checked {
     background-color: #E8F1FB;
 }
+
+
+
+/* ServiceForm.module.css */
+.addedToCart {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  border-radius: 8px;
+  background: color-mix(in srgb, #1B5E20 10%, transparent);
+  color: #1B5E20;
+}
+
+.addedToCart p {
+  margin: 0;
+}
+
+.addedToCart a {
+  font-weight: 600;
+  color: inherit;
+}

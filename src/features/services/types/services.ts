@@ -1,3 +1,5 @@
+import { REQUEST_TYPES } from "@/lib/constants/services";
+
 export interface Installation {
   type: 'installation';
   items: {
@@ -26,6 +28,7 @@ export interface Correction {
 }
 
 export type Service = (Installation | Removal | Correction) & { id: string };
+export type RequestType = (typeof REQUEST_TYPES)[number];
 
 export function createInstallation(
   data: Omit<Installation, 'type' | 'id'>

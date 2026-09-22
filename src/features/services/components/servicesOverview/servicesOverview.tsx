@@ -5,11 +5,12 @@ import { Address } from '../../types/address';
 import styles from './servicesOverview.module.css';
 
 interface Props {
-  addresses: Address[];  // ← Change: array au lieu d'une seule adresse
-  onRemoveService?: (addressId: string, serviceId: string) => void;  // ← Ajoute addressId
+  addresses: Address[];
+  onRemoveService?: (addressId: string, serviceId: string) => void;
+  onAddToCart: () => void;
 }
 
-export default function ServicesList({ addresses, onRemoveService }: Props) {
+export default function ServicesList({ addresses, onRemoveService, onAddToCart }: Props) {
   const [showDetails, setShowDetails] = useState<string | null>(null);  // ← Track par serviceId
   
   // Filtre les adresses qui ont au moins un service
@@ -157,6 +158,12 @@ export default function ServicesList({ addresses, onRemoveService }: Props) {
       
     </div>
     ))}
+
+    <div className={styles.addToCart}>
+      <button type="button" onClick={onAddToCart} className={styles.btnAddToCart}>
+        Ajouter au panier
+      </button>
+    </div>
     </>
   );
 }

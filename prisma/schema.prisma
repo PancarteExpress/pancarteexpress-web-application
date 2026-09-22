@@ -16,6 +16,8 @@ model User {
   password      String?
   image         String?
 
+  orders        Order[]
+
   role          UserRole  @default(user)
   groupId       String?
   group         Group?    @relation("GroupUsers", fields: [groupId], references: [id], onDelete: SetNull)
@@ -86,6 +88,129 @@ model Group {
   @@index([name])
 }
 
+model Product {
+  id            String   @id @default(cuid())
+  nameFr        String
+  nameEn        String
+  descriptionFr String?  @db.Text
+  descriptionEn String?  @db.Text
+  price         Int      // cents
+  imageUrl      String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  orderItems    OrderItem[]
+
+  @@index([isActive])
+}
+
+model Order {
+  id                 String             @id @default(cuid())
+  orderNumber        Int                @unique @default(autoincrement())
+  idempotencyKey     String             @unique
+  status             OrderStatus
+
+  // Nullable : commande invité, ou compte supprimé (on garde l'historique comptable)
+  userId             String?
+  user               User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  firstName          String
+  lastName           String
+  email              String
+
+  fulfillmentMethod  FulfillmentMethod? // null si services seulement
+  shippingStreet     String?
+  shippingCity       String?
+  shippingPostalCode String?
+  shippingProvince   String?
+
+  // Montants en cents, figés au moment de la commande
+  productsSubtotal   Int
+  servicesSubtotal   Int
+  shippingFee        Int
+  subtotal           Int
+  tps                Int
+  tvq                Int
+  total              Int
+
+  paymentIntentId    String?            @unique
+  paidAt             DateTime?
+
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  items              OrderItem[]
+  serviceRequests    ServiceRequest[]
+
+  @@index([userId, createdAt])  // historique du dashboard
+  @@index([status, createdAt])  // cron de nettoyage + vue SuperAdmin
+}
+
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  // SetNull : un produit supprimé ne casse pas les anciennes commandes
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  productName String   // copie figée
+  unitPrice   Int      // cents, copie figée
+  quantity    Int
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model ServiceRequest {
+  id          String           @id @default(cuid())
+  orderId     String
+  order       Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  requestType RequestType
+
+  addresses   ServiceAddress[]
+
+  @@index([orderId])
+}
+
+model ServiceAddress {
+  id               String         @id @default(cuid())
+  serviceRequestId String
+  serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
+
+  kind             AddressKind
+  // Adresse civique
+  streetNumber     String?
+  streetName       String?
+  apartment        String?
+  postalCode       String?
+  // Terrain
+  description      String?        @db.Text
+  nearbyAddress    String?
+  // Commun
+  city             String
+
+  services         Service[]
+
+  @@index([serviceRequestId])
+  @@index([city])
+}
+
+model Service {
+  id               String         @id @default(cuid())
+  serviceAddressId String
+  serviceAddress   ServiceAddress @relation(fields: [serviceAddressId], references: [id], onDelete: Cascade)
+
+  type             ServiceType
+  unitPrice        Int            // cents, figé
+  details          Json           // validé par Zod à l'écriture
+
+  @@index([serviceAddressId])
+  @@index([type])
+}
+
 enum UserRole {
   user
   admin
@@ -94,4 +219,35 @@ enum UserRole {
 enum TokenType {
   EMAIL_VERIFICATION
   PASSWORD_RESET
+}
+
+enum OrderStatus {
+  AWAITING_PAYMENT
+  PAID
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum FulfillmentMethod {
+  PICKUP
+  DELIVERY
+}
+
+// Valeurs identiques aux types client existants : aucune couche de conversion
+enum RequestType {
+  residential
+  commercial
+}
+
+enum AddressKind {
+  address
+  terrain
+}
+
+enum ServiceType {
+  installation
+  removal
+  correction
 }

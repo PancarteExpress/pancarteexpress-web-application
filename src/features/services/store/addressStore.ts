@@ -41,6 +41,7 @@ export const useAddressStore = create<AddressStore>()(
       removeAddress: (id) => {
         set((state) => ({
           addresses: state.addresses.filter((addr) => addr.id !== id),
+          selectedAddressId: state.selectedAddressId === id ? null : state.selectedAddressId,
         }));
       },
 
@@ -79,7 +80,7 @@ export const useAddressStore = create<AddressStore>()(
       },
 
       clearAddresses: () => {
-        set({ addresses: [] });
+        set({ addresses: [], selectedAddressId: null });
       },
 
       setSelectedAddressId: (id) =>
