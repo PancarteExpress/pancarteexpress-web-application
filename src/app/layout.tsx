@@ -1,3 +1,4 @@
+import { SessionProvider } from 'next-auth/react';
 import './globals.css';
 import type { Metadata } from 'next';
 
@@ -12,6 +13,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
+    <SessionProvider>
     <html suppressHydrationWarning>
       <head>
         <script src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`} async defer/>
@@ -21,5 +23,6 @@ export default function RootLayout({
         {children}
       </body>
     </html>
+    </SessionProvider>
   );
 }

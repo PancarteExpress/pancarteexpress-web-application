@@ -17,6 +17,7 @@ import { FaPaperPlane } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import LanguageSwitcher from '../languageSwitcher/languageSwitcher';
 import { LocalLink } from '../LocalLink';
+import { AuthNav } from '@/features/auth/components/AuthNav';
 //import { useAuth } from '@/app/context/AuthContext';
 //import { useSession } from '@/lib/auth/useSession';
 
@@ -40,12 +41,7 @@ export default function Header() {
 
                     <div className={styles.account}>
                         <Link href={""}>Devenir membre</Link>
-                        {/*session.authenticated && 
-                        <button onClick={handleLogout}>
-                            Déconnexion
-                        </button>
-                        */}
-                        <Link href={``}>Mon compte</Link>
+                        <AuthNav />
                     </div>
                 </div>
             </div>
