@@ -2,9 +2,20 @@
 
 import Link from "next/link";
 import { useAuth } from "../hooks/useAuth";
+import { useRouter } from "next/navigation";
 
-export function AuthNav() {
+interface LoginFormProps {
+  locale: string;
+}
+
+export function AuthNav({ locale }: LoginFormProps) {
   const { isAuthenticated, user, logout, isLoading } = useAuth();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await logout();
+    router.push(`/${locale}`);
+  };
 
   if (isLoading) {
     return <div className="text-sm text-gray-500">Chargement...</div>;
@@ -13,9 +24,14 @@ export function AuthNav() {
   if (isAuthenticated && user) {
     return (
       <div className="flex items-center gap-4">
-        <span className="text-sm">{user.email}</span>
         <button
-          onClick={() => logout()}
+          onClick={() => router.push(`/${locale}/dashboard`)}
+          className="text-sm px-3 py-2 hover:bg-gray-100 rounded"
+        >
+          Mon compte
+        </button>
+        <button
+          onClick={handleLogout}
           className="text-sm px-3 py-2 hover:bg-gray-100 rounded"
         >
           Déconnexion

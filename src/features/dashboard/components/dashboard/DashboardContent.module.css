@@ -1,0 +1,129 @@
+.mainContainer {
+    border: 1px solid red;
+    margin: 0 auto;
+    padding: 50px 0;
+}
+
+@media (max-width: 1650px) { .mainContainer { width: 80%; } }
+@media (max-width: 1300px) { .mainContainer { width: 95%; } }
+
+.mainContainer .welcome {
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 10px;
+    border: 3px solid #D8E8F8;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    width: 60%;
+    margin-bottom: 20px;
+}
+
+@media (max-width: 1650px) { .mainContainer .welcome { width: 80%; } }
+@media (max-width: 1300px) { .mainContainer .welcome { width: 95%; } }
+
+.mainContainer .welcome .welcomeAvatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #E8F1FB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    color: #0E4D9A;
+    flex-shrink: 0;
+}
+
+.mainContainer .welcome .welcomeTitle {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    color: #092E5B;
+    font-size: 2rem;
+}
+
+@media (max-width: 1650px) { .mainContainer .welcome .welcomeTitle { font-size: 1.7rem; } }
+@media (max-width: 1300px) { .mainContainer .welcome .welcomeTitle { font-size: 1.3rem; } }
+
+.mainContainer .welcome .welcomeSub {
+    color: #5F7FA8;
+    margin-top: 4px;
+    line-height: 1.6;
+    font-size: 1.4rem;
+}
+
+.mainContainer .userData {
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+    width: 60%;
+}
+
+@media (max-width: 1650px) { .mainContainer .userData { width: 80%; } }
+@media (max-width: 1300px) { .mainContainer .userData { width: 95%; } }
+
+@media (max-width: 900px)  { .mainContainer .userData { grid-template-columns: 1fr; } }
+
+.mainContainer .userData .card {
+    background: #fff;
+    border-radius: 12px;
+    border: 3px solid #D8E8F8;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    cursor: pointer;
+    transition: box-shadow .2s, transform .2s;
+}
+
+.mainContainer .userData .card:hover {
+    box-shadow: 0 4px 20px rgba(14, 77, 154, .12);
+    transform: translateY(-2px);
+}
+
+.qcardIcon {
+    width: 50px;
+    height: 50px;
+    font-size: 2rem;
+    border-radius: 8px;
+    background: #E8F1FB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qcardTitle {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: #092E5B;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    
+    font-size: 1.8rem;
+}
+
+.qcardValue {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0E4D9A;
+    margin-top: 4px;
+}
+
+.qcardDesc {
+    font-size: 1.2rem;
+    color: #5F7FA8;
+    margin-top: 2px;
+}
+
+.qcardLink {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0E4D9A;
+    margin-top: auto;
+}

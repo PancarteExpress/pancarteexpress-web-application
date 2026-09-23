@@ -5,9 +5,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginInput } from "../types";
 import { useAuth } from "../hooks/useAuth";
 import { useRouter } from "next/navigation";
+
 import Link from "next/link";
 
-export function LoginForm() {
+interface LoginFormProps {
+  locale: string;
+}
+
+export function LoginForm({ locale }: LoginFormProps) {
   const router = useRouter();
   const { login, isLoading, error } = useAuth();
 
@@ -22,7 +27,7 @@ export function LoginForm() {
   const onSubmit = async (data: LoginInput) => {
     const result = await login(data);
     if (result.success) {
-      router.push("/services");
+      router.push(`/${locale}/dashboard`);
     }
   };
 

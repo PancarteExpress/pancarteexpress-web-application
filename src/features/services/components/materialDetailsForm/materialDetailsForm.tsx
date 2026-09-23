@@ -577,6 +577,21 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
             ))*/}
           </>)}
 
+          {field.key === 'specialNeeds' && <div className={styles.specialInstructions}>
+            <div className={styles.specialInstructions}>
+    <label htmlFor='specialNeeds'>Veuillez indiquer l'emplacement d'installation de la pancarte</label>
+    <textarea
+      id='specialNeeds'
+      value={data?.specialNeeds || ''}  // ← Lis depuis data
+      onChange={(e) => {
+        handleChange('specialNeeds', e.target.value);  // ← Écrit directement
+      }}
+      placeholder="Entrez vos instructions ici..."
+      rows={4}
+    />
+  </div>
+          </div>}
+
           
         </div>
       ))}

@@ -1,4 +1,7 @@
 export const ADDONS_LIST = [
+    { key: 'customAddon', label: 'Ajout personnalisé' },
+
+    { key: 'openHouse', label: 'Visite libre seulement' },
     { key: 'toRent', label: 'À louer' },
     { key: 'rented', label: 'Loué' },
     { key: 'toSell', label: 'À vendre' },
@@ -14,7 +17,7 @@ export const ADDONS_LIST = [
     { key: 'waterfront', label: 'Bord de l\'eau' },
     { key: 'land', label: 'Terrain' },
     { key: 'pool', label: 'Piscine' },
-    { key: 'customAddon', label: 'Ajout personnalisé' },
-    { key: 'openHouse', label: 'Visite libre' },
+    
+    
     { key: 'other', label: 'Autres' },
 ];

@@ -150,10 +150,10 @@ export default function AddressManager() {
                       checked={selectedAddressId === addr.id}
                       disabled={editingAddressId !== null && editingAddressId !== addr.id}
                       onChange={() => setSelectedAddressId(addr.id)} />
-                      Adresse: {addr.type === 'address' 
-                        ? `${addr.streetNumber} ${addr.streetName} ${addr.apartment ? `#${addr.apartment}` : ''}`
-                        : addr.description
-                      }
+                        
+                        {addr.type === 'address' && `Addresse : ${addr.streetNumber} ${addr.streetName} ${addr.apartment ? `#${addr.apartment}` : ''}`}
+                        {addr.type === 'terrain' && `Terrain  : ${addr.description} - ${addr.city} ${addr.nearbyAddress ? `( ${addr.nearbyAddress} )` : ''}`}
+
                     </div>
 
                     <div className={styles.addressBtn}>

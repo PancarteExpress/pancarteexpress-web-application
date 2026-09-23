@@ -7,7 +7,11 @@ import { useAuth } from "../hooks/useAuth";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-export function RegisterForm() {
+interface LoginFormProps {
+  locale: string;
+}
+
+export function RegisterForm({ locale }: LoginFormProps) {
   const router = useRouter();
   const { register: registerUser, isLoading, error } = useAuth();
   const [isGroup, setIsGroup] = useState(false);
@@ -24,7 +28,7 @@ export function RegisterForm() {
   const onSubmit = async (data: RegisterInput) => {
     const result = await registerUser(data);
     if (result.success) {
-      router.push("/services");
+      router.push(`/${locale}/dashboard`);
     }
   };
 

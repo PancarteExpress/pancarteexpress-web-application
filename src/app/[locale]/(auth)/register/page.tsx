@@ -2,7 +2,7 @@ import { RegisterForm } from "@/features/auth/components/RegisterForm";
 import { GoogleLoginButton } from "@/features/auth/components/GoogleLoginButton";
 import Link from "next/link";
 
-export default function RegisterPage() {
+export default function RegisterPage({ params }: { params: { locale: string } }) {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md">
@@ -10,7 +10,7 @@ export default function RegisterPage() {
           Créer un compte
         </h1>
         
-        <GoogleLoginButton />
+        <GoogleLoginButton locale={params.locale} />
         
         <div className="my-4 flex items-center">
           <div className="flex-1 border-t"></div>
@@ -18,7 +18,7 @@ export default function RegisterPage() {
           <div className="flex-1 border-t"></div>
         </div>
         
-        <RegisterForm />
+        <RegisterForm locale={params.locale} />
         
         <p className="text-center text-sm mt-4">
           Déjà inscrit?{" "}

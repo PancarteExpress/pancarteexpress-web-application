@@ -3,9 +3,16 @@
 import { signIn } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 
-export function GoogleLoginButton() {
+interface GoogleLoginButtonProps {
+  locale: string;
+}
+
+export function GoogleLoginButton({ locale }: GoogleLoginButtonProps) {
   const handleGoogleSignIn = async () => {
-    await signIn("google", { redirect: true, callbackUrl: "/services" });
+    await signIn("google", {
+      redirect: true,
+      callbackUrl: `/${locale}/dashboard`,
+    });
   };
 
   return (

@@ -21,8 +21,11 @@ import { AuthNav } from '@/features/auth/components/AuthNav';
 //import { useAuth } from '@/app/context/AuthContext';
 //import { useSession } from '@/lib/auth/useSession';
 
+interface HeaderProps {
+  locale: string;
+}
 
-export default function Header() {
+export default function Header({ locale }: HeaderProps) {
 
     // Toggle de responsive Navbar
     const [isOpen, setIsOpen] = useState(false);
@@ -41,7 +44,7 @@ export default function Header() {
 
                     <div className={styles.account}>
                         <Link href={""}>Devenir membre</Link>
-                        <AuthNav />
+                        <AuthNav locale={locale} />
                     </div>
                 </div>
             </div>

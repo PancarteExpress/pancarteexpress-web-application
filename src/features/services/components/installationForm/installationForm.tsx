@@ -147,7 +147,7 @@ export default function InstallationForm({ onDataChange, initialData }: Props) {
 
 
     return(
-        <>
+        <div className={styles.test}>
         <fieldset className={styles.fieldset}>
             <legend className={styles.legend}>Quavez vous besoin dinstaller?</legend>
 
@@ -248,6 +248,6 @@ export default function InstallationForm({ onDataChange, initialData }: Props) {
         </fieldset>
 
 
-        </>
+        </div>
     );
 }

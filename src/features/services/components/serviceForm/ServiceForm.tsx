@@ -27,7 +27,7 @@ export default function ServiceForm() {
 
     const { addresses, selectedAddressId, removeServiceFromAddress, addServiceToAddress, clearAddresses } = useAddresses();
     const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
-
+    
     const [installationInitialData, setInstallationInitialData] = useState<Omit<Installation, 'type'> | undefined>();
 
     const [servicesData, setServicesData] = useState<{
@@ -172,11 +172,16 @@ export default function ServiceForm() {
 
                 <AddressManager />
                 
-                {selectedAddress && <fieldset>
+                {selectedAddress && 
+                <fieldset>
                     <legend>De quels services avez vous besoin quon fasse a ladresse selectionner</legend>
                     
                     {selectedAddress && selectedAddress.type === 'address' && (
                     <span style={{color: 'black', fontWeight: '900'}}>{selectedAddress!.streetNumber} {selectedAddress!.streetName}</span>
+                    )}
+                    
+                    {selectedAddress && selectedAddress.type === 'terrain' && (
+                    <span style={{color: 'black', fontWeight: '900'}}>{selectedAddress!.description} {selectedAddress!.city}</span>
                     )}
 
                     <div className={styles.userChoice}>
@@ -207,7 +212,8 @@ export default function ServiceForm() {
                             Correction
                         </label>
                     </div>
-                </fieldset>}
+                </fieldset>
+                }
 
                 {selectedAddress && selectedServices.installation &&
                 <InstallationForm 

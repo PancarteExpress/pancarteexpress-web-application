@@ -1,6 +1,14 @@
+.test {
+    margin: 0 auto;
+    width: 97%;
+    border: 3px solid #0E4D9A;
+    /*background-color: rgb(232 241 251 / 0.1);*/
+    border-radius: 10px;
+    padding: 5px;
+    margin-bottom: 25px;
+}
+
 .fieldset {
-    padding: 10px;
-    border: none;
     margin-bottom: 10px;
 }
 
@@ -12,7 +20,7 @@
 
 .fieldset .userChoice {
     margin: 10px 0;
-    padding: 0 50px;
+    padding: 0 20px;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
     align-items: center;

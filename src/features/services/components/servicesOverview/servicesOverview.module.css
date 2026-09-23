@@ -5,10 +5,13 @@
 
     border-radius: 12px;
     padding: 20px;
+
+    border: 3px solid #0E4D9A;
 }
 
 .mainContainer:hover {
     box-shadow: 0px 0px 17px #0E4D9A;
+    border: none;
 }
 
 .mainContainer .header {
