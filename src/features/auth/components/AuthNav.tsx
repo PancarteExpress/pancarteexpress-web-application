@@ -42,10 +42,10 @@ export function AuthNav({ locale }: LoginFormProps) {
 
   return (
     <div className="flex items-center gap-2">
-      <Link href="/auth/login" className="text-sm px-3 py-2 hover:bg-gray-100 rounded">
+      <Link href={`/${locale}/login`} className="text-sm px-3 py-2 hover:bg-gray-100 rounded">
         Connexion
       </Link>
-      <Link href="/auth/register" className="text-sm px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+      <Link href={`/${locale}/register`} className="text-sm px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
         Sinscrire
       </Link>
     </div>

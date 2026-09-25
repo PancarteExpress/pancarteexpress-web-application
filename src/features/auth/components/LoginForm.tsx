@@ -69,7 +69,7 @@ export function LoginForm({ locale }: LoginFormProps) {
 
       <div className="text-right">
         <Link
-          href="/auth/forgot-password"
+          href={`/${locale}/auth/forgot-password`}
           className="text-sm text-blue-600 hover:underline"
         >
           Mot de passe oublié?

@@ -74,7 +74,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-2xl font-bold mb-4">Contenu à venir</h2>
         <p className="text-gray-600">
-          C'est le dashboard. À remplir selon tes besoins.
+          Cest le dashboard. À remplir selon tes besoins.
         </p>
       </div>
     </div>

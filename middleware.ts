@@ -9,7 +9,14 @@ const handleI18nRouting = createMiddleware({
 });
 
 export function middleware(request: NextRequest) {
-  return handleI18nRouting(request);
+  const response = handleI18nRouting(request);
+  
+  // Extrait la locale de l'URL
+  const pathname = request.nextUrl.pathname;
+  const locale = pathname.split('/')[1] || 'fr';
+  
+  response.headers.set('x-locale', locale);
+  return response;
 }
 
 export const config = {

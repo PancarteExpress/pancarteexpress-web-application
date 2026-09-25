@@ -579,7 +579,7 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
 
           {field.key === 'specialNeeds' && <div className={styles.specialInstructions}>
             <div className={styles.specialInstructions}>
-    <label htmlFor='specialNeeds'>Veuillez indiquer l'emplacement d'installation de la pancarte</label>
+    <label htmlFor='specialNeeds'>Veuillez indiquer lemplacement dinstallation de la pancarte</label>
     <textarea
       id='specialNeeds'
       value={data?.specialNeeds || ''}  // ← Lis depuis data

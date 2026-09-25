@@ -2,7 +2,14 @@ import { RegisterForm } from "@/features/auth/components/RegisterForm";
 import { GoogleLoginButton } from "@/features/auth/components/GoogleLoginButton";
 import Link from "next/link";
 
-export default function RegisterPage({ params }: { params: { locale: string } }) {
+export default async function RegisterPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  console.log("RegisterPage locale:", locale);
+
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="w-full max-w-md">
@@ -10,7 +17,7 @@ export default function RegisterPage({ params }: { params: { locale: string } })
           Créer un compte
         </h1>
         
-        <GoogleLoginButton locale={params.locale} />
+        <GoogleLoginButton locale={locale} />
         
         <div className="my-4 flex items-center">
           <div className="flex-1 border-t"></div>
@@ -18,11 +25,11 @@ export default function RegisterPage({ params }: { params: { locale: string } })
           <div className="flex-1 border-t"></div>
         </div>
         
-        <RegisterForm locale={params.locale} />
+        <RegisterForm locale={locale} />
         
         <p className="text-center text-sm mt-4">
           Déjà inscrit?{" "}
-          <Link href="/auth/login" className="text-blue-600 hover:underline">
+          <Link href={`/${locale}/auth/login`} className="text-blue-600 hover:underline">
             Se connecter
           </Link>
         </p>

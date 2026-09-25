@@ -6,11 +6,11 @@ import { loadGoogleMaps } from "@/shared/utils/googleMapsLoader";
 import { ParsedAddress } from "@/shared/types/address";
 import { parsePlace } from '@/shared/utils/parsePlace';
 
-type GoogleAddressComponent = {
+/*type GoogleAddressComponent = {
   types: string[];
   long_name: string;
   short_name: string;
-};
+};*/
 
 interface Props {
   id?: string;

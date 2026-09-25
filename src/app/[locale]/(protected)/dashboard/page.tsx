@@ -5,12 +5,13 @@ import { redirect } from "next/navigation";
 export default async function DashboardPage({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
+  const { locale } = await params;
   const session = await auth();
 
   if (!session?.user) {
-    redirect(`/${params.locale}/auth/login`);
+    redirect(`/${locale}/login`);
   }
 
   return (

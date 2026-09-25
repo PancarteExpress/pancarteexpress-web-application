@@ -71,13 +71,8 @@ export function useAuth() {
           throw new Error(data.error || "Registration failed");
         }
 
-        // Auto-login après registration
-        const loginResult = await login({
-          email: input.email,
-          password: input.password,
-        });
-
-        return loginResult;
+        // Retourner les données SANS auto-login
+        return { success: true, data: input };
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Registration failed";
         setError(errorMessage);
@@ -86,7 +81,7 @@ export function useAuth() {
         setLoading(false);
       }
     },
-    [login, clearError, setLoading, setError]
+    [clearError, setLoading, setError]
   );
 
   const logout_ = useCallback(async () => {

@@ -28,7 +28,8 @@ export function RegisterForm({ locale }: LoginFormProps) {
   const onSubmit = async (data: RegisterInput) => {
     const result = await registerUser(data);
     if (result.success) {
-      router.push(`/${locale}/dashboard`);
+      sessionStorage.setItem("registrationData", JSON.stringify(result.data));
+      router.push(`/${locale}/verify-email`);
     }
   };
 

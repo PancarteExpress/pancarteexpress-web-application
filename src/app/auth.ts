@@ -49,8 +49,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   pages: {
-    signIn: "/auth/login",
-    error: "/auth/error",
+    signIn: "/auth/login",      // NextAuth va rediriger ici
+    error: "/auth/error",        // Et ici pour les erreurs
   },
   callbacks: {
     async jwt({ token, user }) {
