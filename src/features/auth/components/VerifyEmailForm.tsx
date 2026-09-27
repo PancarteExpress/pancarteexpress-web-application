@@ -15,7 +15,8 @@ type VerifyEmailInput = z.infer<typeof verifyEmailSchema>;
 interface VerifyEmailFormProps {
   locale: string;
   email: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   password: string;
   isGroup: boolean;
   groupName?: string;
@@ -24,7 +25,8 @@ interface VerifyEmailFormProps {
 export function VerifyEmailForm({
   locale,
   email,
-  name,
+  firstName,
+  lastName,
   password,
   isGroup,
   groupName,
@@ -48,18 +50,26 @@ export function VerifyEmailForm({
       setIsLoading(true);
       setError(null);
 
+      const code = data.code.trim();
+      console.log("Sending code:", code, "Length:", code.length); // ← Log ici
+
       const res = await fetch("/api/auth/verify-email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
-          code: data.code,
-          name,
+          code,
+          firstName,
+          lastName,
           password,
           isGroup,
           groupName,
         }),
       });
+
+      const errorData = await res.json();
+      console.log("Error response:", errorData);
+      console.log("Error details:", errorData.details);
 
       if (!res.ok) {
         const data = await res.json();

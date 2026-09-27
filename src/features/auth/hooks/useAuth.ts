@@ -13,13 +13,24 @@ export function useAuth() {
   // Sync session avec store
   useEffect(() => {
     if (session?.user && session.user.email) {
+      const sessionUser = session.user as {
+        id: string;
+        email: string;
+        firstName?: string;
+        lastName?: string;
+        role?: "user" | "admin";
+        groupId?: string | null;
+        emailVerified?: Date | null;
+      };
+
       setUser({
-        id: session.user.id as string,
-        email: session.user.email,
-        name: session.user.name || null,
-        role: session.user.role || "user",
-        groupId: session.user.groupId || null,
-        emailVerified: session.user.emailVerified || null,
+        id: sessionUser.id,
+        email: sessionUser.email,
+        firstName: sessionUser.firstName || null,
+        lastName: sessionUser.lastName || null,
+        role: (sessionUser.role as "user" | "admin") || "user",
+        groupId: sessionUser.groupId || null,
+        emailVerified: sessionUser.emailVerified || null,
       });
     } else if (status === "unauthenticated") {
       logout();
@@ -71,7 +82,6 @@ export function useAuth() {
           throw new Error(data.error || "Registration failed");
         }
 
-        // Retourner les données SANS auto-login
         return { success: true, data: input };
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Registration failed";

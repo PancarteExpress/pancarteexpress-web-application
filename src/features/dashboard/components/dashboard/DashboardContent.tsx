@@ -2,12 +2,17 @@
 
 import { Session } from "next-auth";
 import styles from "./DashboardContent.module.css"
+import { useState } from "react";
+import UpdateProfile from "../updateProfile/updateProfile";
 
 interface DashboardContentProps {
   user: Session["user"];
 }
 
 export function DashboardContent({ user }: DashboardContentProps) {
+
+  const [updateProfileOpen, setUpdateProfileOpen] = useState<boolean>(false);
+
   return (
     <div className={styles.mainContainer}>
       <div className={styles.welcome}>
@@ -24,7 +29,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
       </div>
 
       <div className={styles.userData}>
-        <div className={styles.card}>
+        <div className={styles.card} onClick={() => setUpdateProfileOpen(true)}>
           <div className={styles.qcardIcon}>👤</div>
           <div>
             <p className={styles.qcardTitle}>Mon profil</p>
@@ -49,7 +54,7 @@ export function DashboardContent({ user }: DashboardContentProps) {
       </div>
 
       <h1 className="text-4xl font-bold mb-8">
-        Bienvenue, {user.name}
+        Bienvenue, {user.firstName} {user.lastName} 
       </h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -77,6 +82,10 @@ export function DashboardContent({ user }: DashboardContentProps) {
           Cest le dashboard. À remplir selon tes besoins.
         </p>
       </div>
+
+      {updateProfileOpen && (
+        <UpdateProfile onClose={() => setUpdateProfileOpen(false)} />
+      )}
     </div>
   );
 }

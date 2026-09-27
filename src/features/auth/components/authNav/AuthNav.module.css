@@ -1,0 +1,8 @@
+.mainContainer {
+    display: flex;
+    gap: 10px;
+}
+
+.mainContainer button {
+    all: unset;
+}

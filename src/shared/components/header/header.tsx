@@ -17,7 +17,7 @@ import { FaPaperPlane } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
 import LanguageSwitcher from '../languageSwitcher/languageSwitcher';
 import { LocalLink } from '../LocalLink';
-import { AuthNav } from '@/features/auth/components/AuthNav';
+import { AuthNav } from '@/features/auth/components/authNav/AuthNav';
 //import { useAuth } from '@/app/context/AuthContext';
 //import { useSession } from '@/lib/auth/useSession';
 
@@ -43,7 +43,6 @@ export default function Header({ locale }: HeaderProps) {
                     </div>
 
                     <div className={styles.account}>
-                        <Link href={""}>Devenir membre</Link>
                         <AuthNav locale={locale} />
                     </div>
                 </div>
@@ -102,13 +101,7 @@ export default function Header({ locale }: HeaderProps) {
                     <LocalLink href="/cart" className={styles.navItem}><IoCartOutline size={22} /></LocalLink>
                     <LocalLink href="/services" className={styles.navItem}><FaPaperPlane />Demande en ligne</LocalLink>
                     
-                    <Link href={``}>devenir membre</Link>
-                    {/*session.authenticated && 
-                    <button onClick={handleLogout}>
-                        Déconnexion
-                    </button>
-                    */}
-                    <Link href={``}>Mon compte</Link> 
+                    <AuthNav locale={locale} />
                 </div>
             </div>
         </header>

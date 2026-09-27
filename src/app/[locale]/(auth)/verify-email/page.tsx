@@ -12,7 +12,8 @@ export default function VerifyEmailPage() {
   
   const [registrationData, setRegistrationData] = useState<{
     email: string;
-    name: string;
+    firstName: string;
+    lastName: string;
     password: string;
     isGroup: boolean;
     groupName?: string;
@@ -45,7 +46,8 @@ export default function VerifyEmailPage() {
         <VerifyEmailForm
           locale={locale}
           email={registrationData.email}
-          name={registrationData.name}
+          firstName={registrationData.firstName}
+          lastName={registrationData.lastName}
           password={registrationData.password}
           isGroup={registrationData.isGroup}
           groupName={registrationData.groupName}

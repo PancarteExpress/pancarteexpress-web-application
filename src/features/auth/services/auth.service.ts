@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { hashPassword, bcryptCompare } from "@/utils/bcrypt";
 import { sendVerificationEmail } from "@/lib/email";
-import type { RegisterInput, ForgotPasswordInput, ResetPasswordInput } from "../types";
+import type { RegisterInput, ForgotPasswordInput, ResetPasswordInput, UpdateProfileInput, UpdatePasswordInput, SignInParams } from "../types";
 import crypto from "crypto";
 
 function generateVerificationCode(): string {
@@ -18,11 +18,9 @@ export const authService = {
       throw new Error("User already exists");
     }
 
-    // Générer un code 6 chiffres
     const code = generateVerificationCode();
-    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 min
+    const expires = new Date(Date.now() + 15 * 60 * 1000);
 
-    // Stocker le code dans VerificationToken
     await prisma.verificationToken.create({
       data: {
         email: input.email,
@@ -32,28 +30,117 @@ export const authService = {
       },
     });
 
-    // Envoyer l'email
     await sendVerificationEmail(input.email, code);
 
-    // Retourner les données pour créer l'user après vérif
     return {
       email: input.email,
-      name: input.name,
+      firstName: input.firstName,
+      lastName: input.lastName,
       isGroup: input.isGroup,
       groupName: input.groupName,
       message: "Vérification email envoyée",
     };
   },
 
+  async signIn(params: SignInParams) {
+    const { user, account } = params;
+    if (account?.provider === "google" && user.email) {
+      const fullName = user.name || "";
+      const parts = fullName.split(" ");
+      const firstName = parts[0] || "";
+      const lastName = parts.slice(1).join(" ") || "";
+
+      const existingUser = await prisma.user.findUnique({
+        where: { email: user.email },
+      });
+
+      if (existingUser) {
+        // User existe déjà (créé via credentials) — crée l'Account
+        await prisma.account.create({
+          data: {
+            userId: existingUser.id,
+            type: account.type as string || "oauth",
+            provider: account.provider,
+            providerAccountId: account.providerAccountId as string || "",
+            access_token: account.access_token,
+            refresh_token: account.refresh_token,
+            expires_at: account.expires_at,
+            token_type: account.token_type,
+            scope: account.scope,
+            id_token: account.id_token,
+            session_state: account.session_state,
+          },
+        });
+      } else {
+        // User n'existe pas — crée-le + Account
+        const newUser = await prisma.user.create({
+          data: {
+            email: user.email,
+            firstName,
+            lastName,
+            emailVerified: new Date(),
+          },
+        });
+
+        await prisma.account.create({
+          data: {
+            userId: newUser.id,
+            type: (account.type as string) || "oauth",
+            provider: (account.provider as string) || "google",
+            providerAccountId: (account.providerAccountId as string) || "",
+            access_token: account.access_token,
+            refresh_token: account.refresh_token,
+            expires_at: account.expires_at,
+            token_type: account.token_type,
+            scope: account.scope,
+            id_token: account.id_token,
+            session_state: account.session_state,
+          },
+        });
+
+        user.id = newUser.id;
+        user.firstName = firstName;
+        user.lastName = lastName;
+      }
+    }
+    return true;
+  },
+
+  async updatePassword(userId: string, input: UpdatePasswordInput) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user || !user.password) {
+      throw new Error("User not found or no password set");
+    }
+
+    const isPasswordValid = await bcryptCompare(
+      input.currentPassword,
+      user.password
+    );
+
+    if (!isPasswordValid) {
+      throw new Error("Current password incorrect");
+    }
+
+    const hashedPassword = await hashPassword(input.newPassword);
+
+    return await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+  },
+
   async verifyEmailAndCreateUser(
     email: string,
     code: string,
-    name: string,
+    firstName: string,
+    lastName: string,
     password: string,
     isGroup: boolean,
     groupName?: string
   ) {
-    // Vérifier le token
     const verificationToken = await prisma.verificationToken.findUnique({
       where: { token: code },
     });
@@ -66,7 +153,6 @@ export const authService = {
       throw new Error("Code expired");
     }
 
-    // Créer l'user
     const hashedPassword = await hashPassword(password);
 
     let groupId: string | null = null;
@@ -80,18 +166,38 @@ export const authService = {
     const user = await prisma.user.create({
       data: {
         email,
-        name,
+        firstName,
+        lastName,
         password: hashedPassword,
+        emailVerified: new Date(),
         groupId,
       },
     });
 
-    // Supprimer le token
     await prisma.verificationToken.delete({
       where: { id: verificationToken.id },
     });
 
     return { id: user.id, email: user.email };
+  },
+
+  async updateProfile(userId: string, input: UpdateProfileInput) {
+    const existingUser = await prisma.user.findUnique({
+      where: { email: input.email },
+    });
+
+    if (existingUser && existingUser.id !== userId) {
+      throw new Error("Email already in use");
+    }
+
+    return await prisma.user.update({
+      where: { id: userId },
+      data: {
+        firstName: input.firstName,
+        lastName: input.lastName,
+        email: input.email,
+      },
+    });
   },
 
   async login(email: string, password: string) {

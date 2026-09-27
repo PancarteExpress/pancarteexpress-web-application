@@ -10,11 +10,11 @@ datasource db {
 
 model User {
   id            String    @id @default(cuid())
-  name          String?
+  firstName     String?
+  lastName      String?
   email         String    @unique
   emailVerified DateTime?
   password      String?
-  image         String?
 
   orders        Order[]
 
@@ -34,7 +34,7 @@ model User {
 
 model Account {
   id                 String  @id @default(cuid())
-  userId             String
+  userId             String  @unique
   type               String
   provider           String
   providerAccountId  String

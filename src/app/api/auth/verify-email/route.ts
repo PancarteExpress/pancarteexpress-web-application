@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { authService } from "@/features/auth/services/auth.service";
-
-const verifyEmailSchema = z.object({
-  email: z.string().email(),
-  code: z.string().length(6, "Code must be 6 digits"),
-  name: z.string().min(2),
-  password: z.string().min(8),
-  isGroup: z.boolean().optional(),
-  groupName: z.string().optional(),
-});
+import { verifyEmailSchema } from "@/features/auth/types";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,7 +14,8 @@ export async function POST(request: NextRequest) {
     const user = await authService.verifyEmailAndCreateUser(
       validatedData.email,
       validatedData.code,
-      validatedData.name,
+      validatedData.firstName,
+      validatedData.lastName,
       validatedData.password,
       validatedData.isGroup || false,
       validatedData.groupName

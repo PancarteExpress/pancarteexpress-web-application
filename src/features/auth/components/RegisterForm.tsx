@@ -42,6 +42,30 @@ export function RegisterForm({ locale }: LoginFormProps) {
       )}
 
       <div>
+        <label className="block text-sm font-medium">First Name</label>
+        <input
+          {...register("firstName")}
+          type="text"
+          className="w-full px-3 py-2 border rounded"
+        />
+        {errors.firstName && (
+          <span className="text-red-500 text-sm">{errors.firstName.message}</span>
+        )}
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium">Last Name</label>
+        <input
+          {...register("lastName")}
+          type="text"
+          className="w-full px-3 py-2 border rounded"
+        />
+        {errors.lastName && (
+          <span className="text-red-500 text-sm">{errors.lastName.message}</span>
+        )}
+      </div>
+
+      <div>
         <label className="block text-sm font-medium mb-1">Email</label>
         <input
           type="email"
@@ -51,19 +75,6 @@ export function RegisterForm({ locale }: LoginFormProps) {
         />
         {errors.email && (
           <span className="text-red-600 text-sm">{errors.email.message}</span>
-        )}
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1">Nom</label>
-        <input
-          type="text"
-          {...register("name")}
-          className="w-full px-3 py-2 border rounded"
-          disabled={isLoading}
-        />
-        {errors.name && (
-          <span className="text-red-600 text-sm">{errors.name.message}</span>
         )}
       </div>
 

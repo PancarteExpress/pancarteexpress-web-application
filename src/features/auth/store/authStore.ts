@@ -4,7 +4,8 @@ import { devtools, persist } from "zustand/middleware";
 interface AuthUser {
   id: string;
   email: string;
-  name: string | null;
+  firstName: string | null;
+  lastName: string | null;
   role: "user" | "admin";
   groupId: string | null;
   emailVerified: Date | null;
