@@ -4,14 +4,26 @@ const firstNameSchema = z.string().min(2, "First name required");
 const lastNameSchema = z.string().min(2, "Last name required");
 const emailSchema = z.string().email("Adresse courriel requise");
 const passwordSchema = z.string().min(8, "Min 8 characters");
+const phoneSchema = z.string().min(10, "Phone number required");
 
 export const registerSchema = z.object({
   firstName: firstNameSchema,
   lastName: lastNameSchema,
   email: emailSchema,
   password: z.string().min(3, "Min 3 characters"),
+  confirmPassword: z.string(),
+  phoneNumber: phoneSchema,
+  companyName: z.string().optional(),
   isGroup: z.boolean(),
   groupName: z.string().optional(),
+})
+.refine((data) => data.password === data.confirmPassword, {
+  message: "Les mots de passe ne correspondent pas",
+  path: ["confirmPassword"],
+})
+.refine((data) => data.firstName && data.lastName && data.email && data.password && data.phoneNumber, {
+  message: "Veuillez remplir tous les champs requis",
+  path: ["root"],
 });
 
 export const verifyEmailSchema = z.object({
@@ -20,6 +32,8 @@ export const verifyEmailSchema = z.object({
   firstName: z.string().min(2, "First name required"),
   lastName: z.string().min(2, "Last name required"),
   password: z.string().min(3, "Min 3 characters"),
+  phoneNumber: z.string().min(10, "Phone number required"),
+  companyName: z.string().optional(),  
   isGroup: z.boolean(),
   groupName: z.string().optional(),
 });

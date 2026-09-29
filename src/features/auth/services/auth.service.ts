@@ -1,13 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { hashPassword, bcryptCompare } from "@/utils/bcrypt";
 import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email";
-import type { RegisterInput, ForgotPasswordInput, ResetPasswordInput, UpdateProfileInput, UpdatePasswordInput, SignInParams } from "../types";
-import crypto from "crypto";
+import type { RegisterInput, UpdateProfileInput, UpdatePasswordInput, SignInParams } from "../types";
 import { hash } from "bcryptjs";
-
-function generateVerificationCode(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
 
 export const authService = {
   async register(input: RegisterInput) {
@@ -19,7 +14,7 @@ export const authService = {
       throw new Error("User already exists");
     }
 
-    const code = generateVerificationCode();
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
     const expires = new Date(Date.now() + 15 * 60 * 1000);
 
     await prisma.verificationToken.create({
@@ -33,14 +28,7 @@ export const authService = {
 
     await sendVerificationEmail(input.email, code);
 
-    return {
-      email: input.email,
-      firstName: input.firstName,
-      lastName: input.lastName,
-      isGroup: input.isGroup,
-      groupName: input.groupName,
-      message: "Vérification email envoyée",
-    };
+    return { success: true };
   },
 
   async signIn(params: SignInParams) {
@@ -152,6 +140,8 @@ export const authService = {
     firstName: string,
     lastName: string,
     password: string,
+    phoneNumber: string,
+    companyName: string | undefined,
     isGroup: boolean,
     groupName?: string
   ) {
@@ -182,6 +172,8 @@ export const authService = {
         email,
         firstName,
         lastName,
+        phoneNumber,
+        companyName,
         password: hashedPassword,
         emailVerified: new Date(),
         groupId,

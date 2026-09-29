@@ -1,0 +1,144 @@
+.mainContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 50px 0;
+}
+
+.mainContainer .container {
+    width: 85%;
+    display: flex;
+    gap: 20px;
+}
+
+@media (max-width: 1650px) { .mainContainer .container { width: 85%; } }
+@media (max-width: 1300px) { .mainContainer .container { width: 95%; } }
+@media (max-width: 1000px) { .mainContainer .container { flex-direction: column; } }
+
+.mainContainer .about {
+    flex: 4;
+    padding: 10px;
+    justify-content: center;
+}
+
+.mainContainer .about .aboutTitle {
+    
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #092E5B;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    line-height: 1.4;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #0E4D9A;
+}
+
+.ctaSolo, .ctaGroup {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-top: 10px;
+    
+}
+
+.ctaSolo {
+    background-color: #3279c5;
+    border: 2px solid #0E4D9A;
+}
+
+.ctaGroup {
+    background: lightgoldenrodyellow;
+    border: 2px solid gold;
+    color: black;
+}
+
+.ctaText {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+}
+
+.ctaPrice {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 900;
+}
+
+.mainContainer .about .aboutBlock {
+    display: flex;
+    flex-direction: column;
+    margin: 20px 0;
+    gap: 8px;
+}
+
+.blockText em {
+    color: #586679;
+    font-style: italic;
+    font-weight: 900;
+    font-size: var(--fs-sm);
+}
+
+.mainContainer .about .aboutBlock .blockLabel {
+    font-weight: 900;
+    color: #0E4D9A;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+.mainContainer .about .aboutBlock .blockText {
+
+    color: #5F7FA8;
+    line-height: 1.7;
+}
+
+.mainContainer .about .aboutBlock .priceRows {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.mainContainer .about .aboutBlock .priceRows .priceRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: white;
+    border-radius: 10px;
+    border: 1px solid #D8E8F8;
+}
+
+.mainContainer .about .aboutBlock .priceRows .priceRow .priceLabel {
+    
+    color: #5F7FA8;
+}
+
+.mainContainer .about .aboutBlock .priceRows .priceRow .priceValue {
+    
+    font-weight: 900;
+    color: #0E4D9A;
+}
+
+.mainContainer .about .aboutBlock .priceRows .priceRow .priceHighlight {
+    font-size: 1.2rem;
+}
+
+.mainContainer .credentials {
+    
+    flex: 2;   
+    border: 1px solid #C5D8EF;
+    border-radius: 10px;
+    padding: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+}
+
+.mainContainer .credentials .header label {
+    font-family: 'Inter', sans-serif;
+    color: #5F7FA8;
+}

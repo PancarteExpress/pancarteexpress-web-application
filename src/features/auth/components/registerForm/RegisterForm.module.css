@@ -1,0 +1,85 @@
+.mainContainer {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.mainContainer .groupInputs {
+    display: flex;
+    gap: 10px;
+}
+
+.mainContainer .inputs {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.mainContainer .inputs label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: #5F7FA8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.mainContainer .inputs input {
+    padding: 10px 12px;
+    border: 1px solid #C5D8EF;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    background: #F8FAFD;
+    outline: none;
+}
+
+.mainContainer .inputs input:focus {
+    border-color: #0E4D9A;
+}
+
+.mainContainer .loading {
+    border: 3px solid orange;
+    color: orange;
+    font-weight: 700;
+    padding: 5px;
+    width: 100%;
+    border-radius: 10px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.mainContainer .error {
+    border: 3px solid red;
+    color: red;
+    font-weight: 700;
+    padding: 5px;
+    width: 100%;
+    border-radius: 10px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.mainContainer .success {
+    border: 3px solid green;
+    color: green;
+    font-weight: 700;
+    padding: 5px;
+    width: 100%;
+    border-radius: 10px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.mainContainer .btnConnection {
+    border: none;
+    padding: 10px;
+    width: 100%;
+    border-radius: 10px;
+    color: white;
+    font-weight: 700;
+    text-align: center;
+    background-color: #0E4D9A;
+    cursor: pointer;
+    margin-top: 10px;
+}

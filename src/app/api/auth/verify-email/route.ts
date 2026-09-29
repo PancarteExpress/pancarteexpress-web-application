@@ -17,6 +17,8 @@ export async function POST(request: NextRequest) {
       validatedData.firstName,
       validatedData.lastName,
       validatedData.password,
+      validatedData.phoneNumber,
+      validatedData.companyName,
       validatedData.isGroup || false,
       validatedData.groupName
     );

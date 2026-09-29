@@ -9,10 +9,9 @@ import Link from "next/link";
 
 interface ResetPasswordFormProps {
   locale: string;
-  token: string;
 }
 
-export function ResetPasswordForm({ locale, token }: ResetPasswordFormProps) {
+export function ResetPasswordForm({ locale }: ResetPasswordFormProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
