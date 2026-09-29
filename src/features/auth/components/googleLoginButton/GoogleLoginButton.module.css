@@ -1,0 +1,12 @@
+.googleBtn {
+    all: unset;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    font-weight: 700;
+    background-color: #C5D8EF;
+    border-radius: 10px;
+    color: #5F7FA8;
+}

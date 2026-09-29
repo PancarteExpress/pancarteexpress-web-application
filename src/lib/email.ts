@@ -26,3 +26,12 @@ export async function sendVerificationEmail(
     `,
   });
 }
+
+export async function sendPasswordResetEmail(email: string, code: string) {
+  await transporter.sendMail({
+    to: email,
+    subject: "Reset your password",
+    html: `<p>Your password reset code is: <strong>${code}</strong></p>
+           <p>This code expires in 15 minutes.</p>`,
+  });
+}

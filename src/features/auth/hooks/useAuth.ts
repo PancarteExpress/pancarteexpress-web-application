@@ -4,13 +4,9 @@ import { useCallback, useEffect } from "react";
 import type { LoginInput, RegisterInput } from "../types";
 
 export function useAuth() {
+  const { setError, setLoading, clearError, logout: logoutStore } = useAuthStore();
   const { data: session, status } = useSession();
-  const { user, setUser, setError, setLoading, clearError, logout } = useAuthStore();
 
-  const isAuthenticated = status === "authenticated" && !!user;
-  const isLoading = status === "loading";
-
-  // Sync session avec store
   useEffect(() => {
     if (session?.user && session.user.email) {
       const sessionUser = session.user as {
@@ -23,19 +19,21 @@ export function useAuth() {
         emailVerified?: Date | null;
       };
 
-      setUser({
-        id: sessionUser.id,
-        email: sessionUser.email,
-        firstName: sessionUser.firstName || null,
-        lastName: sessionUser.lastName || null,
-        role: (sessionUser.role as "user" | "admin") || "user",
-        groupId: sessionUser.groupId || null,
-        emailVerified: sessionUser.emailVerified || null,
+      useAuthStore.setState({
+        user: {
+          id: sessionUser.id,
+          email: sessionUser.email,
+          firstName: sessionUser.firstName || null,
+          lastName: sessionUser.lastName || null,
+          role: (sessionUser.role as "user" | "admin") || "user",
+          groupId: sessionUser.groupId || null,
+          emailVerified: sessionUser.emailVerified || null,
+        },
       });
     } else if (status === "unauthenticated") {
-      logout();
+      logoutStore();
     }
-  }, [session, status, setUser, logout]);
+  }, [session, status, logoutStore]);
 
   const login = useCallback(
     async (input: LoginInput) => {
@@ -49,8 +47,8 @@ export function useAuth() {
           redirect: false,
         });
 
-        if (!result?.ok) {
-          throw new Error(result?.error || "Login failed");
+        if (result?.error) {
+          throw new Error(result.error === "CredentialsSignin" ? "Identifiants invalides" : result.error);
         }
 
         return { success: true };
@@ -94,24 +92,17 @@ export function useAuth() {
     [clearError, setLoading, setError]
   );
 
-  const logout_ = useCallback(async () => {
-    try {
-      await nextAuthSignOut({ redirect: false });
-      logout();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Logout failed";
-      setError(errorMessage);
-    }
-  }, [logout, setError]);
+  const logout = useCallback(async () => {
+    await nextAuthSignOut({ redirect: false });
+    logoutStore();
+  }, [logoutStore]);
 
   return {
-    user,
-    isAuthenticated,
-    isLoading,
-    error: useAuthStore((state) => state.error),
     login,
     register,
-    logout: logout_,
-    clearError,
+    logout,
+    isAuthenticated: status === "authenticated",
+    isLoading: useAuthStore((state) => state.isLoading),
+    user: useAuthStore((state) => state.user),
   };
 }

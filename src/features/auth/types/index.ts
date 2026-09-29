@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const firstNameSchema = z.string().min(2, "First name required");
 const lastNameSchema = z.string().min(2, "Last name required");
-const emailSchema = z.string().email("Invalid email");
+const emailSchema = z.string().email("Adresse courriel requise");
 const passwordSchema = z.string().min(8, "Min 8 characters");
 
 export const registerSchema = z.object({
@@ -12,12 +12,6 @@ export const registerSchema = z.object({
   password: z.string().min(3, "Min 3 characters"),
   isGroup: z.boolean(),
   groupName: z.string().optional(),
-});
-
-export const updateProfileSchema = z.object({
-  firstName: firstNameSchema,
-  lastName: lastNameSchema,
-  email: emailSchema,
 });
 
 export const verifyEmailSchema = z.object({
@@ -30,6 +24,20 @@ export const verifyEmailSchema = z.object({
   groupName: z.string().optional(),
 });
 
+export const loginSchema = z.object({
+  email: z.string().email("Adresse courriel requise"),
+  password: z.string().min(1, "Mot de passe requis"),
+}).refine((data) => data.email && data.password, {
+  message: "Veuillez saisir vos identifiants",
+  path: ["root"],
+});
+
+export const updateProfileSchema = z.object({
+  firstName: firstNameSchema,
+  lastName: lastNameSchema,
+  email: emailSchema,
+});
+
 export const updatePasswordSchema = z.object({
   currentPassword: z.string().min(1, "Current password required"),
   newPassword: passwordSchema,
@@ -39,18 +47,17 @@ export const updatePasswordSchema = z.object({
   path: ["confirmPassword"],
 });
 
-export const loginSchema = z.object({
-  email: emailSchema,
-  password: z.string().min(1, "Password requis"),
-});
-
 export const forgotPasswordSchema = z.object({
   email: emailSchema,
+  locale: z.enum(["fr", "en"]),
 });
 
 export const resetPasswordSchema = z.object({
-  token: z.string().min(1, "Token requis"),
   password: passwordSchema,
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 export type RegisterInput = z.infer<typeof registerSchema>;

@@ -26,17 +26,17 @@ export function AuthNav({ locale }: LoginFormProps) {
     return (
       <div className={styles.mainContainer}>
         <button
-          onClick={handleLogout}
-          className="text-sm px-3 py-2 hover:bg-gray-100 rounded"
-        >
-          Déconnexion
-        </button>
-        <button
           onClick={() => router.push(`/${locale}/dashboard`)}
           className="text-sm px-3 py-2 hover:bg-gray-100 rounded"
         >
           Mon compte
         </button>
+        <button
+          onClick={handleLogout}
+          className="text-sm px-3 py-2 hover:bg-gray-100 rounded"
+        >
+          Déconnexion
+        </button>        
       </div>
     );
   }

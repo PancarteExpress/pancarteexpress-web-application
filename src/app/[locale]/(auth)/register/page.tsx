@@ -1,5 +1,5 @@
 import { RegisterForm } from "@/features/auth/components/RegisterForm";
-import { GoogleLoginButton } from "@/features/auth/components/GoogleLoginButton";
+import { GoogleLoginButton } from "@/features/auth/components/googleLoginButton/GoogleLoginButton";
 import Link from "next/link";
 
 export default async function RegisterPage({
@@ -29,7 +29,7 @@ export default async function RegisterPage({
         
         <p className="text-center text-sm mt-4">
           Déjà inscrit?{" "}
-          <Link href={`/${locale}/auth/login`} className="text-blue-600 hover:underline">
+          <Link href={`/${locale}/login`} className="text-blue-600 hover:underline">
             Se connecter
           </Link>
         </p>

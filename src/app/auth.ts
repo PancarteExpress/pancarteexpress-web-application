@@ -53,15 +53,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials.email || !credentials.password) {
-          throw new Error("Email and password required");
+          console.log("❌ Email or password missing");
+          return null;
         }
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email as string },
         });
 
+        console.log("User found:", user?.email);
+
         if (!user) {
-          throw new Error("User not found");
+          return null;
         }
 
         const isPasswordValid = await bcryptCompare(
@@ -69,9 +72,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.password
         );
 
+        console.log("Password valid:", isPasswordValid);
+
         if (!isPasswordValid) {
-          throw new Error("Invalid password");
+          console.log("❌ Invalid password");
+          return null;
         }
+
+        console.log("✓ Authorization successful");
 
         return {
           id: user.id,
@@ -88,6 +96,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async signIn({ user, account }: SignInParams) {
+      
+      if (!user?.id) return false;
+
       if (account?.provider === "google" && user.email) {
         const fullName = user.name || "";
         const parts = fullName.split(" ");

@@ -1,7 +1,12 @@
-import { LoginForm } from "@/features/auth/components/LoginForm";
-import { GoogleLoginButton } from "@/features/auth/components/GoogleLoginButton";
+
+import styles from './page.module.css';
+
+import { LoginForm } from "@/features/auth/components/loginForm/LoginForm";
+import { GoogleLoginButton } from "@/features/auth/components/googleLoginButton/GoogleLoginButton";
 import Link from "next/link";
 import { use } from "react";
+
+import { FaHouseChimney } from "react-icons/fa6";
 
 export default function LoginPage({
   params,
@@ -11,9 +16,13 @@ export default function LoginPage({
   const { locale } = use(params);
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="w-full max-w-md">
-        <h1 className="text-3xl font-bold mb-8 text-center">Se connecter</h1>
+    <div className={styles.mainContainer}>
+      <div className={styles.credentials}>
+
+        <div className={styles.header}>
+          <FaHouseChimney size={30} style={{color: "#0E4D9A"}}/>
+          <label>Accéder à votre espace courtier</label>
+        </div>
         
         <GoogleLoginButton locale={locale} />
         
@@ -25,9 +34,9 @@ export default function LoginPage({
         
         <LoginForm locale={locale} />
         
-        <p className="text-center text-sm mt-4">
+        <p style={{ color: '#7691B4', fontWeight: '700'}}>
           Pas encore inscrit?{" "}
-          <Link href={`/${locale}/register`} className="text-blue-600 hover:underline">
+          <Link href={`/${locale}/register`} style={{ textDecoration: 'none', color: '#0E4D9A', fontWeight: '700' }}>
             Créer un compte
           </Link>
         </p>

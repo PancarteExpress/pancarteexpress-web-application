@@ -6,6 +6,7 @@ import { registerSchema, type RegisterInput } from "../types";
 import { useAuth } from "../hooks/useAuth";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "../store/authStore";
 
 interface LoginFormProps {
   locale: string;
@@ -13,7 +14,8 @@ interface LoginFormProps {
 
 export function RegisterForm({ locale }: LoginFormProps) {
   const router = useRouter();
-  const { register: registerUser, isLoading, error } = useAuth();
+  const { register: registerUser } = useAuth();
+  const { isLoading, error } = useAuthStore();
   const [isGroup, setIsGroup] = useState(false);
 
   const {
@@ -26,12 +28,13 @@ export function RegisterForm({ locale }: LoginFormProps) {
   });
 
   const onSubmit = async (data: RegisterInput) => {
-    const result = await registerUser(data);
+    const result = await registerUser(data);  // ← Utilise registerUser
     if (result.success) {
       sessionStorage.setItem("registrationData", JSON.stringify(result.data));
       router.push(`/${locale}/verify-email`);
     }
   };
+
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 max-w-md">

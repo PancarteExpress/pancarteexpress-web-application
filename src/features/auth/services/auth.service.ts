@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { hashPassword, bcryptCompare } from "@/utils/bcrypt";
-import { sendVerificationEmail } from "@/lib/email";
+import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email";
 import type { RegisterInput, ForgotPasswordInput, ResetPasswordInput, UpdateProfileInput, UpdatePasswordInput, SignInParams } from "../types";
 import crypto from "crypto";
+import { hash } from "bcryptjs";
 
 function generateVerificationCode(): string {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -55,6 +56,7 @@ export const authService = {
       });
 
       if (existingUser) {
+        try {
         // User existe déjà (créé via credentials) — crée l'Account
         await prisma.account.create({
           data: {
@@ -71,6 +73,14 @@ export const authService = {
             session_state: account.session_state,
           },
         });
+        } catch (error: unknown) {
+        // Account existe déjà, c'est normal
+      }
+
+      user.id = existingUser.id;
+      user.firstName = existingUser.firstName;
+      user.lastName = existingUser.lastName;
+        
       } else {
         // User n'existe pas — crée-le + Account
         const newUser = await prisma.user.create({
@@ -82,6 +92,7 @@ export const authService = {
           },
         });
 
+        try { 
         await prisma.account.create({
           data: {
             userId: newUser.id,
@@ -97,6 +108,9 @@ export const authService = {
             session_state: account.session_state,
           },
         });
+        } catch (error: unknown) {
+          // Account existe déjà, c'est normal
+        }
 
         user.id = newUser.id;
         user.firstName = firstName;
@@ -218,54 +232,46 @@ export const authService = {
     return user;
   },
 
-  async forgotPassword(input: ForgotPasswordInput) {
-    const user = await prisma.user.findUnique({
-      where: { email: input.email },
-    });
+  async forgotPassword(input: { email: string; locale: string }) {
+    const user = await prisma.user.findUnique({ where: { email: input.email } });
+    if (!user) throw new Error("User not found");
 
-    if (!user) {
-      return { message: "Email sent if account exists" };
-    }
-
-    const token = crypto.randomBytes(32).toString("hex");
-    const expires = new Date(Date.now() + 1000 * 60 * 60);
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date(Date.now() + 15 * 60 * 1000); // 15 min
 
     await prisma.verificationToken.create({
-      data: {
-        email: user.email,
-        token,
-        expires,
-        type: "PASSWORD_RESET",
-        userId: user.id,
-      },
+      data: { email: input.email, token: code, expires, type: "PASSWORD_RESET" },
     });
 
-    // TODO: Send email with reset link
-    // await sendPasswordResetEmail(user.email, token);
-
-    return { message: "Email sent if account exists" };
+    await sendPasswordResetEmail(input.email, code); // Envoie le CODE, pas le lien
   },
 
-  async resetPassword(input: ResetPasswordInput) {
-    const verificationToken = await prisma.verificationToken.findUnique({
-      where: { token: input.token },
-    });
+  async resetPassword(input: { email: string; password: string; confirmPassword: string }) {
+    const user = await prisma.user.findUnique({ where: { email: input.email } });
+    if (!user) throw new Error("User not found");
 
-    if (!verificationToken || verificationToken.expires < new Date()) {
-      throw new Error("Invalid or expired token");
-    }
-
-    const hashedPassword = await hashPassword(input.password);
-
-    const user = await prisma.user.update({
-      where: { id: verificationToken.userId! },
+    const hashedPassword = await hash(input.password, 10);
+    await prisma.user.update({
+      where: { id: user.id },
       data: { password: hashedPassword },
     });
 
-    await prisma.verificationToken.delete({
-      where: { id: verificationToken.id },
+    await prisma.verificationToken.deleteMany({
+      where: { email: input.email, type: "PASSWORD_RESET" },
+    });
+  },
+
+  async verifyResetCode(email: string, code: string) {
+    const token = await prisma.verificationToken.findFirst({
+      where: { 
+        email, 
+        token: code, 
+        type: "PASSWORD_RESET",
+        expires: { gt: new Date() }
+      },
     });
 
-    return { id: user.id, email: user.email };
-  },
+    if (!token) throw new Error("Invalid or expired code");
+    return true;
+  }
 };
