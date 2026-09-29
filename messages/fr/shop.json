@@ -1,0 +1,15 @@
+{
+  "title": "Boutique",
+  "categoriesLabel": "Catégories",
+  "categories": {
+    "all": "Tous les produits",
+    "poles": "Poteaux",
+    "anchors": "Ancrages",
+    "keyboxes": "Boîtes à clés",
+    "hardware": "Quincaillerie",
+    "bigFormatStructure": "Structures grand format"
+  },
+  "addToCart": "Ajouter « {name} » au panier",
+  "addedToCart": "« {name} » ajouté au panier",
+  "empty": "Aucun produit dans cette catégorie."
+}

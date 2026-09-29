@@ -1,0 +1,263 @@
+.mainContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 50px 0;
+}
+
+/* ─── Hero ─── */
+
+.mainContainer .hero {
+    width: 100%;
+    height: 125px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mainContainer .hero h1 {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 1.5rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+}
+
+.mainContainer .display {
+    display: flex;
+    margin: 0 auto;
+    width: 60%;
+}
+
+@media (max-width: 1650px) { .mainContainer .display { width: 80%; } }
+@media (max-width: 1500px) { .mainContainer .display { width: 90%; flex-direction: column; } }
+
+/* ─── Navigation : colonne en desktop, chips sous 1500 px ─── */
+
+.mainContainer .navigation {
+    width: 200px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 24px 16px;
+}
+
+.mainContainer .navigation a {
+    display: block;
+    padding: 8px;
+    border-radius: 7px;
+    font-family: 'Inter', sans-serif;
+    color: #5F7FA8;
+    text-decoration: none;
+    transition: background .15s, color .15s, border-color .15s;
+}
+
+.mainContainer .navigation a:hover {
+    background: #E8F1FB;
+    color: #0E4D9A;
+}
+
+.mainContainer .navigation a[aria-current="page"] {
+    background: #0E4D9A;
+    color: white;
+    font-weight: 600;
+}
+
+.mainContainer .navigation a:focus-visible {
+    outline: 2px solid #0E4D9A;
+    outline-offset: 2px;
+}
+
+@media (max-width: 1500px) {
+    .mainContainer .navigation {
+        width: auto;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+        padding: 16px;
+    }
+
+    .mainContainer .navigation a {
+        padding: 6px 12px;
+        border: 1.5px solid #5F7FA8;
+        border-radius: 6px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .mainContainer .navigation a:hover,
+    .mainContainer .navigation a[aria-current="page"] {
+        border-color: #0E4D9A;
+    }
+}
+
+@media (max-width: 700px) {
+    .mainContainer .navigation {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
+
+/* ─── Grille ─── */
+
+.mainContainer .gridContainer {
+    flex: 1;
+    min-width: 0;
+}
+
+.mainContainer .grid {
+    list-style: none;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 16px;
+}
+
+@media (max-width: 900px) { .mainContainer .grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 760px) { .mainContainer .grid { grid-template-columns: 1fr; } }
+
+.mainContainer .empty {
+    padding: 48px 16px;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    color: #5F7FA8;
+}
+
+/* ─── Carte ─── */
+
+.mainContainer .grid .card {
+    position: relative;
+    aspect-ratio: 0.63;
+    width: 100%;
+    overflow: hidden;
+    border-radius: 10px;
+    border: 1px solid #D8E8F8;
+    background: white;
+    transition: box-shadow .2s, transform .2s;
+}
+
+.mainContainer .grid .card:hover {
+    box-shadow: 0 6px 24px rgba(14, 77, 154, .15);
+    transform: translateY(-3px);
+}
+
+.mainContainer .grid .card .cardLink {
+    position: absolute;
+    inset: 0;
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+.mainContainer .grid .card .cardLink:focus-visible {
+    outline: 3px solid #0E4D9A;
+    outline-offset: -3px;
+    border-radius: 10px;
+}
+
+/* ─── Image ─── */
+
+.mainContainer .grid .card .imageContainer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+}
+
+/* ─── Contenu ─── */
+
+.mainContainer .grid .card .content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background-color: #F4F6F9;
+    border-top: 1px solid #D8E8F8;
+    transition: height .3s ease;
+}
+
+@media (min-width: 1000px) { .mainContainer .grid .card:hover .content { height: 36%; } }
+@media (max-width: 760px) { .mainContainer .grid .card .content { height: 20%; } }
+
+.mainContainer .grid .card .content h3,
+.mainContainer .grid .card .content p {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 0;
+    margin: 0;
+    padding: 0 10px;
+    overflow: hidden;
+    text-align: center;
+}
+
+.mainContainer .grid .card .content h3 {
+    flex: 2;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: #1A1A2E;
+}
+
+.mainContainer .grid .card .content p {
+    flex: 1;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    color: #0E4D9A;
+}
+
+/* ─── Bouton panier ─── */
+
+.mainContainer .grid .card .cartButton {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: 50%;
+    background: #0E4D9A;
+    color: white;
+    box-shadow: 0 2px 8px rgba(9, 46, 91, .25);
+    cursor: pointer;
+    transition: background .15s, transform .15s;
+}
+
+.mainContainer .grid .card .cartButton:hover {
+    background: #092E5B;
+    transform: scale(1.06);
+}
+
+.mainContainer .grid .card .cartButton:focus-visible {
+    outline: 3px solid #0E4D9A;
+    outline-offset: 2px;
+}
+
+.mainContainer .grid .card .cartButton.added {
+    background: #1B5E20;
+}
+
+/* ─── Accessibilité ─── */
+
+.srOnly {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+}

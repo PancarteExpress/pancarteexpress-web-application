@@ -1,0 +1,15 @@
+{
+  "title": "Shop",
+  "categoriesLabel": "Categories",
+  "categories": {
+    "all": "All products",
+    "poles": "Posts",
+    "anchors": "Anchors",
+    "keyboxes": "Key boxes",
+    "hardware": "Hardware",
+    "bigFormatStructure": "Large format structures"
+  },
+  "addToCart": "Add “{name}” to cart",
+  "addedToCart": "“{name}” added to cart",
+  "empty": "No products in this category."
+}

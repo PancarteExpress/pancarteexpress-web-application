@@ -9,7 +9,7 @@ import type {
 import { MAX_QUANTITY } from '@/lib/constants/cart';
 
 const STORAGE_KEY = 'pancarte-cart';
-const STORAGE_VERSION = 1;
+const STORAGE_VERSION = 2;
 
 const clampQuantity = (q: number): number =>
   Number.isFinite(q) ? Math.min(MAX_QUANTITY, Math.max(1, Math.trunc(q))) : 1;
@@ -26,11 +26,13 @@ const isCartItem = (value: unknown): value is CartItem => {
 
 interface PersistedCart {
   items: CartItem[];
+  ownerId: string | null;
 }
 
 interface CartState extends PersistedCart {
   hasHydrated: boolean;
   setHasHydrated: (value: boolean) => void;
+  syncOwner: (userId: string | null) => void;
   addProduct: (item: NewProductItem) => void;
   addServiceRequest: (item: NewServiceRequestItem) => string;
   updateQuantity: (id: string, quantity: number) => void;
@@ -42,8 +44,18 @@ export const useCartStore = create<CartState>()(
   persist(
     (set) => ({
       items: [],
+      ownerId: null,
       hasHydrated: false,
+
       setHasHydrated: (value) => set({ hasHydrated: value }),
+
+      // NOUVEAU : décide si le panier est conservé ou vidé selon l'utilisateur courant
+      syncOwner: (userId) =>
+        set((state) => {
+          if (state.ownerId === userId) return state; // même personne : rien ne change
+          if (state.ownerId === null) return { ownerId: userId }; // invité qui se connecte : on garde
+          return { items: [], ownerId: userId }; // autre personne : on vide
+        }),
 
       addProduct: (item) =>
         set((state) => {
@@ -83,7 +95,6 @@ export const useCartStore = create<CartState>()(
               kind: 'serviceRequest',
               id,
               addedAt: Date.now(),
-              // Copie profonde : le formulaire peut évoluer sans affecter le panier
               addresses: structuredClone(item.addresses),
             },
           ],
@@ -106,19 +117,31 @@ export const useCartStore = create<CartState>()(
       name: STORAGE_KEY,
       version: STORAGE_VERSION,
       storage: createJSONStorage(() => localStorage),
-      partialize: (state): PersistedCart => ({ items: state.items }),
-      // Point d'entrée des futures évolutions du format (v2 : modification des services, etc.)
+
+      // Ce qui est sauvegardé dans le localStorage : maintenant avec ownerId
+      partialize: (state): PersistedCart => ({ items: state.items, ownerId: state.ownerId }),
+
+      // Paniers déjà sauvegardés en v1 : conservés, considérés comme invités
       migrate: (persisted, version): PersistedCart => {
-        if (version !== STORAGE_VERSION) return { items: [] };
+        if (version === 1) {
+          const items = (persisted as { items?: unknown } | undefined)?.items;
+          return { items: Array.isArray(items) ? (items as CartItem[]) : [], ownerId: null };
+        }
+        if (version !== STORAGE_VERSION) return { items: [], ownerId: null };
         return persisted as PersistedCart;
       },
+
       merge: (persisted, current) => {
-        const raw = (persisted as Partial<PersistedCart> | undefined)?.items;
-        return { ...current, items: Array.isArray(raw) ? raw.filter(isCartItem) : [] };
+        const p = persisted as Partial<PersistedCart> | undefined;
+        return {
+          ...current,
+          items: Array.isArray(p?.items) ? p.items.filter(isCartItem) : [],
+          ownerId: typeof p?.ownerId === 'string' ? p.ownerId : null,
+        };
       },
+
       onRehydrateStorage: () => (state, error) => {
         if (error) console.error('[cart] Échec de réhydratation', error);
-        // Même en cas d'erreur, on débloque l'UI (le panier sera simplement vide)
         state?.setHasHydrated(true);
       },
     },

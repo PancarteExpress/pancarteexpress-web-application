@@ -12,6 +12,8 @@ type Loader = (locale: Locale) => Promise<{ default: Messages }>;
 const LOADERS = {
   header: (locale) => import(`@/messages/${locale}/header.json`),
   cart: (locale) => import(`@/messages/${locale}/cart.json`),
+  products: (locale) => import(`@/messages/${locale}/products.json`),
+  shop: (locale) => import(`@/messages/${locale}/shop.json`),
 } satisfies Record<string, Loader>;
 
 type Namespace = keyof typeof LOADERS;

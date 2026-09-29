@@ -1,4 +1,6 @@
 import 'server-only';
+import { getTranslations } from 'next-intl/server';
+import { getProductBySlug } from '@/lib/catalog/catalog';
 import { Prisma, type OrderStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe/server';
@@ -98,23 +100,20 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
 }
 
 /* ── Produits ─────────────────────────────────────────────────── */
-
 async function buildProductLines(items: ProductItem[]) {
   if (items.length === 0) return [];
 
-  const products = await prisma.product.findMany({
-    where: { id: { in: items.map((i) => i.productId) }, isActive: true },
-    select: { id: true, nameFr: true, price: true },
-  });
-  const byId = new Map(products.map((p) => [p.id, p]));
-
-  const missing = items.filter((i) => !byId.has(i.productId)).map((i) => i.productId);
+  // Absent du catalogue ou désactivé (isActive: false)
+  const missing = items.filter((i) => !getProductBySlug(i.productId)).map((i) => i.productId);
   if (missing.length > 0) throw new ProductUnavailableError(missing);
 
+  // Nom figé en français, quelle que soit la langue du client : plus simple pour le SuperAdmin
+  const t = await getTranslations({ locale: 'fr', namespace: 'products' });
+
   return items.flatMap((item) => {
-    const product = byId.get(item.productId);
+    const product = getProductBySlug(item.productId);
     return product
-      ? [{ productId: product.id, productName: product.nameFr, unitPrice: product.price, quantity: item.quantity }]
+      ? [{ productId: product.slug, productName: t(`${product.slug}.name`), unitPrice: product.price, quantity: item.quantity }]
       : [];
   });
 }
