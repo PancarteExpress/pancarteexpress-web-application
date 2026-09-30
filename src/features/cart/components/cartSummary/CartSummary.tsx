@@ -42,7 +42,7 @@ export default function CartSummary({ estimate, hasProducts, hasServices, locale
         {hasProducts && ` ${t('shippingAtCheckout')}`}
       </p>
 
-      <Link href={`/${locale}/checkout`} className={styles.checkout}>
+      <Link href={`/${locale}/cart/checkout`} className={styles.checkout}>
         {t('checkout')}
       </Link>
     </aside>

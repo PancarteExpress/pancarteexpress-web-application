@@ -2,14 +2,14 @@
 
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { useCart } from '../hooks/useCart';
+import { useCart } from '../../hooks/useCart';
 import type {
   ProductCartItem as ProductItem,
   ServiceRequestCartItem as ServiceItem,
-} from '../types/cart';
-import ProductCartItem from './ProductCartItem';
-import ServiceRequestCartItem from './ServiceRequestCartItem';
-import CartSummary from './CartSummary';
+} from '../../types/cart';
+import ProductCartItem from '../productCartItem/ProductCartItem';
+import ServiceRequestCartItem from '../serviceRequestCartItem/ServiceRequestCartItem';
+import CartSummary from '../cartSummary/CartSummary';
 import styles from './CartView.module.css';
 
 export default function CartView() {

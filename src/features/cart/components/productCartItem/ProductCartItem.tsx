@@ -4,8 +4,8 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { TiDeleteOutline } from 'react-icons/ti';
 import { formatCents } from '@/lib/pricing/money';
-import type { ProductCartItem as ProductCartItemType } from '../types/cart';
-import QuantityStepper from './QuantityStepper';
+import type { ProductCartItem as ProductCartItemType } from '../../types/cart';
+import QuantityStepper from '../quantityStepper/QuantityStepper';
 import styles from './ProductCartItem.module.css';
 
 interface Props {

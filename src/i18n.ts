@@ -14,6 +14,7 @@ const LOADERS = {
   cart: (locale) => import(`@/messages/${locale}/cart.json`),
   products: (locale) => import(`@/messages/${locale}/products.json`),
   shop: (locale) => import(`@/messages/${locale}/shop.json`),
+  checkout: (locale) => import(`@/messages/${locale}/checkout.json`),
 } satisfies Record<string, Loader>;
 
 type Namespace = keyof typeof LOADERS;

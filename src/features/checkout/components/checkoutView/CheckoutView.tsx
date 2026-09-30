@@ -1,0 +1,300 @@
+'use client';
+
+import Link from 'next/link';
+import { useRef, useState, type ChangeEvent } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useLocale, useTranslations } from 'next-intl';
+import { useSession } from 'next-auth/react';
+import { loadStripe, type StripeElementStyle } from '@stripe/stripe-js';
+import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement } from '@stripe/react-stripe-js';
+import { FaRegCheckCircle } from 'react-icons/fa';
+import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
+import type { ParsedAddress } from '@/shared/types/address';
+import { useCart } from '@/features/cart/hooks/useCart';
+import { formatCents } from '@/lib/pricing/money';
+import { calculateServiceRequestPrice } from '@/lib/pricing/servicePricing';
+import { checkoutSchema, type CheckoutInput } from '../../types';
+import {
+  buildCheckoutPayload,
+  submitCheckout,
+  CheckoutApiError,
+  type CheckoutErrorCode,
+} from '../../services/checkoutApi';
+import styles from './CheckoutView.module.css';
+
+const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = publishableKey ? loadStripe(publishableKey) : null;
+
+const CARD_STYLE: StripeElementStyle = {
+  base: { fontSize: '16px', color: '#424770', '::placeholder': { color: '#9ca3af' } },
+  invalid: { color: '#fa755a' },
+};
+
+type CardField = 'number' | 'expiry' | 'cvc';
+
+// NOUVEAU : un message clair pour chaque erreur renvoyée par l'API
+const ERROR_MESSAGES: Record<CheckoutErrorCode, string> = {
+  validationFailed: 'Certaines informations sont invalides. Vérifiez le formulaire.',
+  productUnavailable: 'Certains produits ne sont plus disponibles. Retirez-les de votre panier.',
+  alreadyProcessed: 'Cette commande a déjà été traitée.',
+  inProgress: 'Votre commande est en cours de traitement. Patientez quelques secondes, puis réessayez.',
+  network: 'Connexion impossible. Vérifiez votre connexion internet et réessayez.',
+  serverError: 'Une erreur est survenue. Réessayez dans quelques instants.',
+};
+
+export default function Checkout() {
+  return (
+    <Elements stripe={stripePromise}>
+      <CheckoutForm />
+    </Elements>
+  );
+}
+
+function CheckoutForm() {
+  const locale = useLocale() === 'en' ? 'en' : 'fr';
+  const t = useTranslations('checkout');
+  const tCart = useTranslations('cart');
+  const { status } = useSession();
+  const isAuthenticated = status === 'authenticated';
+  const { items, hasHydrated, clear } = useCart();
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    watch,
+    clearErrors,
+    formState: { errors, isSubmitting },
+  } = useForm<CheckoutInput>({
+    resolver: zodResolver(checkoutSchema),
+    defaultValues: { firstName: '', lastName: '', email: '', deliveryMode: 'pickup', shippingAddress: null },
+  });
+
+  const [addressText, setAddressText] = useState('');
+  const deliveryMode = watch('deliveryMode');
+
+  const deliveryModeField = register('deliveryMode', {
+    onChange: (e: ChangeEvent<HTMLInputElement>) => {
+      if (e.target.value === 'pickup') clearErrors('shippingAddress');
+    },
+  });
+
+  const [cardComplete, setCardComplete] = useState<Record<CardField, boolean>>({
+    number: false,
+    expiry: false,
+    cvc: false,
+  });
+  const [cardError, setCardError] = useState<string | null>(null);
+
+  const handleCardChange =
+    (field: CardField) => (event: { complete: boolean; error?: { message?: string } }) => {
+      setCardComplete((prev) => ({ ...prev, [field]: event.complete }));
+      setCardError(event.error?.message ?? null);
+    };
+
+  // NOUVEAU : résultat de l'envoi
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [orderNumber, setOrderNumber] = useState<number | null>(null);
+
+  // NOUVEAU : même contenu = même clé (pas de doublon en cas de nouvel essai)
+  const attemptRef = useRef<{ fingerprint: string; key: string } | null>(null);
+  const getIdempotencyKey = (fingerprint: string): string => {
+    if (attemptRef.current?.fingerprint !== fingerprint) {
+      attemptRef.current = { fingerprint, key: crypto.randomUUID() };
+    }
+    return attemptRef.current.key;
+  };
+
+  const onSubmit = async (data: CheckoutInput) => {
+    setSubmitError(null);
+
+    if (!isAuthenticated) {
+      if (!(cardComplete.number && cardComplete.expiry && cardComplete.cvc)) {
+        setCardError('Veuillez compléter les informations de votre carte');
+        return;
+      }
+      // Paiement invité : sous-étape D
+      console.log('Invité : paiement à brancher (sous-étape D)');
+      return;
+    }
+
+    // NOUVEAU : envoi pour un utilisateur connecté
+    try {
+      const fingerprint = JSON.stringify(buildCheckoutPayload(data, items, ''));
+      const payload = buildCheckoutPayload(data, items, getIdempotencyKey(fingerprint));
+      const response = await submitCheckout(payload);
+
+      // Le serveur exige un paiement : la session a expiré entre-temps
+      if (response.mode !== 'submitted') {
+        setSubmitError('Votre session a expiré. Rechargez la page pour continuer.');
+        return;
+      }
+
+      setOrderNumber(response.orderNumber);
+      clear();
+    } catch (error) {
+      setSubmitError(error instanceof CheckoutApiError ? ERROR_MESSAGES[error.code] : ERROR_MESSAGES.serverError);
+    }
+  };
+
+  const firstError =
+    errors.firstName?.message ||
+    errors.lastName?.message ||
+    errors.email?.message ||
+    errors.shippingAddress?.message ||
+    cardError ||
+    submitError;
+
+  // NOUVEAU : écran de confirmation (avant le test d'hydratation : le panier vient d'être vidé)
+  if (orderNumber !== null) {
+    return (
+      <div className={styles.mainContainer}>
+        <div className={styles.completedPayment}>
+          <div>
+            <FaRegCheckCircle />
+          </div>
+          <p>
+            Votre commande n° <strong>{orderNumber}</strong> a été envoyée.
+            <br />
+            Vous pouvez suivre son statut dans votre tableau de bord.
+          </p>
+          <Link href={`/${locale}/dashboard`}>Voir mes commandes</Link>
+        </div>
+      </div>
+    );
+  }
+
+  if (!hasHydrated) return <div className={styles.mainContainer} />;
+
+  return (
+    <div className={styles.mainContainer}>
+      <div className={styles.hero}>
+        <label>{t('title')}</label>
+      </div>
+
+      <div className={styles.container}>
+        <div className={styles.items}>
+          <h3>{t('cartSummary')}</h3>
+          {items.map((item) =>
+            item.kind === 'product' ? (
+              <div key={item.id} className={styles.item}>
+                <span>{locale === 'en' ? item.nameEn || item.nameFr : item.nameFr}</span>
+                <span>×{item.quantity}</span>
+                <span>{formatCents(item.unitPrice * item.quantity, locale)}</span>
+              </div>
+            ) : (
+              <div key={item.id} className={styles.item}>
+                <span>{tCart(`requestType.${item.requestType}`)}</span>
+                <span />
+                <span>{formatCents(calculateServiceRequestPrice(item.addresses), locale)}</span>
+              </div>
+            ),
+          )}
+        </div>
+
+        <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
+          <div className={styles.section}>
+            <h3>{t('paymentData')}</h3>
+            <div className={styles.name}>
+              <div className={styles.formGroup}>
+                <label htmlFor="firstName">{t('firstname')}</label>
+                <input id="firstName" {...register('firstName')} />
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="lastName">{t('lastname')}</label>
+                <input id="lastName" {...register('lastName')} />
+              </div>
+            </div>
+            <div className={styles.formGroup}>
+              <label htmlFor="email">{t('email')}</label>
+              <input id="email" type="email" {...register('email')} />
+            </div>
+          </div>
+
+          {!isAuthenticated && (
+            <div className={styles.section}>
+              <div className={styles.formGroup}>
+                <label>{t('cardNumber')}</label>
+                <CardNumberElement options={{ style: CARD_STYLE }} onChange={handleCardChange('number')} />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className={styles.formGroup}>
+                  <label>{t('expiry')}</label>
+                  <CardExpiryElement options={{ style: CARD_STYLE }} onChange={handleCardChange('expiry')} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>{t('cvc')}</label>
+                  <CardCvcElement options={{ style: CARD_STYLE }} onChange={handleCardChange('cvc')} />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className={styles.section}>
+            <div className={styles.radioGroup}>
+              <label className={styles.radioLabel}>
+                <input className={styles.radioInput} type="radio" value="pickup" {...deliveryModeField} />
+                <div className={styles.radioButton} style={{ borderRadius: '10px 0 0 10px' }}>
+                  {t('pickup')}
+                </div>
+              </label>
+
+              <label className={styles.radioLabel}>
+                <input className={styles.radioInput} type="radio" value="delivery" {...deliveryModeField} />
+                <div className={styles.radioButton} style={{ borderRadius: '0 10px 10px 0' }}>
+                  {t('delivery')}
+                </div>
+              </label>
+            </div>
+
+            {deliveryMode === 'pickup' && (
+              <div className={styles.formGroup}>
+                <label>{t('pickupAddress')}</label>
+                {t('pickupInfo')}
+              </div>
+            )}
+
+            {deliveryMode === 'delivery' && (
+              <div className={styles.formGroup}>
+                <label htmlFor="delivery-address">{t('shippingAddress')}</label>
+                <Controller
+                  name="shippingAddress"
+                  control={control}
+                  render={({ field }) => (
+                    <AddressAutocomplete
+                      id="delivery-address"
+                      value={addressText}
+                      onChange={setAddressText}
+                      onSelect={(address: ParsedAddress | null) =>
+                        field.onChange(
+                          address
+                            ? {
+                                street: `${address.streetNumber} ${address.streetName}`.trim(),
+                                city: address.city,
+                                postalCode: address.postalCode,
+                                province: address.province,
+                              }
+                            : null,
+                        )
+                      }
+                    />
+                  )}
+                />
+              </div>
+            )}
+          </div>
+
+          <div className={styles.section}>
+            {firstError && <div className={styles.error}>{firstError}</div>}
+            {/* NOUVEAU : désactivé pendant l'envoi (anti double clic) */}
+            <button type="submit" disabled={items.length === 0 || isSubmitting}>
+              {isSubmitting ? 'Envoi en cours…' : isAuthenticated ? t('submitOrder') : t('makePay')}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

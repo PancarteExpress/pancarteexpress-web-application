@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { formatCents } from '@/lib/pricing/money';
 import { calculateServicePrice, calculateServiceRequestPrice } from '@/lib/pricing/servicePricing';
 import { formatAddress } from '@/features/services/utils/formatAddress';
-import type { ServiceRequestCartItem as ServiceRequestCartItemType } from '../types/cart';
+import type { ServiceRequestCartItem as ServiceRequestCartItemType } from '../../types/cart';
 import styles from './ServiceRequestCartItem.module.css';
 
 interface Props {

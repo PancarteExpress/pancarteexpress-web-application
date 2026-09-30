@@ -1,0 +1,18 @@
+{
+  "title": "Checkout",
+  "cartSummary": "Cart summary",
+  "paymentData": "Your information",
+  "firstname": "First name",
+  "lastname": "Last name",
+  "email": "Email",
+  "cardNumber": "Card number",
+  "expiry": "Expiry",
+  "cvc": "CVC",
+  "pickup": "Pickup",
+  "delivery": "Delivery",
+  "pickupAddress": "Pickup address",
+  "pickupInfo": "We'll email you when your item is ready for pickup.",
+  "shippingAddress": "Shipping address",
+  "makePay": "Pay",
+  "submitOrder": "Submit order"
+}
