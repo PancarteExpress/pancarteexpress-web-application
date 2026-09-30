@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 import { loadStripe, type StripeElementStyle } from '@stripe/stripe-js';
-import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement } from '@stripe/react-stripe-js';
+import { Elements, CardNumberElement, CardExpiryElement, CardCvcElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { FaRegCheckCircle } from 'react-icons/fa';
 import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
 import type { ParsedAddress } from '@/shared/types/address';
@@ -59,6 +59,9 @@ function CheckoutForm() {
   const isAuthenticated = status === 'authenticated';
   const { items, hasHydrated, clear } = useCart();
 
+  const stripe = useStripe();
+  const elements = useElements();
+
   const {
     register,
     handleSubmit,
@@ -95,7 +98,7 @@ function CheckoutForm() {
 
   // NOUVEAU : résultat de l'envoi
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [orderNumber, setOrderNumber] = useState<number | null>(null);
+  const [confirmation, setConfirmation] = useState<{ mode: 'submitted' | 'payment'; orderNumber: number } | null>(null);
 
   // NOUVEAU : même contenu = même clé (pas de doublon en cas de nouvel essai)
   const attemptRef = useRef<{ fingerprint: string; key: string } | null>(null);
@@ -108,31 +111,59 @@ function CheckoutForm() {
 
   const onSubmit = async (data: CheckoutInput) => {
     setSubmitError(null);
+    const cardElement = elements?.getElement(CardNumberElement) ?? null;
 
     if (!isAuthenticated) {
       if (!(cardComplete.number && cardComplete.expiry && cardComplete.cvc)) {
         setCardError('Veuillez compléter les informations de votre carte');
         return;
       }
-      // Paiement invité : sous-étape D
-      console.log('Invité : paiement à brancher (sous-étape D)');
-      return;
+      // Vérifié AVANT l'appel API : on ne crée pas une commande qu'on ne pourrait pas payer
+      if (!stripe || !cardElement) {
+        setSubmitError("Le module de paiement n'est pas encore chargé. Réessayez dans un instant.");
+        return;
+      }
     }
 
-    // NOUVEAU : envoi pour un utilisateur connecté
     try {
       const fingerprint = JSON.stringify(buildCheckoutPayload(data, items, ''));
       const payload = buildCheckoutPayload(data, items, getIdempotencyKey(fingerprint));
       const response = await submitCheckout(payload);
 
-      // Le serveur exige un paiement : la session a expiré entre-temps
-      if (response.mode !== 'submitted') {
+      // Connecté : la commande est enregistrée, sans paiement
+      if (response.mode === 'submitted') {
+        setConfirmation({ mode: 'submitted', orderNumber: response.orderNumber });
+        clear();
+        return;
+      }
+
+      // Invité : le serveur a créé la commande et un paiement Stripe à confirmer
+      if (!stripe || !cardElement) {
+        // Cas rare : la page croyait l'utilisateur connecté, mais sa session a expiré
         setSubmitError('Votre session a expiré. Rechargez la page pour continuer.');
         return;
       }
 
-      setOrderNumber(response.orderNumber);
-      clear();
+      const result = await stripe.confirmCardPayment(response.clientSecret, {
+        payment_method: {
+          card: cardElement,
+          billing_details: { name: `${data.firstName} ${data.lastName}`, email: data.email },
+        },
+      });
+
+      if (result.error) {
+        // Message précis de Stripe (carte refusée, fonds insuffisants…)
+        setSubmitError(result.error.message ?? 'Le paiement a été refusé.');
+        return;
+      }
+
+      if (result.paymentIntent.status === 'succeeded' || result.paymentIntent.status === 'processing') {
+        setConfirmation({ mode: 'payment', orderNumber: response.orderNumber });
+        clear();
+        return;
+      }
+
+      setSubmitError("Le paiement n'a pas pu être confirmé. Réessayez.");
     } catch (error) {
       setSubmitError(error instanceof CheckoutApiError ? ERROR_MESSAGES[error.code] : ERROR_MESSAGES.serverError);
     }
@@ -146,8 +177,8 @@ function CheckoutForm() {
     cardError ||
     submitError;
 
-  // NOUVEAU : écran de confirmation (avant le test d'hydratation : le panier vient d'être vidé)
-  if (orderNumber !== null) {
+  if (confirmation) {
+    const paid = confirmation.mode === 'payment';
     return (
       <div className={styles.mainContainer}>
         <div className={styles.completedPayment}>
@@ -155,11 +186,18 @@ function CheckoutForm() {
             <FaRegCheckCircle />
           </div>
           <p>
-            Votre commande n° <strong>{orderNumber}</strong> a été envoyée.
-            <br />
-            Vous pouvez suivre son statut dans votre tableau de bord.
+            {paid ? 'Votre paiement a été reçu. ' : 'Votre commande a été envoyée. '}
+            Commande n° <strong>{confirmation.orderNumber}</strong>.
+            {!paid && (
+              <>
+                <br />
+                Vous pouvez suivre son statut dans votre tableau de bord.
+              </>
+            )}
           </p>
-          <Link href={`/${locale}/dashboard`}>Voir mes commandes</Link>
+          <Link href={paid ? `/${locale}/shop` : `/${locale}/dashboard`}>
+            {paid ? 'Retour à la boutique' : 'Voir mes commandes'}
+          </Link>
         </div>
       </div>
     );
