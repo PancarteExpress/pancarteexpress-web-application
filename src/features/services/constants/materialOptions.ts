@@ -74,11 +74,15 @@ export const MATERIAL_CONFIGS: Record<string, MaterialConfig> = {
     label: 'DÉTAILS DE L\'AJOUT VISITE LIBRE',
     fields: [
       { key: 'toRent', label: 'Devons-nous vous louer le materiel necessaire pour la visite libre?', type: 'radio' },
-      { key: 'pickup', label: 'Devons-nous aller chercher le materiel a une autre adresse?', type: 'radio' },
-      { key: 'address', label: 'Adresse du pickup', type: 'address' },
+      /*{ key: 'pickup', label: 'Devons-nous aller chercher le materiel a une autre adresse?', type: 'radio' },
+      { key: 'address', label: 'Adresse du pickup', type: 'address' },*/
+      { key: 'quantity_direct', label: 'Combien de directionnelle avez vous besoin ?', type: 'number' },
+      { key: 'quantity_flag', label: 'Combien de drapeau avez vous besoin ?', type: 'number' },
+      { key: 'quantity_openHouse', label: 'Combien de visite libre avez vous besoin ?', type: 'number' },
+      /*{ key: 'placements', label: 'Veuillez indiquer l emplacement de la pancarte sur laqulle mettre la visite libre ', type: 'textarea' },*/
       { key: 'openHouseDetails', label: 'Veuillez indiquer la date et l horaire de la visite libre ', type: 'addonsOpenHouse' },
-      { key: 'quantity', label: 'Combien en avez vous besoin d installer ?', type: 'number' },
-      { key: 'placements', label: 'Veuillez indiquer l emplacement de la pancarte sur laqulle mettre la visite libre ', type: 'textarea' }
+      { key: 'removeNextMonday', label: 'Devons-nous vous retirer tout le materiel de la visite libre le lundi qui suit?', type: 'radio' },
+      
     ]
   },
 
@@ -90,7 +94,7 @@ export const MATERIAL_CONFIGS: Record<string, MaterialConfig> = {
       { key: 'pickupAddress', label: 'Adresse du pickup', type: 'address' },
       { key: 'quantity', label: 'Combien en avez vous besoin d installer ?', type: 'number' },
       { key: 'addons', label: 'Veuillez choisir les ajouts souhaitee pour la pancarte # ', type: 'addons' },*/
-      { key: 'addonType', label: 'Veuillez choisir le d ajout souhaite', type: 'addons' },
+      { key: 'addonType', label: 'Veuillez choisir l ajout souhaite', type: 'addons' },
       
     ]
   },

@@ -68,7 +68,7 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
 
       {config.fields.map(field => (
         <div key={field.key}>
-          {field.key === 'toRent' && (<>
+          {material !== 'addonsOpenHouse' && field.key === 'toRent' && (<>
             <div className={styles.radioGroup}>
               <label>
                 <span>{field.label}</span>
@@ -344,7 +344,7 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
             ))}
           </>)}
 
-          {field.key === 'openHouseDetails' && <>
+          {material !== 'addonsOpenHouse' && field.key === 'openHouseDetails' && <>
             
             <OpenHouseAddon
             data={data?.openHouse || {
@@ -603,6 +603,138 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
           
 
           {/* Nouveau formulaire */}
+          {field.key === 'quantity_new' && (<>
+          <div className={styles.radioGroup}>
+            <label>{field.label}</label>
+            <input 
+              id="quantity" 
+              type="number" 
+              inputMode="numeric" 
+              min={1}
+              max={material !== 'flags' ? 3 : 2} 
+              value={data?.quantity_new || ''}
+              onChange={(e) => handleChange('quantity_new', e.target.value)}
+              onKeyDown={(e) => {
+                if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+            />
+          </div>
+          </>)}
+
+          {field.key === 'openHouseDetails' && <>
+            
+            <OpenHouseAddon
+            data={data?.openHouse || {
+              selectedDate: format(new Date(), 'yyyy-MM-dd'),
+              startTime: '09:00',
+              endTime: '11:00',
+            }}
+            onChange={(openHouseData) => {
+              handleChange('openHouse', openHouseData);
+            }}
+          />
+            
+          </>}
+
+          {material === 'addonsOpenHouse' && field.key === 'toRent' && (<>
+            <div className={styles.radioGroup}>
+              <label>
+                <span>{field.label}</span>
+              </label>
+
+              <div className={styles.buttons}>
+                <button type="button" className={data?.[field.key] ? styles.active : ''} onClick={() => handleRadioChange(field.key, true)}>
+                  Oui
+                </button>
+
+                <button type="button" className={!data?.[field.key] ? styles.active : ''} onClick={() => handleRadioChange(field.key, false)}>
+                  Non
+                </button>
+              </div>
+            </div>
+          </>)}
+
+          {material === 'addonsOpenHouse' && data?.toRent === true && (<>
+            {field.key === 'quantity_direct' && (<>
+              <div className={styles.radioGroup}>
+                <label>{field.label}</label>
+                <input id="quantity" type="number" inputMode="numeric" max={3} 
+                  value={data?.quantity_direct || ''}
+                  onChange={(e) => handleChange('quantity_direct', e.target.value)}
+                  onKeyDown={(e) => {
+                    if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+              </div>
+            </>)}
+            
+            {field.key === 'quantity_openHouse' && (<>
+              <div className={styles.radioGroup}>
+                <label>{field.label}</label>
+                <input id="quantity" type="number" inputMode="numeric" max={3} 
+                  value={data?.quantity_openHouse || ''}
+                  onChange={(e) => handleChange('quantity_openHouse', e.target.value)}
+                  onKeyDown={(e) => {
+                    if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+              </div>
+            </>)}
+          </>)}
+            
+          {material === 'addonsOpenHouse' && data?.toRent === false && (<>
+            {field.key === 'quantity_direct' && (<>
+              <div className={styles.radioGroup}>
+                <label>{field.label}</label>
+                <input id="quantity" type="number" inputMode="numeric" max={5} 
+                  value={data?.quantity_direct || ''}
+                  onChange={(e) => handleChange('quantity_direct', e.target.value)}
+                  onKeyDown={(e) => {
+                    if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+              </div>
+            </>)}
+            
+            {field.key === 'quantity_flag' && (<>
+              <div className={styles.radioGroup}>
+                <label>{field.label}</label>
+                <input id="quantity" type="number" inputMode="numeric" max={2} 
+                  value={data?.quantity_flag || ''}
+                  onChange={(e) => handleChange('quantity_flag', e.target.value)}
+                  onKeyDown={(e) => {
+                    if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+              </div>
+            </>)}
+            
+            {field.key === 'quantity_openHouse' && (<>
+              <div className={styles.radioGroup}>
+                <label>{field.label}</label>
+                <input id="quantity" type="number" inputMode="numeric" max={3} 
+                  value={data?.quantity_openHouse || ''}
+                  onChange={(e) => handleChange('quantity_openHouse', e.target.value)}
+                  onKeyDown={(e) => {
+                    if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+              </div>
+            </>)}
+          </>)}
+
           {field.key === 'choice_rent_sold' && <>
           <div className={styles.radioGroup}>
               <label>
@@ -724,27 +856,7 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
             </>}
           </>}
 
-          {field.key === 'quantity_new' && (<>
-          <div className={styles.radioGroup}>
-            <label>{field.label}</label>
-            <input 
-              id="quantity" 
-              type="number" 
-              inputMode="numeric" 
-              min={1}
-              max={material !== 'flags' ? 3 : 2} 
-              value={data?.quantity_new || ''}
-              onChange={(e) => handleChange('quantity_new', e.target.value)}
-              onKeyDown={(e) => {
-                if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
-                  e.preventDefault();
-                }
-              }}
-            />
-          </div>
-          </>)}
-
-          {material !== 'frames' && field.key === 'intersections' && (<>
+          {material !== 'addonsOpenHouse' && material !== 'frames' && field.key === 'intersections' && (<>
             {Array.from({ length: data?.quantity || 1 }).map((_, i) => (
               <div key={`placement-${i}`} className={styles.specialInstructions}>
                 <label htmlFor={`${field.key}-${i}`}>{field.label} {i + 1}</label>
@@ -806,7 +918,7 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
             ))}
           </>)}
 
-          {field.key === 'placements' && (<>
+          {material !== 'addonsOpenHouse' && field.key === 'placements' && (<>
           {Array.from({ length: data?.quantity_new || 1 }).map((_, i) => (
           <div key={`placement-${i}`} className={styles.specialInstructions}>
             <label htmlFor={field.key}>{field.label} {i + 1}</label>
@@ -827,6 +939,26 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
           </div>
           ))}
           </>)}
+
+          {field.key === 'removeNextMonday' && (<>
+            <div className={styles.radioGroup}>
+              <label>
+                <span>{field.label}</span>
+              </label>
+
+              <div className={styles.buttons}>
+                <button type="button" className={data?.[field.key] ? styles.active : ''} onClick={() => handleRadioChange(field.key, true)}>
+                  Oui
+                </button>
+
+                <button type="button" className={!data?.[field.key] ? styles.active : ''} onClick={() => handleRadioChange(field.key, false)}>
+                  Non
+                </button>
+              </div>
+            </div>
+          </>)}
+
+          
 
         </div>
       ))}

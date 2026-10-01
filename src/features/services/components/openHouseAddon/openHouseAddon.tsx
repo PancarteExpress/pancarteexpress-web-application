@@ -10,6 +10,7 @@ import {
   addMonths,
   subMonths,
   addHours,
+  parse,
 } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useEffect, useState } from 'react';
@@ -27,9 +28,10 @@ interface Props {
 
 export default function OpenHouseAddon({ data, onChange }: Props) {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [isEndTimeManuallySet, setIsEndTimeManuallySet] = useState(false);
 
   useEffect(() => {
-    if (!data?.startTime) return;
+    if (!data?.startTime || isEndTimeManuallySet) return;
 
     const [hours, minutes] = data.startTime.split(':').map(Number);
     const startDate = new Date();
@@ -43,7 +45,7 @@ export default function OpenHouseAddon({ data, onChange }: Props) {
         endTime: formattedEndTime,
         });
     }
-    }, [data.startTime, data.endTime, onChange]);
+    }, [data.startTime, isEndTimeManuallySet, onChange]);
 
   const monthStart = startOfMonth(currentMonth);
   const monthEnd = endOfMonth(currentMonth);
@@ -117,26 +119,80 @@ export default function OpenHouseAddon({ data, onChange }: Props) {
       </div>
 
       <div className={styles.hourSelection}>
-        <div>
-          <label htmlFor="startTime">Heure de début:</label>
-          <input
-            id="startTime"
-            type="time"
-            value={data.startTime}
-            onChange={(e) => onChange({ ...data, startTime: e.target.value })}
-          />
-        </div>
+  <div>
+    <label htmlFor="startHour">Heure de début:</label>
+    <div style={{ display: 'flex', gap: '8px' }}>
+      <select
+        id="startHour"
+        value={data.startTime.split(':')[0]}
+        onChange={(e) => {
+          const hours = e.target.value.padStart(2, '0');
+          const minutes = data.startTime.split(':')[1];
+          setIsEndTimeManuallySet(false);
+          onChange({ ...data, startTime: `${hours}:${minutes}` });
+        }}
+      >
+        {Array.from({ length: 24 }).map((_, h) => (
+          <option key={h} value={String(h).padStart(2, '0')}>
+            {String(h).padStart(2, '0')}h
+          </option>
+        ))}
+      </select>
+      <select
+        value={data.startTime.split(':')[1]}
+        onChange={(e) => {
+          const hours = data.startTime.split(':')[0];
+          const minutes = e.target.value.padStart(2, '0');
+          setIsEndTimeManuallySet(false);
+          onChange({ ...data, startTime: `${hours}:${minutes}` });
+        }}
+      >
+        {[0, 15, 30, 45].map((m) => (
+          <option key={m} value={String(m).padStart(2, '0')}>
+            {String(m).padStart(2, '0')}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
 
-        <div>
-          <label htmlFor="endTime">Heure de fin:</label>
-          <input
-            id="endTime"
-            type="time"
-            value={data.endTime}
-            onChange={(e) => onChange({ ...data, endTime: e.target.value })}
-          />
-        </div>
-      </div>
+  <div>
+    <label htmlFor="endHour">Heure de fin:</label>
+    <div style={{ display: 'flex', gap: '8px' }}>
+      <select
+        id="endHour"
+        value={data.endTime.split(':')[0]}
+        onChange={(e) => {
+          const hours = e.target.value.padStart(2, '0');
+          const minutes = data.endTime.split(':')[1];
+          setIsEndTimeManuallySet(true);
+          onChange({ ...data, endTime: `${hours}:${minutes}` });
+        }}
+      >
+        {Array.from({ length: 24 }).map((_, h) => (
+          <option key={h} value={String(h).padStart(2, '0')}>
+            {String(h).padStart(2, '0')}h
+          </option>
+        ))}
+      </select>
+      <select
+        value={data.endTime.split(':')[1]}
+        onChange={(e) => {
+          const hours = data.endTime.split(':')[0];
+          const minutes = e.target.value.padStart(2, '0');
+          setIsEndTimeManuallySet(true);
+          onChange({ ...data, endTime: `${hours}:${minutes}` });
+        }}
+      >
+        {[0, 15, 30, 45].map((m) => (
+          <option key={m} value={String(m).padStart(2, '0')}>
+            {String(m).padStart(2, '0')}
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
+</div>
     </div>
   );
 }

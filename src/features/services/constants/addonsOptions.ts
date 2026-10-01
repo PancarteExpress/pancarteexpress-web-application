@@ -1,23 +1,27 @@
 export const ADDONS_LIST = [
-    { key: 'customAddon', label: 'Ajout personnalisé' },
 
+    /* a effacer ? */
+    { key: 'customAddon', label: 'Ajout personnalisé' },
     { key: 'openHouse', label: 'Visite libre seulement' },
-    { key: 'toRent', label: 'À louer' },
-    { key: 'rented', label: 'Loué' },
+    /* a effacer ? */
+
     { key: 'toSell', label: 'À vendre' },
-    { key: 'sold', label: 'Vendu' },
-    { key: 'plex', label: 'Plex' },
     { key: 'duplex', label: 'Duplex' },
-    { key: 'triplex', label: 'Triplex' },
-    { key: 'quadriplex', label: 'Quadriplex' },
     { key: 'groundFloor', label: 'Rez-de-chaussée' },
-    { key: 'secondFloor', label: '2e étage' },
-    { key: 'thirdFloor', label: '3e étage' },
-    { key: 'condo', label: 'Condo' },
     { key: 'waterfront', label: 'Bord de l\'eau' },
+
+    { key: 'sold', label: 'Vendu' },
+    { key: 'triplex', label: 'Triplex' },
+    { key: 'secondFloor', label: '2e étage' },
     { key: 'land', label: 'Terrain' },
+
+    { key: 'toRent', label: 'À louer' },
+    { key: 'quadriplex', label: 'Quadriplex' },
+    { key: 'thirdFloor', label: '3e étage' },
     { key: 'pool', label: 'Piscine' },
-    
-    
+
+    { key: 'rented', label: 'Loué' },
+    { key: 'plex', label: 'Plex' },
+    { key: 'condo', label: 'Condo' },
     { key: 'other', label: 'Autres' },
 ];

@@ -172,7 +172,7 @@ export default function ServiceForm() {
 
                 {requestType === 'residential' && <AddressManager />}
                 
-                {selectedAddress && 
+                {requestType === 'residential' && selectedAddress && 
                 <fieldset>
                     <legend>Quels sont les services dont vous avez besoin pour ladresse selectionner</legend>
                     
@@ -217,7 +217,7 @@ export default function ServiceForm() {
                 </fieldset>
                 }
 
-                {selectedAddress && selectedServices.installation &&
+                {requestType === 'residential' && selectedAddress && selectedServices.installation &&
                 <InstallationForm 
                     onDataChange={handleInstallationData}
                     initialData={installationInitialData}
