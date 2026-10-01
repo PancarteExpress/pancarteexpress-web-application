@@ -170,19 +170,21 @@ export default function ServiceForm() {
                     </div>
                 </fieldset>
 
-                <AddressManager />
+                {requestType === 'residential' && <AddressManager />}
                 
                 {selectedAddress && 
                 <fieldset>
-                    <legend>De quels services avez vous besoin quon fasse a ladresse selectionner</legend>
+                    <legend>Quels sont les services dont vous avez besoin pour ladresse selectionner</legend>
                     
-                    {selectedAddress && selectedAddress.type === 'address' && (
-                    <span style={{color: 'black', fontWeight: '900'}}>{selectedAddress!.streetNumber} {selectedAddress!.streetName}</span>
+                    <div className={styles.addressSelected}>
+                        {selectedAddress && selectedAddress.type === 'address' && (
+                        <label style={{color: 'black', fontWeight: '900'}}>{selectedAddress!.streetNumber} {selectedAddress!.streetName}</label>
+                        )}
+                        
+                        {selectedAddress && selectedAddress.type === 'terrain' && (
+                        <label style={{color: 'black', fontWeight: '900'}}>{selectedAddress!.description} {selectedAddress!.city}</label>
                     )}
-                    
-                    {selectedAddress && selectedAddress.type === 'terrain' && (
-                    <span style={{color: 'black', fontWeight: '900'}}>{selectedAddress!.description} {selectedAddress!.city}</span>
-                    )}
+                    </div>
 
                     <div className={styles.userChoice}>
                         <label className={selectedServices.installation ? styles.checked : ''}>

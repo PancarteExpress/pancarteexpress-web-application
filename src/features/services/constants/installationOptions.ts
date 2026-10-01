@@ -5,9 +5,9 @@ export const MATERIALS_OPTIONS = [
   { key: 'poles', label: 'Poteaux', dependencies: [] },
   { key: 'addons', label: 'Ajout (autres) - seulement', dependencies: [] },
   { key: 'addonsOpenHouse', label: 'visite libre - seulement', dependencies: [] },
-  { key: 'flags', label: 'Drapeaux', dependencies: [] },
+  { key: 'flags', label: 'Drapeaux (a vendre/vendu)', dependencies: [] },
   { key: 'keybox', label: 'Boîte à clés', dependencies: [] },
-  { key: 'directional', label: 'Directionnelles', dependencies: [] },
+  { key: 'directional', label: 'Directionnelles (a vendre/vendu)', dependencies: [] },
   { key: 'other', label: 'Autres', dependencies: [] },
 ] as const;
 

@@ -27,26 +27,34 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
   }
 
   const handleChange = (key: string, value: unknown) => {
-  const newData = { ...data, [key]: value ?? (key === 'pickup' ? null : false) };
-  
-  if (material === 'frames' && key === 'quantity') {
-    const qty = parseInt(value as string) || 1;
-    const diff = Math.max(0, qty - (data?.addons?.length || 0));
+    const newData = { ...data, [key]: value ?? (key === 'pickup' ? null : false) };
     
-    newData.rentAddons = [
-      ...(data?.rentAddons || []),
-      ...Array(diff).fill(false)
-    ];
-    newData.addons = [
-      ...(data?.addons || []),
-      ...Array.from({ length: diff }, () => ({}))
-    ];
-  }
-  
-  onChange(newData);
-};
+    if (material === 'frames' && key === 'quantity') {
+      const qty = parseInt(value as string) || 1;
+      const diff = Math.max(0, qty - (data?.addons?.length || 0));
+      
+      newData.rentAddons = [
+        ...(data?.rentAddons || []),
+        ...Array(diff).fill(false)
+      ];
+      newData.addons = [
+        ...(data?.addons || []),
+        ...Array.from({ length: diff }, () => ({}))
+      ];
+    }
+    
+    onChange(newData);
+  };
 
   const handleRadioChange = (key: string, value: boolean) => {
+    const newData = { ...data, [key]: value };
+    if (key === 'pickup' && !value) {
+      newData.address = '';
+    }
+    onChange(newData);
+  };
+  
+  const handleTypeChange = (key: string, value: string) => {
     const newData = { ...data, [key]: value };
     if (key === 'pickup' && !value) {
       newData.address = '';
@@ -79,7 +87,6 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
           </>)}
           
           {((material !== 'frames' && data?.toRent === false) || material === 'frames') && field.key === 'pickup' && (<>
-          
             <div className={styles.radioGroup}>
               <label>
                 <span>{field.label}</span>
@@ -577,22 +584,250 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
             ))*/}
           </>)}
 
-          {field.key === 'specialNeeds' && <div className={styles.specialInstructions}>
+          {field.key === 'specialNeeds' && <>
+          <div className={styles.specialInstructions}>
             <div className={styles.specialInstructions}>
-    <label htmlFor='specialNeeds'>Veuillez indiquer lemplacement dinstallation de la pancarte</label>
-    <textarea
-      id='specialNeeds'
-      value={data?.specialNeeds || ''}  // ← Lis depuis data
-      onChange={(e) => {
-        handleChange('specialNeeds', e.target.value);  // ← Écrit directement
-      }}
-      placeholder="Entrez vos instructions ici..."
-      rows={4}
-    />
-  </div>
-          </div>}
-
+              <label htmlFor='specialNeeds'>Veuillez indiquer lemplacement dinstallation de la pancarte</label>
+              <textarea
+                id='specialNeeds'
+                value={data?.specialNeeds || ''}  // ← Lis depuis data
+                onChange={(e) => {
+                  handleChange('specialNeeds', e.target.value);  // ← Écrit directement
+                }}
+                placeholder="Entrez vos instructions ici..."
+                rows={4}
+              />
+            </div>
+          </div>
+          </>}
           
+
+          {/* Nouveau formulaire */}
+          {field.key === 'choice_rent_sold' && <>
+          <div className={styles.radioGroup}>
+              <label>
+                <span>{field.label}</span>
+              </label>
+
+              <div className={styles.buttons}>
+                <button type="button" className={data?.[field.key] === 'toSell' ? styles.active : ''} onClick={() => handleTypeChange(field.key, 'toSell')}>
+                  A vendre
+                </button>
+
+                <button type="button" className={data?.[field.key] === 'sold' ? styles.active : ''} onClick={() => handleTypeChange(field.key, 'sold')}>
+                  Vendu
+                </button>
+              </div>
+            </div>
+          </>}
+          
+          {field.key === 'addonType' && <>
+            <div className={styles.radioGroup}>
+              <label>
+                <span>{field.label}</span>
+              </label>
+
+              <div className={styles.buttons}>
+                <button type="button" className={data?.[field.key] === 'myInventory' ? styles.active : ''} onClick={() => handleTypeChange(field.key, 'myInventory')}>
+                  Ajout de mon inventaire
+                </button>
+
+                <button type="button" className={data?.[field.key] === 'other' ? styles.active : ''} onClick={() => handleTypeChange(field.key, 'other')}>
+                  Autres
+                </button>
+              </div>
+            </div>
+
+            {data?.[field.key] === 'myInventory' && <>
+              <div className={styles.specialInstructions}>
+              <label htmlFor="addonInventory">Veuillez spécifier quel ajout de votre inventaire vous voulez utiliser</label>
+              <textarea
+                id="addonInventory"
+                value={data?.addonInventoryChoice || ''}
+                onChange={(e) => {
+                  handleChange('addonInventoryChoice', e.target.value);
+                }}
+                placeholder="Entrez l'ajout d'inventaire..."
+                rows={1}
+              />
+              </div>
+            </>}
+            
+            {data?.[field.key] === 'other' && <>
+              {Array.from({ length: data?.quantity || 1 }).map((_, i) => (
+              <div key={`addon-${i}`} className={styles.addonSection}>
+                <div className={styles.radioGroup}>
+                  <div className={styles.checkboxGroup}>
+                    <label>Veuillez faire votre selection </label>
+                    <div className={styles.addonsItem}>
+                      {ADDONS_LIST.filter(addon => addon.key !== 'customAddon' && addon.key !== 'openHouse').map(addon => (
+                        <label key={addon.key} className={addon.key in (data?.addons?.[i] || {}) ? styles.active : ''}>
+                          <input
+                            type="checkbox"
+                            checked={addon.key in (data?.addons?.[i] || {}) || false}
+                            onChange={(e) => {
+                              
+                              const newAddons = [...(data?.addons || [])];
+                              const items = { ...(newAddons[i] || {}) };
+                              
+                              if (e.target.checked) {
+                                if (addon.key === 'other') {
+                                  items[addon.key] = [''];
+                                } else if (addon.key === 'openHouse') {
+                                  // ← Initialiser avec objet OpenHouseData au lieu de true
+                                  items[addon.key] = {
+                                    selectedDate: format(new Date(), 'yyyy-MM-dd'),
+                                    startTime: '09:00',
+                                    endTime: '11:00',
+                                  };
+                                } else {
+                                  items[addon.key] = true;
+                                }
+                              } else {
+                                delete items[addon.key];
+                              }
+                              
+                              newAddons[i] = items;
+                              handleChange('addons', newAddons);
+                            }}
+                          />
+                          {addon.label}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
+                  {data?.addons?.[i]?.other && (
+                    <div className={styles.specialInstructions}>
+                      <label htmlFor={`otherAddon-${i}`}>Donnez nous de details sur lajout...</label>
+                      <textarea
+                        id={`otherAddon-${i}`}
+                        value={data?.addons?.[i]?.other || ''}
+                        onChange={(e) => {
+                          const newAddons = [...(data?.addons || [])];
+                          newAddons[i] = {
+                            ...newAddons[i],
+                            other: e.target.value
+                          };
+                          handleChange('addons', newAddons);
+                        }}
+                        placeholder="Entrez les détails ici..."
+                        rows={4}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+              ))}
+
+              <strong style={{ display:'flex', marginTop:'10px', fontSize:'1.1rem', border:'2px solid #FFA500', padding:'10px', borderRadius:'10px' }}>Veuillez noter que si les ajouts selectionner ne sont pas dans votre inventaire, on vous les louent</strong>
+            </>}
+          </>}
+
+          {field.key === 'quantity_new' && (<>
+          <div className={styles.radioGroup}>
+            <label>{field.label}</label>
+            <input 
+              id="quantity" 
+              type="number" 
+              inputMode="numeric" 
+              min={1}
+              max={material !== 'flags' ? 3 : 2} 
+              value={data?.quantity_new || ''}
+              onChange={(e) => handleChange('quantity_new', e.target.value)}
+              onKeyDown={(e) => {
+                if (!/[0-9]/.test(e.key) && !['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab'].includes(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+            />
+          </div>
+          </>)}
+
+          {material !== 'frames' && field.key === 'intersections' && (<>
+            {Array.from({ length: data?.quantity || 1 }).map((_, i) => (
+              <div key={`placement-${i}`} className={styles.specialInstructions}>
+                <label htmlFor={`${field.key}-${i}`}>{field.label} {i + 1}</label>
+
+                {/* Pour directional: 2 intersections */}
+                {material === 'directional' && <>
+                  <label htmlFor={`first-${field.key}-${i}`}>Premiere intersection</label>
+                  <textarea
+                    id={`first-${field.key}-${i}`}
+                    value={data?.intersections?.[i]?.firstIntersection || ''}
+                    onChange={(e) => {
+                      const newIntersections = [...(data?.intersections || [])];
+                      newIntersections[i] = {
+                        ...newIntersections[i],
+                        firstIntersection: e.target.value
+                      };
+                      handleChange('intersections', newIntersections);
+                    }}
+                    placeholder="Entrez la première intersection..."
+                    rows={1}
+                  />
+
+                  <label htmlFor={`second-${field.key}-${i}`}>Deuxième intersection</label>
+                  <textarea
+                    id={`second-${field.key}-${i}`}
+                    value={data?.intersections?.[i]?.secondIntersection || ''}
+                    onChange={(e) => {
+                      const newIntersections = [...(data?.intersections || [])];
+                      newIntersections[i] = {
+                        ...newIntersections[i],
+                        secondIntersection: e.target.value
+                      };
+                      handleChange('intersections', newIntersections);
+                    }}
+                    placeholder="Entrez la deuxième intersection..."
+                    rows={1}
+                  />
+                </>}
+
+                {/* Pour flags: 1 intersection */}
+                {material === 'flags' && <>
+                  <label htmlFor={`intersection-${field.key}-${i}`}>Intersection</label>
+                  <textarea
+                    id={`intersection-${field.key}-${i}`}
+                    value={data?.intersections?.[i]?.intersection || ''}
+                    onChange={(e) => {
+                      const newIntersections = [...(data?.intersections || [])];
+                      newIntersections[i] = {
+                        ...newIntersections[i],
+                        intersection: e.target.value
+                      };
+                      handleChange('intersections', newIntersections);
+                    }}
+                    placeholder="Entrez l'intersection..."
+                    rows={1}
+                  />
+                </>}
+              </div>
+            ))}
+          </>)}
+
+          {field.key === 'placements' && (<>
+          {Array.from({ length: data?.quantity_new || 1 }).map((_, i) => (
+          <div key={`placement-${i}`} className={styles.specialInstructions}>
+            <label htmlFor={field.key}>{field.label} {i + 1}</label>
+            <textarea
+              id={`${field.key}-${i}`}
+              value={data?.placements?.[i]?.placement || ''}
+              onChange={(e) => {
+                const newPlacement = [...(data?.placements || [])];
+                newPlacement[i] = {
+                  ...newPlacement[i],
+                  placement: e.target.value
+                };
+                handleChange('placements', newPlacement);
+              }}
+              placeholder="Entrez vos instructions ici..."
+              rows={4}
+            />
+          </div>
+          ))}
+          </>)}
+
         </div>
       ))}
     </fieldset>

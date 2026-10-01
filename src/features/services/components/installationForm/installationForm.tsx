@@ -55,6 +55,18 @@ export default function InstallationForm({ onDataChange, initialData }: Props) {
         config?.fields.forEach(field => {
             if (field.key === 'rentAddons') {
                 defaults[field.key] = Array(quantity).fill(false);
+            } else if (field.key === 'intersections') {
+                // Pour directional: 2 intersections, pour flags: 1 seule
+                if (material === 'directional') {
+                    defaults[field.key] = Array.from({ length: quantity }, () => ({
+                    firstIntersection: '',
+                    secondIntersection: ''
+                    }));
+                } else if (material === 'flags') {
+                    defaults[field.key] = Array.from({ length: quantity }, () => ({
+                    intersection: ''
+                    }));
+                }
             } else {
                 defaults[field.key] = field.type === 'radio' ? false : field.type === 'number' ? 1 : '';
             }
@@ -81,7 +93,7 @@ export default function InstallationForm({ onDataChange, initialData }: Props) {
         const option = MATERIALS_OPTIONS.find(opt => opt.key === service);
         const isChecking = !selectedMaterials[service].selected;
 
-        const quantity = Number(selectedMaterials.frames.details?.quantity) || 1;
+        const quantity = Number(selectedMaterials.frames.details?.quantity_new) || 1;
 
         setSelectedMaterials(prev => {
         const newState = { ...prev };

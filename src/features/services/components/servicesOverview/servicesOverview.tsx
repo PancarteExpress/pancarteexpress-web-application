@@ -73,7 +73,8 @@ export default function ServicesList({ addresses, onRemoveService, onAddToCart }
                     <div className={styles.details}>
                       <div className={styles.material}>
                         <label>{key}</label>
-                        <label>{`${item.details?.quantity}`} unité(s)</label>
+                        {item.details?.quantity !== undefined && <label>{`${item.details?.quantity}`} unité(s)</label>}
+                        {item.details?.quantity_new !== undefined &&<label>{`${item.details?.quantity_new}`} unité(s)</label>}
                       </div>
                       
                       {key !== 'frames' &&
@@ -149,6 +150,42 @@ export default function ServicesList({ addresses, onRemoveService, onAddToCart }
                           </p>
                         </div>
                       ))}
+
+                      {/* Nouveau Overview */}
+                      {key === 'directional' && <>
+                      <div className={styles.section}>
+                        <label className={styles.title}>Choix de directionnelles</label>
+                        <label>{item.details?.choice_rent_sold === 'toSell' ? 'A vendre' : 'Vendu'}</label>
+                      </div>
+                      {item.details?.intersections && Array.isArray(item.details.intersections) && item.details.intersections.map((intersection, idx) => (
+                        <div key={`intersection-${idx}`} >
+                          <div className={styles.section}>
+                            <label className={styles.title}>Intersection {idx + 1}</label>
+                            <label>{intersection.firstIntersection}</label>
+                          </div>
+                          
+                          <div className={styles.section}>
+                            <label className={styles.title}>Intersection {idx + 2}</label>
+                            <label>{intersection.secondIntersection}</label>
+                          </div>
+                        </div>
+                      ))}
+                      </>}
+                     
+                      {key === 'flags' && <>
+                      <div className={styles.section}>
+                        <label className={styles.title}>Choix de drapeaux</label>
+                        <label>{item.details?.choice_rent_sold === 'toSell' ? 'A vendre' : 'Vendu'}</label>
+                      </div>
+                      {item.details?.intersections && Array.isArray(item.details.intersections) && item.details.intersections.map((intersection, idx) => (
+                        <div key={`intersection-${idx}`} >
+                          <div className={styles.section}>
+                            <label className={styles.title}>Intersection</label>
+                            <label>{intersection.firstIntersection}</label>
+                          </div>
+                        </div>
+                      ))}
+                      </>}
                     </div>
                   </div>
                 )))}

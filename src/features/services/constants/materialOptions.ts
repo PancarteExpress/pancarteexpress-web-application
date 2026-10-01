@@ -24,22 +24,28 @@ export const MATERIAL_CONFIGS: Record<string, MaterialConfig> = {
   flags: {
     label: 'DÉTAILS DES DRAPEAUX',
     fields: [
-      { key: 'toRent', label: 'Devons-nous vous louer le materiel?', type: 'radio' },
+      /*{ key: 'toRent', label: 'Devons-nous vous louer le materiel?', type: 'radio' },
       { key: 'pickup', label: 'Devons-nous aller chercher le materiel a une autre adresse?', type: 'radio' },
       { key: 'pickupAddress', label: 'Adresse du pickup', type: 'address' },
       { key: 'quantity', label: 'Combien de drapeau voulez-vous installer ?', type: 'number' },
-      { key: 'placements', label: 'Veuillez indiquer l emplacement d installation du drapeau #', type: 'textarea' },
+      { key: 'placements', label: 'Veuillez indiquer l emplacement d installation du drapeau #', type: 'textarea' },*/
+      { key: 'choice_rent_sold', label: 'Choisissez le type de drapeau desirer', type: 'radio' },
+      { key: 'quantity_new', label: 'Combien voulez-vous installer ?', type: 'number' },
+      { key: 'intersections', label: 'Veuillez indiquer l emplacement d installation du drapeau #', type: 'textarea' },
     ]
   },
   
   directional: {
     label: 'DÉTAILS DES DIRECTIONNELLES',
     fields: [
-      { key: 'toRent', label: 'Devons-nous vous louer le materiel?', type: 'radio' },
+      /*{ key: 'toRent', label: 'Devons-nous vous louer le materiel?', type: 'radio' },
       { key: 'pickup', label: 'Devons-nous aller chercher le materiel a une autre adresse?', type: 'radio' },
       { key: 'pickupAddress', label: 'Adresse du pickup', type: 'address' },
       { key: 'quantity', label: 'Combien de directionnelle voulez-vous installer ?', type: 'number' },
-      { key: 'placements', label: 'Veuillez indiquer l emplacement d installation de la directionnelle #', type: 'textarea' },
+      { key: 'placements', label: 'Veuillez indiquer l emplacement d installation de la directionnelle #', type: 'textarea' },*/
+      { key: 'choice_rent_sold', label: 'Choisissez le type de directionnelle desirer', type: 'radio' },
+      { key: 'quantity_new', label: 'Combien voulez-vous installer ?', type: 'number' },
+      { key: 'intersections', label: 'Veuillez indiquer l emplacement d installation de la directionnelle #', type: 'textarea' },
     ]
   },
 
@@ -58,8 +64,8 @@ export const MATERIAL_CONFIGS: Record<string, MaterialConfig> = {
     label: 'DÉTAILS DES PANCARTES',
     fields: [
       { key: 'pickup', label: 'Devons-nous aller chercher le matériel (Pancartes, Ancrages, Poteaux) a une autre adresse?', type: 'radio' },
-      { key: 'quantity', label: 'Combien de pancartes voulez-vous installer ?', type: 'number' },
-      { key: 'rentAddons', label: 'Voulez vous louer un ajout pour cette pancarte ?', type: 'radio' },
+      { key: 'quantity_new', label: 'Combien de pancartes voulez-vous installer ?', type: 'number' },
+      /*{ key: 'rentAddons', label: 'Voulez vous louer un ajout pour cette pancarte ?', type: 'radio' },*/
       { key: 'placements', label: 'Veuillez indiquer l emplacement d installation de la pancarte #', type: 'textarea' }, // ne sert a rien
     ]
   },
@@ -67,7 +73,7 @@ export const MATERIAL_CONFIGS: Record<string, MaterialConfig> = {
   addonsOpenHouse: {
     label: 'DÉTAILS DE L\'AJOUT VISITE LIBRE',
     fields: [
-      { key: 'toRent', label: 'Devons-nous vous louer le materiel?', type: 'radio' },
+      { key: 'toRent', label: 'Devons-nous vous louer le materiel necessaire pour la visite libre?', type: 'radio' },
       { key: 'pickup', label: 'Devons-nous aller chercher le materiel a une autre adresse?', type: 'radio' },
       { key: 'address', label: 'Adresse du pickup', type: 'address' },
       { key: 'openHouseDetails', label: 'Veuillez indiquer la date et l horaire de la visite libre ', type: 'addonsOpenHouse' },
@@ -79,11 +85,12 @@ export const MATERIAL_CONFIGS: Record<string, MaterialConfig> = {
   addons: {
     label: 'DÉTAILS DES AJOUT GENERAUX',
     fields: [
-      { key: 'toRent', label: 'Devons-nous vous louer le materiel?', type: 'radio' },
+      /*{ key: 'toRent', label: 'Devons-nous vous louer le materiel?', type: 'radio' },
       { key: 'pickup', label: 'Devons-nous aller chercher le materiel a une autre adresse?', type: 'radio' },
       { key: 'pickupAddress', label: 'Adresse du pickup', type: 'address' },
       { key: 'quantity', label: 'Combien en avez vous besoin d installer ?', type: 'number' },
-      { key: 'addons', label: 'Veuillez choisir les ajouts souhaitee pour la pancarte # ', type: 'addons' },
+      { key: 'addons', label: 'Veuillez choisir les ajouts souhaitee pour la pancarte # ', type: 'addons' },*/
+      { key: 'addonType', label: 'Veuillez choisir le d ajout souhaite', type: 'addons' },
       
     ]
   },
