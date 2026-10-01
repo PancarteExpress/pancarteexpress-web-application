@@ -1,5 +1,4 @@
 .mainContainer {
-    border: 1px solid red;
     margin: 0 auto;
     padding: 50px 0;
 }
@@ -8,7 +7,6 @@
 @media (max-width: 1300px) { .mainContainer { width: 95%; } }
 
 .mainContainer .welcome {
-    margin: 0 auto;
     background: #fff;
     border-radius: 10px;
     border: 3px solid #D8E8F8;
@@ -16,12 +14,10 @@
     display: flex;
     align-items: center;
     gap: 20px;
-    width: 60%;
     margin-bottom: 20px;
+    
 }
 
-@media (max-width: 1650px) { .mainContainer .welcome { width: 80%; } }
-@media (max-width: 1300px) { .mainContainer .welcome { width: 95%; } }
 
 .mainContainer .welcome .welcomeAvatar {
     width: 52px;
@@ -60,11 +56,8 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
     margin-bottom: 20px;
-    width: 60%;
 }
 
-@media (max-width: 1650px) { .mainContainer .userData { width: 80%; } }
-@media (max-width: 1300px) { .mainContainer .userData { width: 95%; } }
 
 @media (max-width: 900px)  { .mainContainer .userData { grid-template-columns: 1fr; } }
 

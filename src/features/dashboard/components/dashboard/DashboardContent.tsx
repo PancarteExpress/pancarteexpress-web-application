@@ -4,6 +4,7 @@ import { Session } from "next-auth";
 import styles from "./DashboardContent.module.css"
 import { useState } from "react";
 import UpdateProfile from "../updateProfile/updateProfile";
+import ProductOrders from "../productOrders/ProductOrders";
 
 interface DashboardContentProps {
   user: Session["user"];
@@ -53,35 +54,8 @@ export function DashboardContent({ user }: DashboardContentProps) {
         </div>
       </div>
 
-      <h1 className="text-4xl font-bold mb-8">
-        Bienvenue, {user.firstName} {user.lastName} 
-      </h1>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-sm text-gray-600 mb-2">Email</h2>
-          <p className="text-xl font-semibold">{user.email}</p>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-sm text-gray-600 mb-2">Rôle</h2>
-          <p className="text-xl font-semibold capitalize">{user.role}</p>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-sm text-gray-600 mb-2">Groupe</h2>
-          <p className="text-xl font-semibold">
-            {user.groupId ? "En équipe" : "Solo"}
-          </p>
-        </div>
-      </div>
-
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-2xl font-bold mb-4">Contenu à venir</h2>
-        <p className="text-gray-600">
-          Cest le dashboard. À remplir selon tes besoins.
-        </p>
-      </div>
+      <ProductOrders />
+      
 
       {updateProfileOpen && (
         <UpdateProfile onClose={() => setUpdateProfileOpen(false)} />

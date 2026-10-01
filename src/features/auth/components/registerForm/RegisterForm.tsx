@@ -90,7 +90,7 @@ export function RegisterForm({ locale }: LoginFormProps) {
         {step === "register" && (<>
         <div className={styles.groupInputs}>
           <div className={styles.inputs}>
-            <label htmlFor="registerFirstName" className="block text-sm font-medium">First Name</label>
+            <label htmlFor="registerFirstName" className="block text-sm font-medium">First Name <span className={styles.req}>*</span></label>
             <input
               id="registerFirstName"
               {...register("firstName")}
@@ -100,7 +100,7 @@ export function RegisterForm({ locale }: LoginFormProps) {
           </div>
 
           <div className={styles.inputs}>
-            <label htmlFor="registerLastName" className="block text-sm font-medium">Last Name</label>
+            <label htmlFor="registerLastName" className="block text-sm font-medium">Last Name <span className={styles.req}>*</span></label>
             <input
               id="registerLastName"
               {...register("lastName")}
@@ -112,7 +112,7 @@ export function RegisterForm({ locale }: LoginFormProps) {
         
         <div className={styles.groupInputs}>
           <div className={styles.inputs}>
-            <label htmlFor="registerPhoneNumber" className="block text-sm font-medium">Phone number</label>
+            <label htmlFor="registerPhoneNumber" className="block text-sm font-medium">Phone number <span className={styles.req}>*</span></label>
             <input
               id="registerPhoneNumber"
               {...register("phoneNumber")}
@@ -133,7 +133,7 @@ export function RegisterForm({ locale }: LoginFormProps) {
         </div>
 
         <div className={styles.inputs}>
-          <label htmlFor="registerEmail" className="block text-sm font-medium mb-1">Email</label>
+          <label htmlFor="registerEmail" className="block text-sm font-medium mb-1">Email <span className={styles.req}>*</span></label>
           <input
             id="registerEmail"
             type="email"
@@ -145,7 +145,7 @@ export function RegisterForm({ locale }: LoginFormProps) {
 
         <div className={styles.groupInputs}>
           <div className={styles.inputs}>
-            <label htmlFor="registerPassword" className="block text-sm font-medium mb-1">Password</label>
+            <label htmlFor="registerPassword" className="block text-sm font-medium mb-1">Password <span className={styles.req}>*</span></label>
             <input
               id="registerPassword"
               type="password"
@@ -156,7 +156,7 @@ export function RegisterForm({ locale }: LoginFormProps) {
           </div>
           
           <div className={styles.inputs}>
-            <label htmlFor="registerPassword" className="block text-sm font-medium mb-1">Confirm password</label>
+            <label htmlFor="registerPassword" className="block text-sm font-medium mb-1">Confirm password <span className={styles.req}>*</span></label>
             <input
               id="registerPassword"
               type="password"

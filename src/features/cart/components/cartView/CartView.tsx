@@ -42,8 +42,6 @@ export default function CartView() {
 
   return (
     <div className={styles.page}>
-      <h1 className={styles.title}>{t('title')}</h1>
-
       <div className={styles.layout}>
         <div className={styles.list}>
           {products.length > 0 && (
