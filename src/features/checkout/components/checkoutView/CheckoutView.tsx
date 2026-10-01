@@ -55,7 +55,7 @@ function CheckoutForm() {
   const locale = useLocale() === 'en' ? 'en' : 'fr';
   const t = useTranslations('checkout');
   const tCart = useTranslations('cart');
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const isAuthenticated = status === 'authenticated';
   const { items, hasHydrated, clear } = useCart();
 
@@ -72,6 +72,18 @@ function CheckoutForm() {
   } = useForm<CheckoutInput>({
     resolver: zodResolver(checkoutSchema),
     defaultValues: { firstName: '', lastName: '', email: '', deliveryMode: 'pickup', shippingAddress: null },
+    values:
+      isAuthenticated && session?.user
+        ? {
+            firstName: session.user.firstName ?? '',
+            lastName: session.user.lastName ?? '',
+            email: session.user.email ?? '',
+            deliveryMode: 'pickup',
+            shippingAddress: null,
+          }
+        : undefined,
+    // Ne remplace pas ce que l'utilisateur a déjà modifié
+    resetOptions: { keepDirtyValues: true },
   });
 
   const [addressText, setAddressText] = useState('');
@@ -246,7 +258,7 @@ function CheckoutForm() {
             </div>
             <div className={styles.formGroup}>
               <label htmlFor="email">{t('email')}</label>
-              <input id="email" type="email" {...register('email')} />
+              <input id="email" type="email" {...register('email')} readOnly={isAuthenticated} disabled={isAuthenticated} />
             </div>
           </div>
 

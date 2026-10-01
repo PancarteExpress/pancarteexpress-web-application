@@ -6,28 +6,6 @@ import Google from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
 
-interface SignInParams {
-  user: { 
-    id?: string; 
-    email?: string; 
-    name?: string;
-    firstName?: string | null;
-    lastName?: string | null;
-  };
-  account: { 
-    provider?: string;
-    providerAccountId?: string;
-    type?: string;
-    access_token?: string;
-    refresh_token?: string;
-    expires_at?: number;
-    token_type?: string;
-    scope?: string;
-    id_token?: string;
-    session_state?: string;
-  } | null;
-}
-
 interface JWTParams {
   token: JWT;
   user?: {
@@ -37,7 +15,9 @@ interface JWTParams {
   };
 }
 
-// @ts-expect-error NextAuth types are complex and not fully compatible with strict mode
+// Auth.js type session_state comme du JSON ; la colonne Prisma est une chaîne
+const toSessionState = (value: unknown): string | null => value == null ? null : typeof value === 'string' ? value : JSON.stringify(value);
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   // Pas de PrismaAdapter — on gère tout dans les callbacks
   providers: [
@@ -95,9 +75,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/auth/error",
   },
   callbacks: {
-    async signIn({ user, account }: SignInParams) {
+    async signIn({ user, account }) {
       
       if (!user?.id) return false;
+      if (!user.email) return false;
 
       if (account?.provider === "google" && user.email) {
         const fullName = user.name || "";
@@ -133,7 +114,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 token_type: account.token_type,
                 scope: account.scope,
                 id_token: account.id_token,
-                session_state: account.session_state,
+                session_state: toSessionState(account.session_state),
               },
             });
           }
@@ -164,7 +145,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               token_type: account.token_type,
               scope: account.scope,
               id_token: account.id_token,
-              session_state: account.session_state,
+              session_state: toSessionState(account.session_state),
             },
           });
 

@@ -660,7 +660,7 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
             {field.key === 'quantity_direct' && (<>
               <div className={styles.radioGroup}>
                 <label>{field.label}</label>
-                <input id="quantity" type="number" inputMode="numeric" max={3} 
+                <input id="quantity" type="number" inputMode="numeric" min={1} max={3} 
                   value={data?.quantity_direct || ''}
                   onChange={(e) => handleChange('quantity_direct', e.target.value)}
                   onKeyDown={(e) => {
@@ -675,7 +675,7 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
             {field.key === 'quantity_openHouse' && (<>
               <div className={styles.radioGroup}>
                 <label>{field.label}</label>
-                <input id="quantity" type="number" inputMode="numeric" max={3} 
+                <input id="quantity" type="number" inputMode="numeric" min={1} max={3} 
                   value={data?.quantity_openHouse || ''}
                   onChange={(e) => handleChange('quantity_openHouse', e.target.value)}
                   onKeyDown={(e) => {
@@ -692,7 +692,7 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
             {field.key === 'quantity_direct' && (<>
               <div className={styles.radioGroup}>
                 <label>{field.label}</label>
-                <input id="quantity" type="number" inputMode="numeric" max={5} 
+                <input id="quantity" type="number" inputMode="numeric" min={1} max={5} 
                   value={data?.quantity_direct || ''}
                   onChange={(e) => handleChange('quantity_direct', e.target.value)}
                   onKeyDown={(e) => {
@@ -707,7 +707,7 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
             {field.key === 'quantity_flag' && (<>
               <div className={styles.radioGroup}>
                 <label>{field.label}</label>
-                <input id="quantity" type="number" inputMode="numeric" max={2} 
+                <input id="quantity" type="number" inputMode="numeric" min={1} max={2} 
                   value={data?.quantity_flag || ''}
                   onChange={(e) => handleChange('quantity_flag', e.target.value)}
                   onKeyDown={(e) => {
@@ -722,7 +722,7 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
             {field.key === 'quantity_openHouse' && (<>
               <div className={styles.radioGroup}>
                 <label>{field.label}</label>
-                <input id="quantity" type="number" inputMode="numeric" max={3} 
+                <input id="quantity" type="number" inputMode="numeric" min={1} max={3} 
                   value={data?.quantity_openHouse || ''}
                   onChange={(e) => handleChange('quantity_openHouse', e.target.value)}
                   onKeyDown={(e) => {
