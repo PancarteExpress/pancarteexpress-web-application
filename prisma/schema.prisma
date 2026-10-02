@@ -8,6 +8,14 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
+
+// Tables en lien avec les utilisateurs et les groupes :
+// -- User : gere le stockage des informations des courtiers inscrit chez PancarteExpress
+// -- VerificationToken : permet de valider qu'un compte crée n'est pas un bot (evite le spamming)
+//                        Tant que le VerificationToken n'est pas entré, le User ne se crée pas
+// -- Session : permet de faire le tracking lorsqu'un user est connecté
+// -- Group : permet la gestion d'un group
+
 model User {
   id            String    @id @default(cuid())
   email         String    @unique
@@ -17,42 +25,38 @@ model User {
   companyName   String?
   
   emailVerified DateTime?
-  password      String?
+  password      String?   // null si OAuth
+
+  provider           String?   // "google" ou null
+  providerAccountId  String?   // ID unique chez le provider
 
   orders        Order[]
 
   role          UserRole  @default(user)
+  groupStatus   GroupStatus  @default(SOLO)
   groupId       String?
   group         Group?    @relation("GroupUsers", fields: [groupId], references: [id], onDelete: SetNull)
+
+  sessions      Session[]
+
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts      Account[]
-  sessions      Session[]
-  verificationTokens VerificationToken[]
-
+  @@unique([provider, providerAccountId])
   @@index([email])
   @@index([groupId])
+  @@index([groupStatus])
 }
 
-model Account {
-  id                 String  @id @default(cuid())
-  userId             String  @unique
-  type               String
-  provider           String
-  providerAccountId  String
-  refresh_token      String?  @db.Text
-  access_token       String?  @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String?  @db.Text
-  session_state      String?
+model VerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  type      TokenType @default(EMAIL_VERIFICATION)
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-  @@index([userId])
+  @@unique([email, token])
+  @@index([email])
 }
 
 model Session {
@@ -66,30 +70,39 @@ model Session {
   @@index([userId])
 }
 
-model VerificationToken {
-  id        String   @id @default(cuid())
-  email     String
-  token     String   @unique
-  expires   DateTime
-  type      TokenType @default(EMAIL_VERIFICATION)
-  userId    String?
-
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([email, token])
-  @@index([email])
-}
-
 model Group {
   id        String   @id @default(cuid())
   name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime  @updatedAt
+  users     User[]   @relation("GroupUsers")
 
-  users User[] @relation("GroupUsers")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([name])
 }
+
+enum UserRole {
+  user
+  admin
+}
+
+enum GroupStatus {
+  SOLO
+  PENDING
+  JOINED
+}
+
+enum TokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+
+
+
+
+
+////////////////////////////////////
 
 model Order {
   id                 String             @id @default(cuid())
@@ -192,16 +205,6 @@ model Service {
 
   @@index([serviceAddressId])
   @@index([type])
-}
-
-enum UserRole {
-  user
-  admin
-}
-
-enum TokenType {
-  EMAIL_VERIFICATION
-  PASSWORD_RESET
 }
 
 enum OrderStatus {

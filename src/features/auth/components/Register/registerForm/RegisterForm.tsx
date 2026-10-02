@@ -3,15 +3,17 @@
 import styles from './RegisterForm.module.css';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerSchema, type RegisterInput } from "../../types";
-import { useAuth } from "../../hooks/useAuth";
-import { useState } from "react";
+import { registerSchema, type RegisterInput } from "../../../types";
+import { useAuth } from "../../../hooks/useAuth";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "../../store/authStore";
+import { useAuthStore } from "../../../store/authStore";
 import { z } from "zod";
+import { GoogleLoginButton } from '../../googleLoginButton/GoogleLoginButton';
 
-interface LoginFormProps {
+interface RegisterFormProps {
   locale: string;
+  packageChoice: "group" | "solo" | 'none';
 }
 
 const verifyCodeSchema = z.object({
@@ -20,9 +22,11 @@ const verifyCodeSchema = z.object({
 
 type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
 
-export function RegisterForm({ locale }: LoginFormProps) {
+export function RegisterForm({ locale, packageChoice }: RegisterFormProps) {
   const router = useRouter();
   const { register: registerUser, login } = useAuth();
+
+  const [groupStatus, setGroupStatus] = useState<"solo" | "group" | null>(null);
 
   const error = useAuthStore((state) => state.error);
   const isLoading = useAuthStore((state) => state.isLoading);
@@ -31,7 +35,7 @@ export function RegisterForm({ locale }: LoginFormProps) {
   const [step, setStep] = useState<"register" | "verify">("register");
   const [registeredData, setRegisteredData] = useState<RegisterInput | null>(null);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema), defaultValues: { isGroup: false } });
+  const { register, handleSubmit, formState: { errors } } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema)});
   const { register: registerCode, handleSubmit: handleCodeSubmit, formState: { errors: codeErrors } } = useForm<VerifyCodeInput>({ resolver: zodResolver(verifyCodeSchema), });
 
   const onSubmit = async (data: RegisterInput) => {
@@ -57,8 +61,7 @@ export function RegisterForm({ locale }: LoginFormProps) {
           password: registeredData.password,
           phoneNumber: registeredData.phoneNumber,
           companyName: registeredData.companyName,
-          isGroup: registeredData.isGroup,
-          groupName: registeredData.groupName,
+          groupStatus: groupStatus === 'group' ? 'PENDING' : 'SOLO',
         }),
       });
 
@@ -82,12 +85,42 @@ export function RegisterForm({ locale }: LoginFormProps) {
     }
   };
 
+  useEffect(() => {
+    if (packageChoice === 'none') {
+      router.push(`/${locale}/services`);
+    } else if (packageChoice === 'solo' || packageChoice === 'group') {
+      setGroupStatus(packageChoice);
+    }
+  }, [packageChoice, locale, router]);
+
+  // Si on redirige, ne pas afficher le formulaire
+  if (packageChoice === 'none' || groupStatus === null) {
+    return null;
+  }
+
   return (
     <div className={styles.mainContainer}>
       <form onSubmit={step === "register" ? handleSubmit(onSubmit) : handleCodeSubmit(onVerifyCode)} className="space-y-4 max-w-md">
         
         {/* Step 1: Registration */}
         {step === "register" && (<>
+
+        <fieldset>
+            <legend>dasdasdsadasdsa</legend>
+            <div className={styles.userChoice}>
+                <label className={groupStatus === 'solo' ? styles.checked : ''}>
+                    <input type="radio" id="solo" name="groupStatus" value="solo" checked={groupStatus === "solo"} onChange={() => setGroupStatus('solo')} /> 
+                    Forfait individuel
+                </label>
+                <label className={groupStatus === 'group' ? styles.checked : ''}>
+                    <input type="radio" id="group" name="groupStatus" value="group" checked={groupStatus === "group"} onChange={() => setGroupStatus('group')}/>
+                    Forfait équipe
+                </label>
+            </div>
+        </fieldset>
+
+        <GoogleLoginButton locale={locale} groupStatus={groupStatus} />
+
         <div className={styles.groupInputs}>
           <div className={styles.inputs}>
             <label htmlFor="registerFirstName" className="block text-sm font-medium">First Name <span className={styles.req}>*</span></label>
@@ -171,7 +204,7 @@ export function RegisterForm({ locale }: LoginFormProps) {
         {/* Step 2: Verify Code */}
         {step === "verify" && (
         <div>
-          <p className="text-sm text-gray-600 mb-4">Un code de vérification a été envoyé à {registeredData?.email}</p>
+          <p style={{ textAlign: 'center', color: "#0E4D9A" }}>Un code de vérification a été envoyé à <span style={{ fontWeight: '700' }}>{registeredData?.email}</span></p>
           <div className={styles.inputs}>
             <label htmlFor="verifyCode" className="block text-sm font-medium">Code de vérification</label>
             <input

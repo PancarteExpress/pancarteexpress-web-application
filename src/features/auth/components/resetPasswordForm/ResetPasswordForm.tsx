@@ -94,6 +94,7 @@ export function ResetPasswordForm({ locale }: ResetPasswordFormProps) {
           Back to login
         </Link>
       </div>
+      
     </form>
   );
 }

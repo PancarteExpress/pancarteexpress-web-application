@@ -1,0 +1,17 @@
+.mainContainer .packages {
+    display: flex;
+    gap: 20px;
+}
+
+.mainContainer .packages .package {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #C5D8EF;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.mainContainer .packages .package:nth-child(2) {
+    background: #E8F1FB;
+    border: 3px solid #C5D8EF;
+}

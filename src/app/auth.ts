@@ -5,6 +5,7 @@ import { bcryptCompare } from "@/utils/bcrypt";
 import Google from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
+import { cookies } from "next/headers";
 
 interface JWTParams {
   token: JWT;
@@ -15,11 +16,7 @@ interface JWTParams {
   };
 }
 
-// Auth.js type session_state comme du JSON ; la colonne Prisma est une chaîne
-const toSessionState = (value: unknown): string | null => value == null ? null : typeof value === 'string' ? value : JSON.stringify(value);
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  // Pas de PrismaAdapter — on gère tout dans les callbacks
   providers: [
     Google({
       clientId: process.env.GOOGLE_ID!,
@@ -76,9 +73,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   callbacks: {
     async signIn({ user, account }) {
-      
-      if (!user?.id) return false;
-      if (!user.email) return false;
+      if (!user?.id && !user?.email) return false;
 
       if (account?.provider === "google" && user.email) {
         const fullName = user.name || "";
@@ -86,66 +81,38 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const firstName = parts[0] || "";
         const lastName = parts.slice(1).join(" ") || "";
 
+        const cookieStore = await cookies();
+        const groupStatus = (cookieStore.get('pendingGroupStatus')?.value || 'SOLO') as 'SOLO' | 'PENDING';
+
         const existingUser = await prisma.user.findUnique({
           where: { email: user.email },
         });
 
         if (existingUser) {
-          // User existe — crée/met à jour l'Account
-          const existingAccount = await prisma.account.findUnique({
-            where: {
-              provider_providerAccountId: {
-                provider: account.provider as string,
-                providerAccountId: account.providerAccountId as string,
-              },
-            },
-          });
-
-          if (!existingAccount) {
-            await prisma.account.create({
+          // User existe — mettre à jour provider si nécessaire
+          if (!existingUser.provider) {
+            await prisma.user.update({
+              where: { id: existingUser.id },
               data: {
-                userId: existingUser.id,
-                type: account.type || "oauth",
-                provider: account.provider as string,
-                providerAccountId: account.providerAccountId as string,
-                access_token: account.access_token,
-                refresh_token: account.refresh_token,
-                expires_at: account.expires_at,
-                token_type: account.token_type,
-                scope: account.scope,
-                id_token: account.id_token,
-                session_state: toSessionState(account.session_state),
+                provider: account.provider,
+                providerAccountId: account.providerAccountId,
               },
             });
           }
-
           user.id = existingUser.id;
           user.firstName = existingUser.firstName;
           user.lastName = existingUser.lastName;
         } else {
-          // User n'existe pas — crée User + Account
+          // User n'existe pas — créer User avec provider OAuth
           const newUser = await prisma.user.create({
             data: {
               email: user.email,
               firstName,
               lastName,
               emailVerified: new Date(),
-            },
-          });
-
-          await prisma.account.create({
-            data: {
-              userId: newUser.id,
-              type: account.type || "oauth",
               provider: account.provider,
-              providerAccountId: account.providerAccountId || "",
-              access_token: account.access_token,
-              refresh_token: account.refresh_token,
-              expires_at: account.expires_at,
-              token_type: account.token_type,
-              scope: account.scope,
-              id_token: account.id_token,
-              session_state: toSessionState(account.session_state),
+              providerAccountId: account.providerAccountId,
+              groupStatus,
             },
           });
 
@@ -153,6 +120,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.firstName = firstName;
           user.lastName = lastName;
         }
+
+        cookieStore.delete('pendingGroupStatus');
       }
       return true;
     },

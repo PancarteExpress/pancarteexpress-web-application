@@ -33,78 +33,59 @@ export const authService = {
 
   async signIn(params: SignInParams) {
     const { user, account } = params;
+    
     if (account?.provider === "google" && user.email) {
       const fullName = user.name || "";
       const parts = fullName.split(" ");
       const firstName = parts[0] || "";
       const lastName = parts.slice(1).join(" ") || "";
 
+      // Récupérer groupStatus du cookie
+      const { cookies } = await import("next/headers");
+      const cookieStore = await cookies();
+      const groupStatus = (cookieStore.get('pendingGroupStatus')?.value || 'SOLO') as 'SOLO' | 'PENDING';
+
       const existingUser = await prisma.user.findUnique({
         where: { email: user.email },
       });
 
       if (existingUser) {
-        try {
-        // User existe déjà (créé via credentials) — crée l'Account
-        await prisma.account.create({
-          data: {
-            userId: existingUser.id,
-            type: account.type as string || "oauth",
-            provider: account.provider,
-            providerAccountId: account.providerAccountId as string || "",
-            access_token: account.access_token,
-            refresh_token: account.refresh_token,
-            expires_at: account.expires_at,
-            token_type: account.token_type,
-            scope: account.scope,
-            id_token: account.id_token,
-            session_state: account.session_state,
-          },
-        });
-        } catch (error: unknown) {
-        // Account existe déjà, c'est normal
-      }
-
-      user.id = existingUser.id;
-      user.firstName = existingUser.firstName;
-      user.lastName = existingUser.lastName;
-        
+        // User existe — mettre à jour provider si nécessaire
+        if (!existingUser.provider) {
+          await prisma.user.update({
+            where: { id: existingUser.id },
+            data: {
+              provider: account.provider,
+              providerAccountId: account.providerAccountId as string,
+            },
+          });
+        }
+        user.id = existingUser.id;
+        user.firstName = existingUser.firstName;
+        user.lastName = existingUser.lastName;
       } else {
-        // User n'existe pas — crée-le + Account
+        // User n'existe pas — créer avec provider OAuth
         const newUser = await prisma.user.create({
           data: {
             email: user.email,
             firstName,
             lastName,
             emailVerified: new Date(),
+            provider: account.provider,
+            providerAccountId: account.providerAccountId as string,
+            groupStatus, // ← Utiliser la valeur du cookie
           },
         });
-
-        try { 
-        await prisma.account.create({
-          data: {
-            userId: newUser.id,
-            type: (account.type as string) || "oauth",
-            provider: (account.provider as string) || "google",
-            providerAccountId: (account.providerAccountId as string) || "",
-            access_token: account.access_token,
-            refresh_token: account.refresh_token,
-            expires_at: account.expires_at,
-            token_type: account.token_type,
-            scope: account.scope,
-            id_token: account.id_token,
-            session_state: account.session_state,
-          },
-        });
-        } catch (error: unknown) {
-          // Account existe déjà, c'est normal
-        }
 
         user.id = newUser.id;
         user.firstName = firstName;
         user.lastName = lastName;
       }
+
+      // Nettoyer le cookie
+      cookieStore.delete('pendingGroupStatus');
     }
+    
     return true;
   },
 
@@ -142,8 +123,7 @@ export const authService = {
     password: string,
     phoneNumber: string,
     companyName: string | undefined,
-    isGroup: boolean,
-    groupName?: string
+    groupStatus: 'SOLO' | 'PENDING'
   ) {
     const verificationToken = await prisma.verificationToken.findUnique({
       where: { token: code },
@@ -159,14 +139,6 @@ export const authService = {
 
     const hashedPassword = await hashPassword(password);
 
-    let groupId: string | null = null;
-    if (isGroup && groupName) {
-      const group = await prisma.group.create({
-        data: { name: groupName },
-      });
-      groupId = group.id;
-    }
-
     const user = await prisma.user.create({
       data: {
         email,
@@ -176,7 +148,7 @@ export const authService = {
         companyName,
         password: hashedPassword,
         emailVerified: new Date(),
-        groupId,
+        groupId: null,
       },
     });
 

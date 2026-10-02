@@ -3,12 +3,12 @@
 import styles from './LoginForm.module.css';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, type LoginInput } from "../../types";
-import { useAuth } from "../../hooks/useAuth";
+import { loginSchema, type LoginInput } from "../../../types";
+import { useAuth } from "../../../hooks/useAuth";
 import { useRouter } from "next/navigation";
 
 import Link from "next/link";
-import { useAuthStore } from '../../store/authStore';
+import { useAuthStore } from '../../../store/authStore';
 import { useState } from 'react';
 
 interface LoginFormProps {

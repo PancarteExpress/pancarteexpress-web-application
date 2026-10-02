@@ -14,8 +14,6 @@ export const registerSchema = z.object({
   confirmPassword: z.string(),
   phoneNumber: phoneSchema,
   companyName: z.string().optional(),
-  isGroup: z.boolean(),
-  groupName: z.string().optional(),
 })
 .refine((data) => data.password === data.confirmPassword, {
   message: "Les mots de passe ne correspondent pas",
@@ -34,8 +32,7 @@ export const verifyEmailSchema = z.object({
   password: z.string().min(3, "Min 3 characters"),
   phoneNumber: z.string().min(10, "Phone number required"),
   companyName: z.string().optional(),  
-  isGroup: z.boolean(),
-  groupName: z.string().optional(),
+  groupStatus: z.enum(['SOLO', 'PENDING']),
 });
 
 export const loginSchema = z.object({

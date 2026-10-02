@@ -7,6 +7,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
 
+import styles from './ForgotPasswordForm.module.css';
+import { FaUnlockKeyhole } from "react-icons/fa6";
+
 interface ForgotPasswordFormProps {
   locale: string;
 }
@@ -126,46 +129,53 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Step 1: Email */}
-      {step === "email" && (
-        <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)} className="space-y-4">
-          <div>
+    <div className={styles.mainContainer}>
+      <div className={styles.credentials}>
+        
+        {/* Step 1: Email */}
+        {step === "email" && (<>
+        <div className={styles.header}>
+          <FaUnlockKeyhole size={30} style={{color: "#0E4D9A"}}/>
+          <label>Veuillez entrer ladresse e-mail associée à votre compte</label>
+        </div>
+        
+        <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)}>
+          <div className={styles.inputs}>
             <label className="block text-sm font-medium">Email</label>
             <input
               {...emailForm.register("email")}
               type="email"
-              className="w-full px-3 py-2 border rounded"
             />
-            {emailForm.formState.errors.email && (
-              <span className="text-red-500 text-sm">{emailForm.formState.errors.email.message}</span>
-            )}
           </div>
 
-          {error && <div className="p-3 bg-red-100 text-red-700 rounded text-sm">{error}</div>}
+          {(emailForm.formState.errors.email || error) &&
+          <div className={styles.error}>
+            {error || emailForm.formState.errors.email?.message}
+          </div>}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-          >
+          <button type="submit" disabled={isLoading} className={styles.bouton}>
             {isLoading ? "Sending..." : "Send Code"}
           </button>
 
-          <div className="text-center text-sm">
-            <Link href={`/${locale}/login`} className="text-blue-600 hover:underline">
+          <div style={{ marginTop: '20px', textAlign: 'center' }}>
+            <Link href={`/${locale}/login`} style={{ textDecoration: 'none', color: '#0E4D9A', fontWeight: '700' }}>
               Back to login
             </Link>
           </div>
         </form>
-      )}
+        </>
+        )}
 
-      {/* Step 2: Code */}
-      {step === "code" && (
-        <form onSubmit={codeForm.handleSubmit(handleCodeSubmit)} className="space-y-4">
-          <p className="text-sm text-gray-600">Enter the 6-digit code sent to {email}</p>
+        {/* Step 2: Code */}
+        {step === "code" && (<>
+        <div className={styles.header}>
+          <FaUnlockKeyhole size={30} style={{color: "#0E4D9A"}}/>
+          <label>Enter the 6-digit code sent to <span style={{ fontWeight: '700' }}>{email}</span></label>
+        </div>
+        
+        <form onSubmit={codeForm.handleSubmit(handleCodeSubmit)} >
 
-          <div>
+          <div className={styles.inputs}>
             <label className="block text-sm font-medium">Code</label>
             <input
               {...codeForm.register("code")}
@@ -174,71 +184,68 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
               placeholder="000000"
               className="w-full px-3 py-2 border rounded text-center text-2xl tracking-widest"
             />
-            {codeForm.formState.errors.code && (
-              <span className="text-red-500 text-sm">{codeForm.formState.errors.code.message}</span>
-            )}
           </div>
 
-          {error && <div className="p-3 bg-red-100 text-red-700 rounded text-sm">{error}</div>}
-          {success && <div className="p-3 bg-green-100 text-green-700 rounded text-sm">{success}</div>}
+          {(codeForm.formState.errors.code || error) &&
+          <div className={styles.error}>
+            {error || codeForm.formState.errors.code?.message}
+          </div>}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-          >
+          {success && <div className={styles.codeSent}>{success}</div>}
+
+          <button type="submit" disabled={isLoading} className={styles.bouton}>
             {isLoading ? "Verifying..." : "Verify Code"}
           </button>
 
-          <button
-            type="button"
-            onClick={() => setStep("email")}
-            className="w-full text-blue-600 hover:underline"
-          >
-            Back
-          </button>
+          <div style={{ marginTop: '20px', textAlign: 'center' }}>
+            <button type="button" onClick={() => setStep("email")} style={{ all: 'unset', textDecoration: 'none', color: '#0E4D9A', fontWeight: '700', cursor: 'pointer' }}>
+              Back to send code
+            </button>
+          </div>
         </form>
-      )}
+        </>
+        )}
 
-      {/* Step 3: Reset Password */}
-      {step === "reset" && (
+        {/* Step 3: Reset Password */}
+        {step === "reset" && (<>
+        <div className={styles.header}>
+          <FaUnlockKeyhole size={30} style={{color: "#0E4D9A"}}/>
+          <label>Veuillez entrer votre nouveau mot de passe</label>
+        </div>
+
         <form onSubmit={resetForm.handleSubmit(handleResetSubmit)} className="space-y-4">
-          <div>
+          <div className={styles.inputs}>
             <label className="block text-sm font-medium">New Password</label>
             <input
               {...resetForm.register("password")}
               type="password"
               className="w-full px-3 py-2 border rounded"
             />
-            {resetForm.formState.errors.password && (
-              <span className="text-red-500 text-sm">{resetForm.formState.errors.password.message}</span>
-            )}
           </div>
 
-          <div>
+          <div className={styles.inputs}>
             <label className="block text-sm font-medium">Confirm Password</label>
             <input
               {...resetForm.register("confirmPassword")}
               type="password"
               className="w-full px-3 py-2 border rounded"
             />
-            {resetForm.formState.errors.confirmPassword && (
-              <span className="text-red-500 text-sm">{resetForm.formState.errors.confirmPassword.message}</span>
-            )}
           </div>
 
+          {(resetForm.formState.errors.password ||resetForm.formState.errors.confirmPassword || error) &&
+          <div className={styles.error}>
+            {resetForm.formState.errors.password?.message || resetForm.formState.errors.confirmPassword?.message || error}
+          </div>}
 
-          {error && <div className="p-3 bg-red-100 text-red-700 rounded text-sm">{error}</div>}
+          {success && <div className={styles.codeSent}>{success}</div>}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-          >
+           <button type="submit" disabled={isLoading} className={styles.bouton}>
             {isLoading ? "Resetting..." : "Reset Password"}
           </button>
         </form>
-      )}
+        </>
+        )}
+      </div>
     </div>
   );
 }
