@@ -43,7 +43,6 @@
     background: white;
     border-radius: 10px;
     border: 1px solid #D8E8F8;
-    overflow: hidden;
 }
  
 .mainContainer .container .items h3 {
@@ -107,7 +106,6 @@
     background: white;
     border-radius: 10px;
     border: 1px solid #D8E8F8;
-    overflow: hidden;
 }
  
 .mainContainer .container .form .section {

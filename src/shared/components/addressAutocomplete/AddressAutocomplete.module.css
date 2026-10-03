@@ -1,8 +1,45 @@
-.addressInput {
+.wrapper { 
+    position: relative; 
+}
+
+.wrapper .addressInput {
     padding: 5px;
     font-size: 1.2rem;
     color: #0E4D9A;
     border-radius: 10px;
     border: 2px solid #0E4D9A;
     background-color: transparent;
+    width: 100%;
 }
+
+.wrapper .suggestions {
+  position: absolute; 
+  top: 50px; 
+  left: 0; 
+  right: 0; 
+  z-index: 20;
+  margin: 4px 0 0; padding: 4px 0; list-style: none;
+  background: #F8FAFD; 
+  border: 1px solid #d6dde8; 
+  border-radius: 8px;
+  box-shadow: 0px 0px 17px #0E4D9A;
+  max-height: 260px; overflow-y: auto;
+}
+
+.wrapper .suggestions .suggestion { 
+    padding: 8px 12px; 
+    margin: 5px;
+
+    cursor: pointer; 
+    border: 3px solid #D8E8F8;
+    border-radius: 10px;
+    color: #92A0B1;
+    font-weight: 700;
+}
+
+.wrapper .suggestions .suggestion:hover { 
+    background: #0E3A8C; 
+    color: white;
+}
+
+.wrapper .suggestions.suggestionActive { background: #eef3fb; }
