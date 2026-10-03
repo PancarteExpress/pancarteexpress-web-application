@@ -1,6 +1,8 @@
 {
 
     "title": "Panier",
+    "priceOnQuote": "Prix sur soumission",
+    "servicesQuoteNote": "Les services sont facturés séparément, sur soumission.",
     "loading": "Chargement du panier",
     "emptyCart": "Votre panier est vide.",
     "goToServices": "Faire une demande de service",

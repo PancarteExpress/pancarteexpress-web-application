@@ -4,20 +4,61 @@
     text-align: left;
 }
 
-
-
-
-
 .mainContainer fieldset {
-    padding: 10px;
     border: none;
 }
 
-.mainContainer fieldset legend {
-    font-size: 1.2rem;
-    color: #5F7FA8;
-    font-weight: 900;
+.mainContainer fieldset .radioGroup {
+  display: flex;
+  gap: 0;
+  margin-bottom: 20px;
 }
+
+.mainContainer fieldset .radioGroup .radioLabel {
+  flex: 1;
+  position: relative;
+}
+
+.mainContainer fieldset .radioGroup .radioInput {
+  display: none;
+}
+
+.radioInput:checked + .radioButton {
+  background-color: #0E3A8C;
+}
+
+.radioInput:not(:checked) + .radioButton {
+  background-color: #F8FAFD;
+  color: #0E3A8C !important;
+}
+
+.mainContainer fieldset .radioGroup .radioButton {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border: 2px solid #D8E8F8;
+  color: #D8E8F8;
+  font-weight: 900;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 .mainContainer fieldset .addressSelected {
     text-align: center;

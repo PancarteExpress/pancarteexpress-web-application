@@ -8,12 +8,11 @@ import styles from './CartSummary.module.css';
 
 interface Props {
   estimate: Totals;
-  hasProducts: boolean;
   hasServices: boolean;
   locale: 'fr' | 'en';
 }
 
-export default function CartSummary({ estimate, hasProducts, hasServices, locale }: Props) {
+export default function CartSummary({ estimate, hasServices, locale }: Props) {
   const t = useTranslations('cart');
   const fmt = (cents: number) => formatCents(cents, locale);
 
@@ -22,13 +21,7 @@ export default function CartSummary({ estimate, hasProducts, hasServices, locale
       <h2 id="cart-summary-title" className={styles.title}>{t('summaryTitle')}</h2>
 
       <dl className={styles.rows}>
-        {hasProducts && (
-          <div className={styles.row}><dt>{t('productsSubtotal')}</dt><dd>{fmt(estimate.productsSubtotal)}</dd></div>
-        )}
-        {hasServices && (
-          <div className={styles.row}><dt>{t('servicesSubtotal')}</dt><dd>{fmt(estimate.servicesSubtotal)}</dd></div>
-        )}
-        <div className={`${styles.row} ${styles.separator}`}><dt>{t('subtotal')}</dt><dd>{fmt(estimate.subtotal)}</dd></div>
+        <div className={styles.row}><dt>{t('subtotal')}</dt><dd>{fmt(estimate.subtotal)}</dd></div>
         <div className={styles.row}><dt>{t('tps')}</dt><dd>{fmt(estimate.tps)}</dd></div>
         <div className={styles.row}><dt>{t('tvq')}</dt><dd>{fmt(estimate.tvq)}</dd></div>
         <div className={`${styles.row} ${styles.totalRow}`}>
@@ -37,10 +30,10 @@ export default function CartSummary({ estimate, hasProducts, hasServices, locale
         </div>
       </dl>
 
-      <p className={styles.note}>
-        {t('estimateNote')}
-        {hasProducts && ` ${t('shippingAtCheckout')}`}
-      </p>
+      <p className={styles.note}>{t('estimateNote')}</p>
+      {hasServices && <p className={styles.note}>{t('servicesQuoteNote')}</p>}
+
+      {hasServices && <p className={styles.note}>{t('servicesQuoteNote')}</p>}
 
       <Link href={`/${locale}/cart/checkout`} className={styles.checkout}>
         {t('checkout')}

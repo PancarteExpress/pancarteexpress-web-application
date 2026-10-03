@@ -6,6 +6,7 @@
 }
 
 .mainContainer .container {
+    align-items: center;
     width: 60%;
     display: flex;
     flex-direction: column;

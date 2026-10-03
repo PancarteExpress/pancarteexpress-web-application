@@ -13,7 +13,6 @@ import AddressAutocomplete from '@/shared/components/addressAutocomplete/Address
 import type { ParsedAddress } from '@/shared/types/address';
 import { useCart } from '@/features/cart/hooks/useCart';
 import { formatCents } from '@/lib/pricing/money';
-import { calculateServiceRequestPrice } from '@/lib/pricing/servicePricing';
 import { checkoutSchema, type CheckoutInput } from '../../types';
 import {
   buildCheckoutPayload,
@@ -58,6 +57,9 @@ function CheckoutForm() {
   const { data: session, status } = useSession();
   const isAuthenticated = status === 'authenticated';
   const { items, hasHydrated, clear } = useCart();
+
+  const hasProducts = items.some((i) => i.kind === 'product');
+  const requiresPayment = !isAuthenticated && hasProducts;
 
   const stripe = useStripe();
   const elements = useElements();
@@ -125,14 +127,14 @@ function CheckoutForm() {
     setSubmitError(null);
     const cardElement = elements?.getElement(CardNumberElement) ?? null;
 
-    if (!isAuthenticated) {
+    if (requiresPayment) {
       if (!(cardComplete.number && cardComplete.expiry && cardComplete.cvc)) {
         setCardError('Veuillez compléter les informations de votre carte');
         return;
       }
       // Vérifié AVANT l'appel API : on ne crée pas une commande qu'on ne pourrait pas payer
       if (!stripe || !cardElement) {
-        setSubmitError("Le module de paiement n'est pas encore chargé. Réessayez dans un instant.");
+        setSubmitError('Un paiement est requis, mais le module de paiement est indisponible. Rechargez la page.');
         return;
       }
     }
@@ -200,15 +202,13 @@ function CheckoutForm() {
           <p>
             {paid ? 'Votre paiement a été reçu. ' : 'Votre commande a été envoyée. '}
             Commande n° <strong>{confirmation.orderNumber}</strong>.
-            {!paid && (
-              <>
-                <br />
-                Vous pouvez suivre son statut dans votre tableau de bord.
-              </>
-            )}
+            <br />
+            {isAuthenticated
+              ? 'Vous pouvez suivre son statut dans votre tableau de bord.'
+              : 'Nous vous contacterons par courriel pour la suite.'}
           </p>
-          <Link href={paid ? `/${locale}/shop` : `/${locale}/dashboard`}>
-            {paid ? 'Retour à la boutique' : 'Voir mes commandes'}
+          <Link href={isAuthenticated ? `/${locale}/dashboard` : `/${locale}/shop`}>
+            {isAuthenticated ? 'Voir mes commandes' : 'Retour à la boutique'}
           </Link>
         </div>
       </div>
@@ -237,7 +237,7 @@ function CheckoutForm() {
               <div key={item.id} className={styles.item}>
                 <span>{tCart(`requestType.${item.requestType}`)}</span>
                 <span />
-                <span>{formatCents(calculateServiceRequestPrice(item.addresses), locale)}</span>
+                <span>{tCart('priceOnQuote')}</span>
               </div>
             ),
           )}
@@ -262,7 +262,7 @@ function CheckoutForm() {
             </div>
           </div>
 
-          {!isAuthenticated && (
+          {requiresPayment && (
             <div className={styles.section}>
               <div className={styles.formGroup}>
                 <label>{t('cardNumber')}</label>
@@ -282,7 +282,8 @@ function CheckoutForm() {
             </div>
           )}
 
-          <div className={styles.section}>
+          {hasProducts && 
+            <div className={styles.section}>
             <div className={styles.radioGroup}>
               <label className={styles.radioLabel}>
                 <input className={styles.radioInput} type="radio" value="pickup" {...deliveryModeField} />
@@ -334,13 +335,14 @@ function CheckoutForm() {
                 />
               </div>
             )}
-          </div>
+            </div>
+          }
 
           <div className={styles.section}>
             {firstError && <div className={styles.error}>{firstError}</div>}
             {/* NOUVEAU : désactivé pendant l'envoi (anti double clic) */}
             <button type="submit" disabled={items.length === 0 || isSubmitting}>
-              {isSubmitting ? 'Envoi en cours…' : isAuthenticated ? t('submitOrder') : t('makePay')}
+              {isSubmitting ? 'Envoi en cours…' : requiresPayment ? t('makePay') : t('submitOrder')}
             </button>
           </div>
         </form>

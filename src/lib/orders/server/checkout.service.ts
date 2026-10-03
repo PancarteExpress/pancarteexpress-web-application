@@ -5,7 +5,6 @@ import { Prisma, type OrderStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe/server';
 import { calculateTotals } from '@/lib/pricing/calculateTotals';
-import { calculateServicePrice } from '@/lib/pricing/servicePricing';
 import type { CheckoutItemPayload, CheckoutPayload, CheckoutResponse } from '@/lib/validations/checkout';
 import { CheckoutConflictError, PaymentProviderError, ProductUnavailableError } from './errors';
 
@@ -41,14 +40,12 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
   const serviceItems = payload.items.filter((i): i is ServiceRequestItem => i.kind === 'serviceRequest');
 
   const orderLines = await buildProductLines(productItems);
-  const totals = calculateTotals({
-    productLines: orderLines,
-    serviceRequests: serviceItems,
-    fulfillmentMethod: payload.fulfillment?.method ?? null,
-  });
+  const totals = calculateTotals(orderLines);
 
   const shipping = payload.fulfillment?.method === 'DELIVERY' ? payload.fulfillment.shippingAddress : null;
-  const status: OrderStatus = user ? 'PENDING' : 'AWAITING_PAYMENT';
+  
+  const requiresPayment = !user && totals.total > 0;
+  const status: OrderStatus = requiresPayment ? 'AWAITING_PAYMENT' : 'PENDING';
 
   let order: { id: string; orderNumber: number; total: number };
   try {
@@ -67,9 +64,9 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
         shippingCity: shipping?.city ?? null,
         shippingPostalCode: shipping?.postalCode ?? null,
         shippingProvince: shipping?.province ?? null,
-        productsSubtotal: totals.productsSubtotal,
-        servicesSubtotal: totals.servicesSubtotal,
-        shippingFee: totals.shippingFee,
+        productsSubtotal: totals.subtotal,
+        servicesSubtotal: 0, // services facturés séparément, sur soumission
+        shippingFee: 0,      // livraison gratuite
         subtotal: totals.subtotal,
         tps: totals.tps,
         tvq: totals.tvq,
@@ -92,11 +89,11 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
     throw error;
   }
 
-  if (user) {
+  if (!requiresPayment) {
     return { mode: 'submitted', orderNumber: order.orderNumber, total: order.total };
   }
 
-  return attachPaymentIntent(order, payload.contact.email, payload.idempotencyKey);
+  return attachPaymentIntent(order, payload.contact.email);
 }
 
 /* ── Produits ─────────────────────────────────────────────────── */
@@ -140,7 +137,7 @@ const toServiceRequestCreate = (item: ServiceRequestItem): Prisma.ServiceRequest
       services: {
         create: address.services.map((service) => ({
           type: service.type,
-          unitPrice: calculateServicePrice(service),
+          unitPrice: 0,
           // Issu d'un JSON parsé et validé par Zod : forcément sérialisable
           details: service.details as Prisma.InputJsonValue,
         })),
@@ -154,7 +151,6 @@ const toServiceRequestCreate = (item: ServiceRequestItem): Prisma.ServiceRequest
 async function attachPaymentIntent(
   order: { id: string; orderNumber: number; total: number },
   email: string,
-  idempotencyKey: string,
 ): Promise<CheckoutResponse> {
   let intentId: string | null = null;
 
@@ -168,7 +164,7 @@ async function attachPaymentIntent(
         metadata: { orderId: order.id, orderNumber: String(order.orderNumber) },
       },
       // Même clé que la commande : un retry ne crée pas un second PaymentIntent
-      { idempotencyKey: `checkout-${idempotencyKey}` },
+      { idempotencyKey: `order-${order.id}` },
     );
     intentId = intent.id;
 

@@ -1,6 +1,8 @@
 {
     
     "title": "Cart",
+    "priceOnQuote": "Price on quote",
+    "servicesQuoteNote": "Services are billed separately, on quote.",
     "loading": "Loading cart",
     "emptyCart": "Your cart is empty.",
     "goToServices": "Request a service",

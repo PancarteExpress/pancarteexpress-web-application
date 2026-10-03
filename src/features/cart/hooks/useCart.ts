@@ -22,16 +22,13 @@ export function useCart() {
     const productLines = items.flatMap((i) =>
       i.kind === 'product' ? [{ unitPrice: i.unitPrice, quantity: i.quantity }] : [],
     );
-    const serviceRequests = items.flatMap((i) =>
-      i.kind === 'serviceRequest' ? [{ addresses: i.addresses }] : [],
-    );
 
     return {
-      // Estimation : la livraison est choisie au checkout
-      estimate: calculateTotals({ productLines, serviceRequests, fulfillmentMethod: null }),
+      // Estimation : seuls les produits ont un prix
+      estimate: calculateTotals(productLines),
       itemCount: items.reduce((n, i) => n + (i.kind === 'product' ? i.quantity : 1), 0),
       hasProducts: productLines.length > 0,
-      hasServices: serviceRequests.length > 0,
+      hasServices: items.some((i) => i.kind === 'serviceRequest'),
     };
   }, [items]);
 

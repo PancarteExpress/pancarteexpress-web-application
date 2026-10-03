@@ -14,6 +14,7 @@ import { GoogleLoginButton } from '../../googleLoginButton/GoogleLoginButton';
 interface RegisterFormProps {
   locale: string;
   packageChoice: "group" | "solo" | 'none';
+  setPackageChoice: (value: "group" | "solo" | 'none') => void;
 }
 
 const verifyCodeSchema = z.object({
@@ -22,7 +23,7 @@ const verifyCodeSchema = z.object({
 
 type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
 
-export function RegisterForm({ locale, packageChoice }: RegisterFormProps) {
+export function RegisterForm({ locale, packageChoice, setPackageChoice }: RegisterFormProps) {
   const router = useRouter();
   const { register: registerUser, login } = useAuth();
 
@@ -83,7 +84,7 @@ export function RegisterForm({ locale, packageChoice }: RegisterFormProps) {
       const errorMessage = err instanceof Error ? err.message : "Verification failed";
       useAuthStore.setState({ error: errorMessage });
     }
-  };
+  };  
 
   useEffect(() => {
     if (packageChoice === 'none') {
@@ -106,15 +107,19 @@ export function RegisterForm({ locale, packageChoice }: RegisterFormProps) {
         {step === "register" && (<>
 
         <fieldset>
-            <legend>dasdasdsadasdsa</legend>
-            <div className={styles.userChoice}>
-                <label className={groupStatus === 'solo' ? styles.checked : ''}>
-                    <input type="radio" id="solo" name="groupStatus" value="solo" checked={groupStatus === "solo"} onChange={() => setGroupStatus('solo')} /> 
-                    Forfait individuel
+            <div className={styles.radioGroup}>
+                <label className={styles.radioLabel}>
+                    <input className={styles.radioInput} type="radio" id="solo" name="groupStatus" value="solo" checked={groupStatus === "solo"} onChange={() => { setGroupStatus('solo'); setPackageChoice('solo'); }} /> 
+                    <span className={styles.radioButton} style={{ borderRadius: '10px 0 0 10px' }}>
+                      Forfait individuel
+                    </span>
                 </label>
-                <label className={groupStatus === 'group' ? styles.checked : ''}>
-                    <input type="radio" id="group" name="groupStatus" value="group" checked={groupStatus === "group"} onChange={() => setGroupStatus('group')}/>
-                    Forfait équipe
+                <label className={styles.radioLabel}>
+                    <input className={styles.radioInput} type="radio" id="group" name="groupStatus" value="group" checked={groupStatus === "group"} onChange={() => { setGroupStatus('group'); setPackageChoice('group'); }}/>
+                    <span className={styles.radioButton} style={{ borderRadius: '0 10px 10px 0' }}>
+                      Forfait équipe
+                    </span>
+                    
                 </label>
             </div>
         </fieldset>

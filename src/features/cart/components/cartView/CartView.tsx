@@ -25,12 +25,11 @@ export default function CartView() {
   if (items.length === 0) {
     return (
       <div className={styles.page}>
-        <h1 className={styles.title}>{t('title')}</h1>
         <div className={styles.empty}>
           <p>{t('emptyCart')}</p>
           <div className={styles.emptyActions}>
-            <Link href={`/${locale}/services`} className={styles.link}>{t('goToServices')}</Link>
             <Link href={`/${locale}/shop`} className={styles.link}>{t('goToShop')}</Link>
+            <Link href={`/${locale}/services`} className={styles.link}>{t('goToServices')}</Link>
           </div>
         </div>
       </div>
@@ -76,7 +75,7 @@ export default function CartView() {
           )}
         </div>
 
-        <CartSummary estimate={estimate} hasProducts={hasProducts} hasServices={hasServices} locale={locale} />
+        <CartSummary estimate={estimate} hasServices={hasServices} locale={locale} />
       </div>
     </div>
   );

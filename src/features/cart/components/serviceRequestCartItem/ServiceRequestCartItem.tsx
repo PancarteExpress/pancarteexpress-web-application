@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { formatCents } from '@/lib/pricing/money';
-import { calculateServicePrice, calculateServiceRequestPrice } from '@/lib/pricing/servicePricing';
 import { formatAddress } from '@/features/services/utils/formatAddress';
 import type { ServiceRequestCartItem as ServiceRequestCartItemType } from '../../types/cart';
 import styles from './ServiceRequestCartItem.module.css';
@@ -25,7 +23,7 @@ export default function ServiceRequestCartItem({ item, locale, onRemove }: Props
     <article className={styles.card}>
       <header className={styles.header}>
         <span className={styles.badge}>{t(`requestType.${item.requestType}`)}</span>
-        <span className={styles.total}>{formatCents(calculateServiceRequestPrice(addresses), locale)}</span>
+        <span className={styles.total}>{t('priceOnQuote')}</span>
       </header>
 
       <ul className={styles.addresses}>
@@ -36,7 +34,6 @@ export default function ServiceRequestCartItem({ item, locale, onRemove }: Props
               {address.services.map((service) => (
                 <li key={service.id} className={styles.service}>
                   <span>{t(`serviceTypes.${service.type}`)}</span>
-                  <span>{formatCents(calculateServicePrice(service), locale)}</span>
                 </li>
               ))}
             </ul>
