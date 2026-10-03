@@ -16,7 +16,7 @@ export default async function DashboardPage({
 
   return (
     <div className="">
-      <DashboardContent user={session.user} />
+      <DashboardContent />
     </div>
   );
 }

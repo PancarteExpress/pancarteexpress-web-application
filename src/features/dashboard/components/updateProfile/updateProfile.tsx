@@ -11,19 +11,19 @@ import {
   type UpdatePasswordInput,
 } from "@/features/auth/types";
 import { useSession } from "next-auth/react";
+import { User } from "next-auth";
 
 interface UpdateProfileProps {
+  sessionUser?: User; // ou type complet
   onClose: () => void;
 }
 
-export default function UpdateProfile({ onClose }: UpdateProfileProps) {
-  const { data: session, update } = useSession();
+export default function UpdateProfile({ sessionUser, onClose }: UpdateProfileProps) {
+  const { update } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
 
-  type SessionUser = { firstName?: string; lastName?: string; email?: string };
-  const sessionUser = session?.user as SessionUser | undefined;
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -37,14 +37,33 @@ export default function UpdateProfile({ onClose }: UpdateProfileProps) {
     register: registerProfile,
     handleSubmit: handleSubmitProfile,
     formState: { errors: profileErrors },
+    reset: resetProfile,
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      firstName: sessionUser?.firstName || "",
-      lastName: sessionUser?.lastName || "",
-      email: sessionUser?.email || "",
+      firstName: "",
+      lastName: "",
+      email: "",
+      phoneNumber: "",
+      companyName: "",
+      role: "user",
+      groupStatus: "SOLO",
     },
   });
+
+  useEffect(() => {
+    if (sessionUser) {
+      resetProfile({
+        firstName: sessionUser.firstName || "",
+        lastName: sessionUser.lastName || "",
+        email: sessionUser.email || "",
+        phoneNumber: sessionUser.phoneNumber || "",
+        companyName: sessionUser.companyName || "",
+        role: sessionUser.role || "user",
+        groupStatus: sessionUser.groupStatus || "SOLO",
+      });
+    }
+  }, [sessionUser, resetProfile]);
 
   // Password form
   const {
@@ -115,18 +134,15 @@ export default function UpdateProfile({ onClose }: UpdateProfileProps) {
   return (
     <div className={styles.fixedContainer}>
       <div className={styles.mainContainer}>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold">Update Profile</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ✕
+        <div className={styles.header}>
+          <h2>Update Profile</h2>
+          <button onClick={onClose}>
+            Fermer
           </button>
         </div>
 
         {/* Profile Form */}
-        <div className="mb-8">
+        <div className={styles.personalInfos}>
           <h3 className="text-xl font-semibold mb-4">Profile Information</h3>
 
           {profileSuccess && (
@@ -136,60 +152,97 @@ export default function UpdateProfile({ onClose }: UpdateProfileProps) {
           )}
 
           <form onSubmit={handleSubmitProfile(onSubmitProfile)} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium">First Name</label>
-              <input
-                {...registerProfile("firstName")}
-                type="text"
-                className="w-full px-3 py-2 border rounded"
-              />
-              {profileErrors.firstName && (
-                <span className="text-red-500 text-sm">
-                  {profileErrors.firstName.message}
-                </span>
-              )}
+
+            <div className={styles.formGroup}>
+              <div className={styles.inputs}>
+                <label className="block text-sm font-medium">First Name</label>
+                <input
+                  {...registerProfile("firstName")}
+                  type="text"
+                  className="w-full px-3 py-2 border rounded"
+                />
+                {profileErrors.firstName && (
+                  <span className="text-red-500 text-sm">
+                    {profileErrors.firstName.message}
+                  </span>
+                )}
+              </div>
+
+              <div className={styles.inputs}>
+                <label className="block text-sm font-medium">Last Name</label>
+                <input
+                  {...registerProfile("lastName")}
+                  type="text"
+                  className="w-full px-3 py-2 border rounded"
+                />
+                {profileErrors.lastName && (
+                  <span className="text-red-500 text-sm">
+                    {profileErrors.lastName.message}
+                  </span>
+                )}
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium">Last Name</label>
-              <input
-                {...registerProfile("lastName")}
-                type="text"
-                className="w-full px-3 py-2 border rounded"
-              />
-              {profileErrors.lastName && (
-                <span className="text-red-500 text-sm">
-                  {profileErrors.lastName.message}
-                </span>
-              )}
+            <div className={styles.formGroup}>
+              <div className={styles.inputs}>
+                <label className="block text-sm font-medium">Email</label>
+                <input
+                  {...registerProfile("email")}
+                  type="email"
+                  className="w-full px-3 py-2 border rounded"
+                />
+                {profileErrors.email && (
+                  <span className="text-red-500 text-sm">
+                    {profileErrors.email.message}
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            <div className={styles.formGroup}>
+              <div className={styles.inputs}>
+                <label className="block text-sm font-medium">Phone Number</label>
+                <input
+                  {...registerProfile("phoneNumber")}
+                  type="tel"
+                  className="w-full px-3 py-2 border rounded"
+                />
+                {profileErrors.phoneNumber && (
+                  <span className="text-red-500 text-sm">
+                    {profileErrors.phoneNumber.message}
+                  </span>
+                )}
+              </div>
+
+              <div className={styles.inputs}>
+                <label className="block text-sm font-medium">Company Name</label>
+                <input
+                  {...registerProfile("companyName")}
+                  type="text"
+                  className="w-full px-3 py-2 border rounded"
+                />
+                {profileErrors.companyName && (
+                  <span className="text-red-500 text-sm">
+                    {profileErrors.companyName.message}
+                  </span>
+                )}
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium">Email</label>
-              <input
-                {...registerProfile("email")}
-                type="email"
-                className="w-full px-3 py-2 border rounded"
-              />
-              {profileErrors.email && (
-                <span className="text-red-500 text-sm">
-                  {profileErrors.email.message}
-                </span>
-              )}
+            <div className={styles.accountStatus}>
+              {sessionUser?.role === "admin" ? <span className={styles.role}>Administrateur</span> : <span className={styles.role}>User</span>}
+              {sessionUser?.groupStatus === "SOLO" &&<span className={styles.solo}>solo</span>}
+              {sessionUser?.groupStatus === "PENDING" &&<span className={styles.pending}>En attente de rejoindre un groupe</span>}
+              {sessionUser?.groupStatus === "JOINED" &&<span className={styles.joined}>PancarteExpress</span>}
             </div>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isLoading ? "Saving..." : "Save Profile"}
-            </button>
+            <div className={styles.btnSave}>
+              <button type="submit" disabled={isLoading}>
+                {isLoading ? "Saving..." : "Save Profile"}
+              </button>
+            </div>
           </form>
-        </div>
-
-        {/* Password Form */}
-        <div className="border-t pt-8">
+        
           <h3 className="text-xl font-semibold mb-4">Change Password</h3>
 
           {passwordSuccess && (
@@ -199,69 +252,61 @@ export default function UpdateProfile({ onClose }: UpdateProfileProps) {
           )}
 
           <form onSubmit={handleSubmitPassword(onSubmitPassword)} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium">
-                Current Password
-              </label>
-              <input
-                {...registerPassword("currentPassword")}
-                type="password"
-                className="w-full px-3 py-2 border rounded"
-              />
-              {passwordErrors.currentPassword && (
-                <span className="text-red-500 text-sm">
-                  {passwordErrors.currentPassword.message}
-                </span>
-              )}
+            <div className={styles.formGroup}>
+              <div className={styles.inputs}>
+                <label className="block text-sm font-medium">
+                  Current Password
+                </label>
+                <input
+                  {...registerPassword("currentPassword")}
+                  type="password"
+                  className="w-full px-3 py-2 border rounded"
+                />
+                {passwordErrors.currentPassword && (
+                  <span className="text-red-500 text-sm">
+                    {passwordErrors.currentPassword.message}
+                  </span>
+                )}
+              </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium">New Password</label>
-              <input
-                {...registerPassword("newPassword")}
-                type="password"
-                className="w-full px-3 py-2 border rounded"
-              />
-              {passwordErrors.newPassword && (
-                <span className="text-red-500 text-sm">
-                  {passwordErrors.newPassword.message}
-                </span>
-              )}
-            </div>
+            <div className={styles.formGroup}>
+              <div className={styles.inputs}>
+                <label className="block text-sm font-medium">New Password</label>
+                <input
+                  {...registerPassword("newPassword")}
+                  type="password"
+                  className="w-full px-3 py-2 border rounded"
+                />
+                {passwordErrors.newPassword && (
+                  <span className="text-red-500 text-sm">
+                    {passwordErrors.newPassword.message}
+                  </span>
+                )}
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium">
-                Confirm Password
-              </label>
-              <input
-                {...registerPassword("confirmPassword")}
-                type="password"
-                className="w-full px-3 py-2 border rounded"
-              />
-              {passwordErrors.confirmPassword && (
-                <span className="text-red-500 text-sm">
-                  {passwordErrors.confirmPassword.message}
-                </span>
-              )}
+              <div className={styles.inputs}>
+                <label className="block text-sm font-medium">
+                  Confirm Password
+                </label>
+                <input
+                  {...registerPassword("confirmPassword")}
+                    type="password"
+                    className="w-full px-3 py-2 border rounded"
+                />
+                {passwordErrors.confirmPassword && (
+                  <span className="text-red-500 text-sm">
+                    {passwordErrors.confirmPassword.message}
+                  </span>
+                )}
+              </div>
             </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isLoading ? "Saving..." : "Update Password"}
-            </button>
+            <div className={styles.btnSave}>
+              <button type="submit" disabled={isLoading}>
+                {isLoading ? "Saving..." : "Update Password"}
+              </button>
+            </div>
           </form>
-        </div>
-
-        <div className="mt-8">
-          <button
-            onClick={onClose}
-            className="w-full bg-gray-300 text-gray-700 py-2 rounded hover:bg-gray-400"
-          >
-            Close
-          </button>
         </div>
       </div>
     </div>

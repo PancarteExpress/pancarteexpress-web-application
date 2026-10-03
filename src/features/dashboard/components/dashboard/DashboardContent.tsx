@@ -1,27 +1,40 @@
 "use client";
 
-import { Session } from "next-auth";
 import styles from "./DashboardContent.module.css"
 import { useState } from "react";
 import UpdateProfile from "../updateProfile/updateProfile";
 import ProductOrders from "../productOrders/ProductOrders";
 
-interface DashboardContentProps {
-  user: Session["user"];
-}
+import { useSession } from "next-auth/react";
 
-export function DashboardContent({ user }: DashboardContentProps) {
+
+export function DashboardContent() {
+  
+  const { data: session } = useSession();
+  
+  const sessionUser = session?.user ;
 
   const [updateProfileOpen, setUpdateProfileOpen] = useState<boolean>(false);
 
   return (
     <div className={styles.mainContainer}>
+
+      {sessionUser?.groupStatus === 'PENDING' && <>
+        <div className={styles.groupStatePending}>La personne responsable de votre groupe doit approuver votre integration</div>
+      </>}
+      
+      {sessionUser?.groupStatus === 'JOINED' && <>
+        <div className={styles.groupStateJoined}>Vous faites partie de lequipe : {sessionUser?.group?.name}</div>
+      </>}
+
       <div className={styles.welcome}>
         <div className={styles.welcomeAvatar}>
           CFL
         </div>
         <div>
-          <p className={styles.welcomeTitle}>Bonjour, Cristian Fermin Lopez 👋</p>
+          <p className={styles.welcomeTitle}>
+            Bonjour, {sessionUser?.firstName} {sessionUser?.lastName} 👋 
+          </p>
           <p className={styles.welcomeSub}>
             Bienvenue dans votre espace personnel. Gérez vos commandes, adresses et
             informations de compte.
@@ -58,7 +71,10 @@ export function DashboardContent({ user }: DashboardContentProps) {
       
 
       {updateProfileOpen && (
-        <UpdateProfile onClose={() => setUpdateProfileOpen(false)} />
+        <UpdateProfile 
+          sessionUser={sessionUser}
+          onClose={() => setUpdateProfileOpen(false)} 
+        />
       )}
     </div>
   );

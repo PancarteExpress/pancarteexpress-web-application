@@ -38,33 +38,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           where: { email: credentials.email as string },
         });
 
-        console.log("User found:", user?.email);
-
-        if (!user) {
-          return null;
-        }
+        if (!user || !user.password) return null;
 
         const isPasswordValid = await bcryptCompare(
           credentials.password as string,
           user.password
         );
 
-        console.log("Password valid:", isPasswordValid);
+        if (!isPasswordValid) return null;
 
-        if (!isPasswordValid) {
-          console.log("❌ Invalid password");
-          return null;
-        }
-
-        console.log("✓ Authorization successful");
-
+        // Retourne tous les champs requis par l'interface User
         return {
           id: user.id,
           email: user.email,
-          firstName: user.firstName || "",
-          lastName: user.lastName || "",
+          role: user.role,
+          groupStatus: user.groupStatus,
+          groupId: user.groupId,
         };
-      },
+      }
     }),
   ],
   pages: {
@@ -128,16 +119,43 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user }: JWTParams): Promise<JWT> {
       if (user) {
         if (user.id) token.id = user.id;
+        
         token.firstName = user.firstName || "";
         token.lastName = user.lastName || "";
       }
+
+      if (token.id) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          include: {
+            orders: true,
+            group: true,
+          },
+        });
+        
+        if (dbUser) {
+          return { ...token, ...dbUser } as JWT;
+        }
+      }
+
       return token;
     },
+
     async session({ session, token }: { session: Session; token: JWT }): Promise<Session> {
       if (session.user) {
         session.user.id = token.id;
+        session.user.email = token.email;              // ← Ajoute ça
         session.user.firstName = token.firstName;
         session.user.lastName = token.lastName;
+        session.user.phoneNumber = token.phoneNumber;
+        session.user.companyName = token.companyName;
+        session.user.role = token.role;                // ← Ajoute ça aussi
+        session.user.groupStatus = token.groupStatus;
+        session.user.groupId = token.groupId;
+        session.user.createdAt = token.createdAt;    // ← Ajoute ça
+        session.user.updatedAt = token.updatedAt;
+        session.user.orders = token.orders;
+        session.user.group = token.group;
       }
       return session;
     },

@@ -4,13 +4,9 @@
     left: 0;
     width: 100vw;
     height: 100vh;
-
     display: flex;
     align-items: center;
-
-
     z-index: 1;
-
     background-color: rgba(14, 77, 154, 0.3);
 }
 
@@ -22,7 +18,136 @@
     height: 90vh;
     margin: 0 auto;
     width: 60%;
+
+    display: flex;
+    flex-direction: column;
 }
 
 @media (max-width: 1650px) { .mainContainer { width: 80%; } }
 @media (max-width: 1300px) { .mainContainer { width: 95%; } }
+
+.mainContainer .header {
+    flex: 5%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mainContainer .header h2 {
+    
+}
+
+.mainContainer .header button {
+    all: unset;
+    cursor: pointer;
+
+    background-color: #F8D8D8;
+    color: red;
+    border: 3px solid red;
+    border-radius: 10px;
+
+    padding: 10px;
+    font-weight: 700;
+    
+    display: flex;
+}
+
+.mainContainer .personalInfos {
+    flex: 95%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+}
+
+.mainContainer .personalInfos form {
+    display: flex;
+    flex-direction: column;    
+}
+
+.mainContainer .personalInfos .formGroup {
+    display: flex;
+    gap: 20px;
+    margin: 10px 0;
+}
+
+.mainContainer .personalInfos .formGroup .inputs {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 5px;
+}
+
+.mainContainer .personalInfos .formGroup label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    color: #5F7FA8;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.mainContainer .personalInfos .formGroup input {
+    padding: 9px 12px;
+    border: 1px solid #C5D8EF;
+    border-radius: 10px;
+    font-family: 'Inter', sans-serif;
+    background: #F8FAFD;
+    outline: none;
+    resize: none;
+}
+
+.mainContainer .personalInfos .accountStatus {
+    display: flex; 
+    gap: 10px;
+}
+
+.mainContainer .personalInfos .accountStatus .role {
+    border: 3px solid #0E4D9A;
+    background-color: #E8F1FB;
+    padding: 3px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.mainContainer .personalInfos .accountStatus .solo {
+    border: 3px solid #0E4D9A;
+    background-color: #E8F1FB;
+    padding: 3px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.mainContainer .personalInfos .accountStatus .pending {
+    border: 3px solid #F7C138;
+    background-color: #FFF0B3;
+    color: #7B5800;
+    padding: 3px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.mainContainer .personalInfos .accountStatus .joined {
+    border: 3px solid #0E4D9A;
+    background-color: #E8F1FB;
+    padding: 3px 20px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.mainContainer .personalInfos .btnSave {
+    display: flex;
+    justify-content: center;
+}
+
+.mainContainer .personalInfos .btnSave button {
+    all: unset;
+    background-color: #0E4D9A;
+    color: white;
+    font-weight: 700;
+    margin: 10px 0;
+    cursor: pointer;
+    padding: 10px;
+    width: 50%;
+    text-align: center;
+    border-radius: 10px;
+}

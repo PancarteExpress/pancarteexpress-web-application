@@ -219,10 +219,6 @@ function CheckoutForm() {
 
   return (
     <div className={styles.mainContainer}>
-      <div className={styles.hero}>
-        <label>{t('title')}</label>
-      </div>
-
       <div className={styles.container}>
         <div className={styles.items}>
           <h3>{t('cartSummary')}</h3>
@@ -246,6 +242,7 @@ function CheckoutForm() {
         <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className={styles.section}>
             <h3>{t('paymentData')}</h3>
+            
             <div className={styles.name}>
               <div className={styles.formGroup}>
                 <label htmlFor="firstName">{t('firstname')}</label>
@@ -256,6 +253,7 @@ function CheckoutForm() {
                 <input id="lastName" {...register('lastName')} />
               </div>
             </div>
+
             <div className={styles.formGroup}>
               <label htmlFor="email">{t('email')}</label>
               <input id="email" type="email" {...register('email')} readOnly={isAuthenticated} disabled={isAuthenticated} />

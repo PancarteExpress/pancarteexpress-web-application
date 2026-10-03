@@ -47,6 +47,10 @@ export const updateProfileSchema = z.object({
   firstName: firstNameSchema,
   lastName: lastNameSchema,
   email: emailSchema,
+  phoneNumber: phoneSchema.optional(),
+  companyName: z.string().optional(),
+  role: z.enum(["user", "admin"]).optional(),
+  groupStatus: z.enum(["SOLO", "PENDING", "JOINED"]).optional(),
 });
 
 export const updatePasswordSchema = z.object({

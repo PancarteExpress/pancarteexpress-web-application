@@ -174,6 +174,8 @@ export const authService = {
         firstName: input.firstName,
         lastName: input.lastName,
         email: input.email,
+        phoneNumber: input.phoneNumber,
+        companyName: input.companyName,
       },
     });
   },
