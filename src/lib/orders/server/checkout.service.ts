@@ -43,7 +43,7 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
   const totals = calculateTotals(orderLines);
 
   const shipping = payload.fulfillment?.method === 'DELIVERY' ? payload.fulfillment.shippingAddress : null;
-  
+
   const requiresPayment = !user && totals.total > 0;
   const status: OrderStatus = requiresPayment ? 'AWAITING_PAYMENT' : 'PENDING';
 
@@ -54,25 +54,27 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
       data: {
         idempotencyKey: payload.idempotencyKey,
         status,
+        // MODIFIÉ : les produits commencent en préparation ; null s'il n'y en a pas
+        productsStatus: orderLines.length > 0 ? 'PREPARING' : null,
         userId: user?.id ?? null,
         firstName: payload.contact.firstName,
         lastName: payload.contact.lastName,
         // Connecté : le courriel du compte fait foi, pas celui du formulaire
         email: user?.email ?? payload.contact.email,
-        fulfillmentMethod: payload.fulfillment?.method ?? null,
-        shippingStreet: shipping?.street ?? null,
-        shippingCity: shipping?.city ?? null,
-        shippingPostalCode: shipping?.postalCode ?? null,
-        shippingProvince: shipping?.province ?? null,
-        productsSubtotal: totals.subtotal,
-        servicesSubtotal: 0, // services facturés séparément, sur soumission
-        shippingFee: 0,      // livraison gratuite
+        phone: null, // MODIFIÉ : ajouté à l'étape 3
+        // MODIFIÉ : fulfillmentMethod / shipping* → delivery*
+        deliveryMode: payload.fulfillment?.method ?? null,
+        deliveryStreet: shipping?.street ?? null,
+        deliveryCity: shipping?.city ?? null,
+        deliveryPostalCode: shipping?.postalCode ?? null,
+        deliveryProvince: shipping?.province ?? null,
+        // MODIFIÉ : montants simplifiés (produits seulement)
         subtotal: totals.subtotal,
         tps: totals.tps,
         tvq: totals.tvq,
         total: totals.total,
         paidAt: null,
-        items: { create: orderLines },
+        products: { create: orderLines }, // MODIFIÉ : items → products
         serviceRequests: { create: serviceItems.map(toServiceRequestCreate) },
       },
       select: { id: true, orderNumber: true, total: true },
@@ -97,6 +99,7 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
 }
 
 /* ── Produits ─────────────────────────────────────────────────── */
+
 async function buildProductLines(items: ProductItem[]) {
   if (items.length === 0) return [];
 
@@ -110,7 +113,14 @@ async function buildProductLines(items: ProductItem[]) {
   return items.flatMap((item) => {
     const product = getProductBySlug(item.productId);
     return product
-      ? [{ productId: product.slug, productName: t(`${product.slug}.name`), unitPrice: product.price, quantity: item.quantity }]
+      ? [
+          {
+            productSlug: product.slug, // MODIFIÉ : productId → productSlug
+            productName: t(`${product.slug}.name`),
+            unitPrice: product.price,
+            quantity: item.quantity,
+          },
+        ]
       : [];
   });
 }
@@ -121,7 +131,8 @@ const toServiceRequestCreate = (item: ServiceRequestItem): Prisma.ServiceRequest
   requestType: item.requestType,
   addresses: {
     create: item.addresses.map((address) => ({
-      kind: address.type,
+      // MODIFIÉ : le client utilise encore 'address' ; la BD utilise 'civicAddress'
+      kind: address.type === 'address' ? 'civicAddress' : 'terrain',
       city: address.city,
       ...(address.type === 'address'
         ? {
@@ -137,7 +148,7 @@ const toServiceRequestCreate = (item: ServiceRequestItem): Prisma.ServiceRequest
       services: {
         create: address.services.map((service) => ({
           type: service.type,
-          unitPrice: 0,
+          // MODIFIÉ : unitPrice retiré ; status vaut TO_SCHEDULE par défaut (schéma)
           // Issu d'un JSON parsé et validé par Zod : forcément sérialisable
           details: service.details as Prisma.InputJsonValue,
         })),
@@ -163,7 +174,7 @@ async function attachPaymentIntent(
         receipt_email: email,
         metadata: { orderId: order.id, orderNumber: String(order.orderNumber) },
       },
-      // Même clé que la commande : un retry ne crée pas un second PaymentIntent
+      // Une clé par commande : une commande recréée obtient un nouveau paiement, sans conflit
       { idempotencyKey: `order-${order.id}` },
     );
     intentId = intent.id;

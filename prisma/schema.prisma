@@ -98,17 +98,17 @@ enum TokenType {
 }
 
 
-
-
-
-
-////////////////////////////////////
+// Tables en lien avec les commandes (Services et Produits) :
+// -- Order : contient toutes les informations d'une commande (Services et Produits)
+// -- OrderProduct : Un produit de la boutique commandé
+// -- ServiceRequest : Une demande de service complete
+// -- ServiceAddress : L'adresse liée à un service
+// -- Service : Un service
 
 model Order {
   id                 String             @id @default(cuid())
   orderNumber        Int                @unique @default(autoincrement())
   idempotencyKey     String             @unique
-  status             OrderStatus
 
   // Nullable : commande invité, ou compte supprimé (on garde l'historique comptable)
   userId             String?
@@ -117,17 +117,16 @@ model Order {
   firstName          String
   lastName           String
   email              String
+  phone              String?
 
-  fulfillmentMethod  FulfillmentMethod? // null si services seulement
-  shippingStreet     String?
-  shippingCity       String?
-  shippingPostalCode String?
-  shippingProvince   String?
+  // null si services seulement
+  deliveryMode       DeliveryMode? 
+  deliveryStreet     String?
+  deliveryCity       String?
+  deliveryPostalCode String?
+  deliveryProvince   String?
 
   // Montants en cents, figés au moment de la commande
-  productsSubtotal   Int
-  servicesSubtotal   Int
-  shippingFee        Int
   subtotal           Int
   tps                Int
   tvq                Int
@@ -139,31 +138,34 @@ model Order {
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
-  items              OrderItem[]
+  products           OrderProduct[]
+  productsStatus     ProductsStatus?
   serviceRequests    ServiceRequest[]
+  status             OrderStatus
 
   @@index([userId, createdAt])  // historique du dashboard
   @@index([status, createdAt])  // cron de nettoyage + vue SuperAdmin
 }
 
-model OrderItem {
+model OrderProduct {
   id          String @id @default(cuid())
   orderId     String
   order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  productId   String // slug du catalogue ; plus de clé étrangère
+  productSlug String // slug du catalogue ; plus de clé étrangère
   productName String // copie figée (fr)
   unitPrice   Int    // cents, copie figée
   quantity    Int
 
   @@index([orderId])
-  @@index([productId]) // statistiques de ventes par produit
+  @@index([productSlug]) // statistiques de ventes par produit
 }
 
 model ServiceRequest {
   id          String           @id @default(cuid())
   orderId     String
   order       Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
   requestType RequestType
 
   addresses   ServiceAddress[]
@@ -176,16 +178,18 @@ model ServiceAddress {
   serviceRequestId String
   serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
 
-  kind             AddressKind
+  kind             AddressKind    // civicaddress | terrain
+
   // Adresse civique
   streetNumber     String?
   streetName       String?
   apartment        String?
   postalCode       String?
+
   // Terrain
   description      String?        @db.Text
   nearbyAddress    String?
-  // Commun
+  
   city             String
 
   services         Service[]
@@ -199,41 +203,58 @@ model Service {
   serviceAddressId String
   serviceAddress   ServiceAddress @relation(fields: [serviceAddressId], references: [id], onDelete: Cascade)
 
-  type             ServiceType
-  unitPrice        Int            // cents, figé
+  type             ServiceType    // installation | removal | correction
+
+  status           ServiceStatus  @default(TO_SCHEDULE)  
+  scheduledFor     DateTime?                             
+  completedAt      DateTime?                             
+
   details          Json           // validé par Zod à l'écriture
 
   @@index([serviceAddressId])
   @@index([type])
+  @@index([status, scheduledFor]) // NOUVEAU : planning du SuperAdmin
 }
 
 enum OrderStatus {
   AWAITING_PAYMENT
-  PAID
   PENDING
-  IN_PROGRESS
+  PAID  
   COMPLETED
   CANCELLED
 }
 
-enum FulfillmentMethod {
+enum ProductsStatus {
+  PREPARING
+  READY_FOR_PICKUP
+  OUT_FOR_DELIVERY
+  DELIVERED
+}
+
+enum DeliveryMode {
   PICKUP
   DELIVERY
 }
 
-// Valeurs identiques aux types client existants : aucune couche de conversion
+enum AddressKind {
+  civicAddress
+  terrain
+}
+
 enum RequestType {
   residential
   commercial
-}
-
-enum AddressKind {
-  address
-  terrain
 }
 
 enum ServiceType {
   installation
   removal
   correction
+}
+
+enum ServiceStatus {
+  TO_SCHEDULE
+  SCHEDULED
+  COMPLETED
+  CANCELLED
 }
