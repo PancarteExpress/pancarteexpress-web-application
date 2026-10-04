@@ -47,6 +47,11 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
   const requiresPayment = !user && totals.total > 0;
   const status: OrderStatus = requiresPayment ? 'AWAITING_PAYMENT' : 'PENDING';
 
+  // NOUVEAU : connecté → téléphone du compte (comme le courriel) ; invité → celui du formulaire
+  const phone = user
+    ? (await prisma.user.findUnique({ where: { id: user.id }, select: { phoneNumber: true } }))?.phoneNumber ?? null
+    : payload.contact.phone ?? null;
+
   let order: { id: string; orderNumber: number; total: number };
   try {
     // Écriture imbriquée : Prisma l'exécute dans une seule transaction
@@ -54,27 +59,25 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
       data: {
         idempotencyKey: payload.idempotencyKey,
         status,
-        // MODIFIÉ : les produits commencent en préparation ; null s'il n'y en a pas
+        // Les produits commencent en préparation ; null s'il n'y en a pas
         productsStatus: orderLines.length > 0 ? 'PREPARING' : null,
         userId: user?.id ?? null,
         firstName: payload.contact.firstName,
         lastName: payload.contact.lastName,
         // Connecté : le courriel du compte fait foi, pas celui du formulaire
         email: user?.email ?? payload.contact.email,
-        phone: null, // MODIFIÉ : ajouté à l'étape 3
-        // MODIFIÉ : fulfillmentMethod / shipping* → delivery*
+        phone, // NOUVEAU
         deliveryMode: payload.fulfillment?.method ?? null,
         deliveryStreet: shipping?.street ?? null,
         deliveryCity: shipping?.city ?? null,
         deliveryPostalCode: shipping?.postalCode ?? null,
         deliveryProvince: shipping?.province ?? null,
-        // MODIFIÉ : montants simplifiés (produits seulement)
         subtotal: totals.subtotal,
         tps: totals.tps,
         tvq: totals.tvq,
         total: totals.total,
         paidAt: null,
-        products: { create: orderLines }, // MODIFIÉ : items → products
+        products: { create: orderLines },
         serviceRequests: { create: serviceItems.map(toServiceRequestCreate) },
       },
       select: { id: true, orderNumber: true, total: true },

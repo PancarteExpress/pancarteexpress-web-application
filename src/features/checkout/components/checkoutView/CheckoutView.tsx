@@ -32,7 +32,6 @@ const CARD_STYLE: StripeElementStyle = {
 
 type CardField = 'number' | 'expiry' | 'cvc';
 
-// NOUVEAU : un message clair pour chaque erreur renvoyée par l'API
 const ERROR_MESSAGES: Record<CheckoutErrorCode, string> = {
   validationFailed: 'Certaines informations sont invalides. Vérifiez le formulaire.',
   productUnavailable: 'Certains produits ne sont plus disponibles. Retirez-les de votre panier.',
@@ -70,16 +69,25 @@ function CheckoutForm() {
     control,
     watch,
     clearErrors,
+    setError, // NOUVEAU
     formState: { errors, isSubmitting },
   } = useForm<CheckoutInput>({
     resolver: zodResolver(checkoutSchema),
-    defaultValues: { firstName: '', lastName: '', email: '', deliveryMode: 'pickup', shippingAddress: null },
+    defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      phone: '', // NOUVEAU
+      deliveryMode: 'pickup',
+      shippingAddress: null,
+    },
     values:
       isAuthenticated && session?.user
         ? {
             firstName: session.user.firstName ?? '',
             lastName: session.user.lastName ?? '',
             email: session.user.email ?? '',
+            phone: '', // NOUVEAU : connecté, le serveur prend le téléphone du compte
             deliveryMode: 'pickup',
             shippingAddress: null,
           }
@@ -110,11 +118,10 @@ function CheckoutForm() {
       setCardError(event.error?.message ?? null);
     };
 
-  // NOUVEAU : résultat de l'envoi
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [confirmation, setConfirmation] = useState<{ mode: 'submitted' | 'payment'; orderNumber: number } | null>(null);
 
-  // NOUVEAU : même contenu = même clé (pas de doublon en cas de nouvel essai)
+  // Même contenu = même clé (pas de doublon en cas de nouvel essai)
   const attemptRef = useRef<{ fingerprint: string; key: string } | null>(null);
   const getIdempotencyKey = (fingerprint: string): string => {
     if (attemptRef.current?.fingerprint !== fingerprint) {
@@ -125,6 +132,13 @@ function CheckoutForm() {
 
   const onSubmit = async (data: CheckoutInput) => {
     setSubmitError(null);
+
+    // NOUVEAU : un invité doit laisser un téléphone
+    if (!isAuthenticated && !data.phone) {
+      setError('phone', { message: 'Le téléphone est requis' });
+      return;
+    }
+
     const cardElement = elements?.getElement(CardNumberElement) ?? null;
 
     if (requiresPayment) {
@@ -144,16 +158,13 @@ function CheckoutForm() {
       const payload = buildCheckoutPayload(data, items, getIdempotencyKey(fingerprint));
       const response = await submitCheckout(payload);
 
-      // Connecté : la commande est enregistrée, sans paiement
       if (response.mode === 'submitted') {
         setConfirmation({ mode: 'submitted', orderNumber: response.orderNumber });
         clear();
         return;
       }
 
-      // Invité : le serveur a créé la commande et un paiement Stripe à confirmer
       if (!stripe || !cardElement) {
-        // Cas rare : la page croyait l'utilisateur connecté, mais sa session a expiré
         setSubmitError('Votre session a expiré. Rechargez la page pour continuer.');
         return;
       }
@@ -161,12 +172,15 @@ function CheckoutForm() {
       const result = await stripe.confirmCardPayment(response.clientSecret, {
         payment_method: {
           card: cardElement,
-          billing_details: { name: `${data.firstName} ${data.lastName}`, email: data.email },
+          billing_details: {
+            name: `${data.firstName} ${data.lastName}`,
+            email: data.email,
+            phone: data.phone || undefined, // NOUVEAU
+          },
         },
       });
 
       if (result.error) {
-        // Message précis de Stripe (carte refusée, fonds insuffisants…)
         setSubmitError(result.error.message ?? 'Le paiement a été refusé.');
         return;
       }
@@ -187,6 +201,7 @@ function CheckoutForm() {
     errors.firstName?.message ||
     errors.lastName?.message ||
     errors.email?.message ||
+    errors.phone?.message || // NOUVEAU
     errors.shippingAddress?.message ||
     cardError ||
     submitError;
@@ -242,7 +257,7 @@ function CheckoutForm() {
         <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className={styles.section}>
             <h3>{t('paymentData')}</h3>
-            
+
             <div className={styles.name}>
               <div className={styles.formGroup}>
                 <label htmlFor="firstName">{t('firstname')}</label>
@@ -254,9 +269,18 @@ function CheckoutForm() {
               </div>
             </div>
 
+            <div className={styles.name}>
             <div className={styles.formGroup}>
               <label htmlFor="email">{t('email')}</label>
-              <input id="email" type="email" {...register('email')} readOnly={isAuthenticated} disabled={isAuthenticated} />
+              <input id="email" type="email" {...register('email')} readOnly={isAuthenticated} />
+            </div>
+
+            {!isAuthenticated && (
+              <div className={styles.formGroup}>
+                <label htmlFor="phone">{t('phone')}</label>
+                <input id="phone" type="tel" autoComplete="tel" {...register('phone')} />
+              </div>
+            )}
             </div>
           </div>
 
@@ -280,65 +304,64 @@ function CheckoutForm() {
             </div>
           )}
 
-          {hasProducts && 
+          {hasProducts && (
             <div className={styles.section}>
-            <div className={styles.radioGroup}>
-              <label className={styles.radioLabel}>
-                <input className={styles.radioInput} type="radio" value="pickup" {...deliveryModeField} />
-                <div className={styles.radioButton} style={{ borderRadius: '10px 0 0 10px' }}>
-                  {t('pickup')}
-                </div>
-              </label>
+              <div className={styles.radioGroup}>
+                <label className={styles.radioLabel}>
+                  <input className={styles.radioInput} type="radio" value="pickup" {...deliveryModeField} />
+                  <div className={styles.radioButton} style={{ borderRadius: '10px 0 0 10px' }}>
+                    {t('pickup')}
+                  </div>
+                </label>
 
-              <label className={styles.radioLabel}>
-                <input className={styles.radioInput} type="radio" value="delivery" {...deliveryModeField} />
-                <div className={styles.radioButton} style={{ borderRadius: '0 10px 10px 0' }}>
-                  {t('delivery')}
-                </div>
-              </label>
-            </div>
-
-            {deliveryMode === 'pickup' && (
-              <div className={styles.formGroup}>
-                <label>{t('pickupAddress')}</label>
-                {t('pickupInfo')}
+                <label className={styles.radioLabel}>
+                  <input className={styles.radioInput} type="radio" value="delivery" {...deliveryModeField} />
+                  <div className={styles.radioButton} style={{ borderRadius: '0 10px 10px 0' }}>
+                    {t('delivery')}
+                  </div>
+                </label>
               </div>
-            )}
 
-            {deliveryMode === 'delivery' && (
-              <div className={styles.formGroup}>
-                <label htmlFor="delivery-address">{t('shippingAddress')}</label>
-                <Controller
-                  name="shippingAddress"
-                  control={control}
-                  render={({ field }) => (
-                    <AddressAutocomplete
-                      id="delivery-address"
-                      value={addressText}
-                      onChange={setAddressText}
-                      onSelect={(address: ParsedAddress | null) =>
-                        field.onChange(
-                          address
-                            ? {
-                                street: `${address.streetNumber} ${address.streetName}`.trim(),
-                                city: address.city,
-                                postalCode: address.postalCode,
-                                province: address.province,
-                              }
-                            : null,
-                        )
-                      }
-                    />
-                  )}
-                />
-              </div>
-            )}
+              {deliveryMode === 'pickup' && (
+                <div className={styles.formGroup}>
+                  <label>{t('pickupAddress')}</label>
+                  {t('pickupInfo')}
+                </div>
+              )}
+
+              {deliveryMode === 'delivery' && (
+                <div className={styles.formGroup}>
+                  <label htmlFor="delivery-address">{t('shippingAddress')}</label>
+                  <Controller
+                    name="shippingAddress"
+                    control={control}
+                    render={({ field }) => (
+                      <AddressAutocomplete
+                        id="delivery-address"
+                        value={addressText}
+                        onChange={setAddressText}
+                        onSelect={(address: ParsedAddress | null) =>
+                          field.onChange(
+                            address
+                              ? {
+                                  street: `${address.streetNumber} ${address.streetName}`.trim(),
+                                  city: address.city,
+                                  postalCode: address.postalCode,
+                                  province: address.province,
+                                }
+                              : null,
+                          )
+                        }
+                      />
+                    )}
+                  />
+                </div>
+              )}
             </div>
-          }
+          )}
 
           <div className={styles.section}>
             {firstError && <div className={styles.error}>{firstError}</div>}
-            {/* NOUVEAU : désactivé pendant l'envoi (anti double clic) */}
             <button type="submit" disabled={items.length === 0 || isSubmitting}>
               {isSubmitting ? 'Envoi en cours…' : requiresPayment ? t('makePay') : t('submitOrder')}
             </button>

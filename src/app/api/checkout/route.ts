@@ -37,6 +37,14 @@ export async function POST(request: Request) {
   const user: CheckoutUser | null =
     session?.user?.id && session.user.email ? { id: session.user.id, email: session.user.email } : null;
 
+  // NOUVEAU : un invité doit laisser un téléphone, seul moyen de le joindre en dehors du courriel
+  if (!user && !parsed.data.contact.phone) {
+    return NextResponse.json(
+      { error: 'validationFailed', issues: [{ path: 'contact.phone', message: 'required' }] },
+      { status: 400 },
+    );
+  }
+
   try {
     const result = await createOrder(parsed.data, user);
     return NextResponse.json(result, { status: 201 });

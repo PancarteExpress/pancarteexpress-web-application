@@ -12,6 +12,7 @@ export const checkoutSchema = z
         firstName: z.string().trim().min(1, 'Le prénom est requis'),
         lastName: z.string().trim().min(1, 'Le nom est requis'),
         email: z.string().trim().min(1, 'Le courriel est requis').email('Courriel invalide'),
+        phone: z.string().trim().refine((v) => v === '' || /^[\d\s()+.-]{10,20}$/.test(v), 'Numéro de téléphone invalide'),
         deliveryMode: z.enum(['pickup', 'delivery']),
         shippingAddress: shippingAddressSchema.nullable(),
     })

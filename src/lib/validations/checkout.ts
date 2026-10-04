@@ -29,6 +29,7 @@ export const contactSchema = z.object({
   firstName: requiredText(100),
   lastName: requiredText(100),
   email: z.string().trim().toLowerCase().max(254).email({ message: 'invalidEmail' }),
+  phone: z.string().trim().regex(/^[\d\s()+.-]{10,20}$/, { message: 'invalidPhone' }).optional(),
 });
 
 export const shippingAddressSchema = z.object({

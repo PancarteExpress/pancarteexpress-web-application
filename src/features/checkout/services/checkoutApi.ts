@@ -21,7 +21,12 @@ export function buildCheckoutPayload(
 
   return {
     idempotencyKey,
-    contact: { firstName: form.firstName, lastName: form.lastName, email: form.email },
+    contact: { 
+      firstName: form.firstName,
+      lastName: form.lastName,
+      email: form.email,
+      phone: form.phone || undefined,
+     },
     // L'API refuse un mode de réception quand il n'y a que des services
     fulfillment: !hasProducts
       ? null
