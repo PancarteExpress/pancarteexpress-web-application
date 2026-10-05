@@ -2,22 +2,18 @@ import 'server-only';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 
-const productOrderSelect = {
+const userOrderSelect = {
   id: true,
   orderNumber: true,
   status: true,
-  productsStatus: true,
   paidAt: true,
+  // Produits
+  productsStatus: true,
   deliveryMode: true,
   deliveryStreet: true,
   deliveryCity: true,
   products: { select: { id: true, productName: true, quantity: true } },
-} satisfies Prisma.OrderSelect;
-
-const serviceOrderSelect = {
-  id: true,
-  orderNumber: true,
-  status: true,
+  // Services
   serviceRequests: {
     select: {
       id: true,
@@ -26,15 +22,16 @@ const serviceOrderSelect = {
         select: {
           id: true,
           kind: true,
-          // Adresse civique
+
           streetNumber: true,
           streetName: true,
           apartment: true,
-          // Terrain
+
           description: true,
           nearbyAddress: true,
-          // Commun
+
           city: true,
+          
           services: { select: { id: true, type: true, status: true, scheduledFor: true, completedAt: true } },
         },
       },
@@ -42,22 +39,13 @@ const serviceOrderSelect = {
   },
 } satisfies Prisma.OrderSelect;
 
-export type UserProductOrder = Prisma.OrderGetPayload<{ select: typeof productOrderSelect }>;
-export type UserServiceOrder = Prisma.OrderGetPayload<{ select: typeof serviceOrderSelect }>;
+export type UserOrder = Prisma.OrderGetPayload<{ select: typeof userOrderSelect }>;
 
-/** Commandes du client qui contiennent au moins un produit, les plus récentes en premier */
-export function getUserProductOrders(userId: string): Promise<UserProductOrder[]> {
+/** Toutes les commandes du client (produits et services), les plus récentes en premier */
+export function getUserOrders(userId: string): Promise<UserOrder[]> {
   return prisma.order.findMany({
-    where: { userId, products: { some: {} } },
-    select: productOrderSelect,
-    orderBy: { createdAt: 'desc' },
-  });
-}
-
-export function getUserServiceOrders(userId: string): Promise<UserServiceOrder[]> {
-  return prisma.order.findMany({
-    where: { userId, serviceRequests: { some: {} } },
-    select: serviceOrderSelect,
+    where: { userId },
+    select: userOrderSelect,
     orderBy: { createdAt: 'desc' },
   });
 }

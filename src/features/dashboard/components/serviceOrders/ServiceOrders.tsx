@@ -1,30 +1,24 @@
 'use client';
 
-import type { UserServiceOrder } from '@/lib/orders/server/orders.service';
+import type { UserOrder } from '@/lib/orders/server/orders.service';
 import styles from './ServiceOrders.module.css';
 
 interface Props {
-  orders: UserServiceOrder[];
+  orders: UserOrder[];
 }
 
-type DisplayState = 'pending' | 'done' | 'canceled';
-type ServiceAddressRow = UserServiceOrder['serviceRequests'][number]['addresses'][number];
+type ServiceAddressRow = UserOrder['serviceRequests'][number]['addresses'][number];
+
 const SERVICE_LABELS: Record<ServiceAddressRow['services'][number]['type'], string> = {
   installation: 'Installation',
   removal: 'Retrait',
   correction: 'Correction',
 };
 
-const STATE_DISPLAY: Record<DisplayState, { label: string; className: string }> = {
-  pending: { label: 'En traitement', className: styles.pending },
-  canceled: { label: 'Annulée', className: styles.canceled },
-  done: { label: 'Complétée', className: styles.done },
-};
-
 function getAddressLabel(address: ServiceAddressRow): string {
   if (address.kind === 'civicAddress') {
     const apt = address.apartment ? `, app. ${address.apartment}` : '';
-    return `${address.streetNumber ?? ''} ${address.streetName ?? ''}${apt}, ${address.city}`.trim();
+    return `Residence : ${address.streetNumber ?? ''} ${address.streetName ?? ''}${apt}, ${address.city}`.trim();
   }
 
   // Terrain : description + repère éventuel
@@ -34,7 +28,7 @@ function getAddressLabel(address: ServiceAddressRow): string {
 
 export default function ServiceOrders({ orders }: Props) {
   return (
-    <div className={styles.services}>
+    <div className={styles.mainContainer}>
       <h3 className={styles.title}>Demandes de service</h3>
 
       <div className={styles.header}>
@@ -52,7 +46,6 @@ export default function ServiceOrders({ orders }: Props) {
         <p>Aucune demande de service</p>
       ) : (
         orders.map((order) => {
-          const state = order.status;
           const addresses = order.serviceRequests.flatMap((r) => r.addresses);
 
           return (
@@ -67,17 +60,17 @@ export default function ServiceOrders({ orders }: Props) {
                   
                   <button>Voir</button>
 
-                  {state as string === 'PENDING' && 
+                  {order.status === 'PENDING' && 
                   <label className={styles.billNotAvailable}>
                     <span className={styles.isNotPayed}>99.99$</span>
                   </label>}
                   
-                  {state as string === 'PAID' && 
+                  {order.status === 'PAID' && 
                   <label className={styles.billPayed}>
                     <span className={styles.isNotPayed}>Payé</span>
                   </label>}
                   
-                  {state as string === 'CANCELLED' && 
+                  {order.status === 'CANCELLED' && 
                   <label className={styles.canceled}>
                     <span className={styles.isNotPayed}>Annulé</span>
                   </label>}
@@ -86,13 +79,41 @@ export default function ServiceOrders({ orders }: Props) {
               </div>
               
               <div className={styles.details}>
-                {addresses.map((address) => (
-                  <div key={address.id} className={styles.orderAddr}>
-                    <label>
-                      {getAddressLabel(address)}  · {address.services.map((s) => SERVICE_LABELS[s.type]).join(', ')}
-                    </label>
-                  </div>
-                ))}
+                {/* NOUVEAU : produits de la commande */}
+                {order.products.length !== 0 &&
+                <div className={styles.products}>
+                  <h3>Produits :</h3>
+                  {order.products.map((product) => (  
+                  <label key={product.id}>
+                    {product.productName} ×{product.quantity}
+                  </label>
+                  ))}
+                </div>}
+
+                {/* Services : une ligne par adresse */}
+                {addresses.length !== 0 &&
+                <div className={styles.services}>
+                  <h3>Services :</h3>
+                  {addresses.map((address) => (
+                  <label key={address.id}>
+                      <span className={styles.addressKind}> 
+                        {address.kind === 'civicAddress' && 'Résidence'}
+                        {address.kind === 'terrain' && 'Terrain'} 
+                      </span>
+
+                      <span className={styles.addressDetails}>
+                        {address.kind === 'civicAddress' && `${address.streetNumber} ${address.streetName}${address.apartment ? `, app. ${address.apartment}` : ''}, ${address.city}`}
+                        {address.kind === 'terrain' && `${address.city} ${address.nearbyAddress ? `, near. ${address.nearbyAddress}` : ''}`}
+                      </span>
+
+                      <span className={styles.selectedServices}>
+                        - {address.services.map((s) => SERVICE_LABELS[s.type]).join(', ')}
+                      </span>
+                    
+                    
+                  </label>
+                  ))}
+                </div>}
               </div>
               
               {/*<div>

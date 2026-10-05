@@ -1,11 +1,10 @@
-.services {
+.mainContainer {
     background: #fff;
     border-radius: 12px;
     border: 3px solid #D8E8F8;
-    margin-bottom: 20px;
 }
 
-.services .title {
+.mainContainer .title {
     padding: 14px 18px;
     font-family: 'Montserrat', sans-serif;
     font-size: 1.2rem;
@@ -15,7 +14,7 @@
     letter-spacing: .05em;
 }
 
-.services .header {
+.mainContainer .header {
     padding: 14px 18px;
     display: flex;
     font-family: 'Montserrat', sans-serif;
@@ -23,23 +22,23 @@
     color: #092E5B;
 }
 
-@media (max-width: 1100px) { .services .header { display: none; } }
+@media (max-width: 1100px) { .mainContainer .header { display: none; } }
 
-.services .header div:first-child {
+.mainContainer .header div:first-child {
     flex: 50%;
 }
 
-.services .header div:nth-child(2) {
+.mainContainer .header div:nth-child(2) {
     flex: 50%;
     display: flex;
 }
 
-.services .header div:nth-child(2) span {
+.mainContainer .header div:nth-child(2) span {
     flex: 1;
     text-align: center;
 }
 
-.services .noOrders {
+.mainContainer .noOrders {
     border: 3px solid #0E4D9A;
     border-radius: 10px;
     padding: 10px;
@@ -50,31 +49,31 @@
     font-weight: 700;
 }
 
-.services .orders {
+.mainContainer .orders {
     position: relative;
 }
 
-.services .orders .resume {
+.mainContainer .orders .resume {
     display: flex;
 }
 
-.services .orders .resume .orderNumber {
+.mainContainer .orders .resume .orderNumber {
     flex: 70%;
     padding: 10px;
 }
 
-.services .orders .resume .orderNumber label {
+.mainContainer .orders .resume .orderNumber label {
     font-weight: 700;
     font-size: 1.2rem;
 }
 
-.services .orders .resume .orderNumber .orderDetails {
+.mainContainer .orders .resume .orderNumber .orderDetails {
     font-weight: 700;
     font-size: 1.2rem;
     padding: 10px;
 }
 
-.services .orders .resume .status {
+.mainContainer .orders .resume .status {
     flex: 30%;
 
     display: flex;
@@ -84,8 +83,8 @@
     padding: 10px;
 }
 
-.services .orders .resume .status button,
-.services .orders .resume .status label {
+.mainContainer .orders .resume .status button,
+.mainContainer .orders .resume .status label {
     
     border-radius: 10px;
     width: 50%;
@@ -95,42 +94,73 @@
     font-weight: 700;
 }
 
-.services .orders .resume .status button {
+.mainContainer .orders .resume .status button {
     border: 3px solid #0E4D9A;
     background-color: #D8E8F8;
     cursor: pointer;
 }
 
-.services .orders .resume .status .billNotAvailable {
+.mainContainer .orders .resume .status .billNotAvailable {
     border: 3px solid #F8C43E;
     background-color: #FFF0B3;
 }
 
-.services .orders .resume .status .billPayed {
+.mainContainer .orders .resume .status .billPayed {
     border: 3px solid #00A06F;
     background-color: #B8DED3;
     color: #006E48;
 }
 
-.services .orders .resume .status .canceled {
+.mainContainer .orders .resume .status .canceled {
     border: 3px solid #BD2B26;
     background-color: #FF9E94;
     color: #BD2B26;
 }
 
-.services .orders .details {
-
+.mainContainer .orders .details {
     border: 3px solid #4F7FB8;
     border-radius: 10px;
-    
-    margin: 10px;
     padding: 10px;
-
-    display: flex;
-    flex-direction: column;
+    margin: 0 10px;
 }
 
+.mainContainer .orders .details .products,
+.mainContainer .orders .details .services {
+    
+    
+    display: flex;
+    flex-direction: column;
 
+    font-weight: 700;
+
+    margin: 10px 0;
+}
+
+.mainContainer .orders .details .products h3,
+.mainContainer .orders .details .services h3 {
+    color: #0E4D9A;
+    
+}
+
+.mainContainer .orders .details .products label,
+.mainContainer .orders .details .services label {
+    
+    margin: 15px 10px;
+}
+
+.mainContainer .orders .details .services label .addressKind {
+    border: 3px solid #B8DED3;
+    border-radius: 10px;
+    padding: 3px;
+    margin-right: 10px;
+}
+
+.mainContainer .orders .details .services label .addressDetails {
+    margin-right: 10px;
+}
+.mainContainer .orders .details .services label .selectedServices {
+    color: #0E4D9A;
+}
 
 
 
