@@ -6,9 +6,15 @@ import UpdateProfile from "../updateProfile/updateProfile";
 import ProductOrders from "../productOrders/ProductOrders";
 
 import { useSession } from "next-auth/react";
+import { UserProductOrder, UserServiceOrder } from "@/lib/orders/server/orders.service";
+import ServiceOrders from "../serviceOrders/ServiceOrders";
 
+interface Props {
+  productOrders: UserProductOrder[];
+  serviceOrders: UserServiceOrder[];
+}
 
-export function DashboardContent() {
+export function DashboardContent({ productOrders, serviceOrders }: Props) {
   
   const { data: session } = useSession();
   
@@ -67,7 +73,8 @@ export function DashboardContent() {
         </div>
       </div>
 
-      <ProductOrders />
+      <ProductOrders orders={productOrders} />
+      <ServiceOrders orders={serviceOrders} />
       
 
       {updateProfileOpen && (

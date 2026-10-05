@@ -1,42 +1,22 @@
 'use client';
 
+import { UserProductOrder } from '@/lib/orders/server/orders.service';
 import styles from './ProductOrders.module.css';
 
-export default function ProductOrders() {
-  // Données hardcodées pour démonstration
-  const orders = [
-    {
-      id: '1',
-      orderNumber: '001',
-      shippingAddress: '123 Rue St-Laurent, Montréal',
-      status: 'pending',
-      isPaid: false,
-      items: [
-        { id: '1', product: { name_fr: 'Panneau Immobilier Standard' }, quantity: 2 },
-        { id: '2', product: { name_fr: 'Support Magnétique' }, quantity: 1 },
-      ],
-    },
-    {
-      id: '2',
-      orderNumber: '002',
-      shippingAddress: null,
-      status: 'done',
-      isPaid: true,
-      items: [
-        { id: '3', product: { name_fr: 'Panneau Premium' }, quantity: 1 },
-      ],
-    },
-    {
-      id: '3',
-      orderNumber: '003',
-      shippingAddress: '456 Rue de Bleury, Montréal',
-      status: 'canceled',
-      isPaid: false,
-      items: [
-        { id: '4', product: { name_fr: 'Cadre Aluminium' }, quantity: 3 },
-      ],
-    },
-  ];
+interface Props {
+  orders: UserProductOrder[];
+}
+
+type DisplayState = 'pending' | 'done' | 'canceled';
+
+// Traduit les statuts de la BD vers les 3 états affichés
+function getDisplayState(order: UserProductOrder): DisplayState {
+  if (order.status === 'CANCELLED') return 'canceled';
+  if (order.status === 'COMPLETED' || order.productsStatus === 'DELIVERED') return 'done';
+  return 'pending';
+}
+
+export default function ProductOrders({ orders }: Props) {
 
   return (
     <div className={styles.shopOrders}>
@@ -54,60 +34,59 @@ export default function ProductOrders() {
       </div>
 
       {orders.length === 0 ? (
-        <p>Aucune commande</p>
+      
+      <div className={styles.noOrders}>Aucune commande</div>
+
       ) : (
-        orders.map(order => (
-          <div key={order.id} className={styles.order}>
-            <div>
-              <span className={styles.orderNum}>#{order.orderNumber}</span>
-              <span className={styles.orderAddr}>
-                {order.shippingAddress
-                  ? `Sera livré au ${order.shippingAddress}`
-                  : 'Ramassage au 2160 rue léger'}
-              </span>
+        orders.map((order) => {
+          const state = getDisplayState(order);
+          const isPaid = order.paidAt !== null;
+
+          return (
+            <div key={order.id} className={styles.order}>
+              <div>
+                <span className={styles.orderNum}>#{order.orderNumber}</span>
+                <span className={styles.orderAddr}>
+                  {order.deliveryMode === 'DELIVERY'
+                    ? `Sera livré au ${order.deliveryStreet}, ${order.deliveryCity}`
+                    : 'Ramassage au 2160 rue Léger'}
+                </span>
+              </div>
+
+              <div>
+                <h1>
+                  <span className={styles.seeDetails}>Voir</span>
+                </h1>
+
+                <h1>
+                  {state === 'pending' && <span className={styles.pending}>En traitement</span>}
+                  {state === 'canceled' && <span className={styles.canceled}>Annulée</span>}
+                  {state === 'done' && <span className={styles.done}>Complétée</span>}
+                </h1>
+
+                <h1>
+                  {state !== 'canceled' &&
+                    (isPaid ? (
+                      <span className={styles.isPayed}>Paiement fait</span>
+                    ) : (
+                      <span className={styles.isNotPayed}>Faire un paiement</span>
+                    ))}
+                </h1>
+              </div>
+
+              <div>
+                <h1>
+                  {state !== 'canceled' &&
+                    (isPaid ? (
+                      <span className={styles.isPayed}>Paiement fait</span>
+                    ) : (
+                      <button className={styles.isNotPayed}>Faire un paiement</button>
+                    ))}
+                </h1>
+              </div>
             </div>
-
-            <div>
-              <h1>
-                <span className={styles.seeDetails}>Voir</span>
-              </h1>
-
-              <h1>
-                {order.status === 'pending' && (
-                  <span className={styles.pending}>En traitement</span>
-                )}
-                {order.status === 'canceled' && (
-                  <span className={styles.canceled}>Annulée</span>
-                )}
-                {order.status === 'done' && (
-                  <span className={styles.done}>Complétée</span>
-                )}
-              </h1>
-
-              <h1>
-                {order.status !== 'canceled' &&
-                  (order.isPaid ? (
-                    <span className={styles.isPayed}>Paiement fait</span>
-                  ) : (
-                    <span className={styles.isNotPayed}>Faire un paiement</span>
-                  ))}
-              </h1>
-            </div>
-
-            <div>
-              <h1>
-                {order.status !== 'canceled' &&
-                  (order.isPaid ? (
-                    <span className={styles.isPayed}>Paiement fait</span>
-                  ) : (
-                    <button className={styles.isNotPayed}>
-                      Faire un paiement
-                    </button>
-                  ))}
-              </h1>
-            </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );

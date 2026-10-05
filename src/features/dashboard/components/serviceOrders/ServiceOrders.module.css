@@ -1,11 +1,11 @@
-.shopOrders {
+.services {
     background: #fff;
     border-radius: 12px;
     border: 3px solid #D8E8F8;
     margin-bottom: 20px;
 }
 
-.shopOrders .title {
+.services .title {
     padding: 14px 18px;
     font-family: 'Montserrat', sans-serif;
     font-size: 1.2rem;
@@ -15,7 +15,7 @@
     letter-spacing: .05em;
 }
 
-.shopOrders .header {
+.services .header {
     padding: 14px 18px;
     display: flex;
     font-family: 'Montserrat', sans-serif;
@@ -23,23 +23,23 @@
     color: #092E5B;
 }
 
-@media (max-width: 1100px) { .shopOrders .header { display: none; } }
+@media (max-width: 1100px) { .services .header { display: none; } }
 
-.shopOrders .header div:first-child {
+.services .header div:first-child {
     flex: 50%;
 }
 
-.shopOrders .header div:nth-child(2) {
+.services .header div:nth-child(2) {
     flex: 50%;
     display: flex;
 }
 
-.shopOrders .header div:nth-child(2) span {
+.services .header div:nth-child(2) span {
     flex: 1;
     text-align: center;
 }
 
-.shopOrders .noOrders {
+.services .noOrders {
     border: 3px solid #0E4D9A;
     border-radius: 10px;
     padding: 10px;
@@ -50,40 +50,147 @@
     font-weight: 700;
 }
 
-.shopOrders .order {
-    padding: 14px 18px;
-    display: flex;
-    justify-content: space-between;
-
+.services .orders {
     position: relative;
 }
 
-.shopOrders .order div:first-child {
+.services .orders .resume {
+    display: flex;
+}
+
+.services .orders .resume .orderNumber {
+    flex: 70%;
+    padding: 10px;
+}
+
+.services .orders .resume .orderNumber label {
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.services .orders .resume .orderNumber .orderDetails {
+    font-weight: 700;
+    font-size: 1.2rem;
+    padding: 10px;
+}
+
+.services .orders .resume .status {
+    flex: 30%;
+
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+
+    padding: 10px;
+}
+
+.services .orders .resume .status button,
+.services .orders .resume .status label {
+    
+    border-radius: 10px;
+    width: 50%;
+    text-align: center;
+    padding: 3px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.services .orders .resume .status button {
+    border: 3px solid #0E4D9A;
+    background-color: #D8E8F8;
+    cursor: pointer;
+}
+
+.services .orders .resume .status .billNotAvailable {
+    border: 3px solid #F8C43E;
+    background-color: #FFF0B3;
+}
+
+.services .orders .resume .status .billPayed {
+    border: 3px solid #00A06F;
+    background-color: #B8DED3;
+    color: #006E48;
+}
+
+.services .orders .resume .status .canceled {
+    border: 3px solid #BD2B26;
+    background-color: #FF9E94;
+    color: #BD2B26;
+}
+
+.services .orders .details {
+
+    border: 3px solid #4F7FB8;
+    border-radius: 10px;
+    
+    margin: 10px;
+    padding: 10px;
+
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*.services .orders div:first-child {
     flex: 50%;
     display: flex;
     flex-direction: column;
 }
 
-.shopOrders .order .orderNum {
+.services .orders .orderNum {
     font-family: 'Montserrat', sans-serif;
     font-weight: 900;
     color: #092E5B;
 }
 
-.shopOrders .order .orderAddr {
+.services .orders .addressList {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 10px;
+    margin: 10px;
+    
+}
+
+.services .orders .ordersAddr {
     font-family: 'Montserrat', sans-serif;
     font-weight: 700;
     color: #7f8892;
 }
 
-.shopOrders .order div:nth-child(2) {
+.services .orders div:nth-child(2) {
     flex: 50%;
     display: flex;
     padding: 5px 0;
     font-size: 0.975rem;
 }
 
-.shopOrders .order div:nth-child(2) h1 {
+.services .orders div:nth-child(2) h1 {
     flex: 1;
     display: flex;
     justify-content: center;
@@ -91,9 +198,9 @@
     text-align: center;   
 }
 
-.shopOrders .order div:nth-child(2) h1:first-child .details {
+.services .orders div:nth-child(2) h1:first-child .details {
     position: absolute;
-    top: 100%; /* ✅ En bas du .order */
+    top: 100%; /* ✅ En bas du .orders 
     left: 50%;
     transform: translateX(-50%);
     width: 50%;
@@ -107,30 +214,30 @@
     flex-direction: column;
     gap: 12px;
 
-    z-index: 10; /* ✅ Augmente z-index */
+    z-index: 10; /* ✅ Augmente z-index 
 }
 
 @media (max-width: 1000px) { 
-    .shopOrders .order div:nth-child(2) h1:first-child .details { 
+    .services .orders div:nth-child(2) h1:first-child .details { 
         top: 90%; 
         width: 75%;
     } 
 }
 
 @media (max-width: 550px) { 
-    .shopOrders .order div:nth-child(2) h1:first-child .details { 
+    .services .orders div:nth-child(2) h1:first-child .details { 
         top: 75%; 
         width: 90%;
     } 
 }
 
-.shopOrders .order div:nth-child(2) h1:first-child .details .productList {
+.services .orders div:nth-child(2) h1:first-child .details .productList {
     text-align: left;
 }
 
-@media (max-width: 550px) { .shopOrders .order div:nth-child(2) h1:nth-child(3) { display: none; } }
+@media (max-width: 550px) { .services .orders div:nth-child(2) h1:nth-child(3) { display: none; } }
 
-.shopOrders .order div:nth-child(2) h1 .seeDetails {
+.services .orders div:nth-child(2) h1 .seeDetails {
     border: 2px solid #0E4D9A;
     font-size: 0.8rem;
     font-weight: 700;
@@ -141,7 +248,7 @@
     width: 150px;
 }
 
-.shopOrders .order div:nth-child(2) h1 .pending {
+.services .orders div:nth-child(2) h1 .pending {
     border: 2px dashed #0E4D9A;
     font-size: 0.8rem;
     font-weight: 700;
@@ -153,13 +260,13 @@
     position: relative;
 }
 
-.shopOrders .order div:nth-child(2) h1 .pendingActive {
+.services .orders div:nth-child(2) h1 .pendingActive {
     border: 2px solid green;
     color: green;
     background-color: #d8f8d9;
 }
 
-.shopOrders .order div:nth-child(2) h1 .canceled {
+.services .orders div:nth-child(2) h1 .canceled {
     border: 2px solid red;
     color: red;
     font-size: 0.8rem;
@@ -171,7 +278,7 @@
     position: relative;
 }
 
-.shopOrders .order div:nth-child(2) h1 .done {
+.services .orders div:nth-child(2) h1 .done {
     border: 2px solid green;
     color: green;
     font-size: 0.8rem;
@@ -183,7 +290,7 @@
     position: relative;
 }
 
-.shopOrders .order div:nth-child(2) h1 .cancel {
+.services .orders div:nth-child(2) h1 .cancel {
     position: absolute;
     border: 3px solid #0E3A8C;
     background-color: #D8E8F8;
@@ -199,23 +306,23 @@
     display: flex;
     align-items: center;
 
-    z-index: 10; /* ✅ Augmente z-index */
+    z-index: 10; /* ✅ Augmente z-index 
 }
 
 @media (max-width: 1800px) { 
-    .shopOrders .order div:nth-child(2) h1 .cancel { 
+    .services .orders div:nth-child(2) h1 .cancel { 
         top: 80%; 
     } 
 }
 
 @media (max-width: 1100px) { 
-    .shopOrders .order div:nth-child(2) h1 .cancel { 
+    .services .orders div:nth-child(2) h1 .cancel { 
         top: 90%; 
     } 
 }
 
 @media (max-width: 550px) { 
-    .shopOrders .order div:nth-child(2) h1 .cancel { 
+    .services .orders div:nth-child(2) h1 .cancel { 
         top: 75%; 
         left: 50%;
 
@@ -224,7 +331,7 @@
     } 
 }
 
-.shopOrders .order div:nth-child(2) h1 .cancel button {
+.services .orders div:nth-child(2) h1 .cancel button {
     border: 2px solid red;
     background-color: rgb(254, 191, 191);
     width: 90%;
@@ -234,8 +341,8 @@
     border-radius: 10px;
 }
 
-.shopOrders .order div h1 .isNotPayed,
-.shopOrders .order div h1 .isPayed {
+.services .orders div h1 .isNotPayed,
+.services .orders div h1 .isPayed {
     font-size: 0.8rem;
     font-weight: 700;
     padding: 1px 7px;
@@ -243,29 +350,29 @@
     width: 150px;
 }
 
-.shopOrders .order div h1 .isNotPayed {
+.services .orders div h1 .isNotPayed {
     background-color: #fff0b3;
     border: 2px dashed #f8c239;
     cursor: pointer;
 }
 
-.shopOrders .order div h1 .isPayed {
+.services .orders div h1 .isPayed {
     border: 2px solid green;
     color: green;
     background-color: #d8f8d9;
 }
 
-.shopOrders .order div:nth-child(2) div:first-child {
+.services .orders div:nth-child(2) div:first-child {
     color: red;
     display: none;
 }
 
-@media (max-width: 1100px) { .shopOrders .order { display: block; } }
+@media (max-width: 1100px) { .services .orders { display: block; } }
 
-.shopOrders .order div:nth-child(3) {
+.services .orders div:nth-child(3) {
     display: flex;
     padding: 5px 0;
     justify-content: center;
 }
 
-@media (min-width: 550px) { .shopOrders .order div:nth-child(3) { display: none; } }
+@media (min-width: 550px) { .services .order div:nth-child(3) { display: none; } }*/
