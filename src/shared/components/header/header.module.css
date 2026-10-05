@@ -195,7 +195,7 @@
     bottom: 0;
     transform: translateY(50%);
     width: 100%;
-    box-shadow: 0px 0px 17px rgba(0, 0, 0, 0.15);;
+    box-shadow: 0px 0px 17px rgba(0, 0, 0, 0.15);
     background-color: white;
     border-radius: 10px;
 }

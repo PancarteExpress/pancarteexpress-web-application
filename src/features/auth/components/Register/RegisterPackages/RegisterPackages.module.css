@@ -6,12 +6,83 @@
 .mainContainer .packages .package {
     flex: 1;
     padding: 10px;
-    border: 1px solid #C5D8EF;
+    height: 50vh;
     border-radius: 10px;
     text-align: center;
+    border: 3px solid #D8E8F8;    
+}
+
+.mainContainer .packages .package:hover {
+    box-shadow: 0px 0px 17px rgba(0, 0, 0, 0.35);
+}
+
+.mainContainer .packages .package:hover .selectPackageButton {
+    background-color: #6BA3D6;
+    color: white;
+}
+
+.mainContainer .packages .package:nth-child(2):hover {
+    box-shadow: 0px 0px 17px #0E4D9A;
 }
 
 .mainContainer .packages .package:nth-child(2) {
-    background: #E8F1FB;
-    border: 3px solid #C5D8EF;
+    background: linear-gradient(160deg, #0E4D9A 0%, #092E5B 100%);
+    border: 3px solid #0E4D9A;
+}
+
+.mainContainer .packages .package .header h2 {
+    color: #6BA3D6;
+    font-size: 1.3rem;
+}
+
+.mainContainer .packages .package .header label:first-of-type {
+    color: #0E4D9A;
+    font-size: 1.8rem;
+    font-weight: 700;
+}
+
+.mainContainer .packages .package .header label:last-of-type {
+    color: #5F7FA8;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.mainContainer .packages .package:nth-child(2) .header label:first-of-type,
+.mainContainer .packages .package:nth-child(2) .header label:last-of-type {
+    color: white;
+}
+
+.mainContainer .packages .package .price {
+    color: #2E6C33;
+    background-color: #E8F5E9;
+    font-weight: 700;
+    padding: 3px;
+    border-radius: 10px;
+    margin: 10px 0;
+}
+
+.mainContainer .packages .package ul {
+    padding: 10px;
+    margin: 10px 0;
+
+    font-size: 0.9rem;
+    font-weight: 700;
+
+    list-style: none;
+}
+
+.mainContainer .packages .package ul li {
+    margin: 5px 0;
+}
+
+.mainContainer .packages .package .selectPackageButton {
+    border: none;
+    cursor: pointer;
+    border-radius: 10px;
+    border: 2px solid #6BA3D6;
+    background-color: white;
+    font-weight: 900;
+    color: #6BA3D6;
+    padding: 10px;
+    width: 75%;
 }
