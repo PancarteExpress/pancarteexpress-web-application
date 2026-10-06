@@ -2,6 +2,7 @@ import { useSession, signIn as nextAuthSignIn, signOut as nextAuthSignOut } from
 import { useAuthStore } from "../store/authStore";
 import { useCallback, useEffect } from "react";
 import type { LoginInput, RegisterInput } from "../types";
+import type { UserRole } from "@/shared/types/user";
 
 export function useAuth() {
   const { setError, setLoading, clearError, logout: logoutStore } = useAuthStore();
@@ -14,7 +15,7 @@ export function useAuth() {
         email: string;
         firstName?: string;
         lastName?: string;
-        role?: "user" | "admin";
+        role?: UserRole;
         groupId?: string | null;
         emailVerified?: Date | null;
       };
@@ -25,7 +26,7 @@ export function useAuth() {
           email: sessionUser.email,
           firstName: sessionUser.firstName || null,
           lastName: sessionUser.lastName || null,
-          role: (sessionUser.role as "user" | "admin") || "user",
+          role: sessionUser.role ?? "user",
           groupId: sessionUser.groupId || null,
           emailVerified: sessionUser.emailVerified || null,
         },

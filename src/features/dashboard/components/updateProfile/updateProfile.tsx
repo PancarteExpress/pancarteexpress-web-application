@@ -46,7 +46,6 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       email: "",
       phoneNumber: "",
       companyName: "",
-      role: "user",
       groupStatus: "SOLO",
     },
   });
@@ -59,7 +58,6 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
         email: sessionUser.email || "",
         phoneNumber: sessionUser.phoneNumber || "",
         companyName: sessionUser.companyName || "",
-        role: sessionUser.role || "user",
         groupStatus: sessionUser.groupStatus || "SOLO",
       });
     }
@@ -230,7 +228,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
             </div>
 
             <div className={styles.accountStatus}>
-              {sessionUser?.role === "admin" ? <span className={styles.role}>Administrateur</span> : <span className={styles.role}>User</span>}
+              {sessionUser?.role === "groupAdmin" ? <span className={styles.role}>Administrateur</span> : <span className={styles.role}>User</span>}
               {sessionUser?.groupStatus === "SOLO" &&<span className={styles.solo}>solo</span>}
               {sessionUser?.groupStatus === "PENDING" &&<span className={styles.pending}>En attente de rejoindre un groupe</span>}
               {sessionUser?.groupStatus === "JOINED" &&<span className={styles.joined}>PancarteExpress</span>}

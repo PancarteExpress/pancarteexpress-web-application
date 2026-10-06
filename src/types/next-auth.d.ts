@@ -1,6 +1,7 @@
 import type { DefaultSession } from 'next-auth';
 import type { Order, Group, Session as PrismaSession } from '@prisma/client';
 import 'next-auth/jwt';
+import type { UserRole } from "@prisma/client";
 
 declare module "next-auth" {
   interface User {
@@ -13,15 +14,12 @@ declare module "next-auth" {
     password?: string | null;
     provider?: string | null;
     providerAccountId?: string | null;
-    role: "user" | "admin";
+    role: UserRole;
     groupStatus: "SOLO" | "PENDING" | "JOINED";
     groupId: string | null;
     emailVerified?: Date | null;
-    createdAt?: Date;
-    updatedAt?: Date;
-    orders?: Order[];
     sessions?: PrismaSession[];
-    group?: Group | null;
+    groupName?: string | null;
   }
 
   interface Session {
@@ -40,14 +38,11 @@ declare module "next-auth/jwt" {
     password?: string | null;
     provider?: string | null;
     providerAccountId?: string | null;
-    role: "user" | "admin";
+    role: UserRole;
     groupStatus: "SOLO" | "PENDING" | "JOINED";
     groupId: string | null;
     emailVerified?: Date | null;
-    createdAt?: Date;
-    updatedAt?: Date;
-    orders?: Order[];
     sessions?: PrismaSession[];
-    group?: Group | null;
+    groupName: string | null;
   }
 }

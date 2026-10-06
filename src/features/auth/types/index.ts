@@ -2,7 +2,7 @@ import { z } from "zod";
 
 const firstNameSchema = z.string().min(2, "First name required");
 const lastNameSchema = z.string().min(2, "Last name required");
-const emailSchema = z.string().email("Adresse courriel requise");
+const emailSchema = z.string().trim().toLowerCase().email("Adresse courriel requise");
 const passwordSchema = z.string().min(8, "Min 8 characters");
 const phoneSchema = z.string().min(10, "Phone number required");
 
@@ -10,7 +10,7 @@ export const registerSchema = z.object({
   firstName: firstNameSchema,
   lastName: lastNameSchema,
   email: emailSchema,
-  password: z.string().min(3, "Min 3 characters"),
+  password: passwordSchema,
   confirmPassword: z.string(),
   phoneNumber: phoneSchema,
   companyName: z.string().optional(),
@@ -25,7 +25,7 @@ export const registerSchema = z.object({
 });
 
 export const verifyEmailSchema = z.object({
-  email: z.string().email("Invalid email"),
+  email: emailSchema,
   code: z.string().length(6, "Code must be 6 digits"),
   firstName: z.string().min(2, "First name required"),
   lastName: z.string().min(2, "Last name required"),
@@ -36,7 +36,7 @@ export const verifyEmailSchema = z.object({
 });
 
 export const loginSchema = z.object({
-  email: z.string().email("Adresse courriel requise"),
+  email: emailSchema,
   password: z.string().min(1, "Mot de passe requis"),
 }).refine((data) => data.email && data.password, {
   message: "Veuillez saisir vos identifiants",
@@ -49,7 +49,6 @@ export const updateProfileSchema = z.object({
   email: emailSchema,
   phoneNumber: phoneSchema.optional(),
   companyName: z.string().optional(),
-  role: z.enum(["user", "admin"]).optional(),
   groupStatus: z.enum(["SOLO", "PENDING", "JOINED"]).optional(),
 });
 
@@ -82,25 +81,3 @@ export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
 export type UpdatePasswordInput = z.infer<typeof updatePasswordSchema>;
-
-export interface SignInParams {
-  user: { 
-    id?: string; 
-    email?: string; 
-    name?: string;
-    firstName?: string | null;
-    lastName?: string | null;
-  };
-  account: { 
-    provider?: string;
-    providerAccountId?: string;
-    type?: string;
-    access_token?: string;
-    refresh_token?: string;
-    expires_at?: number;
-    token_type?: string;
-    scope?: string;
-    id_token?: string;
-    session_state?: string;
-  } | null;
-}

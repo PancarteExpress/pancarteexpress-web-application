@@ -1,3 +1,4 @@
+import type { UserRole } from "@/shared/types/user";
 import { create } from "zustand";
 import { devtools, persist } from "zustand/middleware";
 
@@ -6,7 +7,7 @@ interface AuthUser {
   email: string;
   firstName: string | null;
   lastName: string | null;
-  role: "user" | "admin";
+  role: UserRole;
   groupId: string | null;
   emailVerified: Date | null;
 }

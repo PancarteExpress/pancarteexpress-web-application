@@ -1,0 +1,20 @@
+.container {
+  margin: 0 auto;
+  width: 60%;
+
+  padding: 50px 0;
+
+
+  border: 1px solid red;
+}
+
+.header {
+    
+}
+
+.title {
+  font-family: Montserrat, sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: #092E5B;
+}

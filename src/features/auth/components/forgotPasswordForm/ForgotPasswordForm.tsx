@@ -15,7 +15,7 @@ interface ForgotPasswordFormProps {
 }
 
 const emailSchema = z.object({
-  email: z.string().email("Invalid email"),
+  email: z.string().trim().toLowerCase().email("Invalid email"),
 });
 
 const verifyCodeSchema = z.object({
@@ -28,6 +28,7 @@ type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
 export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
   const [step, setStep] = useState<"email" | "code" | "reset">("email");
   const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
@@ -90,6 +91,7 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
         throw new Error(errorData.error || "Invalid code");
       }
 
+      setCode(data.code);
       setStep("reset");
       setSuccess(null);
     } catch (err: unknown) {
@@ -104,12 +106,11 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
     try {
       setIsLoading(true);
       setError(null);
-      console.log("Reset submit data:", { email, ...data });
 
       const res = await fetch("/api/custom/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password: data.password, confirmPassword: data.confirmPassword }),
+        body: JSON.stringify({ email, code, password: data.password, confirmPassword: data.confirmPassword }),
       });
 
       if (!res.ok) {

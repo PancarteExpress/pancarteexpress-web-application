@@ -7,15 +7,6 @@ import { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
 import { cookies } from "next/headers";
 
-interface JWTParams {
-  token: JWT;
-  user?: {
-    id?: string;
-    firstName?: string | null;
-    lastName?: string | null;
-  };
-}
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
     Google({
@@ -34,8 +25,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
+        const email = (credentials.email as string).trim().toLowerCase();
+
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+          where: { email },
         });
 
         if (!user || !user.password) return null;
@@ -59,8 +52,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   pages: {
-    signIn: "/auth/login",
-    error: "/auth/error",
+    signIn: "/login",
+    error: "/error",
   },
   callbacks: {
     async signIn({ user, account }) {
@@ -71,17 +64,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const parts = fullName.split(" ");
         const firstName = parts[0] || "";
         const lastName = parts.slice(1).join(" ") || "";
+        const email = user.email.trim().toLowerCase();
 
         const cookieStore = await cookies();
         const groupStatus = (cookieStore.get('pendingGroupStatus')?.value || 'SOLO') as 'SOLO' | 'PENDING';
 
         const existingUser = await prisma.user.findUnique({
-          where: { email: user.email },
+          where: { email: email },
         });
 
         if (existingUser) {
+          
+          // On oblige le superAdmin a se connecter avec ses identifiants
+          if (existingUser.role === 'superAdmin') return false;
+
           // User existe — mettre à jour provider si nécessaire
           if (!existingUser.provider) {
+
             await prisma.user.update({
               where: { id: existingUser.id },
               data: {
@@ -116,29 +115,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
       return true;
     },
-    async jwt({ token, user }: JWTParams): Promise<JWT> {
-      if (user) {
-        if (user.id) token.id = user.id;
-        
-        token.firstName = user.firstName || "";
-        token.lastName = user.lastName || "";
-      }
+    
+    async jwt({ token, user }) {
+      if (user?.id) token.id = user.id;
+      if (!token.id) return token;
 
-      if (token.id) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          include: {
-            orders: true,
-            group: true,
-          },
-        });
-        
-        if (dbUser) {
-          return { ...token, ...dbUser } as JWT;
-        }
-      }
+      const dbUser = await prisma.user.findUnique({
+        where: { id: token.id },
+        select: {
+          email: true,
+          firstName: true,
+          lastName: true,
+          phoneNumber: true,
+          companyName: true,
+          role: true,
+          groupStatus: true,
+          groupId: true,
+          group: { select: { name: true } },
+        },
+      });
 
-      return token;
+      // Compte supprimé : la session est invalidée
+      if (!dbUser) return null;
+
+      const { group, ...profile } = dbUser;
+      return { ...token, ...profile, groupName: group?.name ?? null };
     },
 
     async session({ session, token }: { session: Session; token: JWT }): Promise<Session> {
@@ -152,10 +153,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.role = token.role;                // ← Ajoute ça aussi
         session.user.groupStatus = token.groupStatus;
         session.user.groupId = token.groupId;
-        session.user.createdAt = token.createdAt;    // ← Ajoute ça
-        session.user.updatedAt = token.updatedAt;
-        session.user.orders = token.orders;
-        session.user.group = token.group;
+        session.user.groupName = token.groupName;
       }
       return session;
     },

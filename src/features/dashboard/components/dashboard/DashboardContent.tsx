@@ -28,7 +28,7 @@ export function DashboardContent({ orders }: Props) {
       </>}
       
       {sessionUser?.groupStatus === 'JOINED' && <>
-        <div className={styles.groupStateJoined}>Vous faites partie de lequipe : {sessionUser?.group?.name}</div>
+        <div className={styles.groupStateJoined}>Vous faites partie de lequipe : {sessionUser?.groupName}</div>
       </>}
 
       <div className={styles.welcome}>

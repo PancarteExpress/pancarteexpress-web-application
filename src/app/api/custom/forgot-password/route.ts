@@ -1,14 +1,12 @@
 import { forgotPasswordSchema } from "@/features/auth/types";
 import { authService } from "@/features/auth/services/auth.service";
 import { NextResponse } from "next/server";
-import { headers } from "next/headers";
 
 export async function POST(req: Request) {
   try {
     
-    const locale = (await headers()).get("x-locale") || "fr";
-    const body = await req.json();
-    const data = forgotPasswordSchema.parse({ ...body, locale });
+    const body: unknown = await req.json();
+    const data = forgotPasswordSchema.parse(body);
 
     await authService.forgotPassword(data);
 

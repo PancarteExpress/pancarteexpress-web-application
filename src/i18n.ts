@@ -1,9 +1,6 @@
 import { getRequestConfig } from 'next-intl/server';
 import { hasLocale } from 'next-intl';
-
-const LOCALES = ['fr', 'en'] as const;
-type Locale = (typeof LOCALES)[number];
-const DEFAULT_LOCALE: Locale = 'fr';
+import { LOCALES, DEFAULT_LOCALE, type Locale } from '@/shared/constants/locales';
 
 type Messages = Record<string, unknown>;
 type Loader = (locale: Locale) => Promise<{ default: Messages }>;
