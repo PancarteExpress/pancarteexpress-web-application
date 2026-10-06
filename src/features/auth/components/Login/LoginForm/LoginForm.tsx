@@ -30,7 +30,7 @@ export function LoginForm({ locale }: LoginFormProps) {
     if (result.success) {
       setSuccess(true);
       setTimeout(() => {
-        router.push(`/${locale}/dashboard`);
+        window.location.replace(`/${locale}/dashboard`);
       }, 1000);  // 1 seconde
     }
   };

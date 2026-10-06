@@ -26,7 +26,7 @@ export function AuthNav({ locale }: LoginFormProps) {
     return (
       <div className={styles.mainContainer}>
         <button
-          onClick={() => router.push(`/${locale}/dashboard`)}
+          onClick={() => window.location.replace(`/${locale}/dashboard`)}
           className="text-sm px-3 py-2 hover:bg-gray-100 rounded"
         >
           Mon compte

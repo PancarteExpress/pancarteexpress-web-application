@@ -78,7 +78,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice }: Regist
 
       setSuccess(true);
       setTimeout(() => {
-        router.push(`/${locale}/dashboard`);
+        window.location.replace(`/${locale}/dashboard`);
       }, 1000);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Verification failed";
