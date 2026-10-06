@@ -44,7 +44,7 @@ export default function RegisterPackages({ locale, packageChoice, setPackageChoi
             <li style={{ color: 'red', opacity: '0.5'}}>x Entreposage, entretien et gestion de votre inventaire</li>
             <li style={{ color: 'red', opacity: '0.5'}}>x Alertes quand votre inventaire est bas ou endommagé</li>
             <li style={{ color: 'red', opacity: '0.5'}}>x Code promotionnel chez Tout Pour Le Courtier</li>
-            <li style={{ color: 'red', opacity: '0.5'}}>x Rabais sur vos commandes de matériel d'affichage</li>
+            <li style={{ color: 'red', opacity: '0.5'}}>x Rabais sur vos commandes de matériel daffichage</li>
             <li style={{ color: 'red'}}>✓ Idéal pour les équipes de courtiers</li>
           </ul>
 
@@ -72,7 +72,7 @@ export default function RegisterPackages({ locale, packageChoice, setPackageChoi
             <li style={{ color: 'red'}}>✓ Entreposage, entretien et gestion de votre inventaire</li>
             <li style={{ color: 'red'}}>✓ Alertes quand votre inventaire est bas ou endommagé</li>
             <li style={{ color: 'red'}}>✓ Code promotionnel chez Tout Pour Le Courtier</li>
-            <li style={{ color: 'red'}}>✓ Rabais sur vos commandes de matériel d'affichage</li>
+            <li style={{ color: 'red'}}>✓ Rabais sur vos commandes de matériel daffichage</li>
             <li style={{ color: 'red'}}>✓ Idéal pour les équipes de courtiers</li>
           </ul>
 
@@ -98,7 +98,7 @@ export default function RegisterPackages({ locale, packageChoice, setPackageChoi
             <li style={{ color: 'red'}}>✓ Entreposage, entretien et gestion de votre inventaire</li>
             <li style={{ color: 'red'}}>✓ Alertes quand votre inventaire est bas ou endommagé</li>
             <li style={{ color: 'red'}}>✓ Code promotionnel chez Tout Pour Le Courtier</li>
-            <li style={{ color: 'red'}}>✓ Rabais sur vos commandes de matériel d'affichage</li>
+            <li style={{ color: 'red'}}>✓ Rabais sur vos commandes de matériel daffichage</li>
             <li style={{ color: 'red'}}>✓ Idéal pour les équipes de courtiers</li>
           </ul>
 
