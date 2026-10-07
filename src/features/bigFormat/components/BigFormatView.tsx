@@ -203,7 +203,7 @@ export default function BigFormat() {
                 </p>
 
                 <div className={styles.buttons}>
-                    <button onClick={() => router.push(`/shop`)}>Achetez du materiel d affichage commercial</button>
+                    <button onClick={() => router.push(`/shop?category=bigFormatStructure`)}>Achetez du materiel d affichage grand format</button>
                     <button onClick={() => router.push(`/services`)}>Effectuez une demande en ligne</button>
                 </div>
             </div>
@@ -236,7 +236,7 @@ export default function BigFormat() {
                             </div>
 
                             {type.sections && type.sections.map((section) => (
-                            <div key={type.title} className={styles.text}>
+                            <div key={section.title} className={styles.text}>
                                 <h4><strong>{section.title}</strong></h4>
                                 <p>{section.content}</p>
                             </div>

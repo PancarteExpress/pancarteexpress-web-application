@@ -206,7 +206,7 @@ function CheckoutForm() {
     cardError ||
     submitError;
 
-  if (confirmation) {
+  /*if (confirmation) {
     const paid = confirmation.mode === 'payment';
     return (
       <div className={styles.mainContainer}>
@@ -228,13 +228,14 @@ function CheckoutForm() {
         </div>
       </div>
     );
-  }
+  }*/
 
   if (!hasHydrated) return <div className={styles.mainContainer} />;
 
   return (
     <div className={styles.mainContainer}>
       <div className={styles.container}>
+        {!confirmation && 
         <div className={styles.items}>
           <h3>{t('cartSummary')}</h3>
           {items.map((item) =>
@@ -252,7 +253,25 @@ function CheckoutForm() {
               </div>
             ),
           )}
-        </div>
+        </div>}
+
+        {confirmation && (
+          <div className={styles.completedPayment}>
+            <div>
+              <FaRegCheckCircle />
+            </div>
+            <p>
+              Commande n° <strong>{confirmation.orderNumber}</strong>.
+              <br />
+              {confirmation.mode === 'payment' ? 'Votre paiement a été reçu. ' : 'Votre commande a été envoyée. '}
+              
+              <br />
+              {isAuthenticated
+                ? 'Vous pouvez suivre son statut dans votre tableau de bord.'
+                : 'Nous vous contacterons par courriel pour la suite.'}
+            </p>
+          </div>
+        )}
 
         <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className={styles.section}>
@@ -361,11 +380,22 @@ function CheckoutForm() {
           )}
 
           <div className={styles.section}>
+            
             {firstError && <div className={styles.error}>{firstError}</div>}
+
+            {!confirmation &&
             <button type="submit" disabled={items.length === 0 || isSubmitting}>
               {isSubmitting ? 'Envoi en cours…' : requiresPayment ? t('makePay') : t('submitOrder')}
             </button>
+            }
+
+            {confirmation && 
+            <Link href={isAuthenticated ? `/${locale}/dashboard` : `/${locale}/shop`}>
+              {isAuthenticated ? 'Voir mes commandes' : 'Retour à la boutique'}
+            </Link>}
           </div>
+
+          
         </form>
       </div>
     </div>

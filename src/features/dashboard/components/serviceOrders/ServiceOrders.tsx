@@ -43,7 +43,9 @@ export default function ServiceOrders({ orders }: Props) {
       </div>
 
       {orders.length === 0 ? (
-        <p>Aucune demande de service</p>
+        <div className={styles.noOrders}>
+          <p>Aucune demande de service</p>
+        </div>
       ) : (
         orders.map((order) => {
           const addresses = order.serviceRequests.flatMap((r) => r.addresses);

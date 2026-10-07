@@ -126,8 +126,6 @@
 
 .mainContainer .orders .details .products,
 .mainContainer .orders .details .services {
-    
-    
     display: flex;
     flex-direction: column;
 
@@ -158,6 +156,7 @@
 .mainContainer .orders .details .services label .addressDetails {
     margin-right: 10px;
 }
+
 .mainContainer .orders .details .services label .selectedServices {
     color: #0E4D9A;
 }

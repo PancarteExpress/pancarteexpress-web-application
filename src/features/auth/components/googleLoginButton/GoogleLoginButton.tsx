@@ -32,7 +32,7 @@ export function GoogleLoginButton({ locale, groupStatus }: GoogleLoginButtonProp
 
   return (
     <div className={styles.googleLoginContainer}>
-      <button onClick={handleGoogleSignIn} className={styles.googleBtn}>
+      <button type="button" onClick={handleGoogleSignIn} className={styles.googleBtn}>
         <FcGoogle size={20} />
         Se connecter avec Google
       </button>
