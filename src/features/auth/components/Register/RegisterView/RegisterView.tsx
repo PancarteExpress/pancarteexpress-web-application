@@ -28,6 +28,7 @@ export default function RegisterView({ locale }: RegisterViewProps) {
         />}
 
         {step === "register" && <>
+        <button type='button' className={styles.backToPackages} onClick={() => setStep('packages')}>Revenir à la description des forfaits</button>
         <RegisterCredentials 
           locale={locale} packageChoice={packageChoice}
           setPackageChoice={setPackageChoice}

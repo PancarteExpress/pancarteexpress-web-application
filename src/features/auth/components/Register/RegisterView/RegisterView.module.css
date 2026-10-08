@@ -15,3 +15,19 @@
 
 @media (max-width: 1650px) { .mainContainer .container { width: 80%; } }
 @media (max-width: 1300px) { .mainContainer .container { width: 95%; } }
+
+.mainContainer .container .backToPackages {
+    all: unset;
+    cursor: pointer;
+    background-color: #F8FAFD;
+    border: 3px solid #D8E8F8;
+    padding: 10px;
+    border-radius: 10px;
+    color: #0E3A8C;
+    font-weight: 700;
+}
+
+.mainContainer .container .backToPackages:hover {
+    background-color: #0E3A8C;
+    color: #D8E8F8;
+}
