@@ -1,20 +1,149 @@
 .container {
-  margin: 0 auto;
-  width: 60%;
+
+  display: flex;
+  min-height: 100vh;
+}
+
+.container .sidebar {
+  flex: 15%;
 
   padding: 50px 0;
+  background-color: #092E5B;
+  color: white;
+}
 
+.container .sidebar nav .navItem {
 
+  padding: 15px;
+
+}
+
+.container .sidebar nav .active {
+
+  padding: 15px;
+  border-left: 1px solid white;
+  background-color: #22436B;
+  font-weight: 900;
+}
+
+/* ─── Main ─── */
+
+.main {
+  flex: 85%;
+  padding: 50px 0;
   border: 1px solid red;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
 }
 
-.header {
-    
+/* ─── Topbar ─── */
+
+.topbar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px;
 }
 
-.title {
-  font-family: Montserrat, sans-serif;
-  font-size: 28px;
-  font-weight: 700;
-  color: #092E5B;
+.pageTitle {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 900;
+    color: #092E5B;
+}
+
+.pageSub {
+    font-size: 12px;
+    color: #5F7FA8;
+}
+
+/* ─── Stats ─── */
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  padding: 10px;
+}
+
+.statCard {
+  background: #fff;
+  border-radius: 10px;
+  border: 3px solid #D8E8F8;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.statIcon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #E8F1FB;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.statValue {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 22px;
+    font-weight: 900;
+    color: #092E5B;
+}
+
+.statLabel {
+    font-size: 11px;
+    color: #5F7FA8;
+    margin-top: 2px;
+}
+
+/* ─── Table card ─── */
+
+.tableCard {
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid #D8E8F8;
+  overflow: hidden;
+  margin: 10px;
+}
+
+.tableHead {
+    padding: 14px 18px;
+    border-bottom: 1px solid #EEF4FB;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.tableTitle {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: #092E5B;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.searchInput {
+    padding: 7px 12px;
+    border: 1px solid #C5D8EF;
+    border-radius: 7px;
+    font-size: 12px;
+    color: #1A1A2E;
+    background: #F8FAFD;
+    outline: none;
+    width: 240px;
+    font-family: 'Inter', sans-serif;
+}
+
+.searchInput:focus {
+    border-color: #0E4D9A;
+    background: #fff;
 }

@@ -8,6 +8,9 @@
   border-collapse: collapse;
   font-family: Inter, sans-serif;
   font-size: 14px;
+
+  width: 100%;
+
 }
 
 .caption {

@@ -1,3 +1,4 @@
+import Footer from '@/shared/components/footer/footer';
 import styles from './layout.module.css';
 
 export default function AuthLayout({
@@ -8,6 +9,7 @@ export default function AuthLayout({
   return (
     <div className={styles.authLayout}>
       {children}
+      <Footer />
     </div>
   );
 }

@@ -23,7 +23,6 @@ export default async function LocaleLayout({
     <NextIntlClientProvider messages={messages} locale={locale}>
       <Header locale={locale} />
       {children}
-      <Footer />
     </NextIntlClientProvider>
   );
 }

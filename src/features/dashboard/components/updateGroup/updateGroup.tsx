@@ -126,69 +126,83 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
           <button type="button" onClick={onClose}>Fermer</button>
         </div>
 
-        {/* Nom */}
-        <section className={styles.section}>
-          <h3>Nom de l équipe</h3>
-          <form onSubmit={handleSubmit(onRename)} noValidate>
-            <div className={styles.inputs}>
-              <label htmlFor="group-name">Nom</label>
-              <input id="group-name" {...register("name")} aria-invalid={!!errors.name} />
-              {errors.name && <p className={styles.error}>{errors.name.message}</p>}
+        <div className={styles.body}>
+          {/* Nom */}
+          <section className={styles.section}>
+            <h3>Nom de l équipe</h3>
+            <form onSubmit={handleSubmit(onRename)} noValidate>
+              <div className={styles.inputs}>
+                <label htmlFor="group-name">Nom</label>
+                <input id="group-name" {...register("name")} aria-invalid={!!errors.name} />
+                {errors.name && <p className={styles.error}>{errors.name.message}</p>}
+              </div>
+              {nameFeedback && (
+                <p className={nameFeedback.type === "error" ? styles.error : styles.success}>
+                  {nameFeedback.message}
+                </p>
+              )}
+              <div className={styles.btnSave}>
+                <button type="submit" disabled={isSubmitting || !isDirty}>
+                  {isSubmitting ? "Enregistrement…" : "Enregistrer"}
+                </button>
+              </div>
+            </form>
+          </section>
+
+          {/* Membres */}
+          <section className={styles.section}>
+            <h3>Membres ({group.users.length})</h3>
+
+            <div>
+              <span className={styles.membersLabel}>Administrateur</span>
+              {group.users.filter(m => m.role === 'groupAdmin').map(member => (
+              <div key={member.id} className={styles.adminRow}>
+                  <div>
+                      <p className={styles.memberName}>{member.firstName} {member.lastName}</p>
+                      <p className={styles.memberEmail}>{member.email}</p>
+                  </div>
+                  <span className={`${styles.badge} ${styles.badgeAdmin}`}>Administrateur</span>
+              </div>
+              ))}
             </div>
-            {nameFeedback && (
-              <p className={nameFeedback.type === "error" ? styles.error : styles.success}>
-                {nameFeedback.message}
+
+            <div>
+              <span className={styles.membersLabel}>Membres</span>
+              <div className={styles.memberListWrap}>
+                  <ul className={styles.memberList}>
+                      {group.users.filter(m => m.role !== 'groupAdmin').map(member => (
+                          <li key={member.id} className={styles.memberRow}>
+                              <div>
+                                  <p className={styles.memberName}>{member.firstName} {member.lastName}</p>
+                                  <p className={styles.memberEmail}>{member.email}</p>
+                              </div>
+                              <span className={`${styles.badge} ${member.groupStatus === 'PENDING' ? styles.badgePending : styles.badgeActive}`}>
+                                  {STATUS_LABELS[member.groupStatus]}
+                              </span>
+                              <button type="button" className={styles.btnRemove} onClick={() => handleRemove(member)} disabled={removingId === member.id}>
+                                  {removingId === member.id ? "Retrait…" : "Retirer"}
+                              </button>
+                          </li>
+                      ))}
+                  </ul>
+              </div>
+          </div>
+
+            <MemberEmailSearch selected={toAdd} onChange={setToAdd} />
+
+            {membersFeedback && (
+              <p className={membersFeedback.type === "error" ? styles.error : styles.success}>
+                {membersFeedback.message}
               </p>
             )}
+
             <div className={styles.btnSave}>
-              <button type="submit" disabled={isSubmitting || !isDirty}>
-                {isSubmitting ? "Enregistrement…" : "Enregistrer"}
+              <button type="button" onClick={handleAdd} disabled={isAdding || toAdd.length === 0}>
+                {isAdding ? "Ajout…" : `Ajouter (${toAdd.length})`}
               </button>
             </div>
-          </form>
-        </section>
-
-        {/* Membres */}
-        <section className={styles.section}>
-          <h3>Membres ({group.users.length})</h3>
-
-          <ul className={styles.memberList}>
-            {group.users.map((member) => (
-              <li key={member.id} className={styles.memberRow}>
-                <div>
-                  <p>{member.firstName} {member.lastName}</p>
-                  <p className={styles.memberEmail}>{member.email}</p>
-                </div>
-                <span className={styles.badge}>
-                  {member.role === "groupAdmin" ? "Administrateur" : STATUS_LABELS[member.groupStatus]}
-                </span>
-                {member.role === "user" && (
-                  <button
-                    type="button"
-                    onClick={() => handleRemove(member)}
-                    disabled={removingId === member.id}
-                  >
-                    {removingId === member.id ? "Retrait…" : "Retirer"}
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-
-          <MemberEmailSearch selected={toAdd} onChange={setToAdd} />
-
-          {membersFeedback && (
-            <p className={membersFeedback.type === "error" ? styles.error : styles.success}>
-              {membersFeedback.message}
-            </p>
-          )}
-
-          <div className={styles.btnSave}>
-            <button type="button" onClick={handleAdd} disabled={isAdding || toAdd.length === 0}>
-              {isAdding ? "Ajout…" : `Ajouter (${toAdd.length})`}
-            </button>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </div>
   );

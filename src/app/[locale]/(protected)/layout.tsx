@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { requireRolePage } from "@/lib/auth/guard";
+import Footer from "@/shared/components/footer/footer";
 
 interface ProtectedLayoutProps {
   children: ReactNode;
@@ -18,5 +19,10 @@ export default async function ProtectedLayout({ children, params }: ProtectedLay
     redirect(`/${locale}/admin`);
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      <Footer />
+    </>
+  );
 }
