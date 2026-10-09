@@ -72,7 +72,8 @@
     font-size: 1.4rem;
 }
 
-.mainContainer .userData {
+.mainContainer .userData,
+.mainContainer .groupAdminData {
     margin: 0 auto;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -80,10 +81,11 @@
     margin-bottom: 20px;
 }
 
-
 @media (max-width: 900px)  { .mainContainer .userData { grid-template-columns: 1fr; } }
+@media (max-width: 900px)  { .mainContainer .groupAdminData { grid-template-columns: 1fr; } }
 
-.mainContainer .userData .card {
+.mainContainer .userData .card,
+.mainContainer .groupAdminData .card {
     background: #fff;
     border-radius: 12px;
     border: 3px solid #D8E8F8;
@@ -95,7 +97,12 @@
     transition: box-shadow .2s, transform .2s;
 }
 
-.mainContainer .userData .card:hover {
+.mainContainer .groupAdminData .card:last-of-type {
+    grid-column: 1 / -1;
+}
+
+.mainContainer .userData .card:hover,
+.mainContainer .groupAdminData .card:hover {
     box-shadow: 0 4px 20px rgba(14, 77, 154, .12);
     transform: translateY(-2px);
 }

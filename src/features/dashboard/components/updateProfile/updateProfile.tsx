@@ -231,7 +231,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
               {sessionUser?.role === "groupAdmin" ? <span className={styles.role}>Administrateur</span> : <span className={styles.role}>User</span>}
               {sessionUser?.groupStatus === "SOLO" &&<span className={styles.solo}>solo</span>}
               {sessionUser?.groupStatus === "PENDING" &&<span className={styles.pending}>En attente de rejoindre un groupe</span>}
-              {sessionUser?.groupStatus === "JOINED" &&<span className={styles.joined}>PancarteExpress</span>}
+              {sessionUser?.groupStatus === "JOINED" &&<span className={styles.joined}>{sessionUser?.groupName}</span>}
             </div>
 
             <div className={styles.btnSave}>

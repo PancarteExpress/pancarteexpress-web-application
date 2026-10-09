@@ -6,77 +6,66 @@
   display: flex;
   gap: 10px;
 
-  border: 1px solid red;
 }
 
 @media (max-width: 1650px) { .mainContainer { width: 80%; } }
 @media (max-width: 1300px) { .mainContainer { width: 95%; } }
+@media (max-width: 1000px) { .mainContainer { flex-direction: column; padding: 0; } }
 
 .mainContainer .about {
-    padding: 10px;
-    display: flex;
-    justify-content: center;
-}
+    flex: 1;
 
-.mainContainer .about h3 {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 30px;
-    color: #222;
-}
-
-.mainContainer .about .contact {
-    display: flex;
-    align-items: flex-start;
-    gap: 20px;
-    margin-bottom: 25px;
-}
-
-.mainContainer .about .contact .imageContainer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    width: 40px;
-    height: 40px;
-}
-
-.mainContainer .about .contact .infos {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    align-items: center;
+
+    padding-top: 50px;
+    
 }
 
-.mainContainer .about .contact .infos .contactLabel {
-    font-size: 14px;
-    font-weight: 600;
-    color: #222;
-    display: block;
+@media (max-width: 1000px) { .mainContainer .about { padding-top: 0; align-items: flex-start; } }
+
+.mainContainer .about .contact {
+    width: 60%;
+    margin-top: 10px;
+
+    display: flex;
+
 }
 
-.mainContainer .about .contact .infos .contactValue {
-    font-size: 14px;
-    color: #0E4D9A;
-    display: block;
+.mainContainer .about .imageContainer {  
+    
+    padding: 10px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
 }
+
+.mainContainer .about .infos {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.mainContainer .about .infos label:first-child {
+    font-weight: 700;
+}   
 
 .mainContainer .contactForm {
+    flex: 1;
+    border: 3px solid #EEF4FB;
     border-radius: 10px;
-    border: 1px solid #D8E8F8;
-    overflow: hidden;
 }
 
-.mainContainer .contactForm .formHead {
+@media (max-width: 1000px) { .mainContainer .contactForm {  margin-top: 10px; } }
+
+.mainContainer .contactForm .header {
     padding: 20px 24px;
-    border-bottom: 1px solid #EEF4FB;
-}
-
-.mainContainer .contactForm .formHead .formTitle {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 900;
-    color: #092E5B;
-    text-transform: uppercase;
-    letter-spacing: .06em;
+    border-bottom: 3px solid #EEF4FB;
 }
 
 .mainContainer .contactForm .formBody {
@@ -94,41 +83,17 @@
     letter-spacing: .05em;
 }
 
-.mainContainer .contactForm .formBody .field {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-}
-
-.mainContainer .contactForm .formBody .field label {
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    color: #5F7FA8;
-    text-transform: capitalize;
-    letter-spacing: .05em;
-}
-
-.mainContainer .contactForm .formBody .field .textarea {
-    padding: 9px 12px;
-    border: 1px solid #C5D8EF;
-    border-radius: 10px;
-    font-family: 'Inter', sans-serif;
-    background: #F8FAFD;
-    outline: none;
-    resize: vertical;
-}
-
-.mainContainer .contactForm .formBody .row .field .textarea:focus {
-    border-color: #0E4D9A;
-}
-
 .mainContainer .contactForm .formBody .row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
+
 @media (max-width: 1400px)  { .mainContainer .contactForm .formBody .row { grid-template-columns: 1fr; } }
 
+.mainContainer .contactForm .formBody .rowFull {
+    grid-template-columns: 1fr;
+}
 
 .mainContainer .contactForm .formBody .row .field {
     display: flex;
@@ -144,13 +109,27 @@
     letter-spacing: .05em;
 }
 
-.mainContainer .contactForm .formBody .row .field input {
+.mainContainer .contactForm .formBody .row .field input,
+.mainContainer .contactForm .formBody .row .field .textarea {
     padding: 9px 12px;
     border: 1px solid #C5D8EF;
     border-radius: 10px;
     font-family: 'Inter', sans-serif;
     background: #F8FAFD;
     outline: none;
+}
+
+.mainContainer .contactForm .formBody .rowFull .field {
+    width: 100%;
+}
+
+.mainContainer .contactForm .formBody .rowFull .textarea {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.mainContainer .contactForm .formBody .row .field .textarea {
+    width: 100%;
 }
 
 .mainContainer .contactForm .formBody .row .field input:focus {
@@ -170,60 +149,14 @@
     color: #C62828;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-.mainContainer .contactForm .formBody .error,
-.mainContainer .contactForm .formBody .success,
-.mainContainer .contactForm .formBody .loading {
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 900;
-    text-align: center;
-    border-radius: 10px;
-}
-
-.mainContainer .contactForm .formBody .error {
-    color: red;
-    border: 2px solid red;
-}
-
-.mainContainer .contactForm .formBody .success {
-    color: green;
-    border: 2px solid green;
-}
-
-.mainContainer .contactForm .formBody .loading {
-    color: orange;
-    border: 2px solid orange;
-}
-
-.mainContainer .contactForm .formBody .field button {
+.mainContainer .contactForm .formBody button {
     all: unset;
-    display: block;
-    width: 100%;
-    padding: 11px;
-    background: #0E4D9A;
-    color: white;
-    border-radius: 10px;
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    text-align: center;
     cursor: pointer;
-    letter-spacing: .03em;
-    transition: background .15s;
-    box-sizing: border-box;
+    color: #D8E8F8;
+    background-color: #0E3A8C;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1.1rem;
 }

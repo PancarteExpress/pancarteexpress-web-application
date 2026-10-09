@@ -11,55 +11,53 @@ export default function Contact() {
     <div className={styles.mainContainer}>
 
         <div className={styles.about}>
-          <div>
-            <h3>Nos coordonnées</h3>
+          <h3>Nos coordonnées</h3>
 
-            <div className={styles.contact}>
-              <div className={styles.imageContainer}>
-                <FaPhoneAlt size={25} color="#0E4D9A" />
-              </div>
-              <div className={styles.infos}>
-                <label className={styles.contactLabel}>Téléphone bureau</label>
-                <label className={styles.contactValue}>514-825-2709</label>
-              </div>
+          <div className={styles.contact}>
+            <div className={styles.imageContainer}>
+              <FaPhoneAlt size={25} color="#0E4D9A" />
             </div>
-
-            <div className={styles.contact}>
-              <div className={styles.imageContainer}>
-                <MdOutlinePhoneAndroid size={25} color="#0E4D9A" />
-              </div>
-              <div className={styles.infos}>
-                <label className={styles.contactLabel}>Cellulaire representant</label>
-                <label className={styles.contactValue}>438-543-0912</label>
-              </div>
+            <div className={styles.infos}>
+              <label className={styles.contactLabel}>Téléphone bureau</label>
+              <label className={styles.contactValue}>514-825-2709</label>
             </div>
+          </div>
 
-            <div className={styles.contact}>
-              <div className={styles.imageContainer}>
-                <MdMail size={25} color="#0E4D9A" />
-              </div>
-              <div className={styles.infos}>
-                <label className={styles.contactLabel}>Courriel</label>
-                <label className={styles.contactValue}>info@pancarteexpress.com</label>
-              </div>
+          <div className={styles.contact}>
+            <div className={styles.imageContainer}>
+              <MdOutlinePhoneAndroid size={25} color="#0E4D9A" />
             </div>
+            <div className={styles.infos}>
+              <label className={styles.contactLabel}>Cellulaire representant</label>
+              <label className={styles.contactValue}>438-543-0912</label>
+            </div>
+          </div>
 
-            <div className={styles.contact}>
-              <div className={styles.imageContainer}>
-                <MdLocationPin size={25} color="#0E4D9A" />
-              </div>
-              <div className={styles.infos}>
-                <label className={styles.contactLabel}>Notre adresse</label>
-                <label className={styles.contactValue}>
-                  2160 Rue Léger, Lasalle, QC H8N 2L8
-                </label>
-              </div>
+          <div className={styles.contact}>
+            <div className={styles.imageContainer}>
+              <MdMail size={25} color="#0E4D9A" />
+            </div>
+            <div className={styles.infos}>
+              <label className={styles.contactLabel}>Courriel</label>
+              <label className={styles.contactValue}>info@pancarteexpress.com</label>
+            </div>
+          </div>
+
+          <div className={styles.contact}>
+            <div className={styles.imageContainer}>
+              <MdLocationPin size={25} color="#0E4D9A" />
+            </div>
+            <div className={styles.infos}>
+              <label className={styles.contactLabel}>Notre adresse</label>
+              <label className={styles.contactValue}>
+                2160 Rue Léger, Lasalle, QC H8N 2L8
+              </label>
             </div>
           </div>
         </div>
 
         <form className={styles.contactForm}>
-          <div className={styles.formHead}>
+          <div className={styles.header}>
             <h2 className={styles.formTitle}>Nous contacter</h2>
           </div>
 
@@ -105,16 +103,17 @@ export default function Contact() {
               </div>
             </div>
 
-            <div className={styles.field}>
-              <label htmlFor="raison">
-                Raison de votre demande <span className={styles.req}>*</span>
-              </label>
-              <textarea id="raison" rows={4} className={styles.textarea} />
+            <div className={`${styles.row} ${styles.rowFull}`}>
+              <div className={styles.field}>
+                <label htmlFor="raison">
+                  Raison de votre demande <span className={styles.req}>*</span>
+                </label>
+                <textarea id="raison" rows={4} className={styles.textarea} />
+              </div>
             </div>
 
-            <div className={styles.field}>
-              <button type="button">Envoyer ma demande</button>
-            </div>
+            <button type="button">Envoyer ma demande</button>
+
           </div>
         </form>
     </div>

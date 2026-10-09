@@ -1,0 +1,70 @@
+.container {
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 30px;
+
+}
+
+.container .input {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.container .input input {
+    flex: 1;
+}
+
+.container .results {
+}
+
+.container .results .search {
+    color: #0E4D9A;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+.container .results .notFound {
+    color: red;
+    font-weight: 700;
+    font-size: 1.2rem;
+}
+
+.container .results .listFound {
+    list-style: none;
+    padding: 0;
+}
+
+.container .results .listFound li .btnAdd {
+    all: unset;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 10px;
+    background-color: #D8E8F8;
+
+    display: flex;
+    gap: 10px;
+}
+
+.container .results .listAdded {
+    list-style: none;
+    padding: 0;
+}
+
+.container .results .listAdded li {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+}
+
+.container .results .listAdded .btnDelete {
+    all: unset;
+    cursor: pointer;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    line-height: 0;
+    border: 1px solid red;
+}
