@@ -22,7 +22,7 @@ export function DashboardContent({ orders, group }: Props) {
   const { data: session, update } = useSession();
   
   const sessionUser = session?.user ;
-  const needsGroup = sessionUser?.role === "groupAdmin" && !sessionUser.groupId;
+  const needsGroup = sessionUser?.role === "groupAdmin" && !sessionUser.groupName;
 
   const [updateProfileOpen, setUpdateProfileOpen] = useState<boolean>(false);
 

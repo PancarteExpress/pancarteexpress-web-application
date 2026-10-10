@@ -48,7 +48,7 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
     formState: { errors, isSubmitting, isDirty },
   } = useForm<GroupNameInput>({
     resolver: zodResolver(groupNameSchema),
-    defaultValues: { name: initialGroup.name },
+    defaultValues: { name: initialGroup.name ?? "" },
   });
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
         return;
       }
       setGroup(res.group);
-      reset({ name: res.group.name });
+      reset({ name: res.group.name ?? "" });
       setNameFeedback({ type: "success", message: "Nom de l'équipe mis à jour" });
       await update(); // rafraîchit groupName dans la session
       router.refresh(); // resynchronise les données serveur de la page

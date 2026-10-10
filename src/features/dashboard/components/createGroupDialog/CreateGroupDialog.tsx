@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { MdGroups2 } from "react-icons/md";
 import { FaRegLightbulb } from "react-icons/fa";
 import { groupNameSchema, type GroupNameInput } from "@/lib/groups/groups.schema";
-import { createGroupAction, type UserSearchResult } from "@/lib/groups/server/groups.actions";
+import { renameGroupAction, type UserSearchResult } from "@/lib/groups/server/groups.actions";  // ← Change ici
 import { MemberEmailSearch } from "../memberEmailSearch/MemberEmailSearch";
 import styles from "./CreateGroupDialog.module.css";
 
@@ -28,13 +28,14 @@ export function CreateGroupDialog({ onCreated }: Props) {
 
   const onSubmit = async (values: GroupNameInput) => {
     setServerError(null);
-    const res = await createGroupAction({ ...values, memberIds: members.map((m) => m.id) });
+    const res = await renameGroupAction(values);  // ← Change ici, pas besoin de memberIds
     if (!res.ok) {
       setServerError(res.error);
       return;
     }
     await onCreated();
   };
+
 
   return (
     <div className={styles.fixedContainer}>

@@ -14,6 +14,7 @@ interface RegisterViewProps {
 export default function RegisterView({ locale }: RegisterViewProps) {  
   
   const [step, setStep] = useState<"packages" | "register">("packages");
+  const [formStep, setFormStep] = useState<"register" | "verify">("register");
   const [packageChoice, setPackageChoice] = useState<"group" | "solo" | 'none'>('none');
 
   return (
@@ -28,10 +29,17 @@ export default function RegisterView({ locale }: RegisterViewProps) {
         />}
 
         {step === "register" && <>
-        <button type='button' className={styles.backToPackages} onClick={() => setStep('packages')}>Revenir à la description des forfaits</button>
+        
+        {formStep === "register" && (  // ← Affiche le bouton seulement si formStep === "register"
+          <button type='button' className={styles.backToPackages} onClick={() => setStep('packages')}>
+            Revenir à la description des forfaits
+          </button>
+        )}
+
         <RegisterCredentials 
           locale={locale} packageChoice={packageChoice}
           setPackageChoice={setPackageChoice}
+          onFormStepChange={setFormStep}
         />
         </>}
         </div>

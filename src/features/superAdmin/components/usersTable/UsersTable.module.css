@@ -1,60 +1,72 @@
+.empty {
+  color: #64748b;
+}
+
 .wrapper {
   width: 100%;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
+  overflow-x: auto;
 }
 
-.table {
+.wrapper .table {
+  width: 100%;
+  min-width: 1100px;
+  table-layout: fixed;
   border-collapse: collapse;
   font-family: Inter, sans-serif;
   font-size: 14px;
-
-  width: 100%;
-
 }
 
-.caption {
-  text-align: left;
-  padding: 12px 16px;
-  font-family: Montserrat, sans-serif;
-  font-weight: 600;
-  color: #092E5B;
-}
-
-.table th {
-  text-align: left;
-  padding: 10px 16px;
+.wrapper .table th {
   background: #f5f8fc;
   color: #092E5B;
-  font-weight: 600;
-  white-space: nowrap;
-  border-bottom: 1px solid #e2e8f0;
 }
 
+.table th,
 .table td {
-  padding: 10px 16px;
-  border-bottom: 1px solid #edf2f7;
+  padding: 12px 14px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  border-bottom: 1px solid #edf2f7;
+
+  border: 1px solid red;
 }
 
-.table tbody tr:hover {
+.table td:last-of-type {
+  text-align: center;
+}
+
+.wrapper .table .colName         { width: 13%; }
+.wrapper .table .colMail         { width: 18%; }
+.wrapper .table .colPhoneNumber  { width: 7%; }
+.wrapper .table .colCompany      { width: 12%; }
+.wrapper .table .colRole         { width: 9%; }
+.wrapper .table .colGroup        { width: 11%; }
+.wrapper .table .colStatus       { width: 8%; }
+.wrapper .table .colRegisterDate { width: 5%; }
+.wrapper .table .colDeleteUser   { width: 5%; }
+
+.wrapper .table tbody {
+
+}
+
+.wrapper .table tbody tr:hover {
   background: #f9fbfd;
 }
 
-.table a {
+.wrapper .table tbody a {
   color: #0E4D9A;
   text-decoration: none;
 }
 
-.table a:hover {
+.wrapper .table tbody a:hover {
   text-decoration: underline;
 }
 
-.numeric {
-  text-align: right;
-}
-
-.badge {
+.wrapper .table tbody .badge {
   display: inline-block;
   padding: 2px 10px;
   border-radius: 999px;
@@ -62,16 +74,29 @@
   font-weight: 600;
 }
 
-.user {
+.wrapper .table tbody .roleSelect {
+   width: 100%;
+  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font: inherit;
+  background: #fff;
+  cursor: pointer;
+}
+.roleSelect:disabled { opacity: 0.6; cursor: wait; }
+
+.wrapper .table tbody .user,
+.wrapper .table tbody .groupAdmin {
+  padding: 5px 10px;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+.wrapper .table tbody .user {
   background: #e8eef7;
   color: #0E4D9A;
 }
 
-.groupAdmin {
+.wrapper .table tbody .groupAdmin {
   background: #0E4D9A;
   color: #ffffff;
-}
-
-.empty {
-  color: #64748b;
 }

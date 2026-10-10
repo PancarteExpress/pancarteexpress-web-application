@@ -3,15 +3,38 @@
 import type { AdminUserRow } from "@/lib/users/server/user.service";
 import { UsersTable } from "../usersTable/UsersTable";
 import styles from "./superAdminDashboard.module.css";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+
+import { FaUser } from "react-icons/fa";
+import { FaUserGroup } from "react-icons/fa6";
+import { GiSandsOfTime } from "react-icons/gi";
+import { AdminGroupRow } from "@/lib/groups/server/groups.service";
+
+const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 interface AdminDashboardProps {
   users: AdminUserRow[];
+  groups: AdminGroupRow[];
 }
 
-export function AdminDashboard({ users }: AdminDashboardProps) {
+export function AdminDashboard({ users, groups }: AdminDashboardProps) {
 
   const [activeSection, setActiveSection] = useState<'users' | 'teams'>('users');
+
+  const pendingCount = users.filter((u) => u.groupStatus === "PENDING").length;
+
+  const [search, setSearch] = useState("");
+  const filteredUsers = useMemo(() => {
+  const query = normalize(search.trim());
+    if (!query) return users;
+
+    return users.filter((u) => {
+        const haystack = normalize(
+        `${u.firstName ?? ""} ${u.lastName ?? ""} ${u.email}`
+        );
+        return haystack.includes(query);
+    });
+    }, [users, search]);
 
   return (
     <>
@@ -24,19 +47,14 @@ export function AdminDashboard({ users }: AdminDashboardProps) {
         </div>
 
         <nav className={styles.nav}>
-            <div
-                className={`${styles.navItem} ${activeSection === 'users' ? styles.active : ''}`}
-                onClick={() => setActiveSection('users')}
-            >
-                👥 Utilisateurs
+            <div className={`${styles.navItem} ${activeSection === 'users' ? styles.active : ''}`}
+                onClick={() => setActiveSection('users')}>
+                <FaUser size={20} style={{color : '#D8E8F8'}} /> Utilisateurs
             </div>
-            <div
-                className={`${styles.navItem} ${activeSection === 'teams' ? styles.active : ''}`}
-                onClick={() => setActiveSection('teams')}
-            >
-                🏢 Équipes
+            <div className={`${styles.navItem} ${activeSection === 'teams' ? styles.active : ''}`}
+                onClick={() => setActiveSection('teams')}>
+                <FaUserGroup size={20} style={{color : '#D8E8F8'}} /> Équipes
             </div>
-
         </nav>
       </div>
       
@@ -51,25 +69,27 @@ export function AdminDashboard({ users }: AdminDashboardProps) {
         </div>
 
         <div className={styles.stats}>
-            <div className={styles.statCard}>
-                <div className={styles.statIcon}>👥</div>
-                <div>
-                    <p className={styles.statValue}>—</p>
-                    <p className={styles.statLabel}>Utilisateurs total</p>
+            <div className={`${styles.statCard} ${pendingCount > 0 ? styles.userPending : ''}`}>
+                <div className={styles.statIcon}><GiSandsOfTime size={30} style={{color : 'orange'}} /></div>
+                <div className={styles.stat}>
+                    <p className={styles.statValue}>{pendingCount}</p>
+                    <p className={styles.statLabel}>Utilisateur{pendingCount > 1 ? "s" : ""} en attente de rejoindre une équipe</p>
                 </div>
             </div>
+
             <div className={styles.statCard}>
-                <div className={styles.statIcon}>🏢</div>
-                <div>
-                    <p className={styles.statValue}>—</p>
-                    <p className={styles.statLabel}>Équipes actives</p>
+                <div className={styles.statIcon}><FaUser size={30} style={{color : '#0E4D9A'}} /></div>
+                <div className={styles.stat}>
+                    <p className={styles.statValue}>{users.length}</p>
+                    <p className={styles.statLabel}>utilisateur{users.length > 1 ? "s" : ""} total</p>
                 </div>
             </div>
+
             <div className={styles.statCard}>
-                <div className={styles.statIcon}>⏳</div>
-                <div>
-                    <p className={styles.statValue}>—</p>
-                    <p className={styles.statLabel}>En attente</p>
+                <div className={styles.statIcon}><FaUserGroup size={30} style={{color : '#0E4D9A'}} /></div>
+                <div className={styles.stat}>
+                    <p className={styles.statValue}>{groups.length}</p>
+                    <p className={styles.statLabel}>Équipe{groups.length > 1 ? "s" : ""} active{groups.length > 1 ? "s" : ""}</p>
                 </div>
             </div>
         </div>
@@ -79,11 +99,16 @@ export function AdminDashboard({ users }: AdminDashboardProps) {
                 <span className={styles.tableTitle}>Liste des utilisateurs</span>
                 <input
                     className={styles.searchInput}
-                    type="text"
+                    type="search"
                     placeholder="Rechercher par nom ou courriel…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
                 />
             </div>
-            <UsersTable users={users} />
+            
+            {filteredUsers.length === 0 ? 
+            <div className={styles.noResults}>Aucun résultat.</div> : <UsersTable users={filteredUsers} allUsers={users} />
+            }
         </div>
         </>
         )}
@@ -114,7 +139,20 @@ export function AdminDashboard({ users }: AdminDashboardProps) {
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody></tbody>
+                <tbody>
+                {groups.map((group) => (
+                    <tr key={group.id}>
+                    <td>{group.name}</td>
+                    <td>
+                        {group.admin
+                        ? `${group.admin.firstName ?? ""} ${group.admin.lastName ?? ""}`.trim() || group.admin.email
+                        : "—"}
+                    </td>
+                    <td>{group.memberCount}</td>
+                    <td>{/* actions */}</td>
+                    </tr>
+                ))}
+                </tbody>
             </table>
         </div>
         </>

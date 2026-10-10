@@ -15,6 +15,7 @@ interface RegisterFormProps {
   locale: string;
   packageChoice: "group" | "solo" | 'none';
   setPackageChoice: (value: "group" | "solo" | 'none') => void;
+  onStepChange?: (step: "register" | "verify") => void;
 }
 
 const verifyCodeSchema = z.object({
@@ -23,7 +24,7 @@ const verifyCodeSchema = z.object({
 
 type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
 
-export function RegisterForm({ locale, packageChoice, setPackageChoice }: RegisterFormProps) {
+export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepChange }: RegisterFormProps) {
   const router = useRouter();
   const { register: registerUser, login } = useAuth();
 
@@ -93,6 +94,10 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice }: Regist
       setGroupStatus(packageChoice);
     }
   }, [packageChoice, locale, router]);
+
+  useEffect(() => {
+    onStepChange?.(step);  // ← Notifie le parent
+  }, [step, onStepChange]);
 
   // Si on redirige, ne pas afficher le formulaire
   if (packageChoice === 'none' || groupStatus === null) {

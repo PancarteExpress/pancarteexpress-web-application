@@ -72,7 +72,7 @@ model Session {
 
 model Group {
   id        String   @id @default(cuid())
-  name      String
+  name      String?  @unique
   users     User[]   @relation("GroupUsers")
 
   createdAt DateTime @default(now())

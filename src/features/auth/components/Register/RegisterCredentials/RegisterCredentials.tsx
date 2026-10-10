@@ -14,9 +14,10 @@ interface RegisterCredentialsProps {
   locale: string;
   packageChoice: "group" | "solo" | 'none';
   setPackageChoice: (value: "group" | "solo" | 'none') => void;
+  onFormStepChange?: (step: "register" | "verify") => void;
 }
 
-export default function RegisterCredentials({ locale, packageChoice, setPackageChoice }: RegisterCredentialsProps) {
+export default function RegisterCredentials({ locale, packageChoice, setPackageChoice, onFormStepChange }: RegisterCredentialsProps) {
 
   return (
     <div className={styles.credentials}>
@@ -34,6 +35,7 @@ export default function RegisterCredentials({ locale, packageChoice, setPackageC
         locale={locale} 
         packageChoice={packageChoice} 
         setPackageChoice={setPackageChoice}
+        onStepChange={onFormStepChange}
       />
       
       <p style={{ color: '#7691B4', fontWeight: '700', textAlign: 'center', marginTop: '1rem' }}>

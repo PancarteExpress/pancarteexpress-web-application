@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 import { isCategorySlug, type CategorySlug } from '@/lib/catalog/categories';
-import ShopView from '@/features/shop/components/ShopView';
+import ShopView from '../../../../../shop/components/ShopView';
 
 interface Props {
   params: Promise<{ locale: string }>;
