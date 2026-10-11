@@ -85,16 +85,28 @@ export default function Residential() {
 
     return (
         <div className={styles.mainContainer}>
+            
             <div className={styles.hero}>
                 <label>Services résidentiels</label>
-            </div>
-
-            <div className={styles.redirections}>
                 <p>
                     Pour un affichage rapide de votre annonce, utilisez notre service d installation résidentiel.
                     <br />
                     Installation ou récupération de pancartes, d ajouts, de boîtes à clé ou de tout autre accessoire.
                 </p>
+
+                {/*<div className={styles.buttons}>
+                    <button onClick={() => router.push(`/shop`)}>Achetez du materiel d affichage residentiel</button>
+                    <button onClick={() => router.push(`/services`)}>Effectuez une demande en ligne</button>
+                </div>*/}
+
+            </div>
+
+            <div className={styles.redirections}>
+                {/*<p>
+                    Pour un affichage rapide de votre annonce, utilisez notre service d installation résidentiel.
+                    <br />
+                    Installation ou récupération de pancartes, d ajouts, de boîtes à clé ou de tout autre accessoire.
+                </p>*/}
 
                 <div className={styles.buttons}>
                     <button onClick={() => router.push(`/shop`)}>Achetez du materiel d affichage residentiel</button>

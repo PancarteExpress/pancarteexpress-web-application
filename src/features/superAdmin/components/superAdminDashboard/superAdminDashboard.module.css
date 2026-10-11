@@ -1,11 +1,13 @@
 .container {
   display: flex;
   flex-direction: column;
+  padding: 0 20px;
 }
 
 .container .sidebar {
   background-color: #092E5B;
   color: white;
+  border-radius: 10px;
 }
 
 .container .sidebar .sidebarHead {
@@ -30,9 +32,7 @@
 }
 
 .container .sidebar nav {
-
-  padding: 0 10px;
-  margin-bottom: 20px;
+  margin: 20px 5vw;
   display: grid; 
   grid-template-columns: 1fr 1fr;
   gap: 10px;
@@ -52,8 +52,8 @@
 .container .sidebar nav .active {
 
   padding: 15px;
-  border-left: 1px solid white;
-  background-color: #22436B;
+  border: none;
+  background-color: #0E4D9A;
   font-weight: 900;
 }
 

@@ -58,7 +58,7 @@ function CheckoutForm() {
   const { items, hasHydrated, clear } = useCart();
 
   const hasProducts = items.some((i) => i.kind === 'product');
-  const requiresPayment = !isAuthenticated && hasProducts;
+  const requiresPayment = hasProducts;
 
   const stripe = useStripe();
   const elements = useElements();
@@ -205,30 +205,6 @@ function CheckoutForm() {
     errors.shippingAddress?.message ||
     cardError ||
     submitError;
-
-  /*if (confirmation) {
-    const paid = confirmation.mode === 'payment';
-    return (
-      <div className={styles.mainContainer}>
-        <div className={styles.completedPayment}>
-          <div>
-            <FaRegCheckCircle />
-          </div>
-          <p>
-            {paid ? 'Votre paiement a été reçu. ' : 'Votre commande a été envoyée. '}
-            Commande n° <strong>{confirmation.orderNumber}</strong>.
-            <br />
-            {isAuthenticated
-              ? 'Vous pouvez suivre son statut dans votre tableau de bord.'
-              : 'Nous vous contacterons par courriel pour la suite.'}
-          </p>
-          <Link href={isAuthenticated ? `/${locale}/dashboard` : `/${locale}/shop`}>
-            {isAuthenticated ? 'Voir mes commandes' : 'Retour à la boutique'}
-          </Link>
-        </div>
-      </div>
-    );
-  }*/
 
   if (!hasHydrated) return <div className={styles.mainContainer} />;
 
