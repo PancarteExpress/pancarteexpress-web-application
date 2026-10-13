@@ -1,265 +1,66 @@
-'use client'
+'use client';
 
-import { useEffect, useState } from 'react';
-import styles from './installationForm.module.css'
-import { ACCESS_OPTIONS, MATERIALS_OPTIONS, SPECIAL_ACCESS_OPTIONS } from '../../constants/installationOptions';
-import { Installation } from '../../types/services';
-import MaterialDetailsForm from '../materialDetailsForm/materialDetailsForm';
-import { MATERIAL_CONFIGS } from '../../constants/materialOptions';
+import { useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { FormProvider, useForm, useWatch } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  createEmptyInstallationForm, createInstallationSchema, toInstallationFormValues, type InstallationFormValues,
+} from '../../schemas/installation.schema';
+import type { InstallationDetails } from '../../types/installation';
+import styles from './installationForm.module.css';
+import { MaterialsSelector } from './MaterialsSelector';
 
-interface Props {
-  onDataChange?: (data: Omit<Installation, 'type'>) => void;
-  initialData?: Omit<Installation, 'type'>;
+import { FramesSection } from './frames/FramesSection';
+import { AddonsSection } from './addons/AddonsSection';
+
+interface InstallationFormProps {
+  onSubmit: (details: InstallationDetails) => void;
+  initialValues?: InstallationDetails;
 }
 
-export default function InstallationForm({ onDataChange, initialData }: Props) {
+export function InstallationForm({ onSubmit, initialValues }: InstallationFormProps) {
+  const { data: session, status } = useSession();
 
-    const [selectedMaterials, setSelectedMaterials] = useState(() => {
-        if (initialData?.items) {
-            return initialData.items;
-        }
-        return {
-            frames: { selected: false, details: {} },
-            anchors: { selected: false, details: {} },
-            poles: { selected: false, details: {} },
-            addonsOpenHouse: { selected: false, details: {} },
-            addons: { selected: false, details: {} },
-            keybox: { selected: false, details: {} },
-            flags: { selected: false, details: {} },
-            directional: { selected: false, details: {} },
-            other: { selected: false, details: {} },
-        };
-    });
+  if (status === 'loading') return <p aria-busy="true">Chargement…</p>;
 
-    const [selectedAccess, setSelectedAccess] = useState<Installation['accessibility'] | undefined>(
-        initialData?.accessibility
-    );
-    
-    const [specialAccess, setSpecialAccess] = useState<Installation['specialAccess'] | undefined>(
-        initialData?.specialAccess
-    );
+  const accountName = status === 'authenticated' ? session.user?.name?.trim() || null : null;
 
-    // Réinitialise quand selectedAccess change
-    useEffect(() => {
-        if (selectedAccess && !['balcony', 'wall', 'fence'].includes(selectedAccess)) {
-            setSpecialAccess(undefined);
-        }
-    }, [selectedAccess]);
+  return (
+    <InstallationFormInner
+      key={`${status}:${accountName ?? ''}`}
+      onSubmit={onSubmit}
+      isMember={status === 'authenticated'}
+      accountName={accountName}
+      initialValues={initialValues}
+    />
+  );
+}
 
-    const getDefaultDetails = (material: string, quantity: number = 1) => {
-        const config = MATERIAL_CONFIGS[material];
-        const defaults: Record<string, unknown> = {};
-        
-       
+interface InnerProps extends InstallationFormProps {
+  isMember: boolean;
+  accountName: string | null;
+}
 
-        config?.fields.forEach(field => {
-            if (field.key === 'rentAddons') {
-                defaults[field.key] = Array(quantity).fill(false);
-            } else if (field.key === 'intersections') {
-                // Pour directional: 2 intersections, pour flags: 1 seule
-                if (material === 'directional') {
-                    defaults[field.key] = Array.from({ length: quantity }, () => ({
-                    firstIntersection: '',
-                    secondIntersection: ''
-                    }));
-                } else if (material === 'flags') {
-                    defaults[field.key] = Array.from({ length: quantity }, () => ({
-                    intersection: ''
-                    }));
-                }
-            } else {
-                defaults[field.key] = field.type === 'radio' ? false : field.type === 'number' ? 1 : '';
-            }
-        });
-        
-        return defaults;
-        };
+function InstallationFormInner({ onSubmit, initialValues, isMember, accountName }: InnerProps) {
+  const [schema] = useState(() => createInstallationSchema({ isMember, accountName }));
+  const [defaultValues] = useState(() => initialValues ? toInstallationFormValues(initialValues) : createEmptyInstallationForm(),);
+  const methods = useForm<InstallationFormValues, unknown, InstallationDetails>({
+    resolver: zodResolver(schema),
+    defaultValues,
+    shouldFocusError: true,
+  });
 
-    const isDependent = (key: string): boolean => {
-        return MATERIALS_OPTIONS.some(opt => 
-            (opt.dependencies as readonly string[]).includes(key) && 
-            selectedMaterials[opt.key as keyof typeof selectedMaterials].selected
-        );
-    };
+  const materials = useWatch({ control: methods.control, name: 'materials' });
 
-    const handleMaterialDetails = (material: keyof typeof selectedMaterials, details: unknown) => {
-        setSelectedMaterials(prev => ({
-            ...prev,
-            [material]: { ...prev[material], details }
-        }));
-    };
-
-    function handleMaterialChange(service: keyof typeof selectedMaterials) {
-        const option = MATERIALS_OPTIONS.find(opt => opt.key === service);
-        const isChecking = !selectedMaterials[service].selected;
-
-        const quantity = Number(selectedMaterials.frames.details?.quantity_new) || 1;
-
-        setSelectedMaterials(prev => {
-        const newState = { ...prev };
-        
-        newState[service] = { 
-            ...prev[service], 
-            selected: !prev[service].selected,
-            details: isChecking ? getDefaultDetails(service as string, quantity) : {}  // ← Passe quantity
-        };
-
-        if (isChecking && option?.dependencies) {
-        option.dependencies.forEach(dep => {
-            newState[dep as keyof typeof selectedMaterials] = { 
-            selected: true,
-            details: getDefaultDetails(dep, quantity)
-            };
-        });
-        } else if (!isChecking && option?.dependencies) {
-        option.dependencies.forEach(dep => {
-            newState[dep as keyof typeof selectedMaterials] = { 
-            selected: false,
-            details: {}
-            };
-        });
-        }
-
-        return newState;
-        });
-    }
-
-    // Envoie les données au parent chaque fois qu'elles changent
-    useEffect(() => {
-        onDataChange?.({
-            items: selectedMaterials,
-            accessibility: selectedAccess ?? null,
-            specialAccess: specialAccess ?? null, // ← Ajoute ça
-        });
-    }, [selectedMaterials, selectedAccess, specialAccess, onDataChange]);
-
-    useEffect(() => {
-        console.log('initialData changée:', initialData);
-        
-        if (!initialData?.items) {
-            console.log('Reset formulaire');
-            setSelectedMaterials({
-                frames: { selected: false, details: {}},
-                anchors: { selected: false, details: {} },
-                poles: { selected: false, details: {} },
-                addonsOpenHouse: { selected: false, details: {} },
-                addons: { selected: false, details: {} },
-                keybox: { selected: false, details: {} },
-                flags: { selected: false, details: {} },
-                directional: { selected: false, details: {} },
-                other: { selected: false, details: {} },
-            });
-            setSelectedAccess(undefined);
-        } else {
-            console.log('Charge items:', initialData.items);
-            setSelectedMaterials(initialData.items);
-            setSelectedAccess(initialData.accessibility);
-        }
-    }, [initialData]);
-
-
-    return(
-        <div className={styles.test}>
-        <fieldset className={styles.fieldset}>
-            <legend className={styles.legend}>Quavez vous besoin dinstaller?</legend>
-
-            <div className={styles.userChoice}>
-                {MATERIALS_OPTIONS.map(option => (
-                <label key={option.key} className={selectedMaterials[option.key as keyof typeof selectedMaterials].selected ? styles.checked : ''}>
-                    <input 
-                        type="checkbox" 
-                        checked={selectedMaterials[option.key as keyof typeof selectedMaterials].selected}
-                        onChange={() => handleMaterialChange(option.key as keyof typeof selectedMaterials)}
-                        disabled={isDependent(option.key)}
-                    />
-                    {option.label}
-                </label>
-                ))}
-            </div>
-
-            {(selectedMaterials.addons.selected || selectedMaterials.addonsOpenHouse.selected) && 
-            <div className={styles.specialInstructions}>
-                <label className={styles.addonsInstruction}>Assurez vous quune pancarte est presente sur les lieux pour quon puisse installer lajout</label>
-            </div>
-            }
-            
-            {(selectedMaterials.frames.selected) && 
-            <div className={styles.specialInstructions}>
-                <label className={styles.addonsInstruction}>Les installation de pancartes inclus linstallation des ancrages et des poteaux</label>
-            </div>
-            }
-
-            {Object.entries(selectedMaterials).map(([material, data]) => {
-            // Vérifie si ce material est une dépendance d'un autre sélectionné
-            const isDependent = MATERIALS_OPTIONS.some(opt => 
-                (opt.dependencies as readonly string[]).includes(material) && 
-                selectedMaterials[opt.key as keyof typeof selectedMaterials].selected
-            );
-            
-            return (
-                data.selected && !isDependent && (
-                <div key={material} className={styles.materialDetails}>
-                    <MaterialDetailsForm 
-                        material={material}
-                        data={data.details || {}}
-                        onChange={(details) => handleMaterialDetails(material as keyof typeof selectedMaterials, details)}
-                    />
-                </div>
-                )
-            );
-            })}
-        </fieldset>
-        
-        <fieldset className={styles.fieldset}>
-            <legend className={styles.legend}>Quelle est laccessibilite de linstallation ?</legend>
-
-            <div className={styles.userChoice}>
-                {ACCESS_OPTIONS.map(option => (
-                <label key={option.key} className={selectedAccess === option.key ? styles.checked : ''}>
-                    <input 
-                        type="radio" 
-                        name="accessibility"
-                        value={option.key}
-                        checked={selectedAccess === option.key}
-                        onChange={(e) => setSelectedAccess(e.target.value as Installation['accessibility'])}
-                    />
-                    {option.label}
-                </label>
-                ))}
-            </div>
-
-            {selectedAccess && ['balcony', 'wall', 'fence'].includes(selectedAccess) && <>
-            <h3>Veuillez choisir parmis lune des options suivantes : </h3>
-            <div className={styles.userChoice}>
-                {SPECIAL_ACCESS_OPTIONS.map(option => (
-                <label key={option.key} className={specialAccess === option.key ? styles.checked : ''}>
-                <input 
-                    type="radio" 
-                    name="accessibility"
-                    value={option.key}
-                    checked={specialAccess === option.key}
-                    onChange={(e) => setSpecialAccess(e.target.value as Installation['specialAccess'])}
-                />
-                {option.label}
-                </label>
-                ))}
-            </div>
-            </>}
-
-            {(selectedAccess && ['other'].includes(selectedAccess)) && 
-            <div className={styles.specialInstructions}>
-                <label htmlFor="specialAccess">Instructions spéciales</label>
-                <textarea
-                    id="specialAccess"
-                    value={specialAccess || ''}
-                    onChange={(e) => setSpecialAccess(e.target.value as Installation['specialAccess'])}
-                    placeholder="Entrez vos instructions ici..."
-                    rows={4}
-                />
-            </div>}
-        </fieldset>
-
-
-        </div>
-    );
+  return (
+    <FormProvider {...methods}>
+      <form noValidate className={styles.form} onSubmit={methods.handleSubmit(onSubmit)}>
+        <MaterialsSelector />
+        {materials.includes('frames') && <FramesSection isMember={isMember} accountName={accountName} />}
+        {materials.includes('addons') && <AddonsSection />}
+        <button type="submit" className={styles.submit}>Enregistrer l&apos;installation</button>
+      </form>
+    </FormProvider>
+  );
 }

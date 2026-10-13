@@ -7,7 +7,9 @@
     "build": "prisma generate && next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",
@@ -24,7 +26,7 @@
     "nodemailer": "^8.0.11",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-hook-form": "^7.88.0",
+    "react-hook-form": "^7.90.0",
     "react-icons": "^5.7.0",
     "server-only": "^0.0.1",
     "stripe": "^22.6.2",

@@ -2,8 +2,9 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Address, StreetAddress, TerrainAddress } from '../types/address';
 import { Service } from '../types/services';
+import type { InstallationDetails } from '../types/installation';
 
-const STORAGE_VERSION = 1;
+const STORAGE_VERSION = 2;
 
 interface AddressStore {
   addresses: Address[];
@@ -18,6 +19,7 @@ interface AddressStore {
   getAddresses: () => Address[];
   clearAddresses: () => void;
   setSelectedAddressId: (id: string | null) => void;
+  saveInstallation: (addressId: string, details: InstallationDetails) => void;
 }
 
 export const useAddressStore = create<AddressStore>()(
@@ -88,6 +90,28 @@ export const useAddressStore = create<AddressStore>()(
       },
 
       setSelectedAddressId: (id) => set({ selectedAddressId: id }),
+
+            saveInstallation: (addressId, details) => {
+        set((state) => ({
+          addresses: state.addresses.map((addr) => {
+            if (addr.id !== addressId) return addr;
+
+            const existing = addr.services.find((s) => s.type === 'installation');
+            const installation: Service = {
+              type: 'installation',
+              id: existing?.id ?? crypto.randomUUID(),
+              ...details,
+            };
+
+            return {
+              ...addr,
+              services: existing
+                ? addr.services.map((s) => (s.id === existing.id ? installation : s))
+                : [...addr.services, installation],
+            };
+          }),
+        }));
+      },
     }),
     {
       name: 'address-storage',
@@ -95,8 +119,18 @@ export const useAddressStore = create<AddressStore>()(
 
       // Brouillons sauvegardés avant (version 0) : conservés, considérés comme invités
       migrate: (persisted, version) => {
-        const state = (persisted ?? {}) as Partial<AddressStore>;
-        return version === 0 ? { ...state, ownerId: null } : state;
+        let state = (persisted ?? {}) as Partial<AddressStore>;
+        if (version === 0) state = { ...state, ownerId: null };
+        if (version < 2) {
+          state = {
+            ...state,
+            addresses: (state.addresses ?? []).map((a) => ({
+              ...a,
+              services: (a.services ?? []).filter((s) => s.type !== 'installation'),
+            })),
+          };
+        }
+        return state;
       },
 
       onRehydrateStorage: () => (state) => {
