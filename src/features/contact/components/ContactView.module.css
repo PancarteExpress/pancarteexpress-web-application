@@ -1,16 +1,95 @@
 .mainContainer {
-  margin: 0 auto;
+  /*margin: 0 auto;
   padding: 50px 0;
   width: 60%;
 
   display: flex;
-  gap: 10px;
+  gap: 10px;*/
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: 0 20px;
 
 }
 
-@media (max-width: 1650px) { .mainContainer { width: 80%; } }
+/*@media (max-width: 1650px) { .mainContainer { width: 80%; } }
 @media (max-width: 1300px) { .mainContainer { width: 95%; } }
-@media (max-width: 1000px) { .mainContainer { flex-direction: column; padding: 0; } }
+@media (max-width: 1000px) { .mainContainer { flex-direction: column; padding: 0; } }*/
+
+.mainContainer .hero {
+    width: 100%;
+
+    background-color: #092E5B;
+    padding-top: 50px;
+    padding-bottom: 20px;
+    
+    display: flex;
+    text-align: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 15px;
+
+    color: white;
+    border-radius: 10px;
+
+}
+
+@media (max-width: 1000px) { .mainContainer .hero  {padding: 20px 0;} }
+
+
+.mainContainer .hero .contacts {
+    display: flex;
+    
+    gap: 20px;
+    width: 35vw;
+}
+
+.mainContainer .hero .contacts .responsiveContact {
+    font-size: 1rem;
+}
+
+.mainContainer .hero .contacts .responsiveContact,
+.mainContainer .hero .contacts .contact {
+    flex: 1;
+
+    display: flex;
+    align-items: center;
+    
+    gap: 10px;
+    
+}
+
+.mainContainer .hero .contacts .responsiveContact .infos,
+.mainContainer .hero .contacts .contact .infos {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mainContainer .hero .contacts .responsiveContact .infos .contactLabel,
+.mainContainer .hero .contacts .contact .infos .contactLabel {
+    color: #D8E8F8;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.mainContainer .hero .contacts .responsiveContact .infos .contactLabel {
+    font-size: 0.9rem;
+}
+
+.mainContainer .hero .contacts .responsiveContact .infos .contactValue {
+    font-size: 0.9rem;
+}
+
+.mainContainer .hero .contacts .contact .infos .contactLabel {
+    font-size: 1rem;
+}
+
+.mainContainer .hero .contacts .contact .infos .contactValue {
+    font-size: 0.7rem;
+}
 
 .mainContainer .about {
     flex: 1;
@@ -24,6 +103,24 @@
 }
 
 @media (max-width: 1000px) { .mainContainer .about { padding-top: 0; align-items: flex-start; } }
+
+.mainContainer .hero label {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 900;
+    font-size: 1.5rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    flex: 1;
+}
+
+.mainContainer .hero p {
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 0.8rem;
+    line-height: 1.7rem;
+    color: #D8E8F8;
+}
+
 
 .mainContainer .about .contact {
     width: 60%;
@@ -56,9 +153,10 @@
 }   
 
 .mainContainer .contactForm {
-    flex: 1;
+    width: 40%;
     border: 3px solid #EEF4FB;
     border-radius: 10px;
+    margin: 30px 0;
 }
 
 @media (max-width: 1000px) { .mainContainer .contactForm {  margin-top: 10px; } }
@@ -147,6 +245,34 @@
 
 .req {
     color: #C62828;
+}
+
+.mainContainer .contactForm .formBody .errorMessage {
+    border: 3px solid red;
+    border-radius: 10px;
+    padding: 5px;
+    text-align: center;
+    font-weight: 700;
+    color: #C62828;
+    
+}
+
+.mainContainer .contactForm .formBody .sendingMessage {
+    border: 3px solid orange;
+    border-radius: 10px;
+    padding: 5px;
+    text-align: center;
+    font-weight: 700;
+    color: orange;
+}
+
+.mainContainer .contactForm .formBody .messageSent {
+    border: 3px solid green;
+    border-radius: 10px;
+    padding: 5px;
+    text-align: center;
+    font-weight: 700;
+    color: green;
 }
 
 .mainContainer .contactForm .formBody button {
