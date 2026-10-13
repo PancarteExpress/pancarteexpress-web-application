@@ -60,7 +60,6 @@ export function MaterialsSelector() {
               onChange={handleChange}
               legend="Qu'avez-vous besoin d'installer ?"
               options={options}
-              hint="Les autres éléments seront offerts prochainement."
               required
             />
             {hasFrames && (

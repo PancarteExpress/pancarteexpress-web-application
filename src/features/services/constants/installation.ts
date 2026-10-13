@@ -25,8 +25,8 @@ export const MATERIAL_LABELS: Record<Material, string> = {
   frames: 'Pancartes',
   anchors: 'Ancrages',
   poles: 'Poteaux',
-  addons: 'Ajout (autres) – seulement',
-  openHouse: 'Visite libre – seulement',
+  addons: 'Ajouts',
+  openHouse: 'Visite libre',
   flags: 'Drapeaux (À vendre / Vendu)',
   keybox: 'Boîtes à clés',
   directional: 'Directionnelles (À vendre / Vendu)',
@@ -101,7 +101,7 @@ export const ADDONS = [
 export type Addon = (typeof ADDONS)[number];
 export const ADDON_LABELS: Record<Addon, string> = {
   forSale: 'À vendre',
-  customNoMention: 'Ajout personnalisé (sans mention)',
+  customNoMention: 'Ajout personnalisé',
   duplex: 'Duplex',
   land: 'Terrain',
   sold: 'Vendu',

@@ -101,7 +101,6 @@ export default function ServiceForm() {
         )}
       </div>
 
-      {/* Résumé temporaire : remplacé par le nouveau ServicesList à l'étape 7 */}
       {addressesWithServices.length > 0 && (
         <ServicesSummary
           addresses={addressesWithServices}

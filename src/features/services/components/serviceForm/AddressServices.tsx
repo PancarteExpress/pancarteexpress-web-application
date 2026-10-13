@@ -59,7 +59,6 @@ export function AddressServices({ address }: { address: Address }) {
 
       {selected.includes('installation') && (
         <InstallationForm
-          // 'new' → id après le 1er enregistrement : remontage unique avec les données sauvegardées
           key={installation?.id ?? 'new'}
           initialValues={installation}
           onSubmit={(details) => {
