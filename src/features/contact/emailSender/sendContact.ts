@@ -27,6 +27,7 @@ export async function sendContact(data: ContactFormData): Promise<SendContactRes
   const { firstName, lastName, phoneNumber, extension, email, company, reason } = parsed.data;
 
   try {
+    // Envoi de la requete à l'interne (pancarteexpress@gmail.com)
     await transporter.sendMail({
       from: process.env.SMTP_FROM,
       to: process.env.CONTACT_TO,
@@ -42,6 +43,26 @@ export async function sendContact(data: ContactFormData): Promise<SendContactRes
         reason,
       ].join('\n'),
     });
+
+    // Confirmation au client : best-effort, son échec ne doit pas faire échouer la demande
+    try {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM,
+        to: email,
+        replyTo: process.env.CONTACT_TO, // si le client répond, ça arrive dans pancarteexpress@gmail.com
+        subject: 'Nous avons bien reçu votre demande | Pancarte Express',
+        text: [
+          `Bonjour ${firstName},`,
+          '',
+          'Merci de nous avoir contactés. Notre équipe vous répondra dans les plus brefs délais.',
+          '',
+          'Pancarte Express',
+          '514-825-2709 · info@pancarteexpress.com',
+        ].join('\n'),
+      });
+    } catch (err) {
+      console.error('Erreur confirmation client :', err);
+    }
 
     return { success: true };
   } catch (err) {

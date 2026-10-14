@@ -2,6 +2,8 @@ import 'server-only';
 import type Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe/server';
+import { after } from 'next/server';
+import { sendReceipts } from '@/features/checkout/emailSender/sendReceipts';
 
 export async function handlePaymentSucceeded(intent: Stripe.PaymentIntent): Promise<void> {
   const orderId = intent.metadata.orderId;
@@ -42,9 +44,11 @@ export async function handlePaymentSucceeded(intent: Stripe.PaymentIntent): Prom
     where: { id: order.id, status: 'AWAITING_PAYMENT' },
     data: { status: 'PAID', paidAt: new Date() },
   });
-  if (count === 0) return;
+  
+  if (count === 0) return; // déjà traité par un autre événement : pas de second envoi
 
-  // Étape 11 : envoi des courriels de confirmation ici
+  const paidOrderId = order.id;
+  after(() => sendReceipts(paidOrderId));
 }
 
 export function handlePaymentFailed(intent: Stripe.PaymentIntent): void {

@@ -8,6 +8,9 @@ import { calculateTotals } from '@/lib/pricing/calculateTotals';
 import type { CheckoutItemPayload, CheckoutPayload, CheckoutResponse } from '@/lib/validations/checkout';
 import { CheckoutConflictError, PaymentProviderError, ProductUnavailableError } from './errors';
 
+import { after } from 'next/server';
+import { sendReceipts } from '@/features/checkout/emailSender/sendReceipts';
+
 export interface CheckoutUser {
   id: string;
   email: string;
@@ -44,7 +47,7 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
 
   const shipping = payload.fulfillment?.method === 'DELIVERY' ? payload.fulfillment.shippingAddress : null;
 
-  const requiresPayment = !user && totals.total > 0;
+  const requiresPayment = totals.total > 0;
   const status: OrderStatus = requiresPayment ? 'AWAITING_PAYMENT' : 'PENDING';
 
   // NOUVEAU : connecté → téléphone du compte (comme le courriel) ; invité → celui du formulaire
@@ -95,6 +98,9 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
   }
 
   if (!requiresPayment) {
+    // Commande définitive dès maintenant (connecté ou services seulement)
+    const orderId = order.id;
+    after(() => sendReceipts(orderId));
     return { mode: 'submitted', orderNumber: order.orderNumber, total: order.total };
   }
 
