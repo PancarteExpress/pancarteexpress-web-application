@@ -10,7 +10,8 @@ export type SendContactResult =
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: Number(process.env.SMTP_PORT),
-  secure: false,
+  secure: process.env.SMTP_SECURE === 'true', // false sur 2525, la connexion passe en TLS via STARTTLS
+  requireTLS: true, // refuse d'envoyer le mot de passe si le chiffrement échoue
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -26,11 +27,11 @@ export async function sendContact(data: ContactFormData): Promise<SendContactRes
   const { firstName, lastName, phoneNumber, extension, email, company, reason } = parsed.data;
 
   try {
-    const info = await transporter.sendMail({
-      from: `"Formulaire Pancarte Express" <${process.env.SMTP_USER}>`,
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM,
       to: process.env.CONTACT_TO,
       replyTo: email,
-      subject: `Nouvelle demande de ${firstName} ${lastName}`,
+      subject: `[Demande de contact] ${firstName} ${lastName}`,
       text: [
         `Nom : ${firstName} ${lastName}`,
         `Téléphone : ${phoneNumber}${extension ? ` poste ${extension}` : ''}`,
@@ -41,9 +42,6 @@ export async function sendContact(data: ContactFormData): Promise<SendContactRes
         reason,
       ].join('\n'),
     });
-
-    const previewUrl = nodemailer.getTestMessageUrl(info);
-    if (previewUrl) console.log('Aperçu Ethereal :', previewUrl);
 
     return { success: true };
   } catch (err) {
