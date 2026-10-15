@@ -43,63 +43,25 @@
     color: #D8E8F8;
 }
 
-.mainContainer .hero .buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.mainContainer .hero .buttons {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-}
-
-.mainContainer .hero .buttons button {
-    border: 2px solid #0E4D9A;
-    padding: 5px;
-    color: #0E4D9A;
-    font-weight: 800;
-    border-radius: 10px;
-}
-
-.mainContainer .redirections {
-    text-align: center;
-    width: 80%;
-    margin: 10px auto;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-
- 
-}
-
-.mainContainer .redirections p {
-    color: black;
-    font-weight: 700;
-    line-height: 1.7;
-}
-
 .mainContainer .redirections .buttons {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 8px;
-    padding: 10px 0;
+    margin: 20px 0;
 }
 
-.mainContainer .redirections .buttons button {
-    cursor: pointer;
-    border: 2px solid #0E4D9A;
-    padding: 5px 10px;
-    color: #0E4D9A;
-    font-weight: 700;
+.mainContainer .redirections .buttons a {
+    border: 3px solid #D8E8F8;
+    padding: 10px;
+    color: #0E3A8C;
+    background-color: #F8FAFD;
+    font-weight: 800;
+    font-size: 1.2rem;
     border-radius: 10px;
+    text-decoration: none;
 }
 
-@media (max-width: 500px)  { .mainContainer .redirections .buttons button { width: 100%; } }
-@media (min-width: 1000px)  { .mainContainer .redirections .buttons button { font-size: 1rem; } }
 
 .mainContainer .grid {
     display: grid;

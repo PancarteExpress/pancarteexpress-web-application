@@ -9,7 +9,9 @@ type Loader = (locale: Locale) => Promise<{ default: Messages }>;
 const LOADERS = {
   header: (locale) => import(`@/messages/${locale}/header.json`),
   
+  home: (locale) => import(`@/messages/${locale}/home.json`),
   residential: (locale) => import(`@/messages/${locale}/residential.json`),
+  bigFormat: (locale) => import(`@/messages/${locale}/bigFormat.json`),
 
   shop: (locale) => import(`@/messages/${locale}/shop.json`),
 

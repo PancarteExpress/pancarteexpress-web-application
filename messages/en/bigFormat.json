@@ -1,0 +1,137 @@
+{
+    "heroTitle": "Large-format services",
+    "heroLabel1": "At Pancarte Express, we specialize in large-format signage installation.",
+    "heroLabel2": "Whether it's panels, signs, banners, or yard signs, large-format or residential, we offer solutions to give you the best possible visibility.",
+    "heroLabel3": "We now also offer a brand-new aluminum structure rental service, ideal for temporary signage. Contact us for more information.",
+
+    "shopRedirection": "Shop large-format signage supplies",
+    "servicesRedirection": "Submit a request online",
+
+    "rentalInfo": "Available for purchase or rent. Visit the Shop section to purchase. Rental includes structure installation, delivery, and pickup.",
+
+    "sectionTitles": {
+        "rigidDisplay": "Rigid display:",
+        "flexibleDisplay": "Flexible display:",
+        "configurations": "Configurations:",
+        "suggestedSizes": "Suggested sizes:",
+        "suggestedSizesHW": "Suggested sizes (H × W):",
+        "material": "Material:",
+        "colors": "Available colors:",
+        "signSizes": "Sign sizes:",
+        "displayTypes": "Display types:"
+    },
+
+    "cards": {
+    "miniRigid": {
+        "title": "MINI RIGID structure",
+        "description1": "A rigid structure custom-built to the dimensions of your display.",
+        "description2": "Ideal for events and temporary projects or permanent signage: advertising posters, outdoor signage, real estate broker signs, sales or promotions, “We're Hiring” signs, and more.",
+        "sections": {
+        "rigidDisplay": "Coroplast signs, Alupanel panels, rigid signs.",
+        "configurations": "Single-sided or double-sided.",
+        "suggestedSizes": "3 × 5 | 4 × 4 | 4 × 6 | max. 6 × 6 ft"
+        }
+    },
+    "standardRigid": {
+        "title": "STANDARD RIGID structure",
+        "description1": "A rigid structure custom-built to the dimensions of your display.",
+        "description2": "Ideal for events and temporary or permanent projects: advertising posters, sponsor signage, real estate broker signs, seasonal sales, staff recruitment, and more.",
+        "sections": {
+        "rigidDisplay": "Coroplast signs, Alupanel panels, rigid signs.",
+        "configurations": "Single-sided or double-sided.",
+        "suggestedSizes": "4 × 6 | 4 × 8 | 6 × 6 | max. 8 × 8 ft"
+        }
+    },
+    "largeRigid": {
+        "title": "LARGE RIGID structure",
+        "description1": "A rigid structure custom-built to the dimensions of your display.",
+        "description2": "Ideal for large-format outdoor events: advertising posters, festival signage, exhibitor signs, sales or promotions, “We're Hiring” signs, rooftop signage, and more.",
+        "sections": {
+        "rigidDisplay": "Coroplast signs, Alupanel panels, Sintra.",
+        "configurations": "Single-sided or double-sided.",
+        "suggestedSizes": "5 × 10 | max. 8 × 10 ft"
+        }
+    },
+    "miniFlexible": {
+        "title": "MINI FLEXIBLE structure",
+        "description1": "A flexible structure custom-built to the dimensions of your display.",
+        "description2": "Ideal for events and temporary or permanent projects: advertising posters, outdoor signage, real estate broker signs, sales or promotions, “We're Hiring” signs, and more.",
+        "sections": {
+        "flexibleDisplay": "Opaque banner (vinyl), mesh banner.",
+        "configurations": "Single-sided or double-sided.",
+        "suggestedSizes": "4 × 4 | 4 × 6 | max. 6 × 6 ft"
+        }
+    },
+    "standardFlexible": {
+        "title": "STANDARD FLEXIBLE structure",
+        "description1": "A flexible structure custom-built to the dimensions of your display.",
+        "description2": "Ideal for events and temporary or permanent projects: advertising posters, sponsor signage, real estate broker signs, seasonal sales, staff recruitment, and more.",
+        "sections": {
+        "flexibleDisplay": "Vented opaque banner, mesh banner.",
+        "configurations": "Single-sided or double-sided.",
+        "suggestedSizes": "4 × 6 | 4 × 8 | 6 × 6 | max. 7 × 8 ft"
+        }
+    },
+    "largeFlexible": {
+        "title": "LARGE FLEXIBLE structure",
+        "description1": "A flexible structure custom-built to the dimensions of your display, firmly anchored in the ground with metal stakes for outstanding strength and durability. Fully weather-resistant.",
+        "description2": "Ideal for large-format outdoor events: advertising posters, festival signage, exhibitor signs, sales or promotions, “We're Hiring” signs, rooftop signage, and more.",
+        "sections": {
+        "flexibleDisplay": "Vented opaque banner, mesh banner.",
+        "configurations": "Single-sided.",
+        "suggestedSizes": "From 5 × 10 to max. 7 × 12 ft"
+        }
+    },
+    "miniV": {
+        "title": "MINI V-SHAPED structure",
+        "description1": "A structure custom-built to the dimensions of your display, rigid type only.",
+        "description2": "Ideal for events and temporary or permanent projects: advertising posters, sponsor signage, real estate broker signs, seasonal sales, staff recruitment, and more.",
+        "sections": {
+        "rigidDisplay": "Coroplast signs, Alupanel panels, rigid signs.",
+        "configurations": "Two sides in a V shape.",
+        "suggestedSizesHW": "3 × 5 | 4 × 4 | 4 × 6 | max. 6 × 6 ft"
+        }
+    },
+    "wood": {
+        "title": "WOOD structure",
+        "description1": "A reinforced wood structure, custom-built to the dimensions of your sign. Firmly anchored in the ground with metal stakes for guaranteed strength and durability.",
+        "description2": "Ideal for temporary commercial signage, whether for a lot, a business, or a new development.",
+        "sections": {
+        "material": "4 × 4 in construction lumber.",
+        "colors": "Painted (color of your choice) or unpainted.",
+        "signSizes": "4 × 4 | 3 × 5 | 3 × 6 | 4 × 8 | 8 × 8 | 4 × 16 ft — single-sided or two sides in a V shape."
+        }
+    },
+    "standardV": {
+        "title": "STANDARD V-SHAPED structure",
+        "description1": "A structure custom-built to the dimensions of your display, firmly anchored in the ground with metal stakes. It offers outstanding strength and durability and is fully weather-resistant.",
+        "description2": "Ideal for large-format outdoor events: advertising posters, festival signage, exhibitor signs, sales or promotions, “We're Hiring” signs, real estate broker signage, and more.",
+        "sections": {
+        "rigidDisplay": "Coroplast signs, Alupanel panels, rigid signs.",
+        "configurations": "Two sides in a V shape.",
+        "suggestedSizes": "From 4 × 8 to max. 8 × 8 ft"
+        }
+    },
+    "woodEasel": {
+        "title": "WOOD A-FRAME structure",
+        "description1": "An A-frame wood structure, ideal for double-sided roadside signage.",
+        "sections": {
+        "signSizes": "From 4 × 4 to 4 × 8 ft — single-sided or double-sided."
+        }
+    },
+    "boomLift": {
+        "title": "Boom lift installation service",
+        "description1": "High-elevation installation on building exteriors. Installation is performed with professional equipment up to a maximum height of about 35 feet (roughly the 3rd floor).",
+        "sections": {
+        "displayTypes": "Signs, posters, panels, banners, vinyl, window decals, and more."
+        }
+    },
+    "commercialWall": {
+        "title": "Commercial wall installation by ladder",
+        "description1": "The sign is screwed into the wall, or into the brick joint depending on its condition, for lasting durability. Installation can be done by ladder up to a maximum height of about 20 feet (roughly the 2nd floor).",
+        "sections": {
+        "signSizes": "Up to 4 × 8 ft."
+        }
+    }
+    }
+}

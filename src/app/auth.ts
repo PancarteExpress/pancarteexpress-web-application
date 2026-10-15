@@ -6,6 +6,7 @@ import Google from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
 import { cookies } from "next/headers";
+import { sendAccountCreatedEmails, type EmailLocale } from "@/features/auth/services/email";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -68,6 +69,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         const cookieStore = await cookies();
         const groupStatus = (cookieStore.get('pendingGroupStatus')?.value || 'SOLO') as 'SOLO' | 'PENDING';
+        const locale: EmailLocale = cookieStore.get("pendingLocale")?.value === "en" ? "en" : "fr";
 
         const existingUser = await prisma.user.findUnique({
           where: { email: email },
@@ -92,11 +94,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.id = existingUser.id;
           user.firstName = existingUser.firstName;
           user.lastName = existingUser.lastName;
+
+          await sendAccountCreatedEmails({
+            name: fullName || email, // Google ne fournit pas toujours de nom
+            email,
+            provider: "google",
+            locale,
+          });
         } else {
+           console.log("🆕 Création compte Google :", email, "| locale :", locale);
           // User n'existe pas — créer User avec provider OAuth
           const newUser = await prisma.user.create({
             data: {
-              email: user.email,
+              email: email,
               firstName,
               lastName,
               emailVerified: new Date(),
@@ -109,9 +119,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.id = newUser.id;
           user.firstName = firstName;
           user.lastName = lastName;
+
+          await sendAccountCreatedEmails({
+            name: fullName || email,
+            email,
+            provider: "google",
+            locale,
+          });
         }
 
         cookieStore.delete('pendingGroupStatus');
+        cookieStore.delete("pendingLocale");
       }
       return true;
     },

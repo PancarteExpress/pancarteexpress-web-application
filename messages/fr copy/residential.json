@@ -1,0 +1,47 @@
+{
+    "heroTitle": "Services résidentiels",
+    "heroLabel1": "Pour un affichage rapide de votre annonce, utilisez notre service d'installation résidentiel.",
+    "heroLabel2": "Installation ou récupération de pancartes, d'ajouts, de boîtes à clés ou de tout autre accessoire.",
+
+    "shopRedirection": "Achetez du matériel d'affichage résidentiel",
+    "servicesRedirection": "Effectuez une demande en ligne",
+    
+    "cards": {
+        "ground": {
+            "title": "Installation au sol",
+            "description": "La pancarte est fixée au sol à l'aide d'un ancrage en métal pour garantir sa solidité et sa durabilité."
+        },
+        "illuminated": {
+            "title": "Installation d'enseigne illuminée",
+            "description": "L'enseigne illuminée est fixée au sol à l'aide d'un ancrage en métal pour garantir sa solidité et sa durabilité. Un câble d'alimentation est ensuite branché sur une prise électrique extérieure, ce qui permet à l'enseigne de s'illuminer et d'être visible de jour comme de nuit."
+        },
+        "railing": {
+            "title": "Installation sur rampe",
+            "description": "La pancarte est fixée directement à la rampe au moyen du poteau et de colliers de serrage en métal pour garantir sa solidité."
+        },
+        "balcony": {
+            "title": "Installation au balcon",
+            "description": "La pancarte est attachée directement à la balustrade, de face ou de profil (en V), à l'aide de colliers de serrage en plastique pour garantir à la fois sa visibilité et sa solidité. L'installation peut être effectuée à l'aide d'une échelle jusqu'à une hauteur maximale d'environ 20 pieds (2e étage environ) ou sur rendez-vous avec l'occupant."
+        },
+        "wall": {
+            "title": "Installation résidentielle au mur",
+            "description": "La pancarte est vissée dans le mur, ou dans le joint de brique selon l'état de ce dernier, pour garantir sa durabilité. L'installation peut être effectuée à l'aide d'une échelle jusqu'à une hauteur maximale d'environ 20 pieds (2e étage environ)."
+        },
+        "lockbox": {
+            "title": "Installation ou retrait de boîtes à clés (cadenas)",
+            "description": "Installation d'un cadenas à code avec compartiment de rangement pour clés, généralement fixé sur la porte avant ou selon vos directives."
+        },
+        "rider": {
+            "title": "Installation ou retrait d'ajout",
+            "description": "Installation d'un ajout de votre choix sur une pancarte afin d'ajouter de l'information (exemples : « Vendu », « À louer », ajout personnalisé à votre image, etc.). Location d'ajouts également disponible."
+        },
+        "openHouseArrows": {
+            "title": "Installation de flèches de visite libre",
+            "description": "Installation de flèches de visite libre (jusqu'à 5) pointant vers la propriété en vedette, placées à des coins de rue passants ou à des emplacements précis que vous indiquez dans le formulaire, avec retrait automatique au début de la semaine suivante."
+        },
+        "flags": {
+            "title": "Installation de drapeaux",
+            "description": "Installation de drapeaux devant la propriété pour annoncer une visite libre ou toute autre information."
+        }
+        }
+}

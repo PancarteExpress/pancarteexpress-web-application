@@ -1,0 +1,40 @@
+{
+    "heroText1": "Installation de",
+    "heroText2": "pancartes",
+    "heroText3": "résidentielles et",
+    "heroText4": "commerciales",
+    "heroButtonService": "Effectuez une demande en ligne",
+
+    "memberAdvantagesTitle": "Profitez de nombreux avantages en devenant membre !",
+    "memberAdvantages1": "Entreposage et entretien de votre matériel d'affichage (pancartes, poteaux, ancrages, etc.)",
+    "memberAdvantages2": "Rabais sur les installations résidentielles et commerciales",
+    "memberAdvantages3": "Zone personnalisée avec tarifs préférentiels",
+    "memberAdvantages4": "Installation d'urgence en moins de 24 h",
+    "memberAdvantages5": "Et bien plus encore !",
+    "memberButtonBecomeMember": "Devenez membre",
+
+    "aboutTitle": "vous offre un service complet d'installation de pancartes",
+    "aboutParagraph1": "Depuis près de 15 ans, nous sommes spécialisés dans l'installation, l'entreposage et la gestion du matériel d'affichage des courtiers immobiliers. Nous offrons un service fiable et rapide dans le Grand Montréal et ses environs à des clients qui souhaitent optimiser leur temps tout en bénéficiant d'un service de qualité. Que vous soyez courtier immobilier, promoteur, organisateur d'événements ou autre professionnel, nous avons des solutions pour simplifier la gestion de votre affichage et vous permettre de vous concentrer sur ce qui compte vraiment : vos projets.",
+    "aboutParagraph2": "En ouvrant un compte chez Pancarte Express, vous aurez accès à tous nos services d'installation, d'entreposage et de gestion pour vos pancartes, panneaux, enseignes, boîtes à clés, drapeaux, poteaux, ancrages, grandes structures commerciales et affichages temporaires, ainsi qu'à nos installations au balcon et au mur, et bien plus encore. Bénéficiez également d'offres personnalisées pour votre secteur et d'options d'installation flexibles adaptées à vos besoins. Nous sommes fiers d'avoir gagné la confiance de plus de 300 clients et nous nous engageons à entretenir cette relation grâce à notre professionnalisme et à notre souci de la qualité.",
+    "aboutContactButton": "Contactez-nous pour en savoir plus !",
+    "aboutTableText1": "Pancartes et enseignes illuminées",
+    "aboutTableBold1": "au sol ou sur rampe",
+    "aboutTableText2": "Pancartes sur structure",
+    "aboutTableBold2": "en bois ou en aluminium",
+    "aboutTableText3": "Pancartes",
+    "aboutTableBold3": "au mur ou au balcon",
+
+    "clientTestimonials": "Témoignages de clients",
+    "previousTestimonial": "Témoignage précédent",
+    "nextTestimonial": "Témoignage suivant",
+    "fiveStars": "Note de 5 étoiles sur 5",
+
+    "testimonials": {
+        "chantalProvost": "Super service, professionnel et rapide. J'apprécie énormément de pouvoir déléguer cette tâche à des gens professionnels et de confiance. Merci de me faciliter la vie professionnelle. Les délais sont respectés à chaque fois, ce qui est essentiel dans mon domaine. L'équipe est non seulement compétente, mais aussi très aimable et à l'écoute de mes besoins. Je recommande vivement leurs services à tous ceux qui cherchent un partenaire de confiance pour la gestion de leurs pancartes, ce qui peut être très difficile en hiver. C'est rassurant de savoir que je peux compter sur un service aussi fiable et efficace, même dans les conditions les plus exigeantes.",
+        "stephanieGauthier": "Je tiens à remercier chaleureusement Pancarte Express pour son excellent travail. Son engagement envers la satisfaction de la clientèle est indéniable, et je recommande vivement ses services d'installation à tout courtier immobilier à la recherche d'une équipe fiable et compétente. Merci encore pour cette expérience positive !",
+        "yzabelBrisson": "Pancarte Express a sans équivoque changé ma vie ! L'été, l'hiver, beau temps, mauvais temps, en un temps record… Même juchés sur une échelle, ils offrent un service que j'estime incomparable et incontournable.",
+        "marcAndreFrancoeur": "Simplement la référence ! Grâce à eux, je sais toujours que mes affiches sont installées rapidement et correctement, sans avoir à me soucier de l'entreposage et de l'entretien de mon équipement. Bravo !",
+        "jaclynRabin": "En tant que courtière immobilière occupée, je trouve ce service extrêmement utile ! Des tarifs justes et des délais rapides. Très fiable. Je le recommande vivement !",
+        "jamesHe": "Nous travaillons avec Pancarte Express depuis environ 3 ans et nous sommes très satisfaits de tous leurs services : installation professionnelle, temps de réponse rapide, gestion d'entreprise mature et expérimentée. Je les recommande à tous les courtiers !"
+    }
+}

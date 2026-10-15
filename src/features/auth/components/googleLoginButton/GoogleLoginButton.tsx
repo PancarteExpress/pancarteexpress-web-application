@@ -24,6 +24,8 @@ export function GoogleLoginButton({ locale, groupStatus }: GoogleLoginButtonProp
       });
     }
     
+    document.cookie = `pendingLocale=${locale === "en" ? "en" : "fr"}; max-age=300; path=/; samesite=lax`;
+
     await signIn("google", {
       redirect: true,
       callbackUrl: `/${locale}/dashboard`,

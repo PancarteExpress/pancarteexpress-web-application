@@ -2,8 +2,17 @@ import { randomInt } from "node:crypto";
 import type { TokenType, VerificationToken } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, bcryptCompare } from "@/utils/bcrypt";
-import { sendPasswordResetEmail, sendVerificationEmail } from "@/lib/email";
+
+import {
+  sendAccountCreatedEmails,
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+  type EmailLocale,
+} from "@/features/auth/services/email";
+
 import type { RegisterInput, UpdateProfileInput, UpdatePasswordInput, ForgotPasswordInput } from "../types";
+
+
 
 const CODE_TTL_MS = 15 * 60 * 1000;
 const MAX_CODE_ATTEMPTS = 5;
@@ -60,7 +69,7 @@ export const authService = {
     }
 
     const code = await issueCode(input.email, "EMAIL_VERIFICATION");
-    await sendVerificationEmail(input.email, code);
+    await sendVerificationEmail(input.email, code, input.locale);
 
     return { success: true };
   },
@@ -97,6 +106,7 @@ export const authService = {
     phoneNumber: string,
     companyName: string | undefined,
     groupStatus: "SOLO" | "PENDING",
+    locale: EmailLocale = "fr",
   ) {
     await assertValidCode(email, code, "EMAIL_VERIFICATION");
 
@@ -120,6 +130,13 @@ export const authService = {
         where: { email, type: "EMAIL_VERIFICATION" },
       }),
     ]);
+
+    await sendAccountCreatedEmails({
+      name: `${firstName} ${lastName}`,
+      email: user.email,
+      provider: "credentials",
+      locale,
+    });
 
     return user;
   },

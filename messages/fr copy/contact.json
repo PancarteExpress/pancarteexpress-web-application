@@ -1,0 +1,25 @@
+{
+    
+    "heroTitle": "Nos coordonnées",
+    "heroLabel1": "Téléphone du bureau",
+    "heroLabel2": "Cellulaire du représentant",
+    "heroLabel3": "Courriel",
+    "heroLabel4": "Notre adresse",
+
+    "formTitle": "Ou envoyez-nous une demande dès maintenant !",
+    "formFirstname": "Prénom",
+    "formLastname": "Nom",
+    "formPhoneNumber": "Téléphone",
+    "formExtenstion": "Bureau / n° de poste",
+    "formCompany": "Nom de l'entreprise",
+    "formEmail": "Courriel",
+    "formReason": "Raison de votre demande",
+    
+    "humanErrorFeedback": "Veuillez remplir tous les champs obligatoires",
+    "serverErrorFeedback": "Une erreur est survenue côté serveur. Veuillez réessayer plus tard.",
+    "sendingFeedback": "Envoi en cours…",
+    "successFeedback": "Message envoyé avec succès !",
+
+    "formSend": "Envoyer ma demande"
+    
+}

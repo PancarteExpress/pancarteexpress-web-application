@@ -1,0 +1,19 @@
+{
+  "title": "Paiement",
+  "phone": "Téléphone",
+  "cartSummary": "Résumé du panier",
+  "paymentData": "Vos informations",
+  "firstname": "Prénom",
+  "lastname": "Nom",
+  "email": "Courriel",
+  "cardNumber": "Numéro de carte",
+  "expiry": "Expiration",
+  "cvc": "CVC",
+  "pickup": "Ramassage",
+  "delivery": "Livraison",
+  "pickupAddress": "Adresse de ramassage",
+  "pickupInfo": "Nous vous enverrons un courriel lorsque votre article sera prêt à être ramassé.",
+  "shippingAddress": "Adresse de livraison",
+  "makePay": "Payer",
+  "submitOrder": "Envoyer la commande"
+}

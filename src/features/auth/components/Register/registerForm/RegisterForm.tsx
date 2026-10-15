@@ -64,6 +64,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
           phoneNumber: registeredData.phoneNumber,
           companyName: registeredData.companyName,
           groupStatus: groupStatus === 'group' ? 'PENDING' : 'SOLO',
+          locale 
         }),
       });
 

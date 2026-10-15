@@ -2,25 +2,29 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+
+    padding: 0 20px;
 }
 
 .mainContainer .hero {
     width: 100%;
-    height: 100px;
-    padding-top: 50px;
 
-    /*
-    background-image: url('/hero/hero.jpg');
-    background-size: cover;
-    background-position: top;
-    background-repeat: no-repeat;
-    */
+    background-color: #092E5B;
+    padding-top: 50px;
+    padding-bottom: 20px;
     
     display: flex;
+    text-align: center;
     align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    gap: 15px;
+
+    color: white;
+    border-radius: 10px;
 
 }
+
+@media (max-width: 1000px) { .mainContainer .hero  {padding: 20px 0;} }
 
 .mainContainer .hero label {
     font-family: 'Montserrat', sans-serif;
@@ -28,21 +32,15 @@
     font-size: 1.5rem;
     letter-spacing: .06em;
     text-transform: uppercase;
+    flex: 1;
 }
 
-.mainContainer .redirections {
-    text-align: center;
-    width: 80%;
-    margin: 40px auto;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.mainContainer .redirections p {
-    color: black;
+.mainContainer .hero p {
+    text-transform: uppercase;
     font-weight: 700;
-    line-height: 1.7;
+    font-size: 0.8rem;
+    line-height: 1.7rem;
+    color: #D8E8F8;
 }
 
 .mainContainer .redirections .buttons {
@@ -50,15 +48,20 @@
     flex-direction: column;
     align-items: center;
     gap: 8px;
+    margin: 20px 0;
 }
 
-.mainContainer .redirections .buttons button {
-    border: 2px solid #0E4D9A;
-    padding: 5px;
-    color: #0E4D9A;
+.mainContainer .redirections .buttons a {
+    border: 3px solid #D8E8F8;
+    padding: 10px;
+    color: #0E3A8C;
+    background-color: #F8FAFD;
     font-weight: 800;
+    font-size: 1.2rem;
     border-radius: 10px;
+    text-decoration: none;
 }
+
 
 .mainContainer .grid {
     display: grid;

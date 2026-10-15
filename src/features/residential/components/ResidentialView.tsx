@@ -34,12 +34,11 @@ export default function Residential() {
       </div>
 
       <div className={styles.redirections}>
-            <div className={styles.buttons}>
-                 <Link href={`/${locale}/shop`} className={styles.link}>{t('shopRedirection')}</Link>
-          <Link href={`/${locale}/services`} className={styles.link}>{t('servicesRedirection')}</Link>
-                    
-            </div>
-        </div>
+          <div className={styles.buttons}>
+              <Link href={`/${locale}/shop`} className={styles.link}>{t('shopRedirection')}</Link>
+              <Link href={`/${locale}/services`} className={styles.link}>{t('servicesRedirection')}</Link>
+          </div>
+      </div>
 
       <div className={styles.grid}>
         {INSTALLATION_KEYS.map((key, i) => {
