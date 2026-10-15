@@ -23,6 +23,7 @@ export function DashboardContent({ orders, group }: Props) {
   
   const sessionUser = session?.user ;
   const needsGroup = sessionUser?.role === "groupAdmin" && !sessionUser.groupName;
+  const memberCount = group?.users.filter((u) => u.role === "user").length ?? 0;
 
   const [updateProfileOpen, setUpdateProfileOpen] = useState<boolean>(false);
 
@@ -100,12 +101,15 @@ export function DashboardContent({ orders, group }: Props) {
         </div>
         
         {canManageGroup && (
-        <div className={styles.card} onClick={() => setUpdateGroupOpen(true)}>
+        <div className={`${styles.card} ${memberCount === 0 ? styles.groupEmpty : ""}`} onClick={() => setUpdateGroupOpen(true)}>
           <div className={styles.qcardIcon}>👤</div>
           <div>
             <p className={styles.qcardTitle}>Information du groupe</p>
             <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
               {sessionUser?.groupName}
+              <br />
+              <br />
+              {memberCount === 0 && <span style={{ color: 'red'}}>En tant qu administrateur du groupe, vous devez ajouter au moins un membre dans votre equipe</span>}
             </p>
           </div>
           <span className={styles.qcardLink}>Modifier le groupe →</span>

@@ -1,12 +1,21 @@
 {
     
-    "title": "Cart",
+    "heroTitle": "Cart",
+    "heroLabel1": "Start by adding a product from the shop",
+    "heroLabel2": "Or register a service",
+    "heroLabel3": "It's time to checkout !",
+
+    "heroEmptyCart": "Your cart is empty",
+    
+    "goToServices": "Request a service",
+    "goToShop": "Visit the shop",
+
     "priceOnQuote": "Price on quote",
     "servicesQuoteNote": "Services are billed separately, on quote.",
     "loading": "Loading cart",
     "emptyCart": "Your cart is empty.",
-    "goToServices": "Request a service",
-    "goToShop": "Visit the shop",
+    
+    
     "products": "Products",
     "serviceRequests": "Service requests",
     "requestType": { "residential": "Residential", "commercial": "Large format" },

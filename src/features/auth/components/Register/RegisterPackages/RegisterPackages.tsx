@@ -114,7 +114,7 @@ export default function RegisterPackages({ locale, packageChoice, setPackageChoi
           </ul>
 
           <button className={styles.selectPackageButton}>
-            Sélectionner ce forfait"
+            Sélectionner ce forfait
           </button>
         </div>
       </div>

@@ -101,6 +101,10 @@
     grid-column: 1 / -1;
 }
 
+.mainContainer .groupAdminData .groupEmpty {
+    border: 3px dashed red;
+}
+
 .mainContainer .userData .card:hover,
 .mainContainer .groupAdminData .card:hover {
     box-shadow: 0 4px 20px rgba(14, 77, 154, .12);

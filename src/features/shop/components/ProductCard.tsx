@@ -1,25 +1,27 @@
 import Image from 'next/image';
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 import { formatCents } from '@/lib/pricing/money';
 import type { Product } from '@/lib/catalog/products';
-import styles from './Shop.module.css';
+import type { Locale } from '@/shared/constants/locales';
+import { useAppLocale } from '@/shared/hooks/useAppLocale';
 import AddToCartButton from './AddToCartButton';
+import styles from './Shop.module.css';
+import Link from 'next/link';
 
 interface Props {
   product: Product;
-  locale: 'fr' | 'en';
-  name: string;
-  nameFr: string;
-  nameEn: string;
-  addLabel: string;
-  addedLabel: string;
+  names: Record<Locale, string>;
 }
 
-export default function ProductCard({ product, locale, name, nameFr, nameEn, addLabel, addedLabel }: Props) {
+export default function ProductCard({ product, names }: Props) {
+  const t = useTranslations('shop');
+  const locale = useAppLocale();
+  const name = names[locale];
+
   return (
     <li className={styles.card}>
       {/* Le lien et le bouton sont frères : un bouton à l'intérieur d'un lien est invalide en HTML */}
-      <Link href={`/${locale}/shop/${product.slug}`} className={styles.cardLink}>
+      <Link href={`/shop/${product.slug}`} className={styles.cardLink}>
         <div className={styles.imageContainer}>
           <Image
             src={product.image}
@@ -36,9 +38,15 @@ export default function ProductCard({ product, locale, name, nameFr, nameEn, add
       </Link>
 
       <AddToCartButton
-        item={{ productId: product.slug, nameFr, nameEn, imageUrl: product.image, unitPrice: product.price }}
-        addLabel={addLabel}
-        addedLabel={addedLabel}
+        item={{
+          productId: product.slug,
+          nameFr: names.fr,
+          nameEn: names.en,
+          imageUrl: product.image,
+          unitPrice: product.price,
+        }}
+        addLabel={t('addToCart', { name })}
+        addedLabel={t('addedToCart', { name })}
       />
     </li>
   );

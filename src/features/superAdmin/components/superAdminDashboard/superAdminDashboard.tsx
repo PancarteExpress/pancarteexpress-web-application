@@ -9,7 +9,7 @@ import { FaUser } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import { GiSandsOfTime } from "react-icons/gi";
 import type { AdminGroupRow } from "@/lib/groups/server/groups.service";
-import { GroupsTable } from "../groupsTable/GroupsTable";
+import { GroupsTable } from "../groupTable/GroupsTable";
 import { normalize } from "@/shared/utils/normalize";
 
 interface AdminDashboardProps {
