@@ -133,11 +133,9 @@ export default function ServiceForm() {
             const existingInstallation = selectedAddress.services.find(s => s.type === 'installation');
             
             if (existingInstallation) {
-                console.log('Installation trouvée, coche la checkbox');
                 setSelectedServices(prev => ({ ...prev, installation: true }));
                 setInstallationInitialData(existingInstallation);
             } else {
-                console.log('Aucune installation, décoche la checkbox');
                 setSelectedServices(prev => ({ ...prev, installation: false }));
                 setInstallationInitialData(undefined);
             }

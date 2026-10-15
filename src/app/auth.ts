@@ -22,7 +22,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
       async authorize(credentials) {
         if (!credentials.email || !credentials.password) {
-          console.log("❌ Email or password missing");
           return null;
         }
 
@@ -102,7 +101,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             locale,
           });
         } else {
-           console.log("🆕 Création compte Google :", email, "| locale :", locale);
           // User n'existe pas — créer User avec provider OAuth
           const newUser = await prisma.user.create({
             data: {

@@ -3,6 +3,7 @@
 
 import { useRouter } from 'next/navigation';
 import styles from './RegisterPackages.module.css';
+import { motion } from "framer-motion";
 
 interface RegisterPackagesProps {
   locale: string;
@@ -27,7 +28,7 @@ export default function RegisterPackages({ locale, packageChoice, setPackageChoi
   return (
     <div className={styles.mainContainer}>
       <div className={styles.packages}>
-        <div className={styles.package} onClick={() => handleSelectPackage('none')}>
+        <motion.div initial={{ opacity: 0, x: -100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} onClick={() => handleSelectPackage('none')}>
           <div className={styles.header}>
             <h2 className={styles.title}>Non-membre</h2>
             
@@ -53,9 +54,9 @@ export default function RegisterPackages({ locale, packageChoice, setPackageChoi
           <button className={styles.selectPackageButton}>
             Sélectionner ce forfait
           </button>
-        </div>
+        </motion.div>
         
-        <div className={styles.package} onClick={() => handleSelectPackage("group")}>
+        <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className={styles.package} onClick={() => handleSelectPackage("group")}>
           <div className={styles.header}>
             
             <h2 className={styles.title}>Forfait équipe</h2>
@@ -86,9 +87,9 @@ export default function RegisterPackages({ locale, packageChoice, setPackageChoi
           <button className={styles.selectPackageButton}>
             Sélectionner ce forfait
           </button>
-        </div>  
+        </motion.div>
 
-        <div className={styles.package} onClick={() => handleSelectPackage("solo")}>
+        <motion.div initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} onClick={() => handleSelectPackage("solo")}>
           <div className={styles.header}>
             <h2 className={styles.title}>Forfait individuel</h2>
             
@@ -116,7 +117,7 @@ export default function RegisterPackages({ locale, packageChoice, setPackageChoi
           <button className={styles.selectPackageButton}>
             Sélectionner ce forfait
           </button>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

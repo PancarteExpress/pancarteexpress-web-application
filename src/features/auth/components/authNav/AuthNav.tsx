@@ -4,19 +4,16 @@ import Link from "next/link";
 import { useAuth } from "../../hooks/useAuth";
 import { useRouter } from "next/navigation";
 import styles from "./AuthNav.module.css"
+import { useLocale, useTranslations } from 'next-intl';
 
 interface LoginFormProps {
   locale: string;
 }
 
 export function AuthNav({ locale }: LoginFormProps) {
-  const { isAuthenticated, user, logout, isLoading } = useAuth();
-  const router = useRouter();
 
-  const handleLogout = async () => {
-    await logout();
-    router.push(`/${locale}`);
-  };
+  const t = useTranslations('header');
+  const { isAuthenticated, user, logout, isLoading } = useAuth();
 
   if (isLoading) {
     return <div className="text-sm text-gray-500">Chargement...</div>;
@@ -25,29 +22,23 @@ export function AuthNav({ locale }: LoginFormProps) {
   if (isAuthenticated && user) {
     return (
       <div className={styles.mainContainer}>
-        <button
-          onClick={() => window.location.replace(`/${locale}/dashboard`)}
-          className="text-sm px-3 py-2 hover:bg-gray-100 rounded"
-        >
-          Mon compte
-        </button>
-        <button
-          onClick={handleLogout}
-          className="text-sm px-3 py-2 hover:bg-gray-100 rounded"
-        >
-          Déconnexion
-        </button>        
+        <Link href={`/${locale}/dashboard`}>
+          {t('myAccount')}
+        </Link>
+        <button onClick={() => logout()}>
+          {t('logout')}
+        </button> 
       </div>
     );
   }
 
   return (
     <div className={styles.mainContainer}>
-      <Link href={`/${locale}/register`} className="text-sm px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-        Devenir membre
+      <Link href={`/${locale}/register`}>
+        {t('becomeMember')}
       </Link>
-      <Link href={`/${locale}/login`} className="text-sm px-3 py-2 hover:bg-gray-100 rounded">
-        Connexion
+      <Link href={`/${locale}/login`}>
+        {t('connection')}
       </Link>
     </div>
   );

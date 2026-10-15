@@ -3,10 +3,12 @@ import { useAuthStore } from "../store/authStore";
 import { useCallback, useEffect } from "react";
 import type { LoginInput, RegisterInput } from "../types";
 import type { UserRole } from "@/shared/types/user";
+import { useParams } from "next/navigation";
 
 export function useAuth() {
   const { setError, setLoading, clearError, logout: logoutStore } = useAuthStore();
   const { data: session, status } = useSession();
+  const params = useParams<{ locale: string }>();
 
   useEffect(() => {
     if (session?.user && session.user.email) {
@@ -94,9 +96,9 @@ export function useAuth() {
   );
 
   const logout = useCallback(async () => {
-    await nextAuthSignOut({ redirect: false });
     logoutStore();
-  }, [logoutStore]);
+    await nextAuthSignOut({ callbackUrl: `/${params.locale}` });
+  }, [logoutStore, params.locale]);
 
   return {
     login,

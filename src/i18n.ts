@@ -8,7 +8,6 @@ type Loader = (locale: Locale) => Promise<{ default: Messages }>;
 // Un nouveau namespace = une ligne ici
 const LOADERS = {
   header: (locale) => import(`@/messages/${locale}/header.json`),
-  
   home: (locale) => import(`@/messages/${locale}/home.json`),
   residential: (locale) => import(`@/messages/${locale}/residential.json`),
   bigFormat: (locale) => import(`@/messages/${locale}/bigFormat.json`),
@@ -20,6 +19,8 @@ const LOADERS = {
   cart: (locale) => import(`@/messages/${locale}/cart.json`),
   products: (locale) => import(`@/messages/${locale}/products.json`),
   checkout: (locale) => import(`@/messages/${locale}/checkout.json`),
+
+  footer: (locale) => import(`@/messages/${locale}/footer.json`),
 
 } satisfies Record<string, Loader>;
 

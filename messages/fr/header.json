@@ -1,3 +1,11 @@
 {
-  "title": "Pancarte Express"
+  "myAccount": "Mon compte",
+  "logout": "Déconnexion",
+  "becomeMember": "Devenir membre",
+  "connection": "Connexion",
+
+  "fastServiceTitle": "Service rapide en 24h",
+  "fastServiceSub": "Du lundi au vendredi",
+  "zoneTitle": "Service offert",
+  "zoneSub": "Dans le Grand Montréal et ses environs"
 }

@@ -22,7 +22,7 @@ export default function MaterialDetailsForm({ material, data, onChange }: Props)
   const config = MATERIAL_CONFIGS[material];
 
   if (!config) {
-    console.log(`No config for ${material}`);
+    
     return null;
   }
 

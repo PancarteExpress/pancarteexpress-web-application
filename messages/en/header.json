@@ -1,3 +1,11 @@
 {
-  "title": "Pancarte Express"
+  "myAccount": "My account",
+  "logout": "Log out",
+  "becomeMember": "Become a member",
+  "connection": "Log in",
+
+  "fastServiceTitle": "Fast 24-hour service",
+  "fastServiceSub": "Monday to Friday",
+  "zoneTitle": "Service area",
+  "zoneSub": "in the greater Montreal and surrounding areas"
 }

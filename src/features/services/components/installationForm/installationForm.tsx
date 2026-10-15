@@ -134,10 +134,8 @@ export default function InstallationForm({ onDataChange, initialData }: Props) {
     }, [selectedMaterials, selectedAccess, specialAccess, onDataChange]);
 
     useEffect(() => {
-        console.log('initialData changée:', initialData);
         
         if (!initialData?.items) {
-            console.log('Reset formulaire');
             setSelectedMaterials({
                 frames: { selected: false, details: {}},
                 anchors: { selected: false, details: {} },
@@ -151,7 +149,6 @@ export default function InstallationForm({ onDataChange, initialData }: Props) {
             });
             setSelectedAccess(undefined);
         } else {
-            console.log('Charge items:', initialData.items);
             setSelectedMaterials(initialData.items);
             setSelectedAccess(initialData.accessibility);
         }

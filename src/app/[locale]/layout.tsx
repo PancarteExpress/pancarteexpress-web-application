@@ -6,7 +6,6 @@ import { hasLocale } from 'next-intl';
 import { LOCALES } from '@/shared/constants/locales';
 
 import Header from '@/shared/components/header/header';
-import Footer from '@/shared/components/footer/footer';
 
 export default async function LocaleLayout({
   children,
@@ -21,7 +20,7 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages} locale={locale}>
-      <Header locale={locale} />
+      <Header/>
       {children}
     </NextIntlClientProvider>
   );

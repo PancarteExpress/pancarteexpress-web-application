@@ -12,7 +12,6 @@ export async function POST(request: Request) {
     console.error('[stripe-webhook] STRIPE_WEBHOOK_SECRET manquante');
     return NextResponse.json({ error: 'misconfigured' }, { status: 500 });
   }
-  console.log('[stripe-webhook] secret utilisé :', webhookSecret.slice(0, 14));
 
   const signature = request.headers.get('stripe-signature');
   if (!signature) {
