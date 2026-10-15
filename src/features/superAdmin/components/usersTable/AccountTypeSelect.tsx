@@ -6,10 +6,10 @@ import { useRouter } from "next/navigation";
 import type { GroupStatus, UserRole } from "@prisma/client";
 import {
   ACCOUNT_TYPES,
-  ACCOUNT_TYPE_LABELS,
   getAccountType,
   isAccountType,
 } from "@/features/superAdmin/constants/accountType";
+import { ACCOUNT_TYPE_LABELS } from "@/features/superAdmin/constants/labels";
 import { updateAccountTypeAction } from "@/lib/users/server/user.actions";
 
 interface AccountTypeSelectProps {

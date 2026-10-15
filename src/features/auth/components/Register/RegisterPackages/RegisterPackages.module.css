@@ -1,7 +1,7 @@
 .mainContainer .packages {
     display: flex;
     gap: 20px;
-    align-items: stretch; /* ← clé */
+    align-items: stretch;
 }
 
 .mainContainer .packages .package {
@@ -10,8 +10,9 @@
     border-radius: 10px;
     text-align: center;
     border: 3px solid #D8E8F8;
-    display: flex;           /* ← ajouter */
-    flex-direction: column;  /* ← ajouter */
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
 }
 
 .mainContainer .packages .package:hover {
