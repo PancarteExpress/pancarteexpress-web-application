@@ -1,37 +1,37 @@
 {
-    "_commentPackagesView": " --------------- Packages View ---------------",
-    
+    "_commentPackagesView": "--------------- Packages View ---------------",
+
     "package1Title": "Non-member",
     "package2Title": "Team plan",
     "package3Title": "Individual plan",
 
     "packagesCurrency": "CAD/year",
     "packagesPerYear": "per year",
-    "packagePreferentialPrice": "Special rates",
 
-    "packageFeatures": {
-        "storage": "Storage",
-        "storageUnlimited": "Unlimited storage",
-        "storageLimited": "Storage for up to 10 signs",
+    "notMemberPrice": "Per-trip rate",
+    "memberPrice": "Preferred per-trip rate",
+    
+    "notMemberStorage": "Storage",
+    "groupStorage": "Unlimited sign storage",
+    "bigFormatStorage": "Large-format storage",
+    "soloStorage": "Storage for up to 10 signs",
 
-        "inventoryManagement": "Maintenance and management of your inventory",
-        "inventoryManagementDetailed": "Maintenance and management of your inventory (lockboxes, open house signs, flags)",
-        "inventoryAlerts": "Alerts for low inventory or damaged equipment",
+    "inventoryManagement": "Maintenance and management of your inventory (lockboxes, open house signs, flags)",
+    "inventoryAlerts": "Alerts for low inventory or damaged equipment",
+    "promoCode": "Promo code with our printing partners",
 
-        "promoCode": "Promo code at Tout Pour Le Courtier",
-        "signageDiscount": "Discounts on your signage supply orders",
+    "notMemberBilling": "Per-order invoicing",
+    "memberBilling": "Monthly invoicing",
 
-        "billingPerOrder": "Per-order invoicing",
-        "billingMonthly": "Per-order or monthly invoicing",
-        "payment": "Payment by credit card or Interac",
+    "notMemberPayment": "Payment by credit card",
+    "memberPayment": "Payment by credit card or Interac",
 
-        "installation24h": "24-hour installation",
-        "installation24hEmergency": "24-hour installation and emergency service",
-        "confirmationPhoto": "Confirmation photo",
+    "installation24h": "24-hour installation (excluding weekends)",
+    "emergency": "Emergency service",
+    "confirmationPhoto": "Confirmation photo",
 
-        "idealForTeams": "Ideal for broker teams",
-        "idealForSolo": "Ideal for solo brokers"
-    },
+    "idealForGroup": "Ideal for broker teams",
+    "idealForSolo": "Ideal for solo brokers",
 
     "selectPackage": "Select this plan",
 

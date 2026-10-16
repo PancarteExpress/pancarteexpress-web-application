@@ -24,7 +24,9 @@ export default function RegisterView({ locale }: RegisterViewProps) {
     <div className={styles.mainContainer}>
       <div className={styles.container}>
         {step === "packages" && 
-        <RegisterPackages
+        <RegisterPackages 
+          locale={locale}
+          packageChoice={packageChoice} 
           setPackageChoice={setPackageChoice}
           setStep={setStep}
         />}
