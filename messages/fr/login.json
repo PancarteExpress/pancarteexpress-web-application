@@ -1,0 +1,17 @@
+{
+    "loginTitle": "Accédez à votre espace courtier",
+
+    "loginWithGoogle": "Se connecter avec Google",
+
+    "formId": "Identifiant ou adresse courriel",
+    "formPassword": "Mot de passe",
+    "formForgotPassword": "Mot de passe oublié ?",
+
+    "tryingToConnect": "Connexion en cours…",
+    "connectedSuccessfully": "Connexion réussie !",
+
+    "connectionBtn": "Se connecter",
+
+    "notRegisteredYet": "Pas encore membre ?",
+    "createAccount": "Créer un compte"
+}

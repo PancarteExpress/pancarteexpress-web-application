@@ -71,16 +71,16 @@ export default function Header() {
 
                     <div className={styles.navbar}>
                         <div className={styles.links}>
-                            <LocalLink href="/" className={styles.navItem}>Accueil</LocalLink>
-                            <LocalLink href="/residential" className={styles.navItem}>Résidentiel</LocalLink>
-                            <LocalLink href="/bigFormat" className={styles.navItem}>Grand format</LocalLink>
-                            <LocalLink href="/shop" className={styles.navItem}>Boutique</LocalLink>
-                            <LocalLink href="/contact" className={styles.navItem}>Contact</LocalLink>
+                            <LocalLink href="/" className={styles.navItem}>{t('navbarHome')}</LocalLink>
+                            <LocalLink href="/residential" className={styles.navItem}>{t('navbarResidential')}</LocalLink>
+                            <LocalLink href="/bigFormat" className={styles.navItem}>{t('navbarBigFormat')}</LocalLink>
+                            <LocalLink href="/shop" className={styles.navItem}>{t('navbarShop')}</LocalLink>
+                            <LocalLink href="/contact" className={styles.navItem}>{t('navbarContact')}</LocalLink>
                             <LocalLink href="/cart" className={styles.navItem}><IoCartOutline size={22} /></LocalLink>
                         </div>
                         
                         <div className={styles.lastLink}>
-                            <LocalLink href="/services" className={styles.navItem}><FaPaperPlane />Demande en ligne</LocalLink>
+                            <LocalLink href="/services" className={styles.navItem}><FaPaperPlane />{t('navbarServices')}</LocalLink>
                         </div>
                     </div>
 
@@ -98,13 +98,13 @@ export default function Header() {
                 </div>
 
                 <div className={styles.responsiveNavbar} >
-                    <LocalLink href="/" className={styles.navItem}>Accueil</LocalLink>
-                    <LocalLink href="/residential" className={styles.navItem}>Résidentiel</LocalLink>
-                    <LocalLink href="/bigFormat" className={styles.navItem}>Grand format</LocalLink>
-                    <LocalLink href="/shop" className={styles.navItem}>Boutique</LocalLink>
-                    <LocalLink href="/contact" className={styles.navItem}>Contact</LocalLink>
+                    <LocalLink href="/" className={styles.navItem}>{t('navbarHome')}</LocalLink>
+                    <LocalLink href="/residential" className={styles.navItem}>{t('navbarResidential')}</LocalLink>
+                    <LocalLink href="/bigFormat" className={styles.navItem}>{t('navbarBigFormat')}</LocalLink>
+                    <LocalLink href="/shop" className={styles.navItem}>{t('navbarShop')}</LocalLink>
+                    <LocalLink href="/contact" className={styles.navItem}>{t('navbarContact')}</LocalLink>
                     <LocalLink href="/cart" className={styles.navItem}><IoCartOutline size={22} /></LocalLink>
-                    <LocalLink href="/services" className={styles.navItem}><FaPaperPlane />Demande en ligne</LocalLink>
+                    <LocalLink href="/services" className={styles.navItem}><FaPaperPlane />{t('navbarServices')}</LocalLink>
                     
                     <AuthNav locale={locale} />
                 </div>

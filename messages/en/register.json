@@ -1,0 +1,70 @@
+{
+    "_commentPackagesView": " --------------- Packages View ---------------",
+    
+    "package1Title": "Non-member",
+    "package2Title": "Team plan",
+    "package3Title": "Individual plan",
+
+    "packagesCurrency": "CAD/year",
+    "packagesPerYear": "per year",
+    "packagePreferentialPrice": "Special rates",
+
+    "packageFeatures": {
+        "storage": "Storage",
+        "storageUnlimited": "Unlimited storage",
+        "storageLimited": "Storage for up to 10 signs",
+
+        "inventoryManagement": "Maintenance and management of your inventory",
+        "inventoryManagementDetailed": "Maintenance and management of your inventory (lockboxes, open house signs, flags)",
+        "inventoryAlerts": "Alerts for low inventory or damaged equipment",
+
+        "promoCode": "Promo code at Tout Pour Le Courtier",
+        "signageDiscount": "Discounts on your signage supply orders",
+
+        "billingPerOrder": "Per-order invoicing",
+        "billingMonthly": "Per-order or monthly invoicing",
+        "payment": "Payment by credit card or Interac",
+
+        "installation24h": "24-hour installation",
+        "installation24hEmergency": "24-hour installation and emergency service",
+        "confirmationPhoto": "Confirmation photo",
+
+        "idealForTeams": "Ideal for broker teams",
+        "idealForSolo": "Ideal for solo brokers"
+    },
+
+    "selectPackage": "Select this plan",
+
+    "_commentRegisterView": " --------------- Register Form View ---------------",
+
+    "btnPackages": "Back to package details",
+
+    "formTitle": "Create your broker account",
+    "formPackageGroup": "You're about to join a team of brokers",
+    "formPackageSolo": "You're about to create your broker account",
+
+    "formBtnSolo": "Individual plan",
+    "formBtnGroup": "Team plan",
+
+    "formFirstName": "First name",
+    "formLastName": "Last name",
+    "formPhoneNumber": "Phone",
+    "formCompanyName": "Agency name",
+    "formEmail": "Email",
+    "formPassword": "Password",
+    "formConfirmPassword": "Confirm password",
+
+    "verificationCodeSent": "A verification code has been sent to <bold>{email}</bold>",
+    "verificationCode": "Verification code",
+
+    "tryingToCreateAccount": "Creating your account…",
+    "lastStepToCreateAccount": "One last step before creating your account",
+
+    "register": "Sign up",
+    "confirmVerificationCode": "Confirm verification code",
+
+    "accountCreatedSuccessfully": "Your account has been created successfully!",
+
+    "alreadyMember": "Already a member?",
+    "connect": "Log in"
+}

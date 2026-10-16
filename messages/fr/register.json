@@ -1,0 +1,70 @@
+{
+    "_commentPackagesView": " --------------- Packages View ---------------",
+
+    "package1Title": "Non-membre",
+    "package2Title": "Forfait équipe",
+    "package3Title": "Forfait individuel",
+
+    "packagesCurrency": "CA/an",
+    "packagesPerYear": "par année",
+    "packagePreferentialPrice": "Tarifs préférentiels",
+
+    "packageFeatures": {
+        "storage": "Entreposage",
+        "storageUnlimited": "Entreposage illimité",
+        "storageLimited": "Entreposage jusqu'à 10 pancartes",
+
+        "inventoryManagement": "Entretien et gestion de votre inventaire",
+        "inventoryManagementDetailed": "Entretien et gestion de votre inventaire (boîtes à clés, visites libres, drapeaux)",
+        "inventoryAlerts": "Alertes en cas d'inventaire bas ou de matériel endommagé",
+
+        "promoCode": "Code promotionnel chez Tout Pour Le Courtier",
+        "signageDiscount": "Rabais sur vos commandes de matériel d'affichage",
+
+        "billingPerOrder": "Facturation à la commande",
+        "billingMonthly": "Facturation à la commande ou mensuelle",
+        "payment": "Paiement par carte de crédit ou Interac",
+
+        "installation24h": "Installation en 24 h",
+        "installation24hEmergency": "Installation en 24 h et service d'urgence",
+        "confirmationPhoto": "Photo de confirmation",
+
+        "idealForTeams": "Idéal pour les équipes de courtiers",
+        "idealForSolo": "Idéal pour les courtiers qui travaillent seuls"
+    },
+
+    "selectPackage": "Sélectionner ce forfait",
+    
+    "_commentRegisterView": " --------------- Register Form View ---------------",
+
+    "btnPackages": "Revenir à la description des forfaits",
+
+    "formTitle": "Créez votre espace courtier",
+    "formPackageGroup": "Vous vous apprêtez à rejoindre une équipe de courtiers",
+    "formPackageSolo": "Vous vous apprêtez à créer votre espace courtier",
+
+    "formBtnSolo": "Forfait individuel",
+    "formBtnGroup": "Forfait équipe",
+
+    "formFirstName": "Prénom",
+    "formLastName": "Nom",
+    "formPhoneNumber": "Téléphone",
+    "formCompanyName": "Nom de l'agence",
+    "formEmail": "Courriel",
+    "formPassword": "Mot de passe",
+    "formConfirmPassword": "Confirmer le mot de passe",
+
+    "verificationCodeSent": "Un code de vérification a été envoyé à <bold>{email}</bold>",
+    "verificationCode": "Code de vérification",
+
+    "tryingToCreateAccount": "Création du compte en cours…",
+    "lastStepToCreateAccount": "Plus qu'une étape avant la création de votre compte",
+
+    "register": "S'inscrire",
+    "confirmVerificationCode": "Confirmer le code de vérification",
+
+    "accountCreatedSuccessfully": "Votre compte a été créé avec succès !",
+
+    "alreadyMember": "Déjà membre ?",
+    "connect": "Se connecter"
+}

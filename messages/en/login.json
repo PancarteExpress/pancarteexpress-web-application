@@ -1,0 +1,17 @@
+{
+    "loginTitle": "Access your broker account",
+
+    "loginWithGoogle": "Sign in with Google",
+
+    "formId": "Username or email address",
+    "formPassword": "Password",
+    "formForgotPassword": "Forgot your password?",
+
+    "tryingToConnect": "Logging in…",
+    "connectedSuccessfully": "Logged in successfully!",
+
+    "connectionBtn": "Log in",
+
+    "notRegisteredYet": "Not a member yet?",
+    "createAccount": "Create an account"
+}

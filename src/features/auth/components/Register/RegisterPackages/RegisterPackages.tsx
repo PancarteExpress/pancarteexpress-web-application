@@ -1,123 +1,171 @@
 // src/features/auth/components/RegisterPackages.tsx
 'use client';
 
-import { useRouter } from 'next/navigation';
+import type { CSSProperties } from 'react';
+import { motion, type MotionProps } from 'framer-motion';
+import { useLocale, useTranslations } from 'next-intl';
 import styles from './RegisterPackages.module.css';
-import { motion } from "framer-motion";
+import { useRouter } from 'next/navigation';
+
+type PackageChoice = 'none' | 'group' | 'solo';
+
+type FeatureKey =
+  | 'storage' | 'storageUnlimited' | 'storageLimited'
+  | 'inventoryManagement' | 'inventoryManagementDetailed' | 'inventoryAlerts'
+  | 'promoCode' | 'signageDiscount'
+  | 'billingPerOrder' | 'billingMonthly' | 'payment'
+  | 'installation24h' | 'installation24hEmergency' | 'confirmationPhoto'
+  | 'idealForTeams' | 'idealForSolo';
+
+type Feature = { key: FeatureKey; included?: boolean; highlight?: boolean };
+
+const EXCLUDED = { included: false } as const;
+const HIGHLIGHT = { highlight: true } as const;
+
+type PackageConfig = {
+  choice: PackageChoice;
+  titleKey: 'package1Title' | 'package2Title' | 'package3Title';
+  price: number;
+  preferentialPrices: [number, number];
+  listColor: string;
+  highlightColor?: string;
+  animation: MotionProps;
+  features: Feature[];
+};
+
+const LIST_STYLE: CSSProperties = { textAlign: 'center', listStyle: 'none', padding: 0 };
+
+const PACKAGES: PackageConfig[] = [
+  {
+    choice: 'none',
+    titleKey: 'package1Title',
+    price: 0,
+    preferentialPrices: [45, 50],
+    listColor: '#0E4D9A',
+    animation: { initial: { opacity: 0, x: -100 }, animate: { opacity: 1, x: 0 }, transition: { duration: 1 } },
+    features: [
+      { key: 'storage', ...EXCLUDED },
+      { key: 'inventoryManagement', ...EXCLUDED },
+      { key: 'inventoryAlerts', ...EXCLUDED },
+      { key: 'promoCode', ...EXCLUDED },
+      { key: 'signageDiscount', ...EXCLUDED },
+      { key: 'billingPerOrder' },
+      { key: 'payment' },
+      { key: 'installation24h' },
+    ],
+  },
+  {
+    choice: 'group',
+    titleKey: 'package2Title',
+    price: 119.99,
+    preferentialPrices: [30, 35],
+    listColor: '#C8DAEC',
+    highlightColor: 'yellow',
+    animation: { initial: { opacity: 0, y: 100 }, animate: { opacity: 1, y: 0 }, transition: { duration: 1 } },
+    features: [
+      { key: 'storageUnlimited' },
+      { key: 'inventoryManagementDetailed' },
+      { key: 'inventoryAlerts' },
+      { key: 'promoCode' },
+      { key: 'signageDiscount' },
+      { key: 'billingMonthly', ...HIGHLIGHT },
+      { key: 'payment', ...HIGHLIGHT },
+      { key: 'installation24hEmergency' },
+      { key: 'confirmationPhoto' },
+      { key: 'idealForTeams' },
+    ],
+  },
+  {
+    choice: 'solo',
+    titleKey: 'package3Title',
+    price: 89.99,
+    preferentialPrices: [30, 35],
+    listColor: '#0E4D9A',
+    highlightColor: 'red',
+    animation: { initial: { opacity: 0, x: 100 }, animate: { opacity: 1, x: 0 }, transition: { duration: 1 } },
+    features: [
+      { key: 'storageLimited' },
+      { key: 'inventoryManagementDetailed' },
+      { key: 'inventoryAlerts' },
+      { key: 'promoCode' },
+      { key: 'signageDiscount' },
+      { key: 'billingMonthly', ...HIGHLIGHT },
+      { key: 'payment', ...HIGHLIGHT },
+      { key: 'installation24hEmergency' },
+      { key: 'confirmationPhoto' },
+      { key: 'idealForSolo' },
+    ],
+  },
+];
 
 interface RegisterPackagesProps {
-  locale: string;
-  packageChoice: "group" | "solo" | 'none';
-  setPackageChoice: (value: "group" | "solo" | 'none') => void;
-  setStep: (step: "packages" | "register") => void;
+  setPackageChoice: (value: PackageChoice) => void;
+  setStep: (step: 'packages' | 'register') => void;
 }
 
-export default function RegisterPackages({ locale, packageChoice, setPackageChoice, setStep }: RegisterPackagesProps) {
+export default function RegisterPackages({ setPackageChoice, setStep }: RegisterPackagesProps) {
+  const t = useTranslations('register');
+  const locale = useLocale();
   const router = useRouter();
-  
-  const handleSelectPackage = (packageType: "solo" | "group" | 'none' ) => {
-    setPackageChoice(packageType);
-   
-    if (packageType === 'none') {
-      router.push(`/${locale}/services`);
-    } else {
-      setStep("register");
-    }
+
+  // « 0 $ » / « 119,99 $ » en FR, « $0 » / « $119.99 » en EN
+  const formatPrice = (value: number) =>
+    new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency: 'CAD',
+      currencyDisplay: 'narrowSymbol',
+      minimumFractionDigits: Number.isInteger(value) ? 0 : 2,
+    }).format(value);
+
+  const handleSelectPackage = (choice: PackageChoice) => {
+    setPackageChoice(choice);
+    if (choice === 'none') router.push('/services');
+    else setStep('register');
   };
 
   return (
     <div className={styles.mainContainer}>
       <div className={styles.packages}>
-        <motion.div initial={{ opacity: 0, x: -100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} onClick={() => handleSelectPackage('none')}>
-          <div className={styles.header}>
-            <h2 className={styles.title}>Non-membre</h2>
-            
-            <label>0$</label>
-            <br />
-            <label>CAD/an</label>
-          </div>
+        {PACKAGES.map(({ choice, titleKey, price, preferentialPrices, listColor, highlightColor, animation, features }) => (
+          <motion.div
+            key={choice}
+            {...animation}
+            className={styles.package}
+            onClick={() => handleSelectPackage(choice)}
+          >
+            <div className={styles.header}>
+              <h2 className={styles.title}>{t(titleKey)}</h2>
+              <label>{formatPrice(price)}</label>
+              <br />
+              <label>{t('packagesPerYear')}</label>
+            </div>
 
-          <p className={styles.price}>
-            <label>Tarifs preferentiel : 45$ / 50$</label>
-          </p>
+            <p className={styles.price}>
+              <label>
+                {t('packagePreferentialPrice')} : {preferentialPrices.map(formatPrice).join(' / ')}
+              </label>
+            </p>
 
-          <ul>
-            <li style={{ color: '#0E4D9A', opacity: '0.5'}}>x Entreposage</li>
-            <li style={{ color: '#0E4D9A', opacity: '0.5'}}>x Entretien et gestion de votre inventaire</li>
-            <li style={{ color: '#0E4D9A', opacity: '0.5'}}>x Alertes quand votre inventaire est bas ou endommagé</li>
-            <li style={{ color: '#0E4D9A', opacity: '0.5'}}>x Code promotionnel chez Tout Pour Le Courtier</li>
-            <li style={{ color: '#0E4D9A', opacity: '0.5'}}>x Rabais sur vos commandes de matériel daffichage</li>
-            <li style={{ color: '#0E4D9A'}}>✓ Facture sur commandes / crédit ou interac</li>
-            <li style={{ color: '#0E4D9A'}}>✓ Installation en 24h</li>
-          </ul>
+            <ul style={{ ...LIST_STYLE, color: listColor }}>
+              {features.map(({ key, included = true, highlight }) => (
+                <li
+                  key={key}
+                  style={{
+                    ...(!included && { opacity: 0.5 }),
+                    ...(highlight && highlightColor && { color: highlightColor }),
+                  }}
+                >
+                  {included ? '✓' : '✗'} {t(`packageFeatures.${key}`)}
+                </li>
+              ))}
+            </ul>
 
-          <button className={styles.selectPackageButton}>
-            Sélectionner ce forfait
-          </button>
-        </motion.div>
-        
-        <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className={styles.package} onClick={() => handleSelectPackage("group")}>
-          <div className={styles.header}>
-            
-            <h2 className={styles.title}>Forfait équipe</h2>
-
-            <label>119.99$</label>
-            <br />
-            <label>CAD/an</label>
-
-          </div>
-
-          <p className={styles.price}>
-            <label>Tarifs preferentiel : 30$ / 35$</label>
-          </p>
-
-          <ul style={{ color: '#C8DAEC', textAlign: 'center', listStyle: 'none', padding: 0 }}>
-            <li>✓ Entreposage illimité</li>
-            <li>✓ Entretien et gestion de votre inventaire (boîtes à clés, visites libres,  drapeaux)</li>
-            <li>✓ Alertes quand votre inventaire est bas ou endommagé</li>
-            <li>✓ Code promotionnel chez Tout Pour Le Courtier</li>
-            <li>✓ Rabais sur vos commandes de matériel daffichage</li>
-            <li style={{color: 'yellow'}}>✓ Facture sur commande et mensuel</li>
-            <li style={{color: 'yellow'}}>✓ Paiement par crédit ou interac</li>
-            <li>✓ installation en 24h / service d urgence</li>
-            <li>✓ Photo de confirmation</li>
-            <li>✓ Idéal pour les équipes de courtiers</li>
-          </ul>
-
-          <button className={styles.selectPackageButton}>
-            Sélectionner ce forfait
-          </button>
-        </motion.div>
-
-        <motion.div initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} onClick={() => handleSelectPackage("solo")}>
-          <div className={styles.header}>
-            <h2 className={styles.title}>Forfait individuel</h2>
-            
-            <label>89.99$</label>
-            <br />
-            <label>CAD/an</label>
-          </div>
-          
-          <p className={styles.price}>
-            <label>Tarifs preferentiel : 30$ / 35$</label>
-          </p>
-
-          <ul style={{ color: '#0E4D9A', textAlign: 'center', listStyle: 'none', padding: 0 }}>
-            <li>✓ Entreposage jusqu à 10 pancartes</li>
-            <li>✓ Entretien et gestion de votre inventaire (boîtes à clés, visites libres,  drapeaux)</li>
-            <li>✓ Alertes quand votre inventaire est bas ou endommagé</li>
-            <li>✓ Code promotionnel chez Tout Pour Le Courtier</li>
-            <li>✓ Rabais sur vos commandes de matériel daffichage</li>
-            <li style={{color: 'red'}}>✓ Facture mensuel / crédit ou interac (Facture sur commande)</li>
-            <li>✓ Installation en 24h / service d urgence</li>
-            <li>✓ Photo de confirmation</li>
-            <li>✓ Idéal pour les courtiers seul</li>
-          </ul>
-
-          <button className={styles.selectPackageButton}>
-            Sélectionner ce forfait
-          </button>
-        </motion.div>
+            {/* Le clic remonte jusqu'à la carte : pas besoin d'onClick ici */}
+            <button type="button" className={styles.selectPackageButton}>
+              {t('selectPackage')}
+            </button>
+          </motion.div>
+        ))}
       </div>
     </div>
   );

@@ -7,5 +7,14 @@
   "fastServiceTitle": "Service rapide en 24h",
   "fastServiceSub": "Du lundi au vendredi",
   "zoneTitle": "Service offert",
-  "zoneSub": "Dans le Grand Montréal et ses environs"
+  "zoneSub": "Dans le Grand Montréal et ses environs",
+  
+  "navbarHome": "Accueil",
+  "navbarResidential": "Résidentiel",
+  "navbarBigFormat": "Grand format",
+  "navbarShop": "Boutique",
+  "navbarContact": "Contact",
+  "navbarServices": "Demande en ligne"
+
+
 }

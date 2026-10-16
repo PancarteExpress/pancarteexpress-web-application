@@ -10,12 +10,15 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from '../../../store/authStore';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface LoginFormProps {
   locale: string;
 }
 
 export function LoginForm({ locale }: LoginFormProps) {
+  const t = useTranslations('login');
+
   const router = useRouter();
   const { login } = useAuth();
 
@@ -38,7 +41,7 @@ export function LoginForm({ locale }: LoginFormProps) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className={styles.mainContainer}>
       <div className={styles.inputs}>
-        <label htmlFor="loginId" className="block text-sm font-medium mb-1">Identifiant / Adresse courriel</label>
+        <label htmlFor="loginId" className="block text-sm font-medium mb-1">{t('formId')}</label>
         <input
           autoComplete="off"
           id="loginId"
@@ -50,7 +53,7 @@ export function LoginForm({ locale }: LoginFormProps) {
       </div>
 
       <div className={styles.inputs}>
-        <label htmlFor="loginPassword" className="block text-sm font-medium mb-1">Mot de passe</label>
+        <label htmlFor="loginPassword" className="block text-sm font-medium mb-1">{t('formPassword')}</label>
         <input
           autoComplete="new-password"
           id="loginPassword"
@@ -63,13 +66,13 @@ export function LoginForm({ locale }: LoginFormProps) {
 
       <div className={styles.forgotPassword}>
         <Link href={`/${locale}/forgot-password`}>
-          Mot de passe oublié?
+          {t('formForgotPassword')}
         </Link>
       </div>
 
       {isLoading &&
       <div className={styles.loading}>
-        Tentative de connexion...
+        {t('tryingToConnect')}
       </div>}
 
       {(errors.root || error) &&
@@ -79,11 +82,11 @@ export function LoginForm({ locale }: LoginFormProps) {
       
       {success &&
       <div className={styles.success}>
-        Connexion reussie
+        {t('connectedSuccessfully')}
       </div>}
 
       <button type="submit" disabled={isLoading} className={styles.btnConnection}>
-        Se connecter
+        {t('connectionBtn')}
       </button>
 
     </form>
