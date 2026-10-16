@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import { SERVICE_LABELS, SERVICE_TYPES, type ServiceType } from '@/features/services/constants/installation';
 import { CheckboxGroup, Notice, type ChoiceOption } from '@/features/services/components/fields';
-import { InstallationForm } from '@/features/services/components/installationForm/InstallationForm';
+
 import { useAddressStore } from '@/features/services/store/addressStore';
 import type { Address } from '@/features/services/types/address';
 import type { Service } from '@/features/services/types/services';
+import { InstallationForm } from '../installationForm/installationForm';
 
 type InstallationService = Extract<Service, { type: 'installation' }>;
 
