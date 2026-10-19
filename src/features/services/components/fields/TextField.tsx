@@ -19,11 +19,12 @@ interface TextFieldProps {
   hideLabel?: boolean;
   error?: string;
   hint?: ReactNode;
+  inputMode?: 'text' | 'numeric';
 }
 
 export function TextField({
   label, value, onChange, onBlur, inputRef, maxLength, multiline = false, rows = 3,
-  placeholder, required, hideLabel, error, hint,
+  placeholder, required, hideLabel, error, hint, inputMode,
 }: TextFieldProps) {
   const { id, hintId, errorId, describedBy: baseDescribedBy } = useFieldIds({ hint, error });
   const counterId = maxLength ? `${id}-counter` : undefined;
@@ -51,7 +52,7 @@ export function TextField({
 
       {multiline
         ? <textarea {...shared} ref={inputRef} rows={rows} className={styles.input} />
-        : <input {...shared} ref={inputRef} type="text" className={styles.input} />}
+        : <input {...shared} ref={inputRef} type="text" inputMode={inputMode} autoComplete="off" className={styles.input} />}
 
       {maxLength && (
         <span id={counterId} className={styles.counter} data-full={value.length >= maxLength}>

@@ -9,7 +9,7 @@ import type {
 import { MAX_QUANTITY } from '@/lib/constants/cart';
 
 const STORAGE_KEY = 'pancarte-cart';
-const STORAGE_VERSION = 3;
+const STORAGE_VERSION = 4;
 
 const clampQuantity = (q: number): number =>
   Number.isFinite(q) ? Math.min(MAX_QUANTITY, Math.max(1, Math.trunc(q))) : 1;
@@ -24,7 +24,7 @@ const isCartItem = (value: unknown): value is CartItem => {
   return false;
 };
 
-// v3 : les installations à l'ancien format sont retirées ; une demande vidée de ses services disparaît
+// v3 : installations dans un format antérieur ».
 const stripLegacyInstallations = (items: CartItem[]): CartItem[] =>
   items.flatMap<CartItem>((item) => {
     if (item.kind !== 'serviceRequest') return [item];
@@ -141,7 +141,7 @@ export const useCartStore = create<CartState>()(
         // v1 : conservé, considéré comme invité
         if (version === 1) return { items: stripLegacyInstallations(items), ownerId: null };
         // v2 : propriétaire conservé
-        if (version === 2) {
+        if (version === 2 || version === 3) {
           return {
             items: stripLegacyInstallations(items),
             ownerId: typeof p?.ownerId === 'string' ? p.ownerId : null,

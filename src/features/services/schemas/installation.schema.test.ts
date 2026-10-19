@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
-  createAddonEntry, createEmptyInstallationForm, createEmptyPlacement, createFrameUnit, createInstallationSchema,
+  createAddonEntry, createDirectional, createEmptyInstallationForm, createEmptyOpenHouse, createEmptyPlacement, createFrameUnit, createInstallationSchema,
+  createKitUnit,
+  createPlacedUnit,
+  KitUnitFormValues,
+  OpenHouseFormValues,
   toInstallationFormValues,
   type AddonEntryFormValues, type FrameUnitFormValues, type InstallationFormValues, type InstallationSchema,
 } from './installation.schema';
@@ -14,13 +18,13 @@ const frame = (overrides: Partial<FrameUnitFormValues> = {}): FrameUnitFormValue
   ...createFrameUnit(),
   model: 'regular',
   useAccountName: true,
-  placement: { ...createEmptyPlacement(), location: 'ground' },
   ...overrides,
 });
 
 const form = (overrides: Partial<InstallationFormValues> = {}): InstallationFormValues => ({
   ...createEmptyInstallationForm(),
   materials: ['frames'],
+  placement: { ...createEmptyPlacement(), location: 'ground' },
   frames: { pickup: false, pickupAddress: '', units: [frame()] },
   ...overrides,
 });
@@ -47,8 +51,8 @@ describe('createInstallationSchema — pancartes (membre)', () => {
     expect(result.data.frames?.units[0]).toMatchObject({
       model: { type: 'regular' },
       displayName: { type: 'account', name: 'Jean Tremblay' },
-      placement: { location: 'ground' },
     });
+    expect(result.data.placement).toEqual({ location: 'ground' });
     expect(result.data.addons).toBeNull();
   });
 
@@ -97,31 +101,31 @@ describe('createInstallationSchema — pancartes (non-membre)', () => {
 });
 
 describe('createInstallationSchema — emplacement', () => {
-  const withPlacement = (placement: Partial<FrameUnitFormValues['placement']>) =>
-    form({
-      frames: {
-        pickup: false,
-        pickupAddress: '',
-        units: [frame({ placement: { ...createEmptyPlacement(), ...placement } })],
-      },
-    });
+  const withPlacement = (placement: Partial<InstallationFormValues['placement']>) =>
+    form({ placement: { ...createEmptyPlacement(), ...placement } });
+
+  it('exige un emplacement dès qu\'un matériel est choisi', () => {
+    expect(issuePaths(memberSchema.safeParse(withPlacement({ location: null })))).toContain('placement.location');
+  });
+
+  it('ne valide pas l\'emplacement sans matériel', () => {
+    const paths = issuePaths(memberSchema.safeParse(form({ materials: [], placement: createEmptyPlacement() })));
+    expect(paths).toEqual(['materials']);
+  });
 
   it('au mur : refuse le rendez-vous et exige la fixation', () => {
     const paths = issuePaths(memberSchema.safeParse(withPlacement({ location: 'wall', access: 'phoneAppointment' })));
-    expect(paths).toEqual(expect.arrayContaining([
-      'frames.units.0.placement.access',
-      'frames.units.0.placement.mounting',
-    ]));
+    expect(paths).toEqual(expect.arrayContaining(['placement.access', 'placement.mounting']));
   });
 
   it('clôture + rendez-vous : exige les coordonnées et produit le bon objet', () => {
     expect(issuePaths(memberSchema.safeParse(withPlacement({ location: 'fence', access: 'phoneAppointment' }))))
-      .toContain('frames.units.0.placement.contact');
+      .toContain('placement.contact');
 
     const result = memberSchema.safeParse(
       withPlacement({ location: 'fence', access: 'phoneAppointment', contact: '514-555-0000' }),
     );
-    expect(result.success && result.data.frames?.units[0].placement).toEqual({
+    expect(result.success && result.data.placement).toEqual({
       location: 'fence',
       access: { type: 'phoneAppointment', contact: '514-555-0000' },
     });
@@ -129,7 +133,7 @@ describe('createInstallationSchema — emplacement', () => {
 
   it('autres : exige une description', () => {
     expect(issuePaths(memberSchema.safeParse(withPlacement({ location: 'other' }))))
-      .toContain('frames.units.0.placement.description');
+      .toContain('placement.description');
   });
 });
 
@@ -213,19 +217,150 @@ describe('createInstallationSchema — ajouts', () => {
   });
 });
 
+describe('createInstallationSchema — kit seul', () => {
+  const kit = (overrides: Partial<KitUnitFormValues> = {}): KitUnitFormValues => ({
+    ...createKitUnit(),
+    model: 'shortPost36',
+    ...overrides,
+  });
+
+  const withKits = (units: KitUnitFormValues[], materials: InstallationFormValues['materials'] = ['kit']) =>
+    form({ materials, frames: createEmptyInstallationForm().frames, kits: { units } });
+
+  it('produit un objet de domaine valide', () => {
+    const result = memberSchema.safeParse(withKits([kit()]));
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data.kits?.units[0].model).toEqual({ type: 'shortPost36' });
+    expect(result.data.frames).toBeNull();
+  });
+
+  it('exige au moins un kit, et un modèle pour chacun', () => {
+    expect(issuePaths(memberSchema.safeParse(withKits([])))).toContain('kits.units');
+    expect(issuePaths(memberSchema.safeParse(withKits([kit({ model: null })])))).toContain('kits.units.0.model');
+  });
+
+  it('poteau spécifique : exige une description', () => {
+    expect(issuePaths(memberSchema.safeParse(withKits([kit({ model: 'custom' })]))))
+      .toContain('kits.units.0.description');
+  });
+
+  it('avec des pancartes : le kit est inclus, ses détails sont ignorés', () => {
+    const result = memberSchema.safeParse(form({
+      materials: ['frames', 'kit'],
+      kits: { units: [kit({ model: null })] }, // invalide, mais ignoré
+    }));
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data.kits).toBeNull();
+  });
+});
+
+describe('createInstallationSchema — visite libre', () => {
+  const openHouse = (overrides: Partial<OpenHouseFormValues> = {}): OpenHouseFormValues => ({
+    ...createEmptyOpenHouse(),
+    onSite: true,
+    date: '2026-10-24',
+    removeNextMonday: true,
+    ...overrides,
+  });
+
+  const withOpenHouse = (overrides: Partial<OpenHouseFormValues> = {}) =>
+    form({ materials: ['openHouse'], frames: createEmptyInstallationForm().frames, openHouse: openHouse(overrides) });
+
+  it('produit un objet de domaine valide (fin par défaut = début + 2 h)', () => {
+    const result = memberSchema.safeParse(withOpenHouse());
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data.openHouse).toMatchObject({
+      date: '2026-10-24',
+      startTime: '09:00',
+      endTime: '11:00',
+      onSiteCount: 1,
+      flagCount: 0,
+      removeNextMonday: true,
+    });
+  });
+
+  it('exige une date valide et la réponse au retrait', () => {
+    const paths = issuePaths(memberSchema.safeParse(withOpenHouse({ date: null, removeNextMonday: null })));
+    expect(paths).toEqual(expect.arrayContaining(['openHouse.date', 'openHouse.removeNextMonday']));
+  });
+
+  it('refuse une heure de fin qui n\'est pas après le début', () => {
+    expect(issuePaths(memberSchema.safeParse(withOpenHouse({ startTime: '14:00', endTime: '14:00' }))))
+      .toContain('openHouse.endTime');
+  });
+
+  it('exige l\'emplacement de chaque directionnelle', () => {
+    const result = memberSchema.safeParse(withOpenHouse({ directionals: [createDirectional()] }));
+    expect(issuePaths(result)).toContain('openHouse.directionals.0.placement');
+  });
+
+  it('applique les règles de répartition des ajouts', () => {
+    expect(issuePaths(memberSchema.safeParse(withOpenHouse({ onSite: false }))))
+      .toContain('openHouse.frameUids');
+  });
+});
+
+describe('createInstallationSchema — boîte à clés, drapeaux, directionnelles, autres', () => {
+  const placed = (placement = 'À côté de la porte') => ({ ...createPlacedUnit(), placement });
+  const only = (materials: InstallationFormValues['materials'], overrides: Partial<InstallationFormValues> = {}) =>
+    form({ materials, frames: createEmptyInstallationForm().frames, ...overrides });
+
+  it('boîte à clés : un seul code, un emplacement par boîte', () => {
+    const result = memberSchema.safeParse(only(['keybox'], { keybox: { code: '1234', units: [placed(), placed('Garage')] } }));
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data.keybox).toMatchObject({ code: '1234', units: [{ placement: 'À côté de la porte' }, { placement: 'Garage' }] });
+  });
+
+  it('boîte à clés : code requis, 6 chiffres maximum, chiffres seulement', () => {
+    const codeError = (code: string) =>
+      issuePaths(memberSchema.safeParse(only(['keybox'], { keybox: { code, units: [placed()] } })));
+    expect(codeError('')).toContain('keybox.code');
+    expect(codeError('1234567')).toContain('keybox.code');
+    expect(codeError('12a4')).toContain('keybox.code');
+  });
+
+  it('boîte à clés : emplacement requis', () => {
+    expect(issuePaths(memberSchema.safeParse(only(['keybox'], { keybox: { code: '1234', units: [placed('')] } }))))
+      .toContain('keybox.units.0.placement');
+  });
+
+  it('drapeaux : mention requise, 2 maximum', () => {
+    expect(issuePaths(memberSchema.safeParse(only(['flags'])))).toContain('flags.mention');
+    expect(issuePaths(memberSchema.safeParse(only(['flags'], { flags: { mention: 'sold', quantity: 3 } }))))
+      .toContain('flags.quantity');
+  });
+
+  it('directionnelles : mention et emplacements requis', () => {
+    const paths = issuePaths(memberSchema.safeParse(only(['directional'], {
+      directionals: { mention: null, units: [placed('')] },
+    })));
+    expect(paths).toEqual(expect.arrayContaining(['directionals.mention', 'directionals.units.0.placement']));
+  });
+
+  it('autres : description requise', () => {
+    expect(issuePaths(memberSchema.safeParse(only(['other'])))).toContain('otherNeeds');
+  });
+});
+
 describe('toInstallationFormValues — aller-retour', () => {
-  /** formulaire → domaine → formulaire → domaine : les deux objets du domaine doivent être identiques */
   const expectRoundTrip = (schema: InstallationSchema, values: InstallationFormValues) => {
     const first = schema.parse(values);
     const second = schema.parse(toInstallationFormValues(first));
     expect(second).toEqual(first);
   };
 
-  it('membre : toutes les variantes de modèle, nom et emplacement', () => {
+  it('membre : variantes de modèle, de nom et ajouts', () => {
     const units = [
       frame({ model: 'custom', modelDescription: 'Pancarte bleue', useAccountName: false, displayName: 'A. et B. Roy' }),
-      frame({ placement: { ...createEmptyPlacement(), location: 'wall', access: 'smallLadder', mounting: 'vShapeDrilled' } }),
-      frame({ model: 'prestige', placement: { ...createEmptyPlacement(), location: 'balcony', access: 'phoneAppointment', contact: '514-555-0000' } }),
+      frame({ model: 'prestige' }),
     ];
 
     expectRoundTrip(memberSchema, form({
@@ -233,23 +368,21 @@ describe('toInstallationFormValues — aller-retour', () => {
       frames: { pickup: false, pickupAddress: '', units },
       addons: [
         { ...createAddonEntry('other'), mention: 'Vue sur le fleuve', quantity: 1, frameUids: [units[0].uid], onSite: false },
-        { ...createAddonEntry('secondFloor'), quantity: 3, frameUids: [units[1].uid, units[2].uid], onSite: true },
+        { ...createAddonEntry('secondFloor'), quantity: 3, frameUids: [units[1].uid], onSite: true },
       ],
     }));
   });
 
-  it('membre : emplacements simples et « autres »', () => {
-    expectRoundTrip(memberSchema, form({
-      frames: {
-        pickup: false,
-        pickupAddress: '',
-        units: [
-          frame({ placement: { ...createEmptyPlacement(), location: 'ramp' } }),
-          frame({ placement: { ...createEmptyPlacement(), location: 'fence', access: 'noLadder' } }),
-          frame({ placement: { ...createEmptyPlacement(), location: 'other', description: 'Derrière la haie' } }),
-        ],
-      },
-    }));
+  // Chaque variante d'emplacement doit survivre à l'aller-retour
+  it.each([
+    { location: 'ground' },
+    { location: 'ramp' },
+    { location: 'wall', access: 'smallLadder', mounting: 'vShapeDrilled' },
+    { location: 'fence', access: 'noLadder' },
+    { location: 'balcony', access: 'phoneAppointment', contact: '514-555-0000' },
+    { location: 'other', description: 'Derrière la haie' },
+  ] satisfies Partial<InstallationFormValues['placement']>[])('emplacement $location', (placement) => {
+    expectRoundTrip(memberSchema, form({ placement: { ...createEmptyPlacement(), ...placement } }));
   });
 
   it('non-membre : ramassage conservé', () => {
@@ -267,6 +400,53 @@ describe('toInstallationFormValues — aller-retour', () => {
       materials: ['addons'],
       frames: createEmptyInstallationForm().frames,
       addons: [{ ...createAddonEntry('forSale'), quantity: 2, onSite: true }],
+    }));
+  });
+
+  it('kit seul, dont un poteau spécifique', () => {
+    expectRoundTrip(memberSchema, form({
+      materials: ['kit'],
+      frames: createEmptyInstallationForm().frames,
+      kits: {
+        units: [
+          { ...createKitUnit(), model: 'colonialBlack' },
+          { ...createKitUnit(), model: 'custom', description: 'Poteau vert 60"' },
+        ],
+      },
+    }));
+  });
+
+  it('visite libre complète', () => {
+    const unit = frame();
+    expectRoundTrip(memberSchema, form({
+      materials: ['frames', 'openHouse'],
+      frames: { pickup: false, pickupAddress: '', units: [unit] },
+      openHouse: {
+        ...createEmptyOpenHouse(),
+        quantity: 2,
+        frameUids: [unit.uid],
+        onSite: true,
+        date: '2026-10-24',
+        startTime: '13:30',
+        endTime: '16:00',
+        directionals: [{ ...createDirectional(), placement: 'Coin rue Principale' }],
+        flagCount: 2,
+        removeNextMonday: false,
+      },
+    }));
+  });
+
+  it('boîte à clés, drapeaux, directionnelles et autres', () => {
+    expectRoundTrip(memberSchema, form({
+      materials: ['keybox', 'flags', 'directional', 'other'],
+      frames: createEmptyInstallationForm().frames,
+      keybox: { code: '123456', units: [{ ...createPlacedUnit(), placement: 'Porte arrière' }] },
+      flags: { mention: 'forSale', quantity: 2 },
+      directionals: {
+        mention: 'forRent',
+        units: [{ ...createPlacedUnit(), placement: 'Coin Principale' }, { ...createPlacedUnit(), placement: 'Sortie 12' }],
+      },
+      otherNeeds: 'Installer avant 10 h',
     }));
   });
 });

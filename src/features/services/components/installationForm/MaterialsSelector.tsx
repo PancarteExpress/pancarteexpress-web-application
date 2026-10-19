@@ -5,7 +5,9 @@ import {
   FRAME_BUNDLED_MATERIALS, IMPLEMENTED_MATERIALS, MATERIAL_LABELS, MATERIALS,
   type ImplementedMaterial, type Material,
 } from '../../constants/installation';
-import { createFrameUnit } from '../../schemas/installation.schema';
+import {
+  createEmptyOpenHouse, createFrameUnit, createKitUnit, createPlacedUnit,
+} from '@/features/services/schemas/installation.schema';
 import { CheckboxGroup, Notice, type ChoiceOption } from '../fields';
 import { bindField, useFormUpdater, useInstallationFormContext } from './formContext';
 
@@ -35,8 +37,11 @@ export function MaterialsSelector() {
 
         // Effets de bord déclenchés au clic, pas dans un useEffect
         const handleChange = (next: Material[]) => {
-          const materials = next.filter(isImplemented);
-          const nextHasFrames = materials.includes('frames');
+          const selected = next.filter(isImplemented);
+          const nextHasFrames = selected.includes('frames');
+          // Avec des pancartes, le kit est inclus : le kit seul et ses détails sont retirés
+          const materials = nextHasFrames ? selected.filter((m) => m !== 'kit') : selected;
+
 
           if (nextHasFrames !== hasFrames) {
             update('frames', {
@@ -46,9 +51,27 @@ export function MaterialsSelector() {
             });
             if (!nextHasFrames) {
               update('addons', getValues('addons').map((a) => ({ ...a, frameUids: [] })));
+              update('openHouse.frameUids', []);
             }
           }
+
+          const hadKit = current.includes('kit');
+          const hasKit = materials.includes('kit');
+          if (hadKit !== hasKit) update('kits', { units: hasKit ? [createKitUnit()] : [] });
           if (current.includes('addons') && !materials.includes('addons')) update('addons', []);
+          if (current.includes('openHouse') !== materials.includes('openHouse')) {
+            update('openHouse', createEmptyOpenHouse());
+          }
+
+          // Cocher ou décocher repart toujours de zéro ; les unités démarrent à 1
+          const toggled = (m: Material) => current.includes(m) !== materials.includes(m);
+          const isOn = (m: Material) => materials.includes(m);
+          if (toggled('keybox')) update('keybox', { code: '', units: isOn('keybox') ? [createPlacedUnit()] : [] });
+          if (toggled('flags')) update('flags', { mention: null, quantity: 1 });
+          if (toggled('directional')) {
+            update('directionals', { mention: null, units: isOn('directional') ? [createPlacedUnit()] : [] });
+          }
+          if (toggled('other')) update('otherNeeds', '');
 
           props.field.onChange(materials);
         };
@@ -64,7 +87,7 @@ export function MaterialsSelector() {
             />
             {hasFrames && (
               <Notice variant="warning">
-                Les installations de pancartes incluent l&apos;installation des ancrages et des poteaux.
+                Les installations de pancartes incluent l&apos;installation du kit (ancrage et poteau).
               </Notice>
             )}
           </>

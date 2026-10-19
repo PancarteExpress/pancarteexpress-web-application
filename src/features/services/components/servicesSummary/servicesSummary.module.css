@@ -135,3 +135,13 @@
 
 /* Ligne d'ajout : dt + dd enveloppés pour garder la grille */
 .row { display: contents; }
+
+.inlineList {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.prose {
+  margin: 0;
+  white-space: pre-wrap;
+}

@@ -6,7 +6,6 @@ import { ADDON_LABELS, ADDONS, MAX_ADDONS, TEXT_LIMITS, type Addon } from '@/fea
 import { createAddonEntry } from '@/features/services/schemas/installation.schema';
 import { CheckboxGroup, TextField, toOptions } from '@/features/services/components/fields';
 import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
-import { AddonAssignmentRow } from './AddonAssignmentRow';
 import styles from '../installationForm.module.css';
 
 const ADDON_OPTIONS = toOptions(ADDONS, ADDON_LABELS);
@@ -17,9 +16,6 @@ export function AddonsSection() {
   const update = useFormUpdater();
   
   const addons = useWatch({ control, name: 'addons' });
-    const hasFrames = useWatch({ control, name: 'materials' }).includes('frames');
-    const frameUnits = useWatch({ control, name: 'frames.units' });
-    const frameUids = hasFrames ? frameUnits.map((u) => u.uid) : [];
 
   const { errors } = useFormState({ control, name: 'addons' });
 
@@ -63,15 +59,6 @@ export function AddonsSection() {
             />
           )}
         />
-      )}
-
-      {addons.length > 0 && (
-        <div>
-          <p className={styles.label}>Veuillez confirmer les ajouts par pancarte :</p>
-          {addons.map((a, i) => (
-            <AddonAssignmentRow key={`${a.addon}-${i}`} index={i} frameUids={frameUids} />
-          ))}
-        </div>
       )}
     </section>
   );

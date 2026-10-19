@@ -12,7 +12,15 @@ import styles from './installationForm.module.css';
 import { MaterialsSelector } from './MaterialsSelector';
 
 import { FramesSection } from './frames/FramesSection';
+import { KitSection } from './kits/KitSection';
 import { AddonsSection } from './addons/AddonsSection';
+import { PlacementFields } from './PlacementFields';
+import { OpenHouseSection } from './openHouse/OpenHouseSection';
+import { AssignmentsSection } from './assignments/AssignmentsSection';
+import { DirectionalsSection } from './directionals/DirectionalsSection';
+import { FlagsSection } from './flags/FlagsSection';
+import { KeyboxSection } from './keybox/KeyboxSection';
+import { OtherSection } from './other/OtherSection';
 
 interface InstallationFormProps {
   onSubmit: (details: InstallationDetails) => void;
@@ -58,7 +66,15 @@ function InstallationFormInner({ onSubmit, initialValues, isMember, accountName 
       <form noValidate className={styles.form} onSubmit={methods.handleSubmit(onSubmit)}>
         <MaterialsSelector />
         {materials.includes('frames') && <FramesSection isMember={isMember} accountName={accountName} />}
+        {materials.includes('kit') && <KitSection />}
         {materials.includes('addons') && <AddonsSection />}
+        {materials.includes('openHouse') && <OpenHouseSection />}
+        {materials.includes('keybox') && <KeyboxSection />}
+        {materials.includes('flags') && <FlagsSection />}
+        {materials.includes('directional') && <DirectionalsSection />}
+        {materials.includes('other') && <OtherSection />}
+        <AssignmentsSection />
+        {materials.length > 0 && <PlacementFields />}
         <button type="submit" className={styles.submit}>Enregistrer l&apos;installation</button>
       </form>
     </FormProvider>

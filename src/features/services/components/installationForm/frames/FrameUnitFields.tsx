@@ -4,7 +4,6 @@ import { Controller } from 'react-hook-form';
 import { FRAME_MODEL_LABELS, FRAME_MODELS, TEXT_LIMITS } from '@/features/services/constants/installation';
 import { RadioGroup, TextField, YesNoField, toOptions } from '@/features/services/components/fields';
 import { bindField, useFormUpdater, useInstallationFormContext, type FrameUnitPath } from '../formContext';
-import { PlacementFields } from './PlacementFields';
 import styles from '../installationForm.module.css';
 
 const MODEL_OPTIONS = toOptions(FRAME_MODELS, FRAME_MODEL_LABELS);
@@ -93,8 +92,6 @@ export function FrameUnitFields({ index, isMember, accountName }: FrameUnitField
           )}
         />
       )}
-
-      <PlacementFields index={index} />
     </fieldset>
   );
 }

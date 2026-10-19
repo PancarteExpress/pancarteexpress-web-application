@@ -4,7 +4,7 @@ import { Address, StreetAddress, TerrainAddress } from '../types/address';
 import { Service } from '../types/services';
 import type { InstallationDetails } from '../types/installation';
 
-const STORAGE_VERSION = 2;
+const STORAGE_VERSION = 3;
 
 interface AddressStore {
   addresses: Address[];
@@ -121,7 +121,7 @@ export const useAddressStore = create<AddressStore>()(
       migrate: (persisted, version) => {
         let state = (persisted ?? {}) as Partial<AddressStore>;
         if (version === 0) state = { ...state, ownerId: null };
-        if (version < 2) {
+        if (version < 3) {
           state = {
             ...state,
             addresses: (state.addresses ?? []).map((a) => ({

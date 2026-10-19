@@ -41,6 +41,7 @@ export function FramesSection({ isMember, accountName }: FramesSectionProps) {
         frameUids: a.frameUids.filter((uid) => !removedUids.has(uid)),
       })));
     }
+    update('openHouse.frameUids', getValues('openHouse.frameUids').filter((uid) => !removedUids.has(uid)));
   };
 
   return (

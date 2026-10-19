@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useFormContext, useFormState, type ControllerFieldState, type ControllerRenderProps, type FieldPath, type PathValue, } from 'react-hook-form';
+import { useFormContext, useFormState, useWatch, type ControllerFieldState, type ControllerRenderProps, type FieldPath, type PathValue, } from 'react-hook-form';
 import type { InstallationFormValues } from '../../schemas/installation.schema';
 import type { InstallationDetails } from '../../types/installation';
 
@@ -37,4 +37,12 @@ export function bindField<TName extends InstallationPath>({
     inputRef: field.ref,
     error: fieldState.error?.message,
   };
+}
+
+/** uid des pancartes de la demande, dans l'ordre ; vide si Pancartes n'est pas coché */
+export function useFrameUids(): string[] {
+  const { control } = useInstallationFormContext();
+  const materials = useWatch({ control, name: 'materials' });
+  const units = useWatch({ control, name: 'frames.units' });
+  return materials.includes('frames') ? units.map((u) => u.uid) : [];
 }

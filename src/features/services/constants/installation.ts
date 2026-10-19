@@ -16,15 +16,19 @@ export const ADDRESS_LABELS = {
 } as const;
 
 export const MATERIALS = [
-  'frames', 'anchors', 'poles',
-  'addons', 'openHouse', 'flags',
-  'keybox', 'directional', 'other',
+  'frames', 
+  'kit', 
+  'directional',
+  'openHouse', 
+  'addons', 
+  'flags',
+  'keybox', 
+  'other',
 ] as const;
 export type Material = (typeof MATERIALS)[number];
 export const MATERIAL_LABELS: Record<Material, string> = {
   frames: 'Pancartes',
-  anchors: 'Ancrages',
-  poles: 'Poteaux',
+  kit: 'Kit d\'ancrage et de poteau',
   addons: 'Ajouts',
   openHouse: 'Visite libre',
   flags: 'Drapeaux (À vendre / Vendu)',
@@ -32,14 +36,30 @@ export const MATERIAL_LABELS: Record<Material, string> = {
   directional: 'Directionnelles (À vendre / Vendu)',
   other: 'Autres',
 };
-export const IMPLEMENTED_MATERIALS = ['frames', 'addons'] as const satisfies readonly Material[];
+
+export const IMPLEMENTED_MATERIALS = MATERIALS;
 export type ImplementedMaterial = (typeof IMPLEMENTED_MATERIALS)[number];
 
 /** Inclus automatiquement (cochés et verrouillés) quand les pancartes sont sélectionnées. */
-export const FRAME_BUNDLED_MATERIALS = ['anchors', 'poles'] as const satisfies readonly Material[];
+export const FRAME_BUNDLED_MATERIALS = ['kit'] as const satisfies readonly Material[];
 
 export const MAX_FRAMES = 3;
+export const MAX_KITS = 3;
 export const MAX_ADDONS = 3;
+export const MAX_KEYBOXES = 3;
+export const MAX_FLAGS = 2;
+export const MAX_DIRECTIONALS = 3;
+export const KEYBOX_CODE_MAX_DIGITS = 6;
+
+export const OPEN_HOUSE = {
+  maxDirectionals: 5,
+  maxFlags: 2,
+  defaultStartTime: '09:00',
+  defaultDurationMinutes: 120,
+} as const;
+
+/** Pas des minutes dans les sélecteurs d'heure */
+export const TIME_MINUTE_STEP = 5;
 
 export const TEXT_LIMITS = {
   modelDescription: 100,
@@ -47,6 +67,10 @@ export const TEXT_LIMITS = {
   appointmentContact: 100,
   placementDescription: 100,
   addonMention: 50,
+  kitDescription: 50,
+  directionalPlacement: 50,
+  keyboxPlacement: 50,
+  otherNeeds: 250,
 } as const;
 
 export const FRAME_MODELS = ['regular', 'prestige', 'custom'] as const;
@@ -55,6 +79,22 @@ export const FRAME_MODEL_LABELS: Record<FrameModelType, string> = {
   regular: 'Régulier',
   prestige: 'Prestige',
   custom: 'Modèle particulier',
+};
+
+export const KIT_MODELS = [
+  'shortPost36', 'longPost48', 'colonialWhite', 'colonialBlack',
+  'aluminumWhite', 'aluminumBlack', 'aluminumEngelVolkers', 'custom',
+] as const;
+export type KitModelType = (typeof KIT_MODELS)[number];
+export const KIT_MODEL_LABELS: Record<KitModelType, string> = {
+  shortPost36: 'Court 36"',
+  longPost48: 'Long 48"',
+  colonialWhite: 'Colonial blanc',
+  colonialBlack: 'Colonial noir',
+  aluminumWhite: 'Aluminium blanc',
+  aluminumBlack: 'Aluminium noir',
+  aluminumEngelVolkers: 'Aluminium Engel & Völkers',
+  custom: 'Poteau spécifique',
 };
 
 export const LOCATIONS = ['ground', 'ramp', 'fence', 'wall', 'balcony', 'other'] as const;
@@ -117,3 +157,14 @@ export const ADDON_LABELS: Record<Addon, string> = {
   plex: 'Plex',
   other: 'Autres',
 };
+
+/** Mentions des drapeaux et directionnelles */
+export const SIGN_MENTIONS = ['forSale', 'sold', 'forRent'] as const;
+export type SignMention = (typeof SIGN_MENTIONS)[number];
+export const SIGN_MENTION_LABELS: Record<SignMention, string> = {
+  forSale: 'À vendre',
+  sold: 'Vendu',
+  forRent: 'À louer',
+};
+export const FLAG_MENTIONS = ['forSale', 'sold'] as const satisfies readonly SignMention[];
+export type FlagMention = (typeof FLAG_MENTIONS)[number];

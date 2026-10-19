@@ -83,3 +83,9 @@
   border: 1.5px dashed #9aa6b8;
   border-radius: 8px;
 }
+
+.timeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 2rem;
+}
