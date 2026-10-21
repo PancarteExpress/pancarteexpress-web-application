@@ -5,11 +5,12 @@
     "package2Title": "Forfait équipe",
     "package3Title": "Forfait individuel",
 
-    "packagesCurrency": "$ CA/an",
+    "packagesCurrency": "CAD/an",
     "packagesPerYear": "par année",
 
     "notMemberPrice": "Tarif par déplacement",
-    "memberPrice": "Tarif préférentiel par déplacement",
+    "soloPrice": "Tarif préférentiel par déplacement",
+    "groupPrice": "Meilleur tarif par déplacement",
 
     "notMemberStorage": "Entreposage",
     "groupStorage": "Entreposage illimité de pancartes",

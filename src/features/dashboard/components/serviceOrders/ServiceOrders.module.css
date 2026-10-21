@@ -160,3 +160,15 @@
 .mainContainer .orders .details .services label .selectedServices {
     color: #0E4D9A;
 }
+
+.billAvailable {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  background: #0E4D9A;
+  color: #fff;
+  cursor: pointer;
+}
+.billAvailable:disabled { opacity: 0.6; cursor: wait; }
+
+.payError { margin: 4px 0 0; font-size: 13px; color: #DC2626; }

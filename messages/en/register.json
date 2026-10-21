@@ -9,7 +9,8 @@
     "packagesPerYear": "per year",
 
     "notMemberPrice": "Per-trip rate",
-    "memberPrice": "Preferred per-trip rate",
+    "soloPrice": "Special per-trip rate",
+    "groupPrice": "Best per-trip rate",
     
     "notMemberStorage": "Storage",
     "groupStorage": "Unlimited sign storage",

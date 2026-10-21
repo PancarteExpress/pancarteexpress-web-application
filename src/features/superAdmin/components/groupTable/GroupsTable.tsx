@@ -6,6 +6,7 @@ import { GROUP_STATUS_LABELS, ROLE_LABELS } from "../../constants/labels";
 import styles from "./GroupsTable.module.css";
 import type { AdminGroupRow } from "@/lib/groups/server/groups.service";
 import { normalize } from "@/shared/utils/normalize";
+import { DeleteGroupButton } from "./DeleteGroupButton";
 
 const getDisplayName = (u: { firstName: string | null; lastName: string | null; email: string }) =>
   [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email;
@@ -85,15 +86,23 @@ export function GroupsTable({ groups, users, search }: GroupsTableProps) {
                   <td>{group.admin ? getDisplayName(group.admin) : "—"}</td>
                   <td>{group.memberCount}</td>
                   <td>
-                    <button
-                      type="button"
-                      className={styles.btnToggle}
-                      onClick={() => toggle(group.id)}
-                      aria-expanded={isOpen}
-                      aria-controls={panelId}
-                    >
-                      {isOpen ? "Masquer" : "Voir les membres"}
-                    </button>
+                    <div className={styles.groupActions}>
+                      <button
+                        type="button"
+                        className={styles.btnToggle}
+                        onClick={() => toggle(group.id)}
+                        aria-expanded={isOpen}
+                        aria-controls={panelId}
+                      >
+                        {isOpen ? "Masquer" : "Voir les membres"}
+                      </button>
+                      <DeleteGroupButton
+                        groupId={group.id}
+                        groupName={group.name ?? "Sans nom"}
+                        memberCount={group.memberCount}
+                        className={styles.btnDelete}
+                      />
+                    </div>
                   </td>
                 </tr>
 

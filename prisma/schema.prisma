@@ -105,6 +105,9 @@ enum TokenType {
 // -- ServiceRequest : Une demande de service complete
 // -- ServiceAddress : L'adresse liée à un service
 // -- Service : Un service
+// -- Payment : un paiement Stripe lié à une commande.
+//              Une commande peut en avoir plusieurs (produits au checkout, services plus tard).
+//              Les montants sont en cents, figés au moment de la création du PaymentIntent.
 
 model Order {
   id                 String             @id @default(cuid())
@@ -135,6 +138,7 @@ model Order {
 
   paymentIntentId    String?            @unique
   paidAt             DateTime?
+  payments           Payment[]
 
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
@@ -205,16 +209,40 @@ model Service {
   serviceAddress   ServiceAddress @relation(fields: [serviceAddressId], references: [id], onDelete: Cascade)
 
   type             ServiceType    // installation | removal | correction
-
+  draftPrice       Int?           // brouillon du superAdmin, invisible pour le client
+  price            Int?           // prix envoyé au client
   status           ServiceStatus  @default(TO_SCHEDULE)  
   scheduledFor     DateTime?                             
   completedAt      DateTime?                             
 
   details          Json           // validé par Zod à l'écriture
 
+
   @@index([serviceAddressId])
   @@index([type])
   @@index([status, scheduledFor]) // NOUVEAU : planning du SuperAdmin
+}
+
+model Payment {
+  id              String        @id @default(cuid())
+  orderId         String
+  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  kind            PaymentKind
+  status          PaymentStatus @default(PENDING)
+
+  subtotal        Int
+  tps             Int
+  tvq             Int
+  total           Int
+
+  paymentIntentId String        @unique
+  paidAt          DateTime?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([orderId, kind, status])
 }
 
 enum OrderStatus {
@@ -258,4 +286,15 @@ enum ServiceStatus {
   SCHEDULED
   COMPLETED
   CANCELLED
+}
+
+enum PaymentKind {
+  PRODUCTS
+  SERVICES
+}
+
+enum PaymentStatus {
+  PENDING    // PaymentIntent créé, en attente de confirmation
+  SUCCEEDED  // confirmé par le webhook
+  CANCELLED  // remplacé (prix modifié) ou abandonné
 }

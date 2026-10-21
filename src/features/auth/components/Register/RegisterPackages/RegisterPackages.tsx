@@ -73,7 +73,7 @@ export default function RegisterPackages({ locale, packageChoice, setPackageChoi
           </div>
 
           <p className={styles.price}>
-            <label>{t('memberPrice')}</label>
+            <label>{t('groupPrice')}</label>
           </p>
 
           <ul style={{ color: '#C8DAEC', textAlign: 'center', listStyle: 'none', padding: 0 }}>
@@ -82,10 +82,10 @@ export default function RegisterPackages({ locale, packageChoice, setPackageChoi
             <li>✓ {t('inventoryManagement')}</li>
             <li>✓ {t('inventoryAlerts')}</li>
             <li>✓ {t('promoCode')}</li>
+            <li>✓ {t('emergency')}</li>
             <li>✓ {t('memberBilling')}</li>
             <li>✓ {t('memberPayment')}</li>
             <li>✓ {t('installation24h')}</li>
-            <li>✓ {t('emergency')}</li>
             <li>✓ {t('confirmationPhoto')}</li>
             <li>✓ {t('idealForGroup')}</li>
           </ul>
@@ -105,7 +105,7 @@ export default function RegisterPackages({ locale, packageChoice, setPackageChoi
           </div>
           
           <p className={styles.price}>
-            <label>{t('memberPrice')}</label>
+            <label>{t('soloPrice')}</label>
           </p>
 
           <ul style={{ color: '#0E4D9A', textAlign: 'center', listStyle: 'none', padding: 0 }}>
@@ -114,10 +114,10 @@ export default function RegisterPackages({ locale, packageChoice, setPackageChoi
             <li>✓ {t('inventoryManagement')}</li>
             <li>✓ {t('inventoryAlerts')}</li>
             <li>✓ {t('promoCode')}</li>
+            <li>✓ {t('emergency')}</li>
             <li>✓ {t('memberBilling')}</li>
             <li>✓ {t('memberPayment')}</li>
             <li>✓ {t('installation24h')}</li>
-            <li>✓ {t('emergency')}</li>
             <li>✓ {t('confirmationPhoto')}</li>
             <li>✓ {t('idealForSolo')}</li>
           </ul>

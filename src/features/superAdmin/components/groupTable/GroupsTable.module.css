@@ -31,7 +31,18 @@
 
 .rowOpen td { background: #EEF4FB; }
 
-.btnToggle {
+.groupActions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.groupActions:first-child,
+.groupActions:last-child {
+  flex: 1;
+}
+
+.groupActions .btnToggle {
   padding: 6px 10px;
   border: 1px solid #0E4D9A;
   border-radius: 6px;
@@ -39,6 +50,19 @@
   color: #0E4D9A;
   font: inherit;
   font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.groupActions .btnDelete {
+  padding: 6px 10px;
+  border: 1px solid red;
+  border-radius: 6px;
+  background: #fff;
+  color: red;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
 }
 

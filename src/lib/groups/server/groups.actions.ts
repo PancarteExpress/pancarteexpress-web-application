@@ -15,8 +15,10 @@ const userSearchSelect = {
 
 export type UserSearchResult = Prisma.UserGetPayload<{ select: typeof userSearchSelect }>;
 export type CreateGroupResult = { ok: true } | { ok: false; error: string };
-class GroupActionError extends Error {}
+export type ActionResult = { ok: true } | { ok: false; error: string };
 
+class GroupActionError extends Error {}
+class ActionError extends Error {}
 
 export async function searchUsersByEmailAction(query: string): Promise<UserSearchResult[]> {
   const session = await auth();
@@ -165,4 +167,40 @@ export async function removeGroupMemberAction(memberId: string): Promise<GroupRe
   if (count === 0) return { ok: false, error: "Ce membre ne peut pas être retiré" };
 
   return { ok: true, group: await getGroupDetails(ctx.groupId) };
+}
+
+async function requireSuperAdminAction() {
+  const session = await auth();
+  if (session?.user?.role !== "superAdmin") throw new ActionError("Non autorisé.");
+  return session;
+}
+
+export async function deleteGroupAction(groupId: string): Promise<ActionResult> {
+  try {
+    await requireSuperAdminAction();
+
+    await prisma.$transaction(async (tx) => {
+      const group = await tx.group.findUnique({
+        where: { id: groupId },
+        select: { id: true },
+      });
+      if (!group) throw new ActionError("Équipe introuvable.");
+
+      // Tous les membres, groupAdmin compris, passent en forfait individuel
+      await tx.user.updateMany({
+        where: { groupId },
+        data: { role: "user", groupStatus: "SOLO", groupId: null },
+      });
+
+      await tx.group.delete({ where: { id: groupId } });
+    });
+
+    return { ok: true };
+  } catch (e) {
+    if (e instanceof ActionError) return { ok: false, error: e.message };
+    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2003") {
+      return { ok: false, error: "Cette équipe a des données liées (commandes, etc.)." };
+    }
+    throw e;
+  }
 }

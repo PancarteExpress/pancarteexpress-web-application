@@ -8,17 +8,22 @@ import { useMemo, useState } from "react";
 import { FaUser } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import { GiSandsOfTime } from "react-icons/gi";
+import { FaRegMoneyBillAlt } from "react-icons/fa";
+
 import type { AdminGroupRow } from "@/lib/groups/server/groups.service";
 import { GroupsTable } from "../groupTable/GroupsTable";
 import { normalize } from "@/shared/utils/normalize";
+import { AdminClientServices } from "@/lib/services/services.service";
+import { ServicesTable } from "../servicesTable/ServicesTable";
 
 interface AdminDashboardProps {
   users: AdminUserRow[];
   groups: AdminGroupRow[];
+  services: AdminClientServices[];
 }
 
-export function AdminDashboard({ users, groups }: AdminDashboardProps) {
-    const [activeSection, setActiveSection] = useState<'users' | 'teams'>('users');
+export function AdminDashboard({ users, groups, services }: AdminDashboardProps) {
+    const [activeSection, setActiveSection] = useState<'users' | 'teams' | 'billing'>('users');
 
     const pendingCount = users.filter((u) => u.groupStatus === "PENDING").length;
 
@@ -52,6 +57,11 @@ export function AdminDashboard({ users, groups }: AdminDashboardProps) {
             <div className={`${styles.navItem} ${activeSection === 'teams' ? styles.active : ''}`}
                 onClick={() => setActiveSection('teams')}>
                 <FaUserGroup size={20} style={{color : '#D8E8F8'}} /> Équipes
+            </div>
+            
+            <div className={`${styles.navItem} ${activeSection === 'billing' ? styles.active : ''}`}
+                onClick={() => setActiveSection('billing')}>
+                <FaRegMoneyBillAlt size={20} style={{color : '#D8E8F8'}} /> Facturation
             </div>
         </nav>
       </div>
@@ -135,6 +145,17 @@ export function AdminDashboard({ users, groups }: AdminDashboardProps) {
                 <div className={styles.noResults}>Aucun résultat.</div> :<GroupsTable groups={groups} users={users} search={groupSearch}/>
             }
         </div>
+        </>
+        )}
+        
+        {/* ─── Teams ─── */}
+        {activeSection === 'billing' && (
+        <>
+            <div className={styles.topbar}>
+            <p className={styles.pageTitle}>Demandes de service</p>
+            <p className={styles.pageSub}>Fixez le prix de chaque service demandé.</p>
+            </div>
+            <ServicesTable clients={services} />
         </>
         )}
       </div>
