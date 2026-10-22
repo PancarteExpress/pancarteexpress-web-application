@@ -181,7 +181,7 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
                 />
                 <span>
                   <strong>Facturation centralisée</strong>
-                  <small>Toutes les factures de l'équipe, incluant les vôtres, sont envoyées à votre compte.</small>
+                  <small>Toutes les factures de l équipe, incluant les vôtres, sont envoyées à votre compte.</small>
                 </span>
               </label>
             </fieldset>
