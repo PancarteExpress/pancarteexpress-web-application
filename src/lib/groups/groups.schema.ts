@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { BillingMode } from "@prisma/client";
 
 export const createGroupSchema = z.object({
   name: z
@@ -19,3 +20,6 @@ export type GroupNameInput = z.infer<typeof groupNameSchema>;
 
 export type AddMembersInput = z.infer<typeof addMembersSchema>;
 export const memberIdSchema = z.string().min(1);
+
+const BILLING_MODES = ["INDIVIDUAL", "GROUP"] as const satisfies readonly BillingMode[];
+export const billingModeSchema = z.enum(BILLING_MODES);

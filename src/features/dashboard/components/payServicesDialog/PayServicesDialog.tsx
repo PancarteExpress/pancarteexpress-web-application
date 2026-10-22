@@ -42,6 +42,8 @@ function PayServicesContent({ payment, onClose }: PayServicesDialogProps) {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [isPaid, setIsPaid] = useState(false);
 
+  const orderLabel = `n° ${payment.orderNumbers.join(', ')}`;
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!isComplete) {
@@ -83,18 +85,14 @@ function PayServicesContent({ payment, onClose }: PayServicesDialogProps) {
         <div className={styles.success}>
           <FaRegCheckCircle className={styles.successIcon} aria-hidden="true" />
           <h2 id="pay-services-title" className={styles.title}>Paiement reçu</h2>
-          <p className={styles.text}>
-            Merci ! Le paiement des services de la commande n° {payment.orderNumber} a été reçu.
-          </p>
+          <p className={styles.text}>Merci ! Le paiement des services (commande {orderLabel}) a été reçu.</p>
           <div className={styles.actions}>
             <button type="button" className={styles.btnPrimary} onClick={onClose}>Fermer</button>
           </div>
         </div>
       ) : (
         <form onSubmit={handleSubmit} noValidate>
-          <h2 id="pay-services-title" className={styles.title}>
-            Payer les services — commande n° {payment.orderNumber}
-          </h2>
+          <h2 id="pay-services-title" className={styles.title}>Payer les services — commande {orderLabel}</h2>
 
           <dl className={styles.summary}>
             <div><dt>Sous-total</dt><dd>{formatCents(payment.subtotal, 'fr')}</dd></div>

@@ -11,6 +11,7 @@ import {
   renameGroupAction,
   addGroupMembersAction,
   removeGroupMemberAction,
+  setBillingModeAction,
   type UserSearchResult,
 } from "@/lib/groups/server/groups.actions";
 import type { GroupDetails, GroupMember } from "@/lib/groups/server/groups.service";
@@ -40,6 +41,9 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
   const [toAdd, setToAdd] = useState<UserSearchResult[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
+
+  const [billingFeedback, setBillingFeedback] = useState<Feedback>(null);
+  const [isSavingBilling, setIsSavingBilling] = useState(false);
 
   const {
     register,
@@ -116,6 +120,26 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
     }
   };
 
+  const handleBillingChange = async (mode: GroupDetails["billingMode"]) => {
+    if (mode === group.billingMode) return;
+    setIsSavingBilling(true);
+    setBillingFeedback(null);
+    try {
+      const res = await setBillingModeAction(mode);
+      if (!res.ok) {
+        setBillingFeedback({ type: "error", message: res.error });
+        return;
+      }
+      setGroup(res.group);
+      setBillingFeedback({ type: "success", message: "Mode de facturation mis à jour" });
+      router.refresh();
+    } catch {
+      setBillingFeedback({ type: "error", message: "Une erreur est survenue" });
+    } finally {
+      setIsSavingBilling(false);
+    }
+  };
+
   if (!isGroupAdmin) return null;
 
   return (
@@ -129,24 +153,44 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
         <div className={styles.body}>
           {/* Nom */}
           <section className={styles.section}>
-            <h3>Nom de l équipe</h3>
-            <form onSubmit={handleSubmit(onRename)} noValidate>
-              <div className={styles.inputs}>
-                <label htmlFor="group-name">Nom</label>
-                <input id="group-name" {...register("name")} aria-invalid={!!errors.name} />
-                {errors.name && <p className={styles.error}>{errors.name.message}</p>}
-              </div>
-              {nameFeedback && (
-                <p className={nameFeedback.type === "error" ? styles.error : styles.success}>
-                  {nameFeedback.message}
-                </p>
-              )}
-              <div className={styles.btnSave}>
-                <button type="submit" disabled={isSubmitting || !isDirty}>
-                  {isSubmitting ? "Enregistrement…" : "Enregistrer"}
-                </button>
-              </div>
-            </form>
+            <h3>Facturation</h3>
+            <fieldset className={styles.billingOptions} disabled={isSavingBilling}>
+              <legend className={styles.srOnly}>Destinataire des factures</legend>
+
+              <label className={styles.billingOption}>
+                <input
+                  type="radio"
+                  name="billingMode"
+                  value="INDIVIDUAL"
+                  checked={group.billingMode === "INDIVIDUAL"}
+                  onChange={() => handleBillingChange("INDIVIDUAL")}
+                />
+                <span>
+                  <strong>Facturation individuelle</strong>
+                  <small>Chaque membre reçoit et paie ses propres factures.</small>
+                </span>
+              </label>
+
+              <label className={styles.billingOption}>
+                <input
+                  type="radio"
+                  name="billingMode"
+                  value="GROUP"
+                  checked={group.billingMode === "GROUP"}
+                  onChange={() => handleBillingChange("GROUP")}
+                />
+                <span>
+                  <strong>Facturation centralisée</strong>
+                  <small>Toutes les factures de l'équipe, incluant les vôtres, sont envoyées à votre compte.</small>
+                </span>
+              </label>
+            </fieldset>
+
+            {billingFeedback && (
+              <p className={billingFeedback.type === "error" ? styles.error : styles.success}>
+                {billingFeedback.message}
+              </p>
+            )}
           </section>
 
           {/* Membres */}

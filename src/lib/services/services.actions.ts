@@ -1,6 +1,5 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
 
 import { priceInputSchema } from "@/features/superAdmin/schemas/price";
 import { ActionError, ActionResult, requireSuperAdminAction, toActionError } from "../auth/actionGuard";
@@ -9,11 +8,14 @@ import {
   cancelPendingServicesPayment,
   ServicesPaymentError,
 } from '@/lib/orders/server/servicesPayment.service';
-import { Prisma } from "@prisma/client";
+import type { Prisma } from '@prisma/client';
+import { prisma } from '@/lib/prisma';
 
 const servicesNotPaid = {
   serviceAddress: {
-    serviceRequest: { order: { payments: { none: { kind: 'SERVICES', status: 'SUCCEEDED' } } } },
+    serviceRequest: {
+      order: { allocations: { none: { payment: { kind: 'SERVICES', status: 'SUCCEEDED' } } } },
+    },
   },
 } satisfies Prisma.ServiceWhereInput;
 
@@ -57,7 +59,7 @@ export async function publishPricesAction(): Promise<PublishPricesResult> {
     const orders = await prisma.order.findMany({
       where: {
         status: { not: "CANCELLED" },
-        payments: { none: { kind: "SERVICES", status: "SUCCEEDED" } },
+        allocations: { none: { payment: { kind: "SERVICES", status: "SUCCEEDED" } } },
         serviceRequests: { some: { addresses: { some: { services: { some: { status: { not: "CANCELLED" } } } } } } },
       },
       select: {

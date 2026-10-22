@@ -12,14 +12,14 @@ export type ServicesPaymentResult =
   | ({ ok: true } & ServicesPaymentSession)
   | { ok: false; error: string };
 
-const orderIdSchema = z.string().min(1).max(64);
+const orderIdsSchema = z.array(z.string().min(1).max(64)).min(1).max(50);
 
-export async function createServicesPaymentAction(orderId: string): Promise<ServicesPaymentResult> {
+export async function createServicesPaymentAction(orderIds: string[]): Promise<ServicesPaymentResult> {
   const session = await auth();
   if (!session?.user?.id) return { ok: false, error: 'Vous devez être connecté.' };
 
   // Une Server Action reçoit des données non fiables
-  const parsed = orderIdSchema.safeParse(orderId);
+  const parsed = orderIdsSchema.safeParse(orderIds);
   if (!parsed.success) return { ok: false, error: 'Commande introuvable.' };
 
   try {

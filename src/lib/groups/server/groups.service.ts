@@ -27,6 +27,7 @@ const groupMemberSelect = {
 const groupDetailsSelect = {
   id: true,
   name: true,
+  billingMode: true,
   users: { select: groupMemberSelect, orderBy: { email: "asc" } },
 } satisfies Prisma.GroupSelect;
 

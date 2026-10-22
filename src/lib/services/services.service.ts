@@ -26,8 +26,9 @@ const adminServiceSelect = {
               id: true,
               orderNumber: true,
               createdAt: true,
-              payments: {
-                where: { kind: "SERVICES", status: "SUCCEEDED" },
+              // Paiement des services (présent seulement s'il a réussi)
+              allocations: {
+                where: { payment: { kind: 'SERVICES', status: 'SUCCEEDED' } },
                 select: { id: true },
                 take: 1,
               },
@@ -111,7 +112,7 @@ export async function listServicesForAdmin(): Promise<AdminClientServices[]> {
       requestType,
       orderNumber: order.orderNumber,
       orderedAt: order.createdAt,
-      isPaid: order.payments.length > 0,
+      isPaid: order.allocations.length > 0,
     });
 
     clients.set(key, client);

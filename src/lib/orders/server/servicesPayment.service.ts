@@ -1,20 +1,26 @@
 import 'server-only';
+import { createHash } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import type Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe/server';
-import { calculateTaxes } from '@/lib/pricing/taxes';
+import { coversExactly, quoteOrderServices, sumAmounts, type Amounts, type QuoteRefusal } from '../billing';
 
 /** Erreur métier : son message peut être montré à l'utilisateur */
 export class ServicesPaymentError extends Error {}
 
-export interface ServicesPaymentSession {
+export interface ServicesPaymentSession extends Amounts {
   clientSecret: string;
+  orderNumbers: number[];
+}
+
+interface QuoteLine extends Amounts {
+  orderId: string;
   orderNumber: number;
-  subtotal: number;
-  tps: number;
-  tvq: number;
-  total: number;
+}
+
+interface Quote extends Amounts {
+  lines: QuoteLine[];
 }
 
 // Statuts où le client peut encore confirmer le paiement
@@ -24,107 +30,180 @@ const REUSABLE_STATUSES: ReadonlySet<Stripe.PaymentIntent.Status> = new Set([
   'requires_action',
 ]);
 
-/* ── Point d'entrée ───────────────────────────────────────────── */
+const REFUSAL_MESSAGES: Record<QuoteRefusal, string> = {
+  cancelled: 'annulée.',
+  alreadyPaid: 'services déjà payés.',
+  noServices: 'aucun service à payer.',
+  priceMissing: 'certains prix ne sont pas encore disponibles.',
+};
 
-export async function createServicesPayment(orderId: string, userId: string): Promise<ServicesPaymentSession> {
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
+const payableOrderSelect = {
+  id: true,
+  orderNumber: true,
+  status: true,
+  serviceRequests: {
+    select: { addresses: { select: { services: { select: { price: true, status: true } } } } },
+  },
+  allocations: {
+    where: { payment: { kind: 'SERVICES', status: { in: ['PENDING', 'SUCCEEDED'] } } },
     select: {
-      id: true,
-      orderNumber: true,
-      userId: true,
-      email: true,
-      status: true,
-      serviceRequests: {
-        select: { addresses: { select: { services: { select: { price: true, status: true } } } } },
-      },
-      payments: {
-        where: { kind: 'SERVICES', status: { in: ['PENDING', 'SUCCEEDED'] } },
-        select: { id: true, status: true, subtotal: true, total: true, paymentIntentId: true },
+      payment: {
+        select: {
+          id: true,
+          status: true,
+          total: true,
+          paymentIntentId: true,
+          allocations: { select: { orderId: true } },
+        },
       },
     },
-  });
+  },
+} satisfies Prisma.OrderSelect;
+
+type PayableOrder = Prisma.OrderGetPayload<{ select: typeof payableOrderSelect }>;
+type LinkedPayment = PayableOrder['allocations'][number]['payment'];
+
+/* ── Point d'entrée ───────────────────────────────────────────── */
+
+export async function createServicesPayment(
+  orderIds: readonly string[],
+  payerId: string,
+): Promise<ServicesPaymentSession> {
+  const ids = [...new Set(orderIds)];
+  if (ids.length === 0) throw new ServicesPaymentError('Aucune commande sélectionnée.');
+
+  const [payer, orders] = await Promise.all([
+    prisma.user.findUniqueOrThrow({ where: { id: payerId }, select: { email: true } }),
+    prisma.order.findMany({
+      // billedToId dans le WHERE : une commande facturée à quelqu'un d'autre est simplement absente
+      where: { id: { in: ids }, billedToId: payerId },
+      select: payableOrderSelect,
+      orderBy: { orderNumber: 'asc' },
+    }),
+  ]);
 
   // Même message pour « introuvable » et « pas à vous » : on ne révèle pas l'existence d'une commande
-  if (!order || order.userId !== userId) throw new ServicesPaymentError('Commande introuvable.');
-  if (order.status === 'CANCELLED') throw new ServicesPaymentError('Cette commande a été annulée.');
-  if (order.payments.some((p) => p.status === 'SUCCEEDED')) {
-    throw new ServicesPaymentError('Les services de cette commande sont déjà payés.');
-  }
+  if (orders.length !== ids.length) throw new ServicesPaymentError('Commande introuvable.');
 
-  const services = order.serviceRequests
-    .flatMap((r) => r.addresses.flatMap((a) => a.services))
-    .filter((s) => s.status !== 'CANCELLED');
+  const lines = orders.map(toQuoteLine);
+  const quote: Quote = { lines, ...sumAmounts(lines) };
 
-  if (services.length === 0) throw new ServicesPaymentError('Aucun service à payer.');
+  const pendings = uniqueById(
+    orders.flatMap((o) => o.allocations.map((a) => a.payment)).filter((p) => p.status === 'PENDING'),
+  );
 
-  const prices = services.map((s) => s.price);
-  if (prices.some((p) => p === null)) {
-    throw new ServicesPaymentError('Certains prix ne sont pas encore disponibles.');
-  }
-
-  const subtotal = prices.reduce<number>((sum, p) => sum + (p ?? 0), 0);
-  const { tps, tvq } = calculateTaxes(subtotal);
-  const quote = { orderNumber: order.orderNumber, subtotal, tps, tvq, total: subtotal + tps + tvq };
-
-  const pending = order.payments.find((p) => p.status === 'PENDING');
-  if (pending) {
-    if (pending.subtotal === quote.subtotal && pending.total === quote.total) {
-      const intent = await stripe.paymentIntents.retrieve(pending.paymentIntentId);
-      if (intent.client_secret && REUSABLE_STATUSES.has(intent.status)) {
-        return { ...quote, clientSecret: intent.client_secret };
-      }
-      if (intent.status === 'processing' || intent.status === 'succeeded') {
-        throw new ServicesPaymentError('Un paiement est déjà en cours de traitement.');
-      }
-      // Annulé côté Stripe : on le remplace ci-dessous
+  // Réutilisable seulement s'il couvre exactement la même sélection, au même montant
+  const reusable = pendings.find(
+    (p) => p.total === quote.total && coversExactly(p.allocations.map((a) => a.orderId), ids),
+  );
+  if (reusable) {
+    const intent = await stripe.paymentIntents.retrieve(reusable.paymentIntentId);
+    if (intent.client_secret && REUSABLE_STATUSES.has(intent.status)) {
+      return toSession(quote, intent.client_secret);
     }
-    await cancelPayment(pending);
+    if (intent.status === 'processing' || intent.status === 'succeeded') {
+      throw new ServicesPaymentError('Un paiement est déjà en cours de traitement.');
+    }
+    // Annulé côté Stripe : remplacé ci-dessous
   }
 
-  return createIntent(order, quote);
+  // Une commande ne doit jamais être couverte par deux paiements en attente
+  for (const payment of pendings) await cancelPayment(payment);
+
+  return createIntent(quote, payerId, payer.email);
 }
 
-/** Appelée quand le superAdmin modifie un prix : le montant en attente n'est plus valide */
+/** Appelée quand le superAdmin modifie un prix : les montants en attente ne sont plus valides */
 export async function cancelPendingServicesPayment(orderId: string): Promise<void> {
   const pending = await prisma.payment.findMany({
-    where: { orderId, kind: 'SERVICES', status: 'PENDING' },
+    where: { kind: 'SERVICES', status: 'PENDING', allocations: { some: { orderId } } },
     select: { id: true, paymentIntentId: true },
   });
   for (const payment of pending) await cancelPayment(payment);
 }
 
+/* ── Calcul ───────────────────────────────────────────────────── */
+
+function toQuoteLine(order: PayableOrder): QuoteLine {
+  const result = quoteOrderServices({
+    status: order.status,
+    hasSucceededServicesPayment: order.allocations.some((a) => a.payment.status === 'SUCCEEDED'),
+    services: order.serviceRequests.flatMap((r) => r.addresses.flatMap((a) => a.services)),
+  });
+
+  if (!result.ok) {
+    throw new ServicesPaymentError(`Commande n° ${order.orderNumber} : ${REFUSAL_MESSAGES[result.reason]}`);
+  }
+
+  return {
+    orderId: order.id,
+    orderNumber: order.orderNumber,
+    subtotal: result.subtotal,
+    tps: result.tps,
+    tvq: result.tvq,
+    total: result.total,
+  };
+}
+
+const toSession = (quote: Quote, clientSecret: string): ServicesPaymentSession => ({
+  clientSecret,
+  orderNumbers: quote.lines.map((l) => l.orderNumber),
+  subtotal: quote.subtotal,
+  tps: quote.tps,
+  tvq: quote.tvq,
+  total: quote.total,
+});
+
+const uniqueById = (payments: LinkedPayment[]): LinkedPayment[] => [
+  ...new Map(payments.map((p) => [p.id, p])).values(),
+];
+
 /* ── Stripe ───────────────────────────────────────────────────── */
 
-async function createIntent(
-  order: { id: string; orderNumber: number; email: string },
-  quote: Omit<ServicesPaymentSession, 'clientSecret'>,
-): Promise<ServicesPaymentSession> {
-  // Change à chaque nouveau paiement (les annulés comptent) ; identique pour deux clics simultanés
-  const attempt = await prisma.payment.count({ where: { orderId: order.id, kind: 'SERVICES' } });
+async function createIntent(quote: Quote, payerId: string, email: string): Promise<ServicesPaymentSession> {
+  // Change à chaque nouveau paiement du payeur ; identique pour deux clics simultanés sur la même sélection
+  const attempt = await prisma.payment.count({ where: { payerId, kind: 'SERVICES' } });
+  const selection = createHash('sha256')
+    .update(quote.lines.map((l) => l.orderId).sort().join(','))
+    .digest('hex')
+    .slice(0, 32);
 
   const intent = await stripe.paymentIntents.create(
     {
       amount: quote.total,
       currency: 'cad',
       payment_method_types: ['card'],
-      receipt_email: order.email,
-      metadata: { orderId: order.id, orderNumber: String(order.orderNumber), kind: 'SERVICES' },
+      receipt_email: email,
+      // Stripe limite chaque valeur à 500 caractères
+      metadata: {
+        kind: 'SERVICES',
+        payerId,
+        orderNumbers: quote.lines.map((l) => l.orderNumber).join(',').slice(0, 500),
+      },
     },
-    { idempotencyKey: `services-${order.id}-${attempt}` },
+    { idempotencyKey: `services-${selection}-${quote.total}-${attempt}` },
   );
   if (!intent.client_secret) throw new Error('client_secret absent');
 
   try {
     await prisma.payment.create({
       data: {
-        orderId: order.id,
+        payerId,
         kind: 'SERVICES',
         subtotal: quote.subtotal,
         tps: quote.tps,
         tvq: quote.tvq,
         total: quote.total,
         paymentIntentId: intent.id,
+        allocations: {
+          create: quote.lines.map((l) => ({
+            orderId: l.orderId,
+            subtotal: l.subtotal,
+            tps: l.tps,
+            tvq: l.tvq,
+            total: l.total,
+          })),
+        },
       },
     });
   } catch (error) {
@@ -134,7 +213,7 @@ async function createIntent(
     if (!alreadySaved) throw error;
   }
 
-  return { ...quote, clientSecret: intent.client_secret };
+  return toSession(quote, intent.client_secret);
 }
 
 async function cancelPayment(payment: { id: string; paymentIntentId: string }): Promise<void> {
@@ -143,7 +222,7 @@ async function cancelPayment(payment: { id: string; paymentIntentId: string }): 
   } catch (error) {
     const intent = await stripe.paymentIntents.retrieve(payment.paymentIntentId);
     if (intent.status === 'succeeded' || intent.status === 'processing') {
-      throw new ServicesPaymentError('Un paiement est en cours pour cette commande. Réessayez dans quelques instants.');
+      throw new ServicesPaymentError('Un paiement est en cours pour ces commandes. Réessayez dans quelques instants.');
     }
     if (intent.status !== 'canceled') throw error;
   }

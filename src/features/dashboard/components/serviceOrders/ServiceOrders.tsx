@@ -1,17 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import type { UserOrder } from '@/lib/orders/server/orders.service';
+import type { DashboardOrder } from '@/lib/orders/server/orders.service';
 import { createServicesPaymentAction } from '@/lib/orders/server/servicesPayment.actions';
 import { formatCents } from '@/lib/pricing/money';
 import { PayServicesDialog, type ServicesPaymentReady } from '../payServicesDialog/PayServicesDialog';
 import styles from './ServiceOrders.module.css';
 
-interface Props {
-  orders: UserOrder[];
-}
-
-type ServiceAddressRow = UserOrder['serviceRequests'][number]['addresses'][number];
+type ServiceAddressRow = DashboardOrder['serviceRequests'][number]['addresses'][number];
 type OrderService = ServiceAddressRow['services'][number];
 
 const SERVICE_LABELS: Record<OrderService['type'], string> = {
@@ -36,7 +32,20 @@ function getServicesSummary(addresses: ServiceAddressRow[]) {
   };
 }
 
-export default function ServiceOrders({ orders }: Props) {
+/** Libellé d'un service ; sans prix si l'utilisateur n'a pas le droit de le voir */
+function formatServiceLabel(service: OrderService, canSeePrices: boolean): string {
+  const detail =
+    service.status === 'CANCELLED' ? 'annulé' : canSeePrices ? formatServicePrice(service.price) : null;
+  return detail ? `${SERVICE_LABELS[service.type]} (${detail})` : SERVICE_LABELS[service.type];
+}
+
+interface Props {
+  orders: DashboardOrder[];
+  title?: string;
+  showOwner?: boolean; // affiche l'auteur de chaque commande (vue équipe)
+}
+
+export default function ServiceOrders({ orders, title = 'Demandes de service', showOwner = false }: Props) {
   const [openOrderId, setOpenOrderId] = useState<string | null>(null);
   const [preparingId, setPreparingId] = useState<string | null>(null);
   const [payError, setPayError] = useState<{ orderId: string; message: string } | null>(null);
@@ -47,7 +56,7 @@ export default function ServiceOrders({ orders }: Props) {
   const handlePay = async (orderId: string) => {
     setPayError(null);
     setPreparingId(orderId);
-    const result = await createServicesPaymentAction(orderId);
+    const result = await createServicesPaymentAction([orderId]);
     setPreparingId(null);
 
     if (!result.ok) {
@@ -59,7 +68,7 @@ export default function ServiceOrders({ orders }: Props) {
 
   return (
     <div className={styles.mainContainer}>
-      <h3 className={styles.title}>Demandes de service</h3>
+      <h3 className={styles.title}>{title}</h3>
 
       <div className={styles.header}>
         <div>
@@ -76,13 +85,17 @@ export default function ServiceOrders({ orders }: Props) {
           const addresses = order.serviceRequests.flatMap((r) => r.addresses);
           const summary = getServicesSummary(addresses);
           const isFullyPriced = summary.hasServices && summary.pendingCount === 0;
-          const servicesPaid = order.payments.length > 0;
 
           return (
             <div key={order.id} className={styles.orders}>
               <div className={styles.resume}>
                 <div className={styles.orderNumber}>
                   <label className={styles.orderNumber}>#{order.orderNumber}</label>
+                  {showOwner && order.owner && (
+                    <span className={styles.orderOwner}>
+                      {[order.owner.firstName, order.owner.lastName].filter(Boolean).join(' ') || order.owner.email}
+                    </span>
+                  )}
                 </div>
 
                 <div className={styles.status}>
@@ -100,23 +113,35 @@ export default function ServiceOrders({ orders }: Props) {
                         <span className={styles.isNotPayed}>Payé</span>
                       </label>
                     )
-                  ) : servicesPaid ? (
+                  ) : !order.canSeePrices ? (
+                    <label className={styles.billNotAvailable}>
+                      <span className={styles.isNotPayed}>Facturé au membre</span>
+                    </label>
+                  ) : order.servicesPaid ? (
                     <label className={styles.billPayed}>
                       <span className={styles.isNotPayed}>Services payés</span>
                     </label>
                   ) : isFullyPriced ? (
-                    <button
-                      type="button"
-                      className={styles.billAvailable}
-                      onClick={() => handlePay(order.id)}
-                      disabled={preparingId !== null}
-                    >
-                      <span className={styles.isNotPayed}>
-                        {preparingId === order.id
-                          ? 'Préparation…'
-                          : `Payer ${formatCents(summary.total, 'fr')} + taxes`}
-                      </span>
-                    </button>
+                    order.canPay ? (
+                      <button
+                        type="button"
+                        className={styles.billAvailable}
+                        onClick={() => handlePay(order.id)}
+                        disabled={preparingId !== null}
+                      >
+                        <span className={styles.isNotPayed}>
+                          {preparingId === order.id
+                            ? 'Préparation…'
+                            : `Payer ${formatCents(summary.total, 'fr')} + taxes`}
+                        </span>
+                      </button>
+                    ) : (
+                      <label className={styles.billAvailable}>
+                        <span className={styles.isNotPayed}>
+                          Facturé à l&apos;équipe · {formatCents(summary.total, 'fr')} + taxes
+                        </span>
+                      </label>
+                    )
                   ) : (
                     <button type="button" className={styles.billNotAvailable} disabled>
                       <span className={styles.isNotPayed}>En traitement</span>
@@ -160,9 +185,7 @@ export default function ServiceOrders({ orders }: Props) {
                           </span>
 
                           <span className={styles.selectedServices}>
-                            - {address.services
-                              .map((s) => `${SERVICE_LABELS[s.type]} (${s.status === 'CANCELLED' ? 'annulé' : formatServicePrice(s.price)})`)
-                              .join(', ')}
+                            - {address.services.map((s) => formatServiceLabel(s, order.canSeePrices)).join(', ')}
                           </span>
                         </label>
                       ))}
