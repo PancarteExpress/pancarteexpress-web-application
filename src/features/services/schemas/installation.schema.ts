@@ -1,11 +1,11 @@
 import { z } from 'zod';
 import {
-  ACCESS_CHOICES, ADDONS, FLAG_MENTIONS, FRAME_MODELS, IMPLEMENTED_MATERIALS, KEYBOX_CODE_MAX_DIGITS, KIT_MODELS,
+  ACCESS_CHOICES, ADDONS, LADDERS, FLAG_MENTIONS, FRAME_MODELS, IMPLEMENTED_MATERIALS, KEYBOX_CODE_MAX_DIGITS, KIT_MODELS,
   LOCATIONS, MAX_ADDONS, MAX_DIRECTIONALS, MAX_FLAGS, MAX_FRAMES, MAX_KEYBOXES, MAX_KITS, MOUNTINGS, OPEN_HOUSE,
-  SIGN_MENTIONS, TEXT_LIMITS, type Addon, type ImplementedMaterial,
+  SIGN_MENTIONS, TEXT_LIMITS, WINDOW_SIDES, type Addon, type ImplementedMaterial, type AccessChoice, type Ladder,
 } from '../constants/installation';
 import type {
-  AddonAssignment, FrameUnit, InstallationDetails, KitUnit, OpenHouseDetails, Placement, PlacedUnit, UnitTargets,
+  AddonAssignment, FrameUnit, InstallationDetails, KitUnit, OpenHouseDetails, Placement, PlacementAccess, PlacedUnit, UnitTargets,
 } from '../types/installation';
 import { addMinutesClamped, isValidIsoDate, isValidTime, toMinutes } from '../utils/time';
 
@@ -17,6 +17,9 @@ interface SessionContext {
 const REQUIRED = 'Ce champ est requis';
 const tooLong = (max: number) => `Maximum ${max} caractères`;
 const text = (max: number) => z.string().trim().max(max, tooLong(max));
+
+const LADDER_SET: ReadonlySet<string> = new Set(LADDERS);
+const isLadder = (a: AccessChoice): a is Ladder => LADDER_SET.has(a);
 
 /* ==========================================================================
    Forme du formulaire (plate, nullable)
@@ -44,7 +47,9 @@ const placementFormSchema = z.object({
   location: z.enum(LOCATIONS).nullable(),
   access: z.enum(ACCESS_CHOICES).nullable(),
   mounting: z.enum(MOUNTINGS).nullable(),
+  windowSide: z.enum(WINDOW_SIDES).nullable(),
   contact: text(TEXT_LIMITS.appointmentContact),
+  keyboxInfo: text(TEXT_LIMITS.keyboxAccess),
   description: text(TEXT_LIMITS.placementDescription),
 });
 
@@ -134,17 +139,17 @@ function validatePlacement(p: PlacementOutput, path: Path, report: Report) {
 
   switch (p.location) {
     case 'wall':
-      if (p.access === null || p.access === 'phoneAppointment') {
+      if (p.access === null || !isLadder(p.access)) {
         report([...path, 'access'], "Choisissez une option d'échelle");
       }
       if (p.mounting === null) report([...path, 'mounting'], 'Choisissez une méthode de fixation');
       break;
-    case 'fence':
     case 'balcony':
-      if (p.access === null) report([...path, 'access'], REQUIRED);
-      else if (p.access === 'phoneAppointment' && !p.contact) {
-        report([...path, 'contact'], 'Indiquez vos coordonnées');
-      }
+      validateAccess(p, path, report);
+      break;
+    case 'window':
+      validateAccess(p, path, report);
+      if (p.windowSide === null) report([...path, 'windowSide'], "Choisissez l'emplacement sur la fenêtre");
       break;
     case 'other':
       if (!p.description) report([...path, 'description'], "Décrivez l'emplacement");
@@ -228,6 +233,15 @@ function validateOpenHouse(o: OpenHouseOutput, path: Path, validFrameUids: Set<s
   if (o.removeNextMonday === null) report([...path, 'removeNextMonday'], REQUIRED);
 }
 
+function validateAccess(p: PlacementOutput, path: Path, report: Report) {
+  if (p.access === null) report([...path, 'access'], REQUIRED);
+  else if (p.access === 'phoneAppointment' && !p.contact) {
+    report([...path, 'contact'], 'Indiquez vos coordonnées');
+  } else if (p.access === 'keybox' && !p.keyboxInfo) {
+    report([...path, 'keyboxInfo'], 'Indiquez les informations de la boîte à clés');
+  }
+}
+
 /* ==========================================================================
    Transformation vers le domaine
    ========================================================================== */
@@ -246,19 +260,13 @@ function toPlacement(p: PlacementOutput): Placement {
       return { location };
     case 'wall': {
       const access = defined(p.access);
-      if (access === 'phoneAppointment') throw new Error('Invariant violé : accès mural');
+      if (!isLadder(access)) throw new Error('Invariant violé : accès mural');
       return { location, ladder: access, mounting: defined(p.mounting) };
     }
-    case 'fence':
-    case 'balcony': {
-      const access = defined(p.access);
-      return {
-        location,
-        access: access === 'phoneAppointment'
-          ? { type: 'phoneAppointment', contact: p.contact }
-          : { type: 'ladder', ladder: access },
-      };
-    }
+    case 'balcony':
+      return { location, access: toAccess(p) };
+    case 'window':
+      return { location, access: toAccess(p), side: defined(p.windowSide) };
     case 'other':
       return { location, description: p.description };
   }
@@ -312,6 +320,13 @@ function toOpenHouse(o: OpenHouseOutput): OpenHouseDetails {
     flagCount: o.flagCount,
     removeNextMonday: defined(o.removeNextMonday),
   };
+}
+
+function toAccess(p: PlacementOutput): PlacementAccess {
+  const access = defined(p.access);
+  if (access === 'phoneAppointment') return { type: 'phoneAppointment', contact: p.contact };
+  if (access === 'keybox') return { type: 'keybox', info: p.keyboxInfo };
+  return { type: 'ladder', ladder: access };
 }
 
 /* ==========================================================================
@@ -420,14 +435,14 @@ export type OpenHouseFormValues = z.input<typeof openHouseFormSchema>;
 export type PlacedUnitFormValues = PlacedUnitOutput;
 
 export const createEmptyPlacement = (): PlacementFormValues => ({
-  location: null, access: null, mounting: null, contact: '', description: '',
+  location: null, access: null, mounting: null, windowSide: null, contact: '', keyboxInfo: '', description: '',
 });
 
 export const createFrameUnit = (): FrameUnitFormValues => ({
   uid: crypto.randomUUID(),
-  model: null,
+  model: 'regular',
   modelDescription: '',
-  useAccountName: null,
+  useAccountName: true,
   displayName: '',
 });
 
@@ -488,11 +503,10 @@ function fromPlacement(p: Placement): PlacementFormValues {
       return { ...empty, location: p.location };
     case 'wall':
       return { ...empty, location: p.location, access: p.ladder, mounting: p.mounting };
-    case 'fence':
     case 'balcony':
-      return p.access.type === 'ladder'
-        ? { ...empty, location: p.location, access: p.access.ladder }
-        : { ...empty, location: p.location, access: 'phoneAppointment', contact: p.access.contact };
+      return { ...empty, location: p.location, ...fromAccess(p.access) };
+    case 'window':
+      return { ...empty, location: p.location, windowSide: p.side, ...fromAccess(p.access) };
     case 'other':
       return { ...empty, location: p.location, description: p.description };
   }
@@ -541,6 +555,17 @@ function fromOpenHouse(o: OpenHouseDetails): OpenHouseFormValues {
     flagCount: o.flagCount,
     removeNextMonday: o.removeNextMonday,
   };
+}
+
+function fromAccess(a: PlacementAccess): Pick<PlacementFormValues, 'access' | 'contact' | 'keyboxInfo'> {
+  switch (a.type) {
+    case 'ladder':
+      return { access: a.ladder, contact: '', keyboxInfo: '' };
+    case 'phoneAppointment':
+      return { access: 'phoneAppointment', contact: a.contact, keyboxInfo: '' };
+    case 'keybox':
+      return { access: 'keybox', contact: '', keyboxInfo: a.info };
+  }
 }
 
 export function toInstallationFormValues(details: InstallationDetails): InstallationFormValues {

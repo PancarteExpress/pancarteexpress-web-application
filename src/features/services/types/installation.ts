@@ -1,12 +1,18 @@
-import type { Addon, FlagMention, KitModelType, Ladder, Mounting, SignMention } from '../constants/installation';
+import type {
+  Addon, FlagMention, KitModelType, Ladder, Mounting, SignMention, WindowSide,
+} from '../constants/installation';
+
+/** Accès commun au balcon et à la fenêtre */
+export type PlacementAccess =
+  | { type: 'ladder'; ladder: Ladder }
+  | { type: 'phoneAppointment'; contact: string }
+  | { type: 'keybox'; info: string };
 
 export type Placement =
   | { location: 'ground' | 'ramp' }
   | { location: 'wall'; ladder: Ladder; mounting: Mounting }
-  | {
-      location: 'fence' | 'balcony';
-      access: { type: 'ladder'; ladder: Ladder } | { type: 'phoneAppointment'; contact: string };
-    }
+  | { location: 'balcony'; access: PlacementAccess }
+  | { location: 'window'; access: PlacementAccess; side: WindowSide }
   | { location: 'other'; description: string };
 
 export type FrameModel =

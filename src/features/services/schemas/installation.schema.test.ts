@@ -118,22 +118,40 @@ describe('createInstallationSchema — emplacement', () => {
     expect(paths).toEqual(expect.arrayContaining(['placement.access', 'placement.mounting']));
   });
 
-  it('clôture + rendez-vous : exige les coordonnées et produit le bon objet', () => {
-    expect(issuePaths(memberSchema.safeParse(withPlacement({ location: 'fence', access: 'phoneAppointment' }))))
-      .toContain('placement.contact');
+  it('fenêtre + rendez-vous : exige les coordonnées et produit le bon objet', () => {
+    expect(issuePaths(memberSchema.safeParse(withPlacement({ location: 'window', access: 'phoneAppointment' }))))
+       .toContain('placement.contact');
 
     const result = memberSchema.safeParse(
-      withPlacement({ location: 'fence', access: 'phoneAppointment', contact: '514-555-0000' }),
+      withPlacement({ location: 'window', access: 'phoneAppointment', contact: '514-555-0000', windowSide: 'interior' }),
     );
     expect(result.success && result.data.placement).toEqual({
-      location: 'fence',
+      location: 'window',
       access: { type: 'phoneAppointment', contact: '514-555-0000' },
+      side: 'interior',
     });
+  });
+
+  it('fenêtre : exige le côté (intérieur / extérieur)', () => {
+    expect(issuePaths(memberSchema.safeParse(withPlacement({ location: 'window', access: 'noLadder' }))))
+      .toContain('placement.windowSide');
   });
 
   it('autres : exige une description', () => {
     expect(issuePaths(memberSchema.safeParse(withPlacement({ location: 'other' }))))
       .toContain('placement.description');
+  });
+
+  it('accès par boîte à clés : exige les informations', () => {
+    expect(issuePaths(memberSchema.safeParse(
+      withPlacement({ location: 'balcony', access: 'keybox' }),
+    ))).toContain('placement.keyboxInfo');
+  });
+
+  it('au mur : refuse la boîte à clés', () => {
+    expect(issuePaths(memberSchema.safeParse(
+      withPlacement({ location: 'wall', access: 'keybox', mounting: 'vShapeDrilled' }),
+    ))).toContain('placement.access');
   });
 });
 
@@ -378,8 +396,8 @@ describe('toInstallationFormValues — aller-retour', () => {
     { location: 'ground' },
     { location: 'ramp' },
     { location: 'wall', access: 'smallLadder', mounting: 'vShapeDrilled' },
-    { location: 'fence', access: 'noLadder' },
-    { location: 'balcony', access: 'phoneAppointment', contact: '514-555-0000' },
+    { location: 'window', access: 'noLadder', windowSide: 'exterior' },
+    { location: 'window', access: 'keybox', keyboxInfo: 'Code 4821, à gauche de la porte', windowSide: 'interior' },
     { location: 'other', description: 'Derrière la haie' },
   ] satisfies Partial<InstallationFormValues['placement']>[])('emplacement $location', (placement) => {
     expectRoundTrip(memberSchema, form({ placement: { ...createEmptyPlacement(), ...placement } }));

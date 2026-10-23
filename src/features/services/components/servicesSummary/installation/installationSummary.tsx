@@ -2,10 +2,11 @@ import { format, parse } from 'date-fns';
 import { frCA } from 'date-fns/locale';
 import {
   ADDON_LABELS, FRAME_MODEL_LABELS, KIT_MODEL_LABELS, LADDER_LABELS, LOCATION_LABELS, MOUNTING_LABELS,
-  SIGN_MENTION_LABELS,
+  SIGN_MENTION_LABELS, WINDOW_SIDE_LABELS,
 } from '@/features/services/constants/installation';
 import type {
-  AddonAssignment, FrameDisplayName, FrameModel, InstallationDetails, KitModel, Placement, UnitTargets,
+  AddonAssignment, FrameDisplayName, FrameModel, InstallationDetails, KitModel, Placement, PlacementAccess,
+  UnitTargets,
 } from '@/features/services/types/installation';
 import styles from '../servicesSummary.module.css';
 
@@ -25,6 +26,17 @@ function describeDisplayName(name: FrameDisplayName): string {
   return name.type === 'account' ? name.name : name.names;
 }
 
+function describeAccess(a: PlacementAccess): string {
+  switch (a.type) {
+    case 'ladder':
+      return LADDER_LABELS[a.ladder];
+    case 'phoneAppointment':
+      return `Rendez-vous téléphonique : ${a.contact}`;
+    case 'keybox':
+      return `Boîte à clés : ${a.info}`;
+  }
+}
+
 function describePlacement(p: Placement): string {
   const location = LOCATION_LABELS[p.location];
   switch (p.location) {
@@ -33,11 +45,10 @@ function describePlacement(p: Placement): string {
       return location;
     case 'wall':
       return `${location} — ${LADDER_LABELS[p.ladder]}, ${MOUNTING_LABELS[p.mounting]}`;
-    case 'fence':
     case 'balcony':
-      return p.access.type === 'ladder'
-        ? `${location} — ${LADDER_LABELS[p.access.ladder]}`
-        : `${location} — Rendez-vous téléphonique : ${p.access.contact}`;
+      return `${location} — ${describeAccess(p.access)}`;
+    case 'window':
+      return `${location} (${WINDOW_SIDE_LABELS[p.side].toLowerCase()}) — ${describeAccess(p.access)}`;
     case 'other':
       return `${location} — ${p.description}`;
   }

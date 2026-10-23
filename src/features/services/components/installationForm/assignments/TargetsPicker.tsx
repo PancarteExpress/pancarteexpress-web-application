@@ -35,7 +35,7 @@ export function TargetsPicker({
       label: `Pancarte ${i + 1}`,
       disabled: !value.frameUids.includes(uid) && assigned >= frameSlots,
     })),
-    { value: ON_SITE, label: 'Pancarte sur place', disabled: !value.onSite && assigned >= value.quantity },
+    { value: ON_SITE, label: 'Pancarte déjà sur place', disabled: !value.onSite && assigned >= value.quantity },
   ];
 
   const columns: Columns = frameUids.length >= 3 ? 4 : frameUids.length === 2 ? 3 : frameUids.length === 1 ? 2 : 1;

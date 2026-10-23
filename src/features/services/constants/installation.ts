@@ -65,6 +65,7 @@ export const TEXT_LIMITS = {
   modelDescription: 100,
   displayName: 100,
   appointmentContact: 100,
+  keyboxAccess: 50,
   placementDescription: 100,
   addonMention: 50,
   kitDescription: 50,
@@ -97,15 +98,22 @@ export const KIT_MODEL_LABELS: Record<KitModelType, string> = {
   custom: 'Poteau spécifique',
 };
 
-export const LOCATIONS = ['ground', 'ramp', 'fence', 'wall', 'balcony', 'other'] as const;
+export const LOCATIONS = ['ground', 'ramp', 'window', 'wall', 'balcony', 'other'] as const;
 export type Location = (typeof LOCATIONS)[number];
 export const LOCATION_LABELS: Record<Location, string> = {
   ground: 'Au sol',
   ramp: 'Rampe',
-  fence: 'Clôture',
+  window: 'Fenêtre',
   wall: 'Au mur',
   balcony: 'Balcon',
   other: 'Autres',
+};
+
+export const WINDOW_SIDES = ['interior', 'exterior'] as const;
+export type WindowSide = (typeof WINDOW_SIDES)[number];
+export const WINDOW_SIDE_LABELS: Record<WindowSide, string> = {
+  interior: 'Intérieur',
+  exterior: 'Extérieur',
 };
 
 export const LADDERS = ['noLadder', 'smallLadder', 'bigLadder'] as const;
@@ -117,11 +125,12 @@ export const LADDER_LABELS: Record<Ladder, string> = {
 };
 
 /** Choix d'accès : les échelles + le rendez-vous (clôture/balcon seulement). */
-export const ACCESS_CHOICES = [...LADDERS, 'phoneAppointment'] as const;
+export const ACCESS_CHOICES = [...LADDERS, 'phoneAppointment', 'keybox'] as const;
 export type AccessChoice = (typeof ACCESS_CHOICES)[number];
 export const ACCESS_LABELS: Record<AccessChoice, string> = {
   ...LADDER_LABELS,
   phoneAppointment: 'Par rendez-vous téléphonique',
+  keybox: 'Boîte à clés',
 };
 
 export const MOUNTINGS = ['vShapeDrilled', 'flatDoubleTape'] as const;

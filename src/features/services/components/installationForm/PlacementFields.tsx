@@ -4,7 +4,7 @@ import { useId } from 'react';
 import { Controller, useWatch } from 'react-hook-form';
 import {
   ACCESS_CHOICES, ACCESS_LABELS, LADDER_LABELS, LADDERS, LOCATION_LABELS, LOCATIONS,
-  MOUNTING_LABELS, MOUNTINGS, TEXT_LIMITS, type AccessChoice,
+  MOUNTING_LABELS, MOUNTINGS, TEXT_LIMITS, WINDOW_SIDE_LABELS, WINDOW_SIDES, type AccessChoice,
 } from '@/features/services/constants/installation';
 import { createEmptyPlacement } from '@/features/services/schemas/installation.schema';
 import { RadioGroup, TextField, toOptions, type ChoiceOption } from '@/features/services/components/fields';
@@ -15,6 +15,7 @@ const LOCATION_OPTIONS = toOptions(LOCATIONS, LOCATION_LABELS);
 const WALL_ACCESS_OPTIONS: ChoiceOption<AccessChoice>[] = toOptions(LADDERS, LADDER_LABELS);
 const FENCE_ACCESS_OPTIONS = toOptions(ACCESS_CHOICES, ACCESS_LABELS);
 const MOUNTING_OPTIONS = toOptions(MOUNTINGS, MOUNTING_LABELS);
+const WINDOW_SIDE_OPTIONS = toOptions(WINDOW_SIDES, WINDOW_SIDE_LABELS);
 
 /** Emplacement unique de l'installation, commun à tous les matériels. */
 export function PlacementFields() {
@@ -67,7 +68,7 @@ export function PlacementFields() {
         </div>
       )}
 
-      {(location === 'fence' || location === 'balcony') && (
+      {(location === 'window' || location === 'balcony') && (
         <div className={styles.subOptions}>
           <Controller
             control={control}
@@ -79,6 +80,7 @@ export function PlacementFields() {
                   onChange={(value) => {
                     props.field.onChange(value);
                     if (value !== 'phoneAppointment') update('placement.contact', '');
+                    if (value !== 'keybox') update('placement.keyboxInfo', '');
                   }}
                   legend="Accès"
                   options={FENCE_ACCESS_OPTIONS}
@@ -99,9 +101,39 @@ export function PlacementFields() {
                     )}
                   />
                 )}
+                {props.field.value === 'keybox' && (
+                  <Controller
+                    control={control}
+                    name="placement.keyboxInfo"
+                    render={(p) => (
+                      <TextField
+                        {...bindField(p)}
+                        label="Informations sur la boîte à clés"
+                        placeholder="Ex. : code, emplacement de la boîte…"
+                        maxLength={TEXT_LIMITS.keyboxAccess}
+                        required
+                      />
+                    )}
+                  />
+                )}
               </>
             )}
           />
+          {location === 'window' && (
+            <Controller
+              control={control}
+              name="placement.windowSide"
+              render={(props) => (
+                <RadioGroup
+                  {...bindField(props)}
+                  legend="Emplacement sur la fenêtre"
+                  options={WINDOW_SIDE_OPTIONS}
+                  columns={2}
+                  required
+                />
+              )}
+            />
+          )}
         </div>
       )}
 
