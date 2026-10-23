@@ -13,10 +13,11 @@ interface PlacedUnitsFieldsProps {
   unitLabel: (index: number) => string;
   max: number;
   maxLength: number;
+  placeholder?: string;
 }
 
 /** Quantité + un emplacement par unité (boîtes à clés, directionnelles). */
-export function PlacedUnitsFields({ name, quantityLabel, unitLabel, max, maxLength }: PlacedUnitsFieldsProps) {
+export function PlacedUnitsFields({ name, quantityLabel, unitLabel, max, maxLength, placeholder, }: PlacedUnitsFieldsProps) {
   const { control } = useInstallationFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
 
@@ -49,8 +50,9 @@ export function PlacedUnitsFields({ name, quantityLabel, unitLabel, max, maxLeng
               {...bindField(props)}
               label={unitLabel(index)}
               maxLength={maxLength}
+              placeholder={placeholder}
               multiline
-              rows={2}
+              rows={1}
               required
             />
           )}

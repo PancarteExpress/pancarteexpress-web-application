@@ -107,8 +107,9 @@ export function OpenHouseSection() {
               {...bindField(props)}
               label={`Veuillez indiquer l'emplacement de la directionnelle #${index + 1}`}
               maxLength={TEXT_LIMITS.directionalPlacement}
+              placeholder="Ex. : Newman et Léger"
               multiline
-              rows={2}
+              rows={1}
               required
             />
           )}

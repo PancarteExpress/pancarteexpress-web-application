@@ -35,6 +35,7 @@ export function DirectionalsSection() {
         name="directionals.units"
         quantityLabel="Combien de directionnelles avez-vous besoin ?"
         unitLabel={(i) => `Veuillez indiquer l'emplacement de la directionnelle #${i + 1}`}
+        placeholder="Ex. : Newman et Léger"
         max={MAX_DIRECTIONALS}
         maxLength={TEXT_LIMITS.directionalPlacement}
       />
