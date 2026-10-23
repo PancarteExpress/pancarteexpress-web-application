@@ -29,10 +29,15 @@ interface InstallationFormProps {
 
 export function InstallationForm({ onSubmit, initialValues }: InstallationFormProps) {
   const { data: session, status } = useSession();
-
+  
   if (status === 'loading') return <p aria-busy="true">Chargement…</p>;
 
-  const accountName = status === 'authenticated' ? session.user?.name?.trim() || null : null;
+  const user = status === 'authenticated' ? session.user : undefined;
+  // Les comptes stockent prénom et nom séparément ; `name` sert de repli
+  const accountName =
+    [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim() ||
+    user?.name?.trim() ||
+    null;
 
   return (
     <InstallationFormInner

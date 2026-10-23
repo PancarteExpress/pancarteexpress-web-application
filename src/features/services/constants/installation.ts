@@ -130,7 +130,7 @@ export type AccessChoice = (typeof ACCESS_CHOICES)[number];
 export const ACCESS_LABELS: Record<AccessChoice, string> = {
   ...LADDER_LABELS,
   phoneAppointment: 'Par rendez-vous téléphonique',
-  keybox: 'Boîte à clés',
+  keybox: 'Via boîte à clés',
 };
 
 export const MOUNTINGS = ['vShapeDrilled', 'flatDoubleTape'] as const;
