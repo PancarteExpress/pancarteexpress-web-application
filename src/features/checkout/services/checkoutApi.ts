@@ -56,10 +56,17 @@ export type CheckoutErrorCode =
   | 'productUnavailable'
   | 'alreadyProcessed'
   | 'inProgress'
+  | 'billingBlocked'
   | 'network'
   | 'serverError';
 
-const KNOWN_CODES: ReadonlySet<string> = new Set(['validationFailed', 'productUnavailable', 'alreadyProcessed', 'inProgress']);
+const KNOWN_CODES: ReadonlySet<string> = new Set([
+  'validationFailed',
+  'productUnavailable',
+  'alreadyProcessed',
+  'inProgress',
+  'billingBlocked',
+]);
 
 export class CheckoutApiError extends Error {
   constructor(public readonly code: CheckoutErrorCode) {

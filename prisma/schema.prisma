@@ -39,6 +39,10 @@ model User {
   groupId       String?
   group         Group?    @relation("GroupUsers", fields: [groupId], references: [id], onDelete: SetNull)
 
+  // Déblocage temporaire accordé par le superAdmin sur ce payeur :
+  // lève aussi le blocage de ceux qui dépendent de lui (admin en INDIVIDUAL, équipe en GROUP)
+  billingUnblockedUntil  DateTime?
+
   sessions      Session[]
 
   createdAt     DateTime  @default(now())
@@ -153,6 +157,13 @@ model Order {
   paidAt             DateTime?
   allocations        PaymentAllocation[]
 
+  // Envoi de la facture complète (tous les services) : départ du délai de 30 jours.
+  // Remis à maintenant quand un prix est modifié puis renvoyé.
+  invoicedAt             DateTime?
+  // Courriels déjà envoyés pour l'envoi actuel (remis à null à chaque envoi)
+  overdueReminderSentAt  DateTime?
+  overdueNoticeSentAt    DateTime?
+
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
@@ -164,6 +175,7 @@ model Order {
   @@index([userId, createdAt])  // historique du dashboard
   @@index([status, createdAt])  // cron de nettoyage + vue SuperAdmin
   @@index([billedToId, createdAt])
+  @@index([invoicedAt])
 }
 
 model OrderProduct {

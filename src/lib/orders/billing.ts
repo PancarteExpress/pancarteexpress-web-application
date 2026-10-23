@@ -1,4 +1,4 @@
-import type { BillingMode, GroupStatus, OrderStatus, ServiceStatus } from '@prisma/client';
+import type { BillingMode, GroupStatus, OrderStatus, Prisma, ServiceStatus, UserRole } from '@prisma/client';
 import { calculateTaxes } from '../pricing/taxes';
 
 /* ── Payeur des services (figé au checkout) ───────────────────── */
@@ -138,4 +138,78 @@ export function planServicesSettlement<A extends SettlementAllocation>(
   }
 
   return { accepted, refused, refundAmount: refused.reduce((sum, a) => sum + a.total, 0) };
+}
+
+/* ── Délai de paiement et blocage ─────────────────────────────── */
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+export const PAYMENT_DUE_DAYS = 30;
+export const PAYMENT_WARNING_DAYS = 7;
+export const UNBLOCK_DAYS = 3;
+
+export const addDays = (date: Date, days: number): Date => new Date(date.getTime() + days * DAY_MS);
+
+export const getPaymentDeadline = (invoicedAt: Date): Date => addDays(invoicedAt, PAYMENT_DUE_DAYS);
+
+/** Jours restants, arrondis vers le haut : 6 j et 2 h restants → 7 */
+export const daysUntil = (deadline: Date, now: Date): number =>
+  Math.ceil((deadline.getTime() - now.getTime()) / DAY_MS);
+
+export interface OpenInvoice {
+  invoicedAt: Date;
+  payerUnblockedUntil: Date | null;
+}
+
+export type BillingStanding =
+  | { status: 'ok' }
+  | { status: 'warning'; daysLeft: number }
+  | { status: 'unblocked'; until: Date; overdueCount: number }
+  | { status: 'blocked'; overdueCount: number };
+
+export function computeBillingStanding(invoices: readonly OpenInvoice[], now: Date): BillingStanding {
+  const overdue = invoices.filter((i) => getPaymentDeadline(i.invoicedAt) <= now);
+  const blocking = overdue.filter((i) => !i.payerUnblockedUntil || i.payerUnblockedUntil <= now);
+  if (blocking.length > 0) return { status: 'blocked', overdueCount: blocking.length };
+
+  if (overdue.length > 0) {
+    // Tous les payeurs concernés sont débloqués : le re-blocage le plus proche fait foi
+    const untils = overdue.flatMap((i) => (i.payerUnblockedUntil ? [i.payerUnblockedUntil.getTime()] : []));
+    return { status: 'unblocked', until: new Date(Math.min(...untils)), overdueCount: overdue.length };
+  }
+
+  const daysLeft = invoices
+    .map((i) => daysUntil(getPaymentDeadline(i.invoicedAt), now))
+    .filter((d) => d <= PAYMENT_WARNING_DAYS);
+  if (daysLeft.length > 0) return { status: 'warning', daysLeft: Math.min(...daysLeft) };
+
+  return { status: 'ok' };
+}
+
+export interface StandingViewer {
+  id: string;
+  role: UserRole;
+  groupId: string | null;
+  groupStatus: GroupStatus;
+  group: { billingMode: BillingMode; adminId: string | null } | null;
+}
+
+/** Commandes dont l'impayé bloque cet utilisateur */
+export function getStandingScopes(viewer: StandingViewer): Prisma.OrderWhereInput[] {
+  const scopes: Prisma.OrderWhereInput[] = [
+    { billedToId: viewer.id }, // il doit la payer
+    { userId: viewer.id }, // il l'a passée, même si quelqu'un d'autre doit la payer
+  ];
+
+  // groupAdmin : bloqué par les impayés de ses membres (INDIVIDUAL : à lui de les relancer)
+  if (viewer.role === 'groupAdmin' && viewer.groupId) {
+    scopes.push({ user: { groupId: viewer.groupId, groupStatus: 'JOINED' } });
+  }
+
+  // Membre en mode GROUP : bloqué par les impayés de l'admin, qui paie pour toute l'équipe
+  const adminId = viewer.group?.adminId;
+  if (viewer.groupStatus === 'JOINED' && viewer.group?.billingMode === 'GROUP' && adminId && adminId !== viewer.id) {
+    scopes.push({ billedToId: adminId });
+  }
+
+  return scopes;
 }

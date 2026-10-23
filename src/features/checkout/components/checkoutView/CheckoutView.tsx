@@ -30,6 +30,8 @@ const ERROR_MESSAGES: Record<CheckoutErrorCode, string> = {
   productUnavailable: 'Certains produits ne sont plus disponibles. Retirez-les de votre panier.',
   alreadyProcessed: 'Cette commande a déjà été traitée.',
   inProgress: 'Votre commande est en cours de traitement. Patientez quelques secondes, puis réessayez.',
+  billingBlocked:
+    'Des factures liées à votre compte sont en retard : les demandes de service sont suspendues. Retirez les services du panier pour commander vos produits, ou réglez vos factures depuis votre tableau de bord.',
   network: 'Connexion impossible. Vérifiez votre connexion internet et réessayez.',
   serverError: 'Une erreur est survenue. Réessayez dans quelques instants.',
 };

@@ -96,16 +96,21 @@ export async function publishPricesAction(): Promise<PublishPricesResult> {
         // L'ancien montant n'est plus valide : le client devra relancer le paiement
         await cancelPendingServicesPayment(order.id);
 
-        await prisma.$transaction(
-          services
+                await prisma.$transaction([
+          ...services
             .filter((s) => s.draftPrice !== s.price)
             .map((s) =>
               prisma.service.updateMany({
                 where: { id: s.id, ...servicesNotPaid },
                 data: { price: s.draftPrice },
               })
-            )
-        );
+            ),
+          // Facture complète envoyée, ou renvoyée avec un prix modifié : le délai de 30 jours repart
+          prisma.order.update({
+            where: { id: order.id },
+            data: { invoicedAt: new Date(), overdueReminderSentAt: null, overdueNoticeSentAt: null },
+          }),
+        ]);
         published++;
       } catch (e) {
         // Ex. : le client est en train de payer. On continue avec les autres commandes.

@@ -8,6 +8,13 @@ import {
   resolveBilledToId,
   sumAmounts,
   withoutPrices,
+  addDays,
+  computeBillingStanding,
+  daysUntil,
+  getPaymentDeadline,
+  getStandingScopes,
+  type OpenInvoice,
+  type StandingViewer,
   type Amounts,
   type BillingAccount,
   type QuotableOrder,
@@ -222,5 +229,101 @@ describe("règlement d'un paiement de services", () => {
   it('accepte une commande mixte déjà PAID (produits payés au checkout)', () => {
     const plan = planServicesSettlement([allocation('o1', 1_000)], [state('o1', { status: 'PAID' })]);
     expect(plan.accepted).toHaveLength(1);
+  });
+});
+
+describe('délai de paiement', () => {
+  const NOW = new Date('2026-10-23T12:00:00Z');
+  const invoice = (daysAgo: number, payerUnblockedUntil: Date | null = null): OpenInvoice => ({
+    invoicedAt: addDays(NOW, -daysAgo),
+    payerUnblockedUntil,
+  });
+
+  it('échéance = envoi + 30 jours', () => {
+    expect(getPaymentDeadline(new Date('2026-10-01T10:00:00Z'))).toEqual(new Date('2026-10-31T10:00:00Z'));
+  });
+
+  it('arrondit les jours restants vers le haut', () => {
+    expect(daysUntil(addDays(NOW, 6.5), NOW)).toBe(7);
+  });
+
+  it('aucune facture : ok', () => {
+    expect(computeBillingStanding([], NOW)).toEqual({ status: 'ok' });
+  });
+
+  it('plus de 7 jours restants : ok', () => {
+    expect(computeBillingStanding([invoice(22)], NOW)).toEqual({ status: 'ok' });
+  });
+
+  it.each([
+    { daysAgo: 23, daysLeft: 7 },
+    { daysAgo: 24, daysLeft: 6 },
+    { daysAgo: 29, daysLeft: 1 },
+  ])('envoyée il y a $daysAgo jours : avertissement, $daysLeft jour(s) restant(s)', ({ daysAgo, daysLeft }) => {
+    expect(computeBillingStanding([invoice(daysAgo)], NOW)).toEqual({ status: 'warning', daysLeft });
+  });
+
+  it('plusieurs avertissements : affiche le plus proche', () => {
+    expect(computeBillingStanding([invoice(25), invoice(28)], NOW)).toEqual({ status: 'warning', daysLeft: 2 });
+  });
+
+  it('échéance atteinte : bloqué', () => {
+    expect(computeBillingStanding([invoice(30)], NOW)).toEqual({ status: 'blocked', overdueCount: 1 });
+  });
+
+  it('bloqué prime sur avertissement', () => {
+    expect(computeBillingStanding([invoice(35), invoice(25)], NOW)).toEqual({ status: 'blocked', overdueCount: 1 });
+  });
+
+  it('payeur débloqué : accès jusqu’à la fin du déblocage', () => {
+    const until = addDays(NOW, 2);
+    expect(computeBillingStanding([invoice(40, until)], NOW)).toEqual({ status: 'unblocked', until, overdueCount: 1 });
+  });
+
+  it('déblocage expiré : bloqué de nouveau', () => {
+    expect(computeBillingStanding([invoice(40, addDays(NOW, -1))], NOW)).toEqual({ status: 'blocked', overdueCount: 1 });
+  });
+
+  it('un payeur débloqué, un autre non : bloqué', () => {
+    const result = computeBillingStanding([invoice(40, addDays(NOW, 2)), invoice(35)], NOW);
+    expect(result).toEqual({ status: 'blocked', overdueCount: 1 });
+  });
+});
+
+describe('qui est bloqué par une facture en retard', () => {
+  const viewer = (overrides: Partial<StandingViewer> = {}): StandingViewer => ({
+    id: MEMBER,
+    role: 'user',
+    groupId: 'g1',
+    groupStatus: 'JOINED',
+    group: { billingMode: 'GROUP', adminId: ADMIN },
+    ...overrides,
+  });
+
+  it('solo : ses propres factures', () => {
+    const solo = viewer({ id: SOLO, groupId: null, groupStatus: 'SOLO', group: null });
+    expect(getStandingScopes(solo)).toEqual([{ billedToId: SOLO }, { userId: SOLO }]);
+  });
+
+  it('membre en mode GROUP : aussi les factures payées par l’admin', () => {
+    expect(getStandingScopes(viewer())).toEqual([{ billedToId: MEMBER }, { userId: MEMBER }, { billedToId: ADMIN }]);
+  });
+
+  it('membre en mode INDIVIDUAL : seulement les siennes', () => {
+    const member = viewer({ group: { billingMode: 'INDIVIDUAL', adminId: ADMIN } });
+    expect(getStandingScopes(member)).toEqual([{ billedToId: MEMBER }, { userId: MEMBER }]);
+  });
+
+  it('membre PENDING : seulement les siennes', () => {
+    expect(getStandingScopes(viewer({ groupStatus: 'PENDING' }))).toEqual([{ billedToId: MEMBER }, { userId: MEMBER }]);
+  });
+
+  it('groupAdmin : aussi les commandes de ses membres', () => {
+    const admin = viewer({ id: ADMIN, role: 'groupAdmin' });
+    expect(getStandingScopes(admin)).toEqual([
+      { billedToId: ADMIN },
+      { userId: ADMIN },
+      { user: { groupId: 'g1', groupStatus: 'JOINED' } },
+    ]);
   });
 });

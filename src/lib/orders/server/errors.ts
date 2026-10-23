@@ -20,3 +20,9 @@ export class PaymentProviderError extends Error {
     this.name = 'PaymentProviderError';
   }
 }
+
+export class BillingBlockedError extends Error {
+  constructor(readonly overdueCount: number) {
+    super('Compte bloqué : factures en retard');
+  }
+}

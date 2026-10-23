@@ -3,6 +3,7 @@ import { auth } from '@/app/auth';
 import { checkoutPayloadSchema } from '@/lib/validations/checkout';
 import { createOrder, type CheckoutUser } from '@/lib/orders/server/checkout.service';
 import {
+  BillingBlockedError,
   CheckoutConflictError,
   PaymentProviderError,
   ProductUnavailableError,
@@ -49,6 +50,9 @@ export async function POST(request: Request) {
     const result = await createOrder(parsed.data, user);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
+    if (error instanceof BillingBlockedError) {
+      return NextResponse.json({ error: 'billingBlocked', overdueCount: error.overdueCount }, { status: 403 });
+    }
     if (error instanceof ProductUnavailableError) {
       return NextResponse.json(
         { error: 'productUnavailable', unavailableProductIds: error.productIds },

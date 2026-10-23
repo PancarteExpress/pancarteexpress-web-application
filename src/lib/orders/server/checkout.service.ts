@@ -6,8 +6,9 @@ import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe/server';
 import { calculateTotals } from '@/lib/pricing/calculateTotals';
 import type { CheckoutItemPayload, CheckoutPayload, CheckoutResponse } from '@/lib/validations/checkout';
-import { CheckoutConflictError, PaymentProviderError, ProductUnavailableError } from './errors';
+import { BillingBlockedError, CheckoutConflictError, PaymentProviderError, ProductUnavailableError } from './errors';
 import { resolveBilledToId } from '../billing';
+import { getBillingStanding } from './billingStanding.service';
 
 import { after } from 'next/server';
 import { sendReceipts } from '@/features/checkout/emailSender/sendReceipts';
@@ -47,6 +48,12 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
 
   const productItems = payload.items.filter((i): i is ProductItem => i.kind === 'product');
   const serviceItems = payload.items.filter((i): i is ServiceRequestItem => i.kind === 'serviceRequest');
+  
+  // Défaut de paiement : plus de demandes de service (les produits, payés immédiatement, restent permis)
+  if (user && serviceItems.length > 0) {
+    const standing = await getBillingStanding(user.id);
+    if (standing.status === 'blocked') throw new BillingBlockedError(standing.overdueCount);
+  }
 
   const orderLines = await buildProductLines(productItems);
   const totals = calculateTotals(orderLines);
