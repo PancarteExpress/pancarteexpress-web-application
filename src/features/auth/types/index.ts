@@ -3,8 +3,10 @@ import { z } from "zod";
 const firstNameSchema = z.string().min(2, "First name required");
 const lastNameSchema = z.string().min(2, "Last name required");
 const emailSchema = z.string().trim().toLowerCase().email("Adresse courriel requise");
-const passwordSchema = z.string().min(8, "Min 8 characters");
+const passwordSchema = z.string().min(3, "Min 3 characters");
 const phoneSchema = z.string().min(10, "Phone number required");
+
+export const localeSchema = z.enum(["fr", "en"]).optional();
 
 export const registerSchema = z.object({
   firstName: firstNameSchema,
@@ -14,6 +16,7 @@ export const registerSchema = z.object({
   confirmPassword: z.string(),
   phoneNumber: phoneSchema,
   companyName: z.string().optional(),
+  locale: localeSchema,
 })
 .refine((data) => data.password === data.confirmPassword, {
   message: "Les mots de passe ne correspondent pas",
@@ -27,12 +30,13 @@ export const registerSchema = z.object({
 export const verifyEmailSchema = z.object({
   email: emailSchema,
   code: z.string().length(6, "Code must be 6 digits"),
-  firstName: z.string().min(2, "First name required"),
-  lastName: z.string().min(2, "Last name required"),
-  password: z.string().min(3, "Min 3 characters"),
-  phoneNumber: z.string().min(10, "Phone number required"),
+  firstName: firstNameSchema,
+  lastName: lastNameSchema,
+  password: passwordSchema,
+  phoneNumber: phoneSchema,
   companyName: z.string().optional(),  
   groupStatus: z.enum(['SOLO', 'PENDING']),
+  locale: localeSchema,
 });
 
 export const loginSchema = z.object({
@@ -63,7 +67,7 @@ export const updatePasswordSchema = z.object({
 
 export const forgotPasswordSchema = z.object({
   email: emailSchema,
-  locale: z.enum(["fr", "en"]),
+  locale: localeSchema,
 });
 
 export const resetPasswordSchema = z.object({

@@ -3,6 +3,8 @@
 
 import { useRouter } from 'next/navigation';
 import styles from './RegisterPackages.module.css';
+import { motion } from "framer-motion";
+import { useTranslations } from 'next-intl';
 
 interface RegisterPackagesProps {
   locale: string;
@@ -12,6 +14,7 @@ interface RegisterPackagesProps {
 }
 
 export default function RegisterPackages({ locale, packageChoice, setPackageChoice, setStep }: RegisterPackagesProps) {
+  const t = useTranslations('register');
   const router = useRouter();
   
   const handleSelectPackage = (packageType: "solo" | "group" | 'none' ) => {
@@ -27,85 +30,102 @@ export default function RegisterPackages({ locale, packageChoice, setPackageChoi
   return (
     <div className={styles.mainContainer}>
       <div className={styles.packages}>
-        <div className={styles.package}>
+        <motion.div initial={{ opacity: 0, x: -100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} onClick={() => handleSelectPackage('none')}>
           <div className={styles.header}>
-            <h2 className={styles.title}>Non-membre</h2>
+            <h2 className={styles.title}>{t('package1Title')}</h2>
             
             <label>0$</label>
             <br />
-            <label>CAD/an</label>
+            <label>{t('packagesCurrency')}</label>
           </div>
 
           <p className={styles.price}>
-            <label>Tarifs preferentiel : 45$</label>
+            <label>{t('notMemberPrice')}</label>
           </p>
 
           <ul>
-            <li style={{ color: 'red', opacity: '0.5'}}>x Entreposage, entretien et gestion de votre inventaire</li>
-            <li style={{ color: 'red', opacity: '0.5'}}>x Alertes quand votre inventaire est bas ou endommagé</li>
-            <li style={{ color: 'red', opacity: '0.5'}}>x Code promotionnel chez Tout Pour Le Courtier</li>
-            <li style={{ color: 'red', opacity: '0.5'}}>x Rabais sur vos commandes de matériel daffichage</li>
-            <li style={{ color: 'red'}}>✓ Idéal pour les équipes de courtiers</li>
+            <li style={{ color: '#0E4D9A', opacity: '0.5'}}>x {t('notMemberStorage')}</li>
+            <li style={{ color: '#0E4D9A', opacity: '0.5'}}>x {t('inventoryManagement')}</li>
+            <li style={{ color: '#0E4D9A', opacity: '0.5'}}>x {t('inventoryAlerts')}</li>
+            <li style={{ color: '#0E4D9A', opacity: '0.5'}}>x {t('promoCode')}</li>
+            <li style={{ color: '#0E4D9A', opacity: '0.5'}}>x {t('emergency')}</li>
+            <li style={{ color: '#0E4D9A'}}>✓ {t('notMemberBilling')}</li>
+            <li style={{ color: '#0E4D9A'}}>✓ {t('notMemberPayment')}</li>
+            <li style={{ color: '#0E4D9A'}}>✓ {t('installation24h')}</li>
+            <li style={{ color: '#0E4D9A'}}>✓ {t('confirmationPhoto')}</li>
+            
           </ul>
 
-          <button className={styles.selectPackageButton} onClick={() => handleSelectPackage('none')}>
+          <button className={styles.selectPackageButton}>
             Sélectionner ce forfait
           </button>
-        </div>
+        </motion.div>
         
-        <div className={styles.package}>
+        <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className={styles.package} onClick={() => handleSelectPackage("group")}>
           <div className={styles.header}>
             
-            <h2 className={styles.title}>Forfait équipe</h2>
+            <h2 className={styles.title}>{t('package2Title')}</h2>
 
             <label>119.99$</label>
             <br />
-            <label>CAD/an</label>
+            <label>{t('packagesCurrency')}</label>
 
           </div>
 
           <p className={styles.price}>
-            <label>Tarifs preferentiel : 30$</label>
+            <label>{t('groupPrice')}</label>
           </p>
 
-          <ul>
-            <li style={{ color: 'red'}}>✓ Entreposage, entretien et gestion de votre inventaire</li>
-            <li style={{ color: 'red'}}>✓ Alertes quand votre inventaire est bas ou endommagé</li>
-            <li style={{ color: 'red'}}>✓ Code promotionnel chez Tout Pour Le Courtier</li>
-            <li style={{ color: 'red'}}>✓ Rabais sur vos commandes de matériel daffichage</li>
-            <li style={{ color: 'red'}}>✓ Idéal pour les équipes de courtiers</li>
+          <ul style={{ color: '#C8DAEC', textAlign: 'center', listStyle: 'none', padding: 0 }}>
+            <li>✓ {t('bigFormatStorage')}</li>
+            <li>✓ {t('groupStorage')}</li>
+            <li>✓ {t('inventoryManagement')}</li>
+            <li>✓ {t('inventoryAlerts')}</li>
+            <li>✓ {t('promoCode')}</li>
+            <li>✓ {t('emergency')}</li>
+            <li>✓ {t('memberBilling')}</li>
+            <li>✓ {t('memberPayment')}</li>
+            <li>✓ {t('installation24h')}</li>
+            <li>✓ {t('confirmationPhoto')}</li>
+            <li>✓ {t('idealForGroup')}</li>
           </ul>
 
-          <button className={styles.selectPackageButton} onClick={() => handleSelectPackage("group")}>
-            {packageChoice === "group" ? "Forfait sélectionné" : "Sélectionner ce forfait"}
+          <button className={styles.selectPackageButton}>
+            Sélectionner ce forfait
           </button>
-        </div>  
+        </motion.div>
 
-        <div className={styles.package} onClick={() => handleSelectPackage("solo")}>
+        <motion.div initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} onClick={() => handleSelectPackage("solo")}>
           <div className={styles.header}>
-            <h2 className={styles.title}>Forfait individuel</h2>
+            <h2 className={styles.title}>{t('package3Title')}</h2>
             
             <label>89.99$</label>
             <br />
-            <label>CAD/an</label>
+            <label>{t('packagesCurrency')}</label>
           </div>
           
           <p className={styles.price}>
-            <label>Tarifs preferentiel : 30$</label>
+            <label>{t('soloPrice')}</label>
           </p>
 
-          <ul>
-            <li style={{ color: 'red'}}>✓ Entreposage, entretien et gestion de votre inventaire</li>
-            <li style={{ color: 'red'}}>✓ Alertes quand votre inventaire est bas ou endommagé</li>
-            <li style={{ color: 'red'}}>✓ Code promotionnel chez Tout Pour Le Courtier</li>
-            <li style={{ color: 'red'}}>✓ Rabais sur vos commandes de matériel daffichage</li>
-            <li style={{ color: 'red'}}>✓ Idéal pour les équipes de courtiers</li>
+          <ul style={{ color: '#0E4D9A', textAlign: 'center', listStyle: 'none', padding: 0 }}>
+            <li style={{opacity: '0.5'}}>x {t('bigFormatStorage')}</li>
+            <li>✓ {t('soloStorage')}</li>
+            <li>✓ {t('inventoryManagement')}</li>
+            <li>✓ {t('inventoryAlerts')}</li>
+            <li>✓ {t('promoCode')}</li>
+            <li>✓ {t('emergency')}</li>
+            <li>✓ {t('memberBilling')}</li>
+            <li>✓ {t('memberPayment')}</li>
+            <li>✓ {t('installation24h')}</li>
+            <li>✓ {t('confirmationPhoto')}</li>
+            <li>✓ {t('idealForSolo')}</li>
           </ul>
 
-          <button className={styles.selectPackageButton} onClick={() => handleSelectPackage("solo")}>
-            {packageChoice === "solo" ? "Forfait sélectionné" : "Sélectionner ce forfait"}
+          <button className={styles.selectPackageButton}>
+            Sélectionner ce forfait
           </button>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

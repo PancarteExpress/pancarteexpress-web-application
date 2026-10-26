@@ -4,6 +4,7 @@ import styles from "./GoogleLoginButton.module.css";
 
 import { signIn } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
+import { useTranslations } from 'next-intl';
 
 interface GoogleLoginButtonProps {
   locale: string;
@@ -11,7 +12,8 @@ interface GoogleLoginButtonProps {
 }
 
 export function GoogleLoginButton({ locale, groupStatus }: GoogleLoginButtonProps) {
-  
+  const t = useTranslations('login');
+
   const handleGoogleSignIn = async () => {
 
     if (groupStatus) {
@@ -24,6 +26,8 @@ export function GoogleLoginButton({ locale, groupStatus }: GoogleLoginButtonProp
       });
     }
     
+    document.cookie = `pendingLocale=${locale === "en" ? "en" : "fr"}; max-age=300; path=/; samesite=lax`;
+
     await signIn("google", {
       redirect: true,
       callbackUrl: `/${locale}/dashboard`,
@@ -34,7 +38,7 @@ export function GoogleLoginButton({ locale, groupStatus }: GoogleLoginButtonProp
     <div className={styles.googleLoginContainer}>
       <button type="button" onClick={handleGoogleSignIn} className={styles.googleBtn}>
         <FcGoogle size={20} />
-        Se connecter avec Google
+        {t('loginWithGoogle')}
       </button>
     </div>
   );

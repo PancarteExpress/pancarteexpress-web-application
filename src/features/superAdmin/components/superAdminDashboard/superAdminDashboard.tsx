@@ -8,32 +8,35 @@ import { useMemo, useState } from "react";
 import { FaUser } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import { GiSandsOfTime } from "react-icons/gi";
-import { AdminGroupRow } from "@/lib/groups/server/groups.service";
+import { FaRegMoneyBillAlt } from "react-icons/fa";
 
-const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+import type { AdminGroupRow } from "@/lib/groups/server/groups.service";
+import { GroupsTable } from "../groupTable/GroupsTable";
+import { normalize } from "@/shared/utils/normalize";
+import { AdminClientServices } from "@/lib/services/services.service";
+import { ServicesTable } from "../servicesTable/ServicesTable";
 
 interface AdminDashboardProps {
   users: AdminUserRow[];
   groups: AdminGroupRow[];
+  services: AdminClientServices[];
 }
 
-export function AdminDashboard({ users, groups }: AdminDashboardProps) {
+export function AdminDashboard({ users, groups, services }: AdminDashboardProps) {
+    const [activeSection, setActiveSection] = useState<'users' | 'teams' | 'billing'>('users');
 
-  const [activeSection, setActiveSection] = useState<'users' | 'teams'>('users');
+    const pendingCount = users.filter((u) => u.groupStatus === "PENDING").length;
 
-  const pendingCount = users.filter((u) => u.groupStatus === "PENDING").length;
+    const [search, setSearch] = useState("");
+    const [groupSearch, setGroupSearch] = useState("");
+  
+    const filteredUsers = useMemo(() => {
+        const query = normalize(search.trim());
+        if (!query) return users;
 
-  const [search, setSearch] = useState("");
-  const filteredUsers = useMemo(() => {
-  const query = normalize(search.trim());
-    if (!query) return users;
-
-    return users.filter((u) => {
-        const haystack = normalize(
-        `${u.firstName ?? ""} ${u.lastName ?? ""} ${u.email}`
-        );
-        return haystack.includes(query);
-    });
+        return users.filter((u) => { const haystack = normalize( `${u.firstName ?? ""} ${u.lastName ?? ""} ${u.email}` );
+            return haystack.includes(query);
+        });
     }, [users, search]);
 
   return (
@@ -54,6 +57,11 @@ export function AdminDashboard({ users, groups }: AdminDashboardProps) {
             <div className={`${styles.navItem} ${activeSection === 'teams' ? styles.active : ''}`}
                 onClick={() => setActiveSection('teams')}>
                 <FaUserGroup size={20} style={{color : '#D8E8F8'}} /> Équipes
+            </div>
+            
+            <div className={`${styles.navItem} ${activeSection === 'billing' ? styles.active : ''}`}
+                onClick={() => setActiveSection('billing')}>
+                <FaRegMoneyBillAlt size={20} style={{color : '#D8E8F8'}} /> Facturation
             </div>
         </nav>
       </div>
@@ -126,35 +134,28 @@ export function AdminDashboard({ users, groups }: AdminDashboardProps) {
                 <span className={styles.tableTitle}>Liste des équipes</span>
                 <input
                     className={styles.searchInput}
-                    type="text"
-                    placeholder="Rechercher une équipe…"
+                    type="search"
+                    placeholder="Rechercher une équipe ou un membre…"
+                    value={groupSearch}
+                    onChange={(e) => setGroupSearch(e.target.value)}
                 />
             </div>
-            <table className={styles.table}>
-                <thead>
-                    <tr>
-                        <th>Nom</th>
-                        <th>Administrateur</th>
-                        <th>Membres</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {groups.map((group) => (
-                    <tr key={group.id}>
-                    <td>{group.name}</td>
-                    <td>
-                        {group.admin
-                        ? `${group.admin.firstName ?? ""} ${group.admin.lastName ?? ""}`.trim() || group.admin.email
-                        : "—"}
-                    </td>
-                    <td>{group.memberCount}</td>
-                    <td>{/* actions */}</td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
+
+            {groups.length === 0 ? 
+                <div className={styles.noResults}>Aucun résultat.</div> :<GroupsTable groups={groups} users={users} search={groupSearch}/>
+            }
         </div>
+        </>
+        )}
+        
+        {/* ─── Teams ─── */}
+        {activeSection === 'billing' && (
+        <>
+            <div className={styles.topbar}>
+            <p className={styles.pageTitle}>Demandes de service</p>
+            <p className={styles.pageSub}>Fixez le prix de chaque service demandé.</p>
+            </div>
+            <ServicesTable clients={services} />
         </>
         )}
       </div>

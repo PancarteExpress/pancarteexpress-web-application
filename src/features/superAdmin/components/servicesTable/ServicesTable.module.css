@@ -1,0 +1,94 @@
+.clients { display: flex; flex-direction: column; gap: 20px; }
+
+.client {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: Inter, sans-serif;
+}
+
+.clientHead {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #F8FAFC;
+  border-bottom: 1px solid #e2e8f0;
+}
+.clientName  { margin: 0; font-family: Montserrat, sans-serif; font-weight: 600; color: #092E5B; }
+.clientEmail { font-size: 13px; color: #0E4D9A; }
+.clientCount { margin-left: auto; font-size: 13px; color: #64748b; }
+
+.wrapper { overflow-x: auto; }
+
+.table {
+  width: 100%;
+  min-width: 900px;
+  table-layout: fixed;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.table th,
+.table td {
+  padding: 10px 14px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #e2e8f0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.table tbody tr:last-child td { border-bottom: none; }
+
+.colOrder   { width: 10%; }
+.colType    { width: 12%; }
+.colAddress { width: 30%; }
+.colDate    { width: 13%; }
+.colStatus  { width: 12%; }
+
+.mono { font-family: "JetBrains Mono", monospace; }
+
+.priceForm  { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; white-space: normal; }
+.priceField {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+}
+.priceField:focus-within { border-color: #0E4D9A; }
+.priceField input {
+  width: 80px;
+  border: none;
+  outline: none;
+  font: inherit;
+  text-align: right;
+}
+.priceField input[aria-invalid="true"] { color: #DC2626; }
+
+.btnSave {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 6px;
+  background: #0E4D9A;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.btnSave:disabled { opacity: 0.4; cursor: default; }
+
+
+.empty { padding: 16px; color: #64748b; }
+
+.badgeDraft,
+.badgeSent {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badgeDraft { background: #FEF3C7; color: #92400E; }
+.badgeSent  { background: #DCFCE7; color: #166534; }

@@ -19,7 +19,8 @@ export async function POST(request: NextRequest) {
       validatedData.password,
       validatedData.phoneNumber,
       validatedData.companyName,
-      validatedData.groupStatus
+      validatedData.groupStatus,
+      validatedData.locale
     );
 
     return NextResponse.json(

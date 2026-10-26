@@ -65,6 +65,7 @@ export function DeleteUserButton({
   return (
     <>
       <button
+      style={{all: 'unset', cursor: 'pointer'}}
         type="button"
         className={className}
         onClick={handleClick}

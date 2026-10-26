@@ -31,8 +31,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   border-bottom: 1px solid #edf2f7;
-
-  border: 1px solid red;
 }
 
 .table td:last-of-type {
@@ -48,10 +46,6 @@
 .wrapper .table .colStatus       { width: 8%; }
 .wrapper .table .colRegisterDate { width: 5%; }
 .wrapper .table .colDeleteUser   { width: 5%; }
-
-.wrapper .table tbody {
-
-}
 
 .wrapper .table tbody tr:hover {
   background: #f9fbfd;

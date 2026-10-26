@@ -18,14 +18,14 @@ import { IoClose } from "react-icons/io5";
 import LanguageSwitcher from '../languageSwitcher/languageSwitcher';
 import { LocalLink } from '../LocalLink';
 import { AuthNav } from '@/features/auth/components/authNav/AuthNav';
-//import { useAuth } from '@/app/context/AuthContext';
-//import { useSession } from '@/lib/auth/useSession';
+import { useLocale, useTranslations } from 'next-intl';
+import { useAppLocale } from '@/shared/hooks/useAppLocale';
 
-interface HeaderProps {
-  locale: string;
-}
 
-export default function Header({ locale }: HeaderProps) {
+export default function Header() {
+
+    const t = useTranslations('header');
+    const locale = useAppLocale(); // pour les redirections
 
     // Toggle de responsive Navbar
     const [isOpen, setIsOpen] = useState(false);
@@ -55,28 +55,33 @@ export default function Header({ locale }: HeaderProps) {
                     <div className={styles.infos}>
                         <div className={styles.schedule}>
                             <div>
-                                <h1>Service rapide 24h</h1>
-                                <h5>Du lundi au vendredi</h5>
+                                <h1>{t('fastServiceTitle')}</h1>
+                                <h5>{t('fastServiceSub')}</h5>
                             </div>
                             <Image src="/header/icon-horaire.png" alt="icon horaire" className={styles.icon} width={40} height={40} />
                         </div>
                         <div className={styles.area}>
                             <div>
-                                <h1>Service offert</h1>
-                                <h5>Dans la grande zone métropolitaine de Montréal</h5>
+                                <h1>{t('zoneTitle')}</h1>
+                                <h5>{t('zoneSub')}</h5>
                             </div>
                             <Image src="/header/icon-maps.png" alt="icon maps" className={styles.icon} width={30} height={35} />
                         </div>
                     </div>
 
                     <div className={styles.navbar}>
-                        <LocalLink href="/" className={styles.navItem}>Accueil</LocalLink>
-                        <LocalLink href="/residential" className={styles.navItem}>Résidentiel</LocalLink>
-                        <LocalLink href="/bigFormat" className={styles.navItem}>Grand format</LocalLink>
-                        <LocalLink href="/shop" className={styles.navItem}>Boutique</LocalLink>
-                        <LocalLink href="/contact" className={styles.navItem}>Contact</LocalLink>
-                        <LocalLink href="/cart" className={styles.navItem}><IoCartOutline size={22} /></LocalLink>
-                        <LocalLink href="/services" className={styles.navItem}><FaPaperPlane />Demande en ligne</LocalLink>
+                        <div className={styles.links}>
+                            <LocalLink href="/" className={styles.navItem}>{t('navbarHome')}</LocalLink>
+                            <LocalLink href="/residential" className={styles.navItem}>{t('navbarResidential')}</LocalLink>
+                            <LocalLink href="/bigFormat" className={styles.navItem}>{t('navbarBigFormat')}</LocalLink>
+                            <LocalLink href="/shop" className={styles.navItem}>{t('navbarShop')}</LocalLink>
+                            <LocalLink href="/contact" className={styles.navItem}>{t('navbarContact')}</LocalLink>
+                            <LocalLink href="/cart" className={styles.navItem}><IoCartOutline size={22} /></LocalLink>
+                        </div>
+                        
+                        <div className={styles.lastLink}>
+                            <LocalLink href="/services" className={styles.navItem}><FaPaperPlane />{t('navbarServices')}</LocalLink>
+                        </div>
                     </div>
 
                     {/* Responsive Navigation Toggle - Appears on screens of width 1000px and smaller */}
@@ -93,13 +98,13 @@ export default function Header({ locale }: HeaderProps) {
                 </div>
 
                 <div className={styles.responsiveNavbar} >
-                    <LocalLink href="/" className={styles.navItem}>Accueil</LocalLink>
-                    <LocalLink href="/residential" className={styles.navItem}>Résidentiel</LocalLink>
-                    <LocalLink href="/bigFormat" className={styles.navItem}>Grand format</LocalLink>
-                    <LocalLink href="/shop" className={styles.navItem}>Boutique</LocalLink>
-                    <LocalLink href="/contact" className={styles.navItem}>Contact</LocalLink>
+                    <LocalLink href="/" className={styles.navItem}>{t('navbarHome')}</LocalLink>
+                    <LocalLink href="/residential" className={styles.navItem}>{t('navbarResidential')}</LocalLink>
+                    <LocalLink href="/bigFormat" className={styles.navItem}>{t('navbarBigFormat')}</LocalLink>
+                    <LocalLink href="/shop" className={styles.navItem}>{t('navbarShop')}</LocalLink>
+                    <LocalLink href="/contact" className={styles.navItem}>{t('navbarContact')}</LocalLink>
                     <LocalLink href="/cart" className={styles.navItem}><IoCartOutline size={22} /></LocalLink>
-                    <LocalLink href="/services" className={styles.navItem}><FaPaperPlane />Demande en ligne</LocalLink>
+                    <LocalLink href="/services" className={styles.navItem}><FaPaperPlane />{t('navbarServices')}</LocalLink>
                     
                     <AuthNav locale={locale} />
                 </div>

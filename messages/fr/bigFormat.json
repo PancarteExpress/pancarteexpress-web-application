@@ -1,0 +1,136 @@
+{
+    "heroTitle": "Services grand format",
+    "heroLabel1": "Chez Pancarte Express, nous sommes experts en installation d'affichage grand format.",
+    "heroLabel2": "Qu'il s'agisse de panneaux, d'enseignes, de bannières ou de pancartes, grand format ou résidentiels, nous vous proposons des solutions pour vous afficher avec la meilleure visibilité possible.",
+    "heroLabel3": "Nous offrons même un tout nouveau service de location de structures en aluminium, idéal pour l'affichage temporaire. Contactez-nous pour plus d'informations.",
+
+    "shopRedirection": "Achetez du matériel d'affichage grand format",
+    "servicesRedirection": "Effectuez une demande en ligne",
+
+    "rentalInfo": "Disponible à l'achat ou en location. Consultez la section Boutique pour l'achat. La location comprend l'installation de la structure, le déplacement et la récupération.",
+    "sectionTitles": {
+        "rigidDisplay": "Affichage rigide :",
+        "flexibleDisplay": "Affichage flexible :",
+        "configurations": "Configurations :",
+        "suggestedSizes": "Dimensions suggérées :",
+        "suggestedSizesHW": "Dimensions suggérées (H × L) :",
+        "material": "Matériau utilisé :",
+        "colors": "Couleurs disponibles :",
+        "signSizes": "Dimensions des pancartes :",
+        "displayTypes": "Types d'affichage :"
+    },
+
+    "cards": {
+    "miniRigid": {
+        "title": "Structure MINI RIGIDE",
+        "description1": "Une structure rigide personnalisée selon les dimensions de votre affichage.",
+        "description2": "Idéale pour l'événementiel et les projets temporaires ou l'affichage permanent : affiches publicitaires, signalisation extérieure, pancartes de courtier immobilier, ventes ou promotions, affiches « Nous embauchons » et plus.",
+        "sections": {
+        "rigidDisplay": "Pancartes coroplast, panneaux alupanel, enseignes rigides.",
+        "configurations": "1 façade ou 2 façades (recto verso).",
+        "suggestedSizes": "3 × 5 | 4 × 4 | 4 × 6 | max. 6 × 6 pi"
+        }
+    },
+    "standardRigid": {
+        "title": "Structure STANDARD RIGIDE",
+        "description1": "Une structure rigide personnalisée selon les dimensions de votre affichage.",
+        "description2": "Idéale pour l'événementiel et les projets temporaires ou permanents : affiches publicitaires, affichage de commanditaires, pancartes de courtier immobilier, ventes saisonnières, recrutement de personnel et plus.",
+        "sections": {
+        "rigidDisplay": "Pancartes coroplast, panneaux alupanel, enseignes rigides.",
+        "configurations": "1 façade ou 2 façades (recto verso).",
+        "suggestedSizes": "4 × 6 | 4 × 8 | 6 × 6 | max. 8 × 8 pi"
+        }
+    },
+    "largeRigid": {
+        "title": "Structure LARGE RIGIDE",
+        "description1": "Une structure rigide personnalisée selon les dimensions de votre affichage.",
+        "description2": "Idéale pour les événements extérieurs grand format : affiches publicitaires, affichage de festival, affiches d'exposants, ventes ou promotions, affiches « Nous embauchons », affichage sur toit et plus.",
+        "sections": {
+        "rigidDisplay": "Pancartes coroplast, panneaux alupanel, Sintra.",
+        "configurations": "1 façade ou 2 façades (recto verso).",
+        "suggestedSizes": "5 × 10 | max. 8 × 10 pi"
+        }
+    },
+    "miniFlexible": {
+        "title": "Structure MINI FLEXIBLE",
+        "description1": "Une structure flexible personnalisée selon les dimensions de votre affichage.",
+        "description2": "Idéale pour l'événementiel et les projets temporaires ou permanents : affiches publicitaires, signalisation extérieure, pancartes de courtier immobilier, ventes ou promotions, affiches « Nous embauchons » et plus.",
+        "sections": {
+        "flexibleDisplay": "Bannière opaque (vinyle), bannière perforée (mesh).",
+        "configurations": "1 façade ou 2 façades (recto verso).",
+        "suggestedSizes": "4 × 4 | 4 × 6 | max. 6 × 6 pi"
+        }
+    },
+    "standardFlexible": {
+        "title": "Structure STANDARD FLEXIBLE",
+        "description1": "Une structure flexible personnalisée selon les dimensions de votre affichage.",
+        "description2": "Idéale pour l'événementiel et les projets temporaires ou permanents : affiches publicitaires, affichage de commanditaires, pancartes de courtier immobilier, ventes saisonnières, recrutement de personnel et plus.",
+        "sections": {
+        "flexibleDisplay": "Bannière opaque avec aération, bannière perforée (mesh).",
+        "configurations": "1 façade ou 2 façades (recto verso).",
+        "suggestedSizes": "4 × 6 | 4 × 8 | 6 × 6 | max. 7 × 8 pi"
+        }
+    },
+    "largeFlexible": {
+        "title": "Structure LARGE FLEXIBLE",
+        "description1": "Une structure flexible personnalisée selon les dimensions de votre affichage, solidement ancrée dans le sol par des pieux en métal pour une solidité et une durabilité à toute épreuve. Résiste parfaitement aux intempéries.",
+        "description2": "Idéale pour les événements extérieurs grand format : affiches publicitaires, affichage de festival, affiches d'exposants, ventes ou promotions, affiches « Nous embauchons », affichage sur toit et plus.",
+        "sections": {
+        "flexibleDisplay": "Bannière opaque avec aération, bannière perforée (mesh).",
+        "configurations": "1 façade.",
+        "suggestedSizes": "De 5 × 10 à 7 × 12 pi max."
+        }
+    },
+    "miniV": {
+        "title": "Structure MINI EN V",
+        "description1": "Une structure personnalisée selon les dimensions de votre affichage, de type rigide uniquement.",
+        "description2": "Idéale pour l'événementiel et les projets temporaires ou permanents : affiches publicitaires, affichage de commanditaires, pancartes de courtier immobilier, ventes saisonnières, recrutement de personnel et plus.",
+        "sections": {
+        "rigidDisplay": "Pancartes coroplast, panneaux alupanel, enseignes rigides.",
+        "configurations": "2 façades en V.",
+        "suggestedSizesHW": "3 × 5 | 4 × 4 | 4 × 6 | max. 6 × 6 pi"
+        }
+    },
+    "wood": {
+        "title": "Structure EN BOIS",
+        "description1": "Construction d'une structure en bois renforcée, personnalisée selon les dimensions de votre panneau. Solidement ancrée dans le sol par des pieux en métal pour une solidité et une durabilité garanties.",
+        "description2": "Idéale pour l'affichage commercial temporaire, qu'il s'agisse d'un terrain, d'un commerce ou d'un nouveau développement.",
+        "sections": {
+        "material": "Bois de construction 4 × 4 po.",
+        "colors": "Peinte (couleur au choix) ou non peinte.",
+        "signSizes": "4 × 4 | 3 × 5 | 3 × 6 | 4 × 8 | 8 × 8 | 4 × 16 pi — 1 façade ou 2 façades en V."
+        }
+    },
+    "standardV": {
+        "title": "Structure STANDARD EN V",
+        "description1": "Une structure personnalisée selon les dimensions de votre affichage, solidement ancrée dans le sol par des pieux en métal. Elle offre une solidité et une durabilité à toute épreuve et résiste parfaitement aux intempéries.",
+        "description2": "Idéale pour les événements extérieurs grand format : affiches publicitaires, affichage de festival, affiches d'exposants, ventes ou promotions, affiches « Nous embauchons », affichage de courtiers immobiliers et plus.",
+        "sections": {
+        "rigidDisplay": "Pancartes coroplast, panneaux alupanel, enseignes rigides.",
+        "configurations": "2 façades en V.",
+        "suggestedSizes": "De 4 × 8 à 8 × 8 pi max."
+        }
+    },
+    "woodEasel": {
+        "title": "Structure CHEVALET EN BOIS",
+        "description1": "Construction d'une structure en bois de style chevalet, idéale pour l'affichage recto verso en bordure de route.",
+        "sections": {
+        "signSizes": "De 4 × 4 à 4 × 8 pi — 1 façade ou 2 façades (recto verso)."
+        }
+    },
+    "boomLift": {
+        "title": "Service d'installation avec nacelle",
+        "description1": "Installation en hauteur sur l'extérieur d'un bâtiment. L'installation est effectuée à l'aide d'équipement professionnel jusqu'à une hauteur maximale d'environ 35 pieds (3e étage environ).",
+        "sections": {
+        "displayTypes": "Pancartes, affiches, panneaux, bannières, vinyle, autocollants de vitrine et plus."
+        }
+    },
+    "commercialWall": {
+        "title": "Installation murale commerciale à l'échelle",
+        "description1": "La pancarte est vissée dans le mur, ou dans le joint de brique selon l'état de ce dernier, pour garantir sa durabilité. L'installation peut être effectuée à l'aide d'une échelle jusqu'à une hauteur maximale d'environ 20 pieds (2e étage environ).",
+        "sections": {
+        "signSizes": "Jusqu'à 4 × 8 pi."
+        }
+    }
+    }
+}

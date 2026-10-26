@@ -3,6 +3,29 @@
     gap: 10px;
 }
 
-.mainContainer button {
+.mainContainer button,
+.mainContainer a {
     all: unset;
+    cursor: pointer;
+    color: white !important;
+    font-weight: 700 !important;
+    font-size: 1rem !important;
+}
+
+@media (max-width: 1000px) {
+    .mainContainer {
+        padding: 10px;
+
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .mainContainer button,
+    .mainContainer a   {
+        color: #0E4D98 !important;
+        border: 1px solid #0E4D98 !important;
+        border-radius: 10px;
+        padding: 2px 5px;
+    }
 }

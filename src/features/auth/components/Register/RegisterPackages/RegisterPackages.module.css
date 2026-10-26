@@ -1,8 +1,11 @@
 .mainContainer .packages {
     display: flex;
     gap: 20px;
-    align-items: stretch; /* ← clé */
+    align-items: stretch;
 }
+
+
+@media (max-width: 700px) { .mainContainer .packages { flex-direction: column; } }
 
 .mainContainer .packages .package {
     flex: 1;
@@ -10,8 +13,9 @@
     border-radius: 10px;
     text-align: center;
     border: 3px solid #D8E8F8;
-    display: flex;           /* ← ajouter */
-    flex-direction: column;  /* ← ajouter */
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
 }
 
 .mainContainer .packages .package:hover {
@@ -56,12 +60,28 @@
 }
 
 .mainContainer .packages .package .price {
-    color: #2E6C33;
-    background-color: #E8F5E9;
     font-weight: 700;
     padding: 3px;
     border-radius: 10px;
     margin: 10px 0;
+}
+
+.mainContainer .packages .package:nth-child(1) .price {
+    color: #092E5B;
+    background-color: #F4F6F9;
+    border: 1px solid #D8E8F8;
+}
+
+.mainContainer .packages .package:nth-child(2) .price {
+    color: #1B5E20;
+    background-color: #C8E6C9;
+    border: 1px solid #66BB6A;
+}
+
+.mainContainer .packages .package:nth-child(3) .price {
+    color: #5F9062;
+    background-color: #E8F5E9;
+    border: 1px solid #A5D6A7;
 }
 
 .mainContainer .packages .package ul {

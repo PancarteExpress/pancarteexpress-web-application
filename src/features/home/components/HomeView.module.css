@@ -64,7 +64,7 @@
   cursor: pointer;
   font-size: 1.3rem;
   text-decoration: none;
-
+  width: fit-content;
   display: flex;
   align-items: center;
   gap: 10px;

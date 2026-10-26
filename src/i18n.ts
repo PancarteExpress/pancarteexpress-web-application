@@ -8,10 +8,20 @@ type Loader = (locale: Locale) => Promise<{ default: Messages }>;
 // Un nouveau namespace = une ligne ici
 const LOADERS = {
   header: (locale) => import(`@/messages/${locale}/header.json`),
+  register: (locale) => import(`@/messages/${locale}/register.json`),
+  login: (locale) => import(`@/messages/${locale}/login.json`),
+
+  home: (locale) => import(`@/messages/${locale}/home.json`),
+  residential: (locale) => import(`@/messages/${locale}/residential.json`),
+  bigFormat: (locale) => import(`@/messages/${locale}/bigFormat.json`),
+  shop: (locale) => import(`@/messages/${locale}/shop.json`),
+  contact: (locale) => import(`@/messages/${locale}/contact.json`),
   cart: (locale) => import(`@/messages/${locale}/cart.json`),
   products: (locale) => import(`@/messages/${locale}/products.json`),
-  shop: (locale) => import(`@/messages/${locale}/shop.json`),
   checkout: (locale) => import(`@/messages/${locale}/checkout.json`),
+
+  footer: (locale) => import(`@/messages/${locale}/footer.json`),
+
 } satisfies Record<string, Loader>;
 
 type Namespace = keyof typeof LOADERS;

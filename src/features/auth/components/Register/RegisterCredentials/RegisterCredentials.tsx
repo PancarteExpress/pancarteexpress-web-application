@@ -9,6 +9,7 @@ import { FaHouseChimney } from 'react-icons/fa6';
 import { useEffect } from 'react';
 import { MdGroups2 } from 'react-icons/md';
 import { IoPersonAdd } from 'react-icons/io5';
+import { useTranslations } from 'next-intl';
 
 interface RegisterCredentialsProps {
   locale: string;
@@ -18,6 +19,7 @@ interface RegisterCredentialsProps {
 }
 
 export default function RegisterCredentials({ locale, packageChoice, setPackageChoice, onFormStepChange }: RegisterCredentialsProps) {
+  const t = useTranslations('register');
 
   return (
     <div className={styles.credentials}>
@@ -27,8 +29,8 @@ export default function RegisterCredentials({ locale, packageChoice, setPackageC
         ) : (
           <IoPersonAdd  size={70} style={{color: "#0E4D9A"}}/>
         )}
-        <label>Creer votre espace courtier</label>
-        <h3> {packageChoice === 'group' ? 'Vous vous appretez à rejoindre une equipe de courtier ' : 'Vous vous appretez à créer votre espace courtier' }</h3>
+        <label>{t('formTitle')}</label>
+        <h3>{packageChoice === 'group' ? t('formPackageGroup') : t('formPackageSolo')}</h3>
       </div>
 
       <RegisterForm 
@@ -39,9 +41,9 @@ export default function RegisterCredentials({ locale, packageChoice, setPackageC
       />
       
       <p style={{ color: '#7691B4', fontWeight: '700', textAlign: 'center', marginTop: '1rem' }}>
-        Déjà inscrit?{" "}
+        {t('alreadyMember')}{" "}
         <Link href={`/${locale}/login`} style={{ textDecoration: 'none', color: '#0E4D9A', fontWeight: '700' }}>
-          Se connecter
+          {t('connect')}
         </Link>
       </p>
     </div>

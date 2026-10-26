@@ -1,0 +1,24 @@
+{
+    "heroTitle": "Our contact information",
+    "heroLabel1": "Office phone",
+    "heroLabel2": "Representative's cellphone",
+    "heroLabel3": "Email",
+    "heroLabel4": "Our address",
+
+    "formTitle": "Or send us a request now!",
+    "formFirstname": "First name",
+    "formLastname": "Last name",
+    "formPhoneNumber": "Phone",
+    "formExtenstion": "Office / Ext.",
+    "formEmail": "Email",
+    "formCompany": "Company name",
+    "formReason": "Reason for your request",
+
+    "humanErrorFeedback": "Please fill in all required fields",
+    "serverErrorFeedback": "A server error occurred. Please try again later.",
+    "sendingFeedback": "Sending…",
+    "successFeedback": "Message sent successfully!",
+
+    "formSend": "Send my request"
+    
+}

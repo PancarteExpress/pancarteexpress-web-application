@@ -8,6 +8,9 @@ import { calculateTotals } from '@/lib/pricing/calculateTotals';
 import type { CheckoutItemPayload, CheckoutPayload, CheckoutResponse } from '@/lib/validations/checkout';
 import { CheckoutConflictError, PaymentProviderError, ProductUnavailableError } from './errors';
 
+import { after } from 'next/server';
+import { sendReceipts } from '@/features/checkout/emailSender/sendReceipts';
+
 export interface CheckoutUser {
   id: string;
   email: string;
@@ -22,7 +25,12 @@ const existingOrderSelect = {
   status: true,
   total: true,
   userId: true,
-  paymentIntentId: true,
+  payments: {
+    where: { kind: 'PRODUCTS' },
+    orderBy: { createdAt: 'desc' },
+    take: 1,
+    select: { paymentIntentId: true },
+  },
 } satisfies Prisma.OrderSelect;
 
 type ExistingOrder = Prisma.OrderGetPayload<{ select: typeof existingOrderSelect }>;
@@ -44,7 +52,7 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
 
   const shipping = payload.fulfillment?.method === 'DELIVERY' ? payload.fulfillment.shippingAddress : null;
 
-  const requiresPayment = !user && totals.total > 0;
+  const requiresPayment = totals.total > 0;
   const status: OrderStatus = requiresPayment ? 'AWAITING_PAYMENT' : 'PENDING';
 
   // NOUVEAU : connecté → téléphone du compte (comme le courriel) ; invité → celui du formulaire
@@ -52,7 +60,7 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
     ? (await prisma.user.findUnique({ where: { id: user.id }, select: { phoneNumber: true } }))?.phoneNumber ?? null
     : payload.contact.phone ?? null;
 
-  let order: { id: string; orderNumber: number; total: number };
+  let order: { id: string; orderNumber: number; subtotal: number; tps: number; tvq: number; total: number };
   try {
     // Écriture imbriquée : Prisma l'exécute dans une seule transaction
     order = await prisma.order.create({
@@ -80,7 +88,7 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
         products: { create: orderLines },
         serviceRequests: { create: serviceItems.map(toServiceRequestCreate) },
       },
-      select: { id: true, orderNumber: true, total: true },
+      select: { id: true, orderNumber: true, subtotal: true, tps: true, tvq: true, total: true },
     });
   } catch (error) {
     // Deux requêtes simultanées avec la même clé : la seconde rejoue la première
@@ -95,6 +103,9 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
   }
 
   if (!requiresPayment) {
+    // Commande définitive dès maintenant (connecté ou services seulement)
+    const orderId = order.id;
+    after(() => sendReceipts(orderId));
     return { mode: 'submitted', orderNumber: order.orderNumber, total: order.total };
   }
 
@@ -163,7 +174,7 @@ const toServiceRequestCreate = (item: ServiceRequestItem): Prisma.ServiceRequest
 /* ── Stripe (invité) ──────────────────────────────────────────── */
 
 async function attachPaymentIntent(
-  order: { id: string; orderNumber: number; total: number },
+  order: { id: string; orderNumber: number; subtotal: number; tps: number; tvq: number; total: number },
   email: string,
 ): Promise<CheckoutResponse> {
   let intentId: string | null = null;
@@ -175,7 +186,7 @@ async function attachPaymentIntent(
         currency: 'cad',
         payment_method_types: ['card'],
         receipt_email: email,
-        metadata: { orderId: order.id, orderNumber: String(order.orderNumber) },
+        metadata: { orderId: order.id, orderNumber: String(order.orderNumber), kind: 'PRODUCTS' },
       },
       // Une clé par commande : une commande recréée obtient un nouveau paiement, sans conflit
       { idempotencyKey: `order-${order.id}` },
@@ -184,11 +195,25 @@ async function attachPaymentIntent(
 
     if (!intent.client_secret) throw new Error('client_secret absent');
 
-    await prisma.order.update({ where: { id: order.id }, data: { paymentIntentId: intent.id } });
+    await prisma.$transaction([
+      prisma.payment.create({
+        data: {
+          orderId: order.id,
+          kind: 'PRODUCTS',
+          subtotal: order.subtotal,
+          tps: order.tps,
+          tvq: order.tvq,
+          total: order.total,
+          paymentIntentId: intent.id,
+        },
+      }),
+      // Transition : ancien champ conservé jusqu'à l'étape 6
+      prisma.order.update({ where: { id: order.id }, data: { paymentIntentId: intent.id } }),
+    ]);
 
     return { mode: 'payment', orderNumber: order.orderNumber, clientSecret: intent.client_secret, total: order.total };
   } catch (error) {
-    // Aucun orphelin : ni commande sans paiement possible, ni PaymentIntent sans commande
+    // Aucun orphelin : la suppression de la commande supprime aussi son Payment (cascade)
     if (intentId) await stripe.paymentIntents.cancel(intentId).catch(() => undefined);
     await prisma.order.delete({ where: { id: order.id } }).catch(() => undefined);
     throw new PaymentProviderError('Création du paiement impossible', { cause: error });
@@ -204,12 +229,14 @@ async function replay(order: ExistingOrder): Promise<CheckoutResponse> {
   if (order.status !== 'AWAITING_PAYMENT') {
     throw new CheckoutConflictError('alreadyProcessed', order.orderNumber);
   }
-  if (!order.paymentIntentId) {
+
+  const paymentIntentId = order.payments[0]?.paymentIntentId;
+  if (!paymentIntentId) {
     // La première requête est encore en train de créer le PaymentIntent
     throw new CheckoutConflictError('inProgress', order.orderNumber);
   }
 
-  const intent = await stripe.paymentIntents.retrieve(order.paymentIntentId);
+  const intent = await stripe.paymentIntents.retrieve(paymentIntentId);
   if (!intent.client_secret || intent.status === 'succeeded' || intent.status === 'canceled') {
     throw new CheckoutConflictError('alreadyProcessed', order.orderNumber);
   }

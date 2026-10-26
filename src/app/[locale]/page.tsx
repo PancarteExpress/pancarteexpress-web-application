@@ -8,7 +8,6 @@ interface Props {
 export default async function HomePage({ params }: Props) {
   const { locale } = await params;
 
-  //locale={locale === 'en' ? 'en' : 'fr'}
   return (
     <>
       <HomeView  />

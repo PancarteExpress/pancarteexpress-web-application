@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "../../../store/authStore";
 import { z } from "zod";
 import { GoogleLoginButton } from '../../googleLoginButton/GoogleLoginButton';
+import { useTranslations } from 'next-intl';
 
 interface RegisterFormProps {
   locale: string;
@@ -25,6 +26,7 @@ const verifyCodeSchema = z.object({
 type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
 
 export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepChange }: RegisterFormProps) {
+  const t = useTranslations('register');
   const router = useRouter();
   const { register: registerUser, login } = useAuth();
 
@@ -64,6 +66,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
           phoneNumber: registeredData.phoneNumber,
           companyName: registeredData.companyName,
           groupStatus: groupStatus === 'group' ? 'PENDING' : 'SOLO',
+          locale 
         }),
       });
 
@@ -116,13 +119,13 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
                 <label className={styles.radioLabel}>
                     <input className={styles.radioInput} type="radio" id="solo" name="groupStatus" value="solo" checked={groupStatus === "solo"} onChange={() => { setGroupStatus('solo'); setPackageChoice('solo'); }} /> 
                     <span className={styles.radioButton} style={{ borderRadius: '10px 0 0 10px' }}>
-                      Forfait individuel
+                      {t('formBtnSolo')}
                     </span>
                 </label>
                 <label className={styles.radioLabel}>
                     <input className={styles.radioInput} type="radio" id="group" name="groupStatus" value="group" checked={groupStatus === "group"} onChange={() => { setGroupStatus('group'); setPackageChoice('group'); }}/>
                     <span className={styles.radioButton} style={{ borderRadius: '0 10px 10px 0' }}>
-                      Forfait équipe
+                      {t('formBtnGroup')}
                     </span>
                     
                 </label>
@@ -133,7 +136,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
 
         <div className={styles.groupInputs}>
           <div className={styles.inputs}>
-            <label htmlFor="registerFirstName" className="block text-sm font-medium">First Name <span className={styles.req}>*</span></label>
+            <label htmlFor="registerFirstName" className="block text-sm font-medium">{t('formFirstName')} <span className={styles.req}>*</span></label>
             <input
               id="registerFirstName"
               {...register("firstName")}
@@ -143,7 +146,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
           </div>
 
           <div className={styles.inputs}>
-            <label htmlFor="registerLastName" className="block text-sm font-medium">Last Name <span className={styles.req}>*</span></label>
+            <label htmlFor="registerLastName" className="block text-sm font-medium">{t('formLastName')} <span className={styles.req}>*</span></label>
             <input
               id="registerLastName"
               {...register("lastName")}
@@ -155,7 +158,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
         
         <div className={styles.groupInputs}>
           <div className={styles.inputs}>
-            <label htmlFor="registerPhoneNumber" className="block text-sm font-medium">Phone number <span className={styles.req}>*</span></label>
+            <label htmlFor="registerPhoneNumber" className="block text-sm font-medium">{t('formPhoneNumber')} <span className={styles.req}>*</span></label>
             <input
               id="registerPhoneNumber"
               {...register("phoneNumber")}
@@ -165,7 +168,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
           </div>
 
           <div className={styles.inputs}>
-            <label htmlFor="registerCompanyName" className="block text-sm font-medium">Company name</label>
+            <label htmlFor="registerCompanyName" className="block text-sm font-medium">{t('formCompanyName')}</label>
             <input
               id="registerCompanyName"
               {...register("companyName")}
@@ -176,7 +179,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
         </div>
 
         <div className={styles.inputs}>
-          <label htmlFor="registerEmail" className="block text-sm font-medium mb-1">Email <span className={styles.req}>*</span></label>
+          <label htmlFor="registerEmail" className="block text-sm font-medium mb-1">{t('formEmail')} <span className={styles.req}>*</span></label>
           <input
             id="registerEmail"
             type="email"
@@ -188,7 +191,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
 
         <div className={styles.groupInputs}>
           <div className={styles.inputs}>
-            <label htmlFor="registerPassword" className="block text-sm font-medium mb-1">Password <span className={styles.req}>*</span></label>
+            <label htmlFor="registerPassword" className="block text-sm font-medium mb-1">{t('formPassword')} <span className={styles.req}>*</span></label>
             <input
               id="registerPassword"
               type="password"
@@ -199,7 +202,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
           </div>
           
           <div className={styles.inputs}>
-            <label htmlFor="registerPassword" className="block text-sm font-medium mb-1">Confirm password <span className={styles.req}>*</span></label>
+            <label htmlFor="registerPassword" className="block text-sm font-medium mb-1">{t('formConfirmPassword')} <span className={styles.req}>*</span></label>
             <input
               id="registerPassword"
               type="password"
@@ -214,9 +217,14 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
         {/* Step 2: Verify Code */}
         {step === "verify" && (
         <div>
-          <p style={{ textAlign: 'center', color: "#0E4D9A" }}>Un code de vérification a été envoyé à <span style={{ fontWeight: '700' }}>{registeredData?.email}</span></p>
+          <p style={{ textAlign: 'center', color: "#0E4D9A" }}>
+            {t.rich('verificationCodeSent', {
+              email: registeredData?.email ?? '',
+              bold: (chunks) => <span style={{ fontWeight: 700 }}>{chunks}</span>,
+            })}
+          </p>
           <div className={styles.inputs}>
-            <label htmlFor="verifyCode" className="block text-sm font-medium">Code de vérification</label>
+            <label htmlFor="verifyCode" className="block text-sm font-medium">{t('verificationCode')}</label>
             <input
               id="verifyCode"
               type="text"
@@ -237,16 +245,16 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
         
         {success ? (
           <div className={styles.success}>
-            Creation de votre compte reussie
+            {t('accountCreatedSuccessfully')}
           </div>
         ) : (isLoading || step === "verify") && (
           <div className={styles.loading}>
-            {isLoading ? 'Tentative de creation du compte...' : 'Une derniere etape avant la creation du compte'}
+            {isLoading ? t('tryingToCreateAccount') : t('lastStepToCreateAccount')}
           </div>
         )}
 
         <button type="submit" disabled={isLoading} className={styles.btnConnection}>
-          {step === "register" ? 'S\'inscrire' : 'Confirmer le code de verification'}
+          {step === "register" ? t('register') : t('confirmVerificationCode')}          
         </button>
       </form>
     </div>

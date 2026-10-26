@@ -32,10 +32,16 @@ const userOrderSelect = {
 
           city: true,
           
-          services: { select: { id: true, type: true, status: true, scheduledFor: true, completedAt: true } },
+          services: { select: { id: true, type: true, price: true, status: true, scheduledFor: true, completedAt: true } },
         },
       },
     },
+  },
+  // Paiement des services (présent seulement s'il a réussi)
+  payments: {
+    where: { kind: 'SERVICES', status: 'SUCCEEDED' },
+    select: { id: true },
+    take: 1,
   },
 } satisfies Prisma.OrderSelect;
 

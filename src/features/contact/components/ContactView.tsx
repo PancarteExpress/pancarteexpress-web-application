@@ -7,10 +7,11 @@ import { MdOutlinePhoneAndroid, MdMail, MdLocationPin } from 'react-icons/md';
 import { type ContactFormData, contactSchema } from '../types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
+import { useLocale, useTranslations } from 'next-intl';
 import { sendContact } from '../emailSender/sendContact';
 
 export default function Contact() {
-
+   const t = useTranslations('contact');
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   
   const { register, handleSubmit, reset, formState: { errors, isSubmitting }, } = useForm<ContactFormData>({
@@ -40,7 +41,7 @@ export default function Contact() {
     <div className={styles.mainContainer}>
 
       <div className={styles.hero}>
-        <label>Nos coordonnées</label>
+        <label>{t('heroTitle')}</label>
         <div style={{ display: 'flex', gap: '20px' }}>
           <div className={styles.contacts}>
 
@@ -49,7 +50,7 @@ export default function Contact() {
                 <FaPhoneAlt size={25} color="#D8E8F8" />
               </div>
               <div className={styles.infos}>
-                <label className={styles.contactLabel}>Téléphone bureau</label>
+                <label className={styles.contactLabel}>{t('heroLabel1')}</label>
                 <label className={styles.contactValue}>514-825-2709</label>
               </div>
             </div>
@@ -59,7 +60,7 @@ export default function Contact() {
                 <MdOutlinePhoneAndroid size={25} color="#D8E8F8" />
               </div>
               <div className={styles.infos}>
-                <label className={styles.contactLabel}>Cellulaire representant</label>
+                <label className={styles.contactLabel}>{t('heroLabel2')}</label>
                 <label className={styles.contactValue}>438-543-0912</label>
               </div>
             </div>
@@ -71,7 +72,7 @@ export default function Contact() {
                 <MdMail size={25} color="#D8E8F8" />
               </div>
               <div className={styles.infos}>
-                <label className={styles.contactLabel}>Courriel</label>
+                <label className={styles.contactLabel}>{t('heroLabel3')}</label>
                 <label className={styles.contactValue}>info@pancarteexpress.com</label>
               </div>
             </div>
@@ -81,7 +82,7 @@ export default function Contact() {
                 <MdLocationPin size={25} color="#D8E8F8" />
               </div>
               <div className={styles.infos}>
-                <label className={styles.contactLabel}>Notre adresse</label>
+                <label className={styles.contactLabel}>{t('heroLabel4')}</label>
                 <label className={styles.contactValue}>
                   2160 Rue Léger, Lasalle, QC H8N 2L8
                 </label>
@@ -93,73 +94,73 @@ export default function Contact() {
 
       <form className={styles.contactForm} onSubmit={handleSubmit(onSubmit, () => setStatus('idle'))} noValidate>
         <div className={styles.header}>
-          <h2 className={styles.formTitle}>Ou envoyer une demande des maintenant !</h2>
+          <h2 className={styles.formTitle}>{t('formTitle')}</h2>
         </div>
 
         <div className={styles.formBody}>
           <div className={styles.row}>
             <div className={styles.field}>
-              <label htmlFor="firstName">Prénom <span className={styles.req}>*</span></label>
+              <label htmlFor="firstName">{t('formFirstname')} <span className={styles.req}>*</span></label>
               <input id="firstName" type="text" placeholder="Jean" {...register('firstName')} />
             </div>
             <div className={styles.field}>
-              <label htmlFor="lastName">Nom <span className={styles.req}>*</span></label>
+              <label htmlFor="lastName">{t('formLastname')} <span className={styles.req}>*</span></label>
               <input id="lastName" type="text" placeholder="Tremblay" {...register('lastName')}/>
             </div>
           </div>
 
           <div className={styles.row}>
             <div className={styles.field}>
-              <label htmlFor="telephone">Téléphone <span className={styles.req}>*</span></label>
+              <label htmlFor="telephone">{t('formPhoneNumber')} <span className={styles.req}>*</span></label>
               <input id="telephone" type="text" placeholder="(514) 825-2709" {...register('phoneNumber')}/>
             </div>
             <div className={styles.field}>
-              <label htmlFor="bureau">Bureau / # poste</label>
+              <label htmlFor="bureau">{t('formExtenstion')}</label>
               <input id="bureau" type="text" {...register('extension')} />
             </div>
           </div>
 
           <div className={styles.row}>
             <div className={styles.field}>
-              <label htmlFor="courriel">Courriel <span className={styles.req}>*</span></label>
+              <label htmlFor="courriel">{t('formEmail')} <span className={styles.req}>*</span></label>
               <input id="courriel" type="text" placeholder="pancarteexpress@gmail.com" {...register('email')} />
             </div>
             <div className={styles.field}>
-              <label htmlFor="company">Nom de l entreprise</label>
+              <label htmlFor="company">{t('formCompany')}</label>
               <input id="company" type="text" placeholder="Pancarte Express" {...register('company')} />
             </div>
           </div>
 
           <div className={`${styles.row} ${styles.rowFull}`}>
             <div className={styles.field}>
-              <label htmlFor="raison">Raison de votre demande <span className={styles.req}>*</span></label>
+              <label htmlFor="raison">{t('formReason')} <span className={styles.req}>*</span></label>
               <textarea id="raison" rows={4} className={styles.textarea} {...register('reason')}/>
             </div>
           </div>
 
           {Object.keys(errors).length > 0 && (
             <div className={styles.errorMessage}>
-              * Veuillez remplir tous les champs obligatoires *
+              {t('humanErrorFeedback')}
             </div>
           )}
           
           { status === 'error' && (
             <div className={styles.errorMessage}>
-              Une erreur coter serveur s est produite, veuillez reessayer plus tard
+              {t('serverErrorFeedback')}
             </div>
           )}
 
           { isSubmitting && 
           <div className={styles.sendingMessage}>
-            Envoi en cours...
+            {t('sendingFeedback')}
           </div> }
           
           { status === 'success' && 
           <div className={styles.messageSent}>
-            Message envoyer avec success
+            {t('successFeedback')}
           </div> }
 
-          <button type="submit" disabled={isSubmitting}>Envoyer ma demande</button>
+          <button type="submit" disabled={isSubmitting}>{t('formSend')}</button>
 
         </div>
       </form>

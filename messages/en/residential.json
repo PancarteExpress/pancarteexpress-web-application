@@ -1,0 +1,46 @@
+{
+    "heroTitle": "Residential services",
+    "heroLabel1": "Get your listing displayed quickly with our residential installation service.",
+    "heroLabel2": "Installation or pickup of signs, riders, lockboxes, or any other accessory.",
+
+    "shopRedirection": "Shop residential signage supplies",
+    "servicesRedirection": "Submit a request online",
+    "cards": {
+        "ground": {
+            "title": "Ground installation",
+            "description": "The sign is secured in the ground with a metal anchor for strength and durability."
+        },
+        "illuminated": {
+            "title": "Illuminated sign installation",
+            "description": "The illuminated sign is secured in the ground with a metal anchor for strength and durability. A power cable is then plugged into an outdoor outlet, so the sign lights up and stays visible day and night."
+        },
+        "railing": {
+            "title": "Railing installation",
+            "description": "The sign is attached directly to the railing using the post and metal clamps for added strength."
+        },
+        "balcony": {
+            "title": "Balcony installation",
+            "description": "The sign is attached directly to the balcony railing, facing forward or angled (V-shape), using plastic zip ties for both visibility and strength. Installation can be done by ladder up to a maximum height of about 20 feet (roughly the 2nd floor) or by appointment with the occupant."
+        },
+        "wall": {
+            "title": "Residential wall installation",
+            "description": "The sign is screwed into the wall, or into the brick joint depending on its condition, for lasting durability. Installation can be done by ladder up to a maximum height of about 20 feet (roughly the 2nd floor)."
+        },
+        "lockbox": {
+            "title": "Lockbox installation or removal",
+            "description": "Installation of a combination lockbox with a key compartment, usually attached to the front door or wherever you specify."
+        },
+        "rider": {
+            "title": "Rider installation or removal",
+            "description": "Installation of a rider of your choice on a sign to add information (e.g., “Sold”, “For Rent”, a custom rider matching your brand, etc.). Rider rental also available."
+        },
+        "openHouseArrows": {
+            "title": "Open house arrow installation",
+            "description": "Installation of open house arrows (up to 5) pointing to the featured property, placed at busy street corners or at specific locations you set in the form, with automatic removal at the start of the following week."
+        },
+        "flags": {
+            "title": "Flag installation",
+            "description": "Installation of flags in front of the property to promote an open house or other information."
+        }
+        }
+}
