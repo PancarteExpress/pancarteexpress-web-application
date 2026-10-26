@@ -1,89 +1,91 @@
-.test {
-    margin: 0 auto;
-    width: 97%;
-    border: 3px solid #0E4D9A;
-    /*background-color: rgb(232 241 251 / 0.1);*/
-    border-radius: 10px;
-    padding: 5px;
-    margin-bottom: 25px;
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.fieldset {
-    margin-bottom: 10px;
+.submit {
+  align-self: flex-start;
+  padding: 0.625rem 1.25rem;
+  border: 0;
+  border-radius: 8px;
+  background: #1f4e9c;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
 }
 
-.fieldset .legend {
-    font-size: 1.2rem;
-    color: #5F7FA8;
-    font-weight: 900;
+.submit:focus-visible {
+  outline: 3px solid #1565c0;
+  outline-offset: 2px;
 }
 
-.fieldset .userChoice {
-    margin: 10px 0;
-    padding: 0 20px;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    align-items: center;
-    text-align: center;
-    gap: 10px;
+/* ------ */
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.fieldset .userChoice label {
-    font-weight: 700;
-    text-transform: uppercase;
-    text-align: center;
-    padding: 5px;
-    font-size: 0.8rem;
-    color: black;
-    border-radius: 10px;
-    border: 2px solid #0E4D9A;
+.sectionTitle {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #1f4e9c;
 }
 
-.fieldset .userChoice label input {
-    display: none;
+.pickup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #eaf2ff;
 }
 
-.fieldset .userChoice label.checked {
-    background-color: #E8F1FB;
+.label { font-weight: 700; }
+
+.required,
+.error { color: #c62828; }
+
+.error {
+  margin: 0;
+  font-size: 0.875rem;
 }
 
-.fieldset .specialInstructions {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 0 50px;
-    margin-top: 20px;
+.unit {
+  min-inline-size: 0;
+  margin: 0;
+  padding: 1rem;
+  border: 1px solid #d0d7e2;
+  border-left: 4px solid #0E3A8C;
+  border-radius: 8px;
 }
 
-.fieldset .specialInstructions .addonsInstruction {
-    border: 3px solid #FFA500;
-    border-radius: 10px;
-    text-align: center;
-    color: #876816;
-    background-color: #FFEECF;
-    font-size: 1.2rem;
-    
+.unitTitle {
+  padding: 0 0.25rem;
+  font-weight: 700;
 }
 
-.fieldset .specialInstructions label {
-    font-weight: 900;
+.subOptions {
+  margin-bottom: 1.25rem;
+  padding: 0.75rem;
+  border: 1.5px solid #222;
+  border-radius: 8px;
 }
 
-.fieldset .specialInstructions textarea {
-    border-radius: 10px;
-    border: 2px solid #0E4D9A;
-
-    padding: 10px;
+.assignment {
+  min-inline-size: 0;
+  margin: 0 0 0.75rem;
+  padding: 0.75rem 1rem;
+  border: 1.5px dashed #9aa6b8;
+  border-radius: 8px;
 }
 
-.fieldset .materialDetails {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 0 50px;
-    margin-top: 20px;
-}
-
-.fieldset .materialDetails label {
-    font-weight: 900;
+.timeRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 2rem;
 }

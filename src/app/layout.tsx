@@ -8,23 +8,15 @@ export const metadata: Metadata = {
   description: 'Platform de services immobiliers',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
     <html suppressHydrationWarning>
-      <head>
-        <script src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`} async defer/>
-      </head>
-
       <body>
-        <StorageOwnerSync />
-        {children}
+        <SessionProvider>
+          <StorageOwnerSync />
+          {children}
+        </SessionProvider>
       </body>
     </html>
-    </SessionProvider>
   );
 }

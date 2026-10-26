@@ -11,6 +11,9 @@ interface Props {
   value: string;
   onChange: (value: string) => void;
   onSelect?: (address: ParsedAddress | null) => void;
+  onBlur?: () => void;
+  /** Compatible avec le `field.ref` de React Hook Form (focus sur erreur) */
+  inputRef?: (element: HTMLInputElement | null) => void;
   placeholder?: string;
   disabled?: boolean;
   'aria-invalid'?: boolean;
@@ -35,7 +38,6 @@ const QUEBEC_BOUNDS: google.maps.LatLngBoundsLiteral = {
 
 const QC_REGEX = /\bQC\b/;
 const POSTAL_CODE_REGEX = /^[A-Z]\d[A-Z] ?\d[A-Z]\d$/i;
-
 
 function hasRequiredComponents(place: google.maps.places.Place): boolean {
   const get = (type: string) =>
@@ -65,11 +67,15 @@ export default function AddressAutocomplete({
   value,
   onChange,
   onSelect,
+  onBlur,
+  inputRef,
   placeholder = 'Commencez à taper votre adresse',
   disabled,
+  'aria-describedby': describedBy,
   ...aria
 }: Props) {
   const listboxId = useId();
+  const errorId = useId();
   const hasSelectionRef = useRef(false);
   const sessionTokenRef = useRef<google.maps.places.AutocompleteSessionToken | null>(null);
   const requestIdRef = useRef(0);
@@ -81,6 +87,7 @@ export default function AddressAutocomplete({
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
 
+  // Toujours les dernières callbacks, sans relancer les effets ni recréer les handlers async
   const onChangeRef = useRef(onChange);
   const onSelectRef = useRef(onSelect);
   useEffect(() => {
@@ -90,6 +97,7 @@ export default function AddressAutocomplete({
 
   useEffect(() => {
     let cancelled = false;
+    const requestIds = requestIdRef;
 
     loadGoogleMaps()
       .then(() => {
@@ -101,6 +109,7 @@ export default function AddressAutocomplete({
 
     return () => {
       cancelled = true;
+      requestIds.current++;
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
   }, []);
@@ -135,7 +144,7 @@ export default function AddressAutocomplete({
       setSuggestions(
         results.flatMap((s) => {
           const p = s.placePrediction;
-          // Exclut les débordements du rectangle 
+          // Exclut les débordements du rectangle
           if (!p || !QC_REGEX.test(p.secondaryText?.text ?? '')) return [];
           return [{ placeId: p.placeId, label: p.text.text, prediction: p }];
         })
@@ -148,7 +157,7 @@ export default function AddressAutocomplete({
 
   const selectSuggestion = async (suggestion: Suggestion) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    requestIdRef.current++;
+    const requestId = ++requestIdRef.current;
     closeSuggestions();
     onChangeRef.current(suggestion.label);
 
@@ -157,6 +166,7 @@ export default function AddressAutocomplete({
       // Limite les champs facturés par Google au strict nécessaire
       await place.fetchFields({ fields: ['addressComponents', 'formattedAddress'] });
     } catch {
+      if (requestId !== requestIdRef.current) return;
       hasSelectionRef.current = false;
       onSelectRef.current?.(null);
       return;
@@ -164,6 +174,9 @@ export default function AddressAutocomplete({
       // fetchFields clôt la session : la prochaine saisie en démarre une nouvelle
       sessionTokenRef.current = null;
     }
+
+    // Démonté ou nouvelle saisie entre-temps : résultat obsolète
+    if (requestId !== requestIdRef.current) return;
 
     if (!hasRequiredComponents(place)) {
       hasSelectionRef.current = false;
@@ -182,7 +195,7 @@ export default function AddressAutocomplete({
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSelectionError(null);
     const next = e.target.value;
-    onChange(next);
+    onChangeRef.current(next);
 
     // Texte modifié après une sélection : l'adresse structurée n'est plus fiable
     if (hasSelectionRef.current) {
@@ -222,53 +235,62 @@ export default function AddressAutocomplete({
     }
   };
 
+  const handleBlur = () => {
+    closeSuggestions();
+    onBlur?.();
+  };
+
   const isOpen = suggestions.length > 0;
+  // Sans Google Maps, aucune sélection n'est possible : loadError prime
+  const internalError = loadError ?? selectionError;
+  const ariaDescribedBy = [describedBy, internalError ? errorId : null].filter(Boolean).join(' ') || undefined;
 
   return (
     <div className={styles.wrapper}>
       <input
+        ref={inputRef}
         id={id}
         type="text"
         className={styles.addressInput}
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
-        onBlur={closeSuggestions}
+        onBlur={handleBlur}
         placeholder={placeholder}
         disabled={disabled}
         autoComplete="off"
         role="combobox"
         aria-autocomplete="list"
         aria-expanded={isOpen}
-        aria-controls={listboxId}
+        aria-controls={isOpen ? listboxId : undefined}
         aria-activedescendant={activeIndex >= 0 ? `${listboxId}-${activeIndex}` : undefined}
         {...aria}
+        aria-describedby={ariaDescribedBy}
       />
 
       {isOpen && (
-      <ul id={listboxId} role="listbox" className={styles.suggestions}>
-        {suggestions.map((s, index) => (
-          <li
-            key={s.placeId}
-            id={`${listboxId}-${index}`}
-            role="option"
-            aria-selected={index === activeIndex}
-            className={index === activeIndex ? `${styles.suggestion} ${styles.suggestionActive}` : styles.suggestion}
-            // mousedown plutôt que click : le blur de l'input fermerait la liste avant le click
-            onMouseDown={(e) => {
-              e.preventDefault();
-              void selectSuggestion(s);
-            }}
-            onMouseEnter={() => setActiveIndex(index)}
-          >
-            {s.label}
-          </li>
-        ))}
-      </ul>
+        <ul id={listboxId} role="listbox" className={styles.suggestions}>
+          {suggestions.map((s, index) => (
+            <li
+              key={s.placeId}
+              id={`${listboxId}-${index}`}
+              role="option"
+              aria-selected={index === activeIndex}
+              className={index === activeIndex ? `${styles.suggestion} ${styles.suggestionActive}` : styles.suggestion}
+              // mousedown plutôt que click : le blur de l'input fermerait la liste avant le click
+              onMouseDown={(e) => {
+                e.preventDefault();
+                void selectSuggestion(s);
+              }}
+              onMouseEnter={() => setActiveIndex(index)}
+            >
+              {s.label}
+            </li>
+          ))}
+        </ul>
       )}
 
-      {loadError && <p className={styles.loadError}>{loadError}</p>}
-      {selectionError && <p className={styles.loadError}>{selectionError}</p>}
+      {internalError && <p id={errorId} className={styles.loadError}>{internalError}</p>}
     </div>
   );
 }

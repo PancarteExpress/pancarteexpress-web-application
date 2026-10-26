@@ -9,7 +9,7 @@ import type {
 import { MAX_QUANTITY } from '@/lib/constants/cart';
 
 const STORAGE_KEY = 'pancarte-cart';
-const STORAGE_VERSION = 2;
+const STORAGE_VERSION = 4;
 
 const clampQuantity = (q: number): number =>
   Number.isFinite(q) ? Math.min(MAX_QUANTITY, Math.max(1, Math.trunc(q))) : 1;
@@ -23,6 +23,18 @@ const isCartItem = (value: unknown): value is CartItem => {
   if (v.kind === 'serviceRequest') return Array.isArray(v.addresses);
   return false;
 };
+
+// v3 : installations dans un format antérieur ».
+const stripLegacyInstallations = (items: CartItem[]): CartItem[] =>
+  items.flatMap<CartItem>((item) => {
+    if (item.kind !== 'serviceRequest') return [item];
+
+    const addresses = item.addresses
+      .map((a) => ({ ...a, services: (a.services ?? []).filter((s) => s.type !== 'installation') }))
+      .filter((a) => a.services.length > 0);
+
+    return addresses.length > 0 ? [{ ...item, addresses }] : [];
+  });
 
 interface PersistedCart {
   items: CartItem[];
@@ -49,7 +61,7 @@ export const useCartStore = create<CartState>()(
 
       setHasHydrated: (value) => set({ hasHydrated: value }),
 
-      // NOUVEAU : décide si le panier est conservé ou vidé selon l'utilisateur courant
+      // Décide si le panier est conservé ou vidé selon l'utilisateur courant
       syncOwner: (userId) =>
         set((state) => {
           if (state.ownerId === userId) return state; // même personne : rien ne change
@@ -118,14 +130,22 @@ export const useCartStore = create<CartState>()(
       version: STORAGE_VERSION,
       storage: createJSONStorage(() => localStorage),
 
-      // Ce qui est sauvegardé dans le localStorage : maintenant avec ownerId
+      // Ce qui est sauvegardé dans le localStorage
       partialize: (state): PersistedCart => ({ items: state.items, ownerId: state.ownerId }),
 
-      // Paniers déjà sauvegardés en v1 : conservés, considérés comme invités
       migrate: (persisted, version): PersistedCart => {
-        if (version === 1) {
-          const items = (persisted as { items?: unknown } | undefined)?.items;
-          return { items: Array.isArray(items) ? (items as CartItem[]) : [], ownerId: null };
+        const p = persisted as { items?: unknown; ownerId?: unknown } | undefined;
+        // Filtré d'abord : on ne manipule que des items plausibles
+        const items = Array.isArray(p?.items) ? p.items.filter(isCartItem) : [];
+
+        // v1 : conservé, considéré comme invité
+        if (version === 1) return { items: stripLegacyInstallations(items), ownerId: null };
+        // v2 : propriétaire conservé
+        if (version === 2 || version === 3) {
+          return {
+            items: stripLegacyInstallations(items),
+            ownerId: typeof p?.ownerId === 'string' ? p.ownerId : null,
+          };
         }
         if (version !== STORAGE_VERSION) return { items: [], ownerId: null };
         return persisted as PersistedCart;

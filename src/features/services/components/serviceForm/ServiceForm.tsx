@@ -1,253 +1,114 @@
-'use client'
+'use client';
 
-import styles from './ServiceForm.module.css'
-import { useCallback, useEffect, useState } from 'react';
-import AddressManager from '@/features/services/components/addressManager/AddressManager';
-import { useAddresses } from '../../hooks/useAddresses';
-import InstallationForm from '../installationForm/installationForm';
-import { Correction, Installation, Removal, RequestType, createInstallation } from '../../types/services';
-import ServicesList from '../servicesOverview/servicesOverview';
-import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
-
+import { useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
+import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
+import AddressManager from '@/features/services/components/addressManager/AddressManager';
+import { Notice, RadioGroup, type ChoiceOption } from '@/features/services/components/fields';
+
+import { useAddressStore } from '@/features/services/store/addressStore';
+
+import type { RequestType } from '@/features/services/types/services';
 import { useCartStore } from '@/features/cart/store/cartStore';
+import { AddressServices } from './AddressServices';
+import styles from './ServiceForm.module.css';
+import { formatAddress } from '@/features/services/utils/formatAddress';
+import { ServicesSummary } from '../servicesSummary/ServicesSummary';
+
+import { ADDRESS_LABELS } from '@/features/services/constants/installation';
+
+const REQUEST_TYPE_OPTIONS: ChoiceOption<RequestType>[] = [
+  { value: 'residential', label: 'Demande résidentielle' },
+  { value: 'commercial', label: 'Grand format' },
+];
 
 export default function ServiceForm() {
+  const locale = useLocale();
+  const addServiceRequest = useCartStore((s) => s.addServiceRequest);
 
-    const locale = useLocale();
+  // Sélecteurs ciblés : ce composant ne se redessine que si ces valeurs changent
+  const addresses = useAddressStore((s) => s.addresses);
+  const selectedAddressId = useAddressStore((s) => s.selectedAddressId);
+  const clearAddresses = useAddressStore((s) => s.clearAddresses);
+  const removeService = useAddressStore((s) => s.removeServiceFromAddress);
 
-    // Sélection d'une seule action : évite les re-renders quand le panier change
-    const addServiceRequest = useCartStore((s) => s.addServiceRequest);
-    const [addedToCart, setAddedToCart] = useState(false);
-    
-    const [address, setAddress] = useState('');
-    const [error, setError] = useState('');
-    const [requestType, setRequestType] = useState<RequestType | null>(null);
+  const [searchAddress, setSearchAddress] = useState('');
+  const [requestType, setRequestType] = useState<RequestType | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [addedToCart, setAddedToCart] = useState(false);
 
-    const { addresses, selectedAddressId, removeServiceFromAddress, addServiceToAddress, clearAddresses } = useAddresses();
-    const selectedAddress = addresses.find(addr => addr.id === selectedAddressId);
-    
-    const [installationInitialData, setInstallationInitialData] = useState<Omit<Installation, 'type'> | undefined>();
+  const selectedAddress = addresses.find((a) => a.id === selectedAddressId) ?? null;
+  const addressesWithServices = addresses.filter((a) => a.services.length > 0);
 
-    const [servicesData, setServicesData] = useState<{
-        installation: Installation | null;
-        removal: Removal | null;
-        correction: Correction | null;
-    }>({
-        installation: null,
-        removal: null,
-        correction: null,
-    });
+  const handleRequestTypeChange = (type: RequestType) => {
+    setRequestType(type);
+    setAddedToCart(false);
+  };
 
-    const [selectedServices, setSelectedServices] = useState({
-        installation: false,
-        removal: false,
-        correction: false,
-    });
+  const handleAddToCart = () => {
+    if (requestType === null) {
+      setError('Veuillez choisir le type de demande (résidentielle ou grand format)');
+      return;
+    }
+    // Le store du panier fait une copie profonde : vider les adresses ne touche pas le panier
+    addServiceRequest({ requestType, addresses: addressesWithServices });
+    clearAddresses();
+    setRequestType(null);
+    setError(null);
+    setAddedToCart(true);
+  };
 
-    const resetForm = () => {
-        clearAddresses();
-        setRequestType(null);
-        setSelectedServices({ installation: false, removal: false, correction: false });
-        setServicesData({ installation: null, removal: null, correction: null });
-        setInstallationInitialData(undefined);
-        setError('');
-    };
+  return (
+    <div className={styles.mainContainer}>
+      <div className={styles.existingService}>
+        <label htmlFor="searchExistingService">
+          Vous aimeriez connaître l&apos;état ou modifier une demande de service existante ?
+        </label>
+        <AddressAutocomplete id="searchExistingService" value={searchAddress} onChange={setSearchAddress} />
+      </div>
 
-    const handleRequestTypeChange = (type: RequestType) => {
-        setRequestType(type);
-        setAddedToCart(false); // une nouvelle demande commence : on masque la confirmation
-    };
+      <div className={styles.serviceForm}>
+        <RadioGroup
+          legend="Faire une nouvelle demande de service"
+          options={REQUEST_TYPE_OPTIONS}
+          value={requestType}
+          onChange={handleRequestTypeChange}
+          columns={2}
+        />
 
-    const handleAddToCart = () => {
-        if (!requestType) {
-            setError('Veuillez choisir le type de demande (résidentielle ou grand format)');
-            return;
-        }
+        {requestType === 'commercial' && <Notice>Les demandes grand format seront bientôt disponibles.</Notice>}
 
-        const addressesWithServices = addresses.filter((a) => a.services.length > 0);
-        if (addressesWithServices.length === 0) {
-            setError('Ajoutez au moins un service à une adresse');
-            return;
-        }
+        {requestType === 'residential' && (
+        <>
+        <AddressManager />
+        {selectedAddress && (<>
+          <div className={styles.selectedAddress}>
+            <label>Cette demande de service concerne l&apos;adresse suivante :</label>
+            <p>{formatAddress(selectedAddress, ADDRESS_LABELS)}</p>
+          </div>
 
-        // Copie profonde faite par le store : le reset ne touche pas le panier
-        addServiceRequest({ requestType, addresses: addressesWithServices });
-        resetForm();
-        setAddedToCart(true);
-    };
+          <AddressServices key={selectedAddress.id} address={selectedAddress} />
+        </>)}
+        </>
+        )}
 
-    const handleServiceChange = (service: keyof typeof selectedServices) => {
-        setSelectedServices(prev => ({
-        ...prev,
-        [service]: !prev[service]
-        }));
-    };
+        {addedToCart && (
+          <div role="status" className={styles.addedToCart}>
+            <p>Votre demande a été ajoutée au panier.</p>
+            <Link href={`/${locale}/cart`}>Voir le panier</Link>
+          </div>
+        )}
+      </div>
 
-    const handleInstallationData = useCallback((data: Omit<Installation, 'type'>) => {
-        // Validation simple : au moins un item sélectionné
-        if (!Object.values(data.items).some(v => v)) {
-            setError('Veuillez sélectionner au moins un élément');
-            return;
-        }
-
-        setError('');
-        setServicesData(prev => ({ ...prev, installation: data as Installation }));
-    }, []);
-
-    const handleSaveAllServices = () => {
-        if (!selectedAddressId) {
-            setError('Veuillez sélectionner une adresse');
-            return;
-        }
-
-        if (selectedServices.installation && servicesData.installation) {
-            const existingId = selectedAddress?.services.find(s => s.type === 'installation')?.id;
-            if (existingId) {
-                removeServiceFromAddress(selectedAddressId, existingId);
-            }
-            const service = createInstallation(servicesData.installation);
-            addServiceToAddress(selectedAddressId, service);
-            //setSelectedServices(prev => ({ ...prev, installation: false }));
-            //setServicesData(prev => ({ ...prev, installation: null }));
-        }
-
-        if (selectedServices.removal && servicesData.removal) {
-            //const service = createRemoval(servicesData.removal);
-            //addServiceToAddress(selectedAddressId, service);
-        }
-
-        if (selectedServices.correction && servicesData.correction) {
-            //const service = createCorrection(servicesData.correction);
-            //addServiceToAddress(selectedAddressId, service);
-        }
-
-        // Reset
-        //setSelectedServices({ installation: false, removal: false, correction: false });
-        //setServicesData({ installation: null, removal: null, correction: null });
-    };
-
-    useEffect(() => {
-        if (selectedAddress) {
-            const existingInstallation = selectedAddress.services.find(s => s.type === 'installation');
-            
-            if (existingInstallation) {
-                setSelectedServices(prev => ({ ...prev, installation: true }));
-                setInstallationInitialData(existingInstallation);
-            } else {
-                setSelectedServices(prev => ({ ...prev, installation: false }));
-                setInstallationInitialData(undefined);
-            }
-        }
-    }, [selectedAddress?.id]);
-
-    return (
-        <div className={styles.mainContainer}>
-            <div className={styles.existingService}>
-                <label>Vous aimeriez savoir letat ou modifier une demande de service existante ?</label>
-                <AddressAutocomplete 
-                    id="searchExistingService"
-                    value={address} 
-                    onChange={setAddress}
-                />
-            </div>
-
-            <form className={styles.serviceForm}>
-                <fieldset>
-                    <legend>Faire une nouvelle demande de service</legend>
-                    <div className={styles.userChoice}>
-                        <label className={requestType === 'residential' ? styles.checked : ''}>
-                            <input type="radio" id="residential" name="requestType" value="residential" checked={requestType === "residential"} onChange={() => handleRequestTypeChange('residential')} /> 
-                            Demande résidentielle
-                        </label>
-                        <label className={requestType === 'commercial' ? styles.checked : ''}>
-                            <input type="radio" id="commercial" name="requestType" value="commercial" checked={requestType === "commercial"} onChange={() => handleRequestTypeChange('commercial')}/>
-                            Grand format
-                        </label>
-                    </div>
-                </fieldset>
-
-                {requestType === 'residential' && <AddressManager />}
-                
-                {requestType === 'residential' && selectedAddress && 
-                <fieldset>
-                    <legend>Quels sont les services dont vous avez besoin pour ladresse selectionner</legend>
-                    
-                    <div className={styles.addressSelected}>
-                        {selectedAddress && selectedAddress.type === 'address' && (
-                        <label style={{color: 'black', fontWeight: '900'}}>{selectedAddress!.streetNumber} {selectedAddress!.streetName}</label>
-                        )}
-                        
-                        {selectedAddress && selectedAddress.type === 'terrain' && (
-                        <label style={{color: 'black', fontWeight: '900'}}>{selectedAddress!.description} {selectedAddress!.city}</label>
-                    )}
-                    </div>
-
-                    <div className={styles.userChoice}>
-                        <label className={selectedServices.installation ? styles.checked : ''}>
-                            <input 
-                                type="checkbox" 
-                                checked={selectedServices.installation}
-                                onChange={() => handleServiceChange('installation')}
-                            />
-                            Installation
-                        </label>
-
-                        <label className={selectedServices.removal ? styles.checked : ''}>
-                            <input 
-                                type="checkbox" 
-                                checked={selectedServices.removal}
-                                onChange={() => handleServiceChange('removal')}
-                            />
-                            Retrait
-                        </label>
-
-                        <label className={selectedServices.correction ? styles.checked : ''}>
-                            <input 
-                                type="checkbox" 
-                                checked={selectedServices.correction}
-                                onChange={() => handleServiceChange('correction')}
-                            />
-                            Correction
-                        </label>
-                    </div>
-                </fieldset>
-                }
-
-                {requestType === 'residential' && selectedAddress && selectedServices.installation &&
-                <InstallationForm 
-                    onDataChange={handleInstallationData}
-                    initialData={installationInitialData}
-                />}
-
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-
-                {Object.values(selectedServices).some(v => v) && (
-                <button 
-                    type="button" 
-                    onClick={handleSaveAllServices}
-                    className={styles.btnSave}
-                >
-                    Enregistrer les services
-                </button>
-                )}
-
-                {addedToCart && (
-                <div role="status" className={styles.addedToCart}>
-                    <p>Votre demande a été ajoutée au panier.</p>
-                    <Link href={`/${locale}/cart`}>Voir le panier</Link>
-                </div>
-                )}
-            </form>
-
-            {addresses.some(addr => addr.services?.length > 0) && (
-            <ServicesList
-                addresses={addresses}
-                onRemoveService={removeServiceFromAddress}
-                onAddToCart={handleAddToCart}
-            />
-            )}
-        </div>
-    );
+      {addressesWithServices.length > 0 && (
+        <ServicesSummary
+          addresses={addressesWithServices}
+          onRemoveService={removeService}
+          onAddToCart={handleAddToCart}
+          error={error}
+        />
+      )}
+    </div>
+  );
 }

@@ -134,7 +134,7 @@ export default function AddressManager() {
 
   return (
     <>
-    <fieldset>
+    <fieldset style={{ border: 'none' }}>
         <legend>Voici la liste des emplacements enregitres</legend>
         <div>
             {addresses.length === 0 ? (
@@ -170,7 +170,7 @@ export default function AddressManager() {
     </fieldset>
 
     {addNewAddress &&
-    <fieldset>
+    <fieldset style={{ border: 'none' }}>
       <legend>Veuillez indiquer le type demplacement</legend>
       <div className={styles.userChoice}>
           <label className={typeAddress === 'streetAddress' ? styles.checked : ''}>

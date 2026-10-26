@@ -2,13 +2,5 @@
 import { useAddressStore } from '../store/addressStore';
 
 export function useAddresses() {
-  const store = useAddressStore();
-  
-  return {
-    ...store,
-    addresses: store.addresses.map(addr => ({
-      ...addr,
-      services: addr.services || [],
-    })),
-  };
+  return useAddressStore();
 }
