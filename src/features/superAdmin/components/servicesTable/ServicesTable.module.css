@@ -45,7 +45,6 @@
 .colAddress { width: 30%; }
 .colDate    { width: 13%; }
 .colStatus  { width: 12%; }
-.colPrice   { width: 23%; }
 
 .mono { font-family: "JetBrains Mono", monospace; }
 
@@ -81,29 +80,8 @@
 }
 .btnSave:disabled { opacity: 0.4; cursor: default; }
 
-.priceError { flex-basis: 100%; margin: 0; font-size: 12px; color: #DC2626; }
-.pricePaid  { color: #16A34A; font-weight: 600; }
 
 .empty { padding: 16px; color: #64748b; }
-
-.publishBar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-.btnPublish {
-  padding: 10px 16px;
-  border: none;
-  border-radius: 8px;
-  background: #0E4D9A;
-  color: #fff;
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-}
-.btnPublish:disabled { opacity: 0.4; cursor: default; }
-.publishMessage { margin: 0; font-size: 13px; color: #475569; }
 
 .badgeDraft,
 .badgeSent {
