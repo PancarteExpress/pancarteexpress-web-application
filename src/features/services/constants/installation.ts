@@ -7,7 +7,7 @@ export const SERVICE_LABELS: Record<ServiceType, string> = {
   delivery: 'Livraison de matériel',
   pickup: 'Ramassage de matériel',
 };
-export const IMPLEMENTED_SERVICES = ['installation'] as const satisfies readonly ServiceType[];
+export const IMPLEMENTED_SERVICES = ['installation', 'removal'] as const satisfies readonly ServiceType[];
 
 export const ADDRESS_LABELS = {
   terrain: 'Terrain',
@@ -19,8 +19,8 @@ export const MATERIALS = [
   'frames', 
   'kit', 
   'directional',
-  'openHouse', 
   'addons', 
+  'openHouse', 
   'flags',
   'keybox', 
   'other',
@@ -29,11 +29,11 @@ export type Material = (typeof MATERIALS)[number];
 export const MATERIAL_LABELS: Record<Material, string> = {
   frames: 'Pancartes',
   kit: 'Kit d\'ancrage et de poteau',
+  directional: 'Directionnelles',
   addons: 'Ajouts',
   openHouse: 'Visite libre',
-  flags: 'Drapeaux (À vendre / Vendu)',
+  flags: 'Drapeaux',
   keybox: 'Boîtes à clés',
-  directional: 'Directionnelles (À vendre / Vendu)',
   other: 'Autres',
 };
 
@@ -46,7 +46,6 @@ export const FRAME_BUNDLED_MATERIALS = ['kit'] as const satisfies readonly Mater
 export const MAX_FRAMES = 3;
 export const MAX_KITS = 3;
 export const MAX_ADDONS = 3;
-export const MAX_KEYBOXES = 3;
 export const MAX_FLAGS = 2;
 export const MAX_DIRECTIONALS = 3;
 export const KEYBOX_CODE_MAX_DIGITS = 6;
@@ -54,23 +53,25 @@ export const KEYBOX_CODE_MAX_DIGITS = 6;
 export const OPEN_HOUSE = {
   maxDirectionals: 5,
   maxFlags: 2,
+  maxDates: 2,
   defaultStartTime: '09:00',
   defaultDurationMinutes: 120,
 } as const;
 
 /** Pas des minutes dans les sélecteurs d'heure */
-export const TIME_MINUTE_STEP = 5;
+export const TIME_MINUTE_STEP = 15;
 
 export const TEXT_LIMITS = {
   modelDescription: 100,
   displayName: 100,
   appointmentContact: 100,
-  keyboxAccess: 50,
+  keyboxAccess: 30,
   placementDescription: 100,
   addonMention: 50,
   kitDescription: 50,
   directionalPlacement: 50,
   keyboxPlacement: 50,
+  flagMention: 50,
   otherNeeds: 250,
 } as const;
 
@@ -175,5 +176,10 @@ export const SIGN_MENTION_LABELS: Record<SignMention, string> = {
   sold: 'Vendu',
   forRent: 'À louer',
 };
-export const FLAG_MENTIONS = ['forSale', 'sold'] as const satisfies readonly SignMention[];
+export const FLAG_MENTIONS = ['forSale', 'sold', 'other'] as const;
 export type FlagMention = (typeof FLAG_MENTIONS)[number];
+export const FLAG_MENTION_LABELS: Record<FlagMention, string> = {
+  forSale: SIGN_MENTION_LABELS.forSale,
+  sold: SIGN_MENTION_LABELS.sold,
+  other: 'Autres',
+};

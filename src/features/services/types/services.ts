@@ -1,13 +1,13 @@
 import { REQUEST_TYPES } from "@/lib/constants/services";
 import type { InstallationDetails } from './installation';
+import type { RemovalDetails } from './removal';
 
 export interface Installation extends InstallationDetails {
   type: 'installation';
 }
 
-export interface Removal {
+export interface Removal extends RemovalDetails {
   type: 'removal';
-  specialInstructions?: string;
 }
 
 export interface Correction {

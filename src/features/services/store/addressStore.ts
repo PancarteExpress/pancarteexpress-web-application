@@ -2,7 +2,8 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Address, StreetAddress, TerrainAddress } from '../types/address';
 import { Service } from '../types/services';
-import type { InstallationDetails } from '../types/installation';
+/** Service sans id : le store l'attribue (ou conserve celui du service existant) */
+type ServiceInput = Service extends infer S ? (S extends unknown ? Omit<S, 'id'> : never) : never;
 
 const STORAGE_VERSION = 3;
 
@@ -19,7 +20,8 @@ interface AddressStore {
   getAddresses: () => Address[];
   clearAddresses: () => void;
   setSelectedAddressId: (id: string | null) => void;
-  saveInstallation: (addressId: string, details: InstallationDetails) => void;
+  
+  saveService: (addressId: string, service: ServiceInput) => void;
 }
 
 export const useAddressStore = create<AddressStore>()(
@@ -91,23 +93,19 @@ export const useAddressStore = create<AddressStore>()(
 
       setSelectedAddressId: (id) => set({ selectedAddressId: id }),
 
-            saveInstallation: (addressId, details) => {
+            saveService: (addressId, service) => {
         set((state) => ({
           addresses: state.addresses.map((addr) => {
             if (addr.id !== addressId) return addr;
 
-            const existing = addr.services.find((s) => s.type === 'installation');
-            const installation: Service = {
-              type: 'installation',
-              id: existing?.id ?? crypto.randomUUID(),
-              ...details,
-            };
+            const existing = addr.services.find((s) => s.type === service.type);
+            const saved: Service = { ...service, id: existing?.id ?? crypto.randomUUID() };
 
             return {
               ...addr,
               services: existing
-                ? addr.services.map((s) => (s.id === existing.id ? installation : s))
-                : [...addr.services, installation],
+                ? addr.services.map((s) => (s.id === existing.id ? saved : s))
+                : [...addr.services, saved],
             };
           }),
         }));

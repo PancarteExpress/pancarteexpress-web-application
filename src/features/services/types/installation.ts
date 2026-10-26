@@ -46,7 +46,12 @@ export interface UnitTargets {
 }
 
 export type AddonAssignment = UnitTargets &
-  ({ addon: Exclude<Addon, 'other'> } | { addon: 'other'; mention: string });
+  (
+    | { addon: Exclude<Addon, 'other' | 'customNoMention'> }
+    | { addon: 'other'; mention: string }
+    /** Précisions facultatives sur l'ajout personnalisé */
+    | { addon: 'customNoMention'; details: string | null }
+  );
 
 export type KitModel =
   | { type: Exclude<KitModelType, 'custom'> }
@@ -65,13 +70,13 @@ export interface KitsDetails {
 export interface KeyboxDetails {
   /** Un seul code pour toutes les boîtes */
   code: string;
-  units: PlacedUnit[];
+  placement: string;
 }
 
-export interface FlagsDetails {
-  mention: FlagMention;
-  quantity: number;
-}
+export type FlagsDetails = { quantity: number } & (
+  | { mention: Exclude<FlagMention, 'other'> }
+  | { mention: 'other'; customMention: string }
+);
 
 export interface DirectionalsDetails {
   mention: SignMention;
@@ -100,8 +105,8 @@ export type OpenHouseDirectional = PlacedUnit;
 
 /** Visite libre : une date et une plage horaire pour toutes les affichettes */
 export interface OpenHouseDetails extends UnitTargets {
-  /** Date locale, format yyyy-MM-dd (sans fuseau horaire) */
-  date: string;
+  /** 1 ou 2 dates locales triées, format yyyy-MM-dd ; mêmes heures pour chacune */
+  dates: string[];
   /** Heures locales en 24 h, format HH:mm */
   startTime: string;
   endTime: string;

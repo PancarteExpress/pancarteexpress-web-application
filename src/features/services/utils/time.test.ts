@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addMinutesClamped, isValidIsoDate, isValidTime } from './time';
+import { addMinutesClamped, fromMinutes, isNextDay, isValidIsoDate, isValidTime, LATEST_TIME_MINUTES } from './time';
 
 describe('time utils', () => {
   it('valide le format HH:mm en 24 h', () => {
@@ -15,8 +15,14 @@ describe('time utils', () => {
     expect(isValidIsoDate('24/10/2026')).toBe(false);
   });
 
-  it('ajoute des minutes sans dépasser 23:55', () => {
+  it('ajoute des minutes sans dépasser la dernière heure sélectionnable', () => {
     expect(addMinutesClamped('09:00', 120)).toBe('11:00');
-    expect(addMinutesClamped('22:30', 120)).toBe('23:55');
+    expect(addMinutesClamped('22:30', 120)).toBe(fromMinutes(LATEST_TIME_MINUTES));
+  });
+
+  it('détecte le lendemain, y compris en changement de mois', () => {
+    expect(isNextDay('2026-10-24', '2026-10-25')).toBe(true);
+    expect(isNextDay('2026-10-31', '2026-11-01')).toBe(true);
+    expect(isNextDay('2026-10-24', '2026-10-26')).toBe(false);
   });
 });

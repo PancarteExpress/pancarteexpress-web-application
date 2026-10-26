@@ -5,7 +5,7 @@ import { createPlacedUnit } from '@/features/services/schemas/installation.schem
 import { QuantityField, TextField } from '@/features/services/components/fields';
 import { bindField, useInstallationFormContext } from './formContext';
 
-type PlacedUnitsPath = 'keybox.units' | 'directionals.units';
+type PlacedUnitsPath = 'directionals.units';
 
 interface PlacedUnitsFieldsProps {
   name: PlacedUnitsPath;
@@ -16,7 +16,7 @@ interface PlacedUnitsFieldsProps {
   placeholder?: string;
 }
 
-/** Quantité + un emplacement par unité (boîtes à clés, directionnelles). */
+/** Quantité + un emplacement par unité (directionnelles). */
 export function PlacedUnitsFields({ name, quantityLabel, unitLabel, max, maxLength, placeholder, }: PlacedUnitsFieldsProps) {
   const { control } = useInstallationFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
@@ -53,7 +53,6 @@ export function PlacedUnitsFields({ name, quantityLabel, unitLabel, max, maxLeng
               placeholder={placeholder}
               multiline
               rows={1}
-              required
             />
           )}
         />

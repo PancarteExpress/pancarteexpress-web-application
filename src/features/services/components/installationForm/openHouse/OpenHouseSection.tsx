@@ -8,6 +8,7 @@ import { addMinutesClamped, toMinutes } from '@/features/services/utils/time';
 import { DateField, QuantityField, TextField, TimeField, YesNoField } from '@/features/services/components/fields';
 import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
 import styles from '../installationForm.module.css';
+import { addDays, format, parse } from 'date-fns';
 
 const defaultEnd = (start: string) => addMinutesClamped(start, OPEN_HOUSE.defaultDurationMinutes);
 
@@ -42,19 +43,42 @@ export function OpenHouseSection() {
     <section aria-labelledby={headingId} className={styles.section}>
       <h3 id={headingId} className={styles.sectionTitle}>Détails de la visite libre</h3>
 
-      <Controller
-        control={control}
-        name="openHouse.date"
-        render={({ field, fieldState }) => (
-          <DateField
-            label="Date de la visite libre"
-            value={field.value}
-            onChange={field.onChange}
-            error={fieldState.error?.message}
-            required
-          />
-        )}
-      />
+      <div>
+        <button
+          type="button"
+          className={styles.toggleButton}
+          aria-pressed={openHouse.twoDates}
+          onClick={() => {
+            const next = !openHouse.twoDates;
+            update('openHouse.twoDates', next);
+              const [first] = getValues('openHouse.dates');
+              // Deux dates : on ajoute le lendemain ; une seule : on garde la première
+              if (first) {
+                update('openHouse.dates', next
+                  ? [first, format(addDays(parse(first, 'yyyy-MM-dd', new Date()), 1), 'yyyy-MM-dd')]
+                  : [first]);
+              }
+          }}
+        >
+          {openHouse.twoDates ? 'Une seule date' : 'Choisir deux dates'}
+        </button>
+
+        <Controller
+          control={control}
+          name="openHouse.dates"
+          render={({ field, fieldState }) => (
+            <DateField
+              label={openHouse.twoDates ? 'Dates de la visite libre' : 'Date de la visite libre'}
+              value={field.value}
+              onChange={field.onChange}
+              span={openHouse.twoDates ? OPEN_HOUSE.maxDates : 1}
+              hint={openHouse.twoDates ? 'Cliquez sur le premier jour : le lendemain est ajouté automatiquement. Les mêmes heures s\'appliquent aux deux jours.' : undefined}
+              error={fieldState.error?.message}
+              required
+            />
+          )}
+        />
+      </div>
 
       <div className={styles.timeRow}>
         <Controller
@@ -90,13 +114,14 @@ export function OpenHouseSection() {
       </div>
 
       <QuantityField
-        label="Combien de directionnelles avez-vous besoin ?"
+        label="Combien de directionnelles visite libre avez-vous besoin ?"
         value={fields.length}
         onChange={handleDirectionalsChange}
         min={0}
         max={OPEN_HOUSE.maxDirectionals}
         hint={`Max ${OPEN_HOUSE.maxDirectionals}`}
       />
+      
       {fields.map((field, index) => (
         <Controller
           key={field.id}
@@ -110,7 +135,6 @@ export function OpenHouseSection() {
               placeholder="Ex. : Newman et Léger"
               multiline
               rows={1}
-              required
             />
           )}
         />
@@ -121,7 +145,7 @@ export function OpenHouseSection() {
         name="openHouse.flagCount"
         render={({ field, fieldState }) => (
           <QuantityField
-            label="Combien de drapeaux avez-vous besoin ?"
+            label="Combien de drapeaux visite libre avez-vous besoin ?"
             value={field.value}
             onChange={field.onChange}
             min={0}

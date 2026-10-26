@@ -233,6 +233,14 @@ describe('createInstallationSchema — ajouts', () => {
     expect(result.data.frames).toBeNull();
     expect(result.data.addons?.[0]).toMatchObject({ frameUids: [], onSiteCount: 2 });
   });
+
+  it('ajout personnalisé : précisions facultatives', () => {
+    const empty = memberSchema.safeParse(withAddons([addon({ addon: 'customNoMention' })]));
+    expect(empty.success && empty.data.addons?.[0]).toMatchObject({ addon: 'customNoMention', details: null });
+
+    const filled = memberSchema.safeParse(withAddons([addon({ addon: 'customNoMention', mention: 'Logo de l’agence' })]));
+    expect(filled.success && filled.data.addons?.[0]).toMatchObject({ details: 'Logo de l’agence' });
+  });
 });
 
 describe('createInstallationSchema — kit seul', () => {
@@ -280,7 +288,7 @@ describe('createInstallationSchema — visite libre', () => {
   const openHouse = (overrides: Partial<OpenHouseFormValues> = {}): OpenHouseFormValues => ({
     ...createEmptyOpenHouse(),
     onSite: true,
-    date: '2026-10-24',
+    dates: ['2026-10-24'],
     removeNextMonday: true,
     ...overrides,
   });
@@ -294,7 +302,7 @@ describe('createInstallationSchema — visite libre', () => {
     expect(result.success).toBe(true);
     if (!result.success) return;
     expect(result.data.openHouse).toMatchObject({
-      date: '2026-10-24',
+      dates: ['2026-10-24'],
       startTime: '09:00',
       endTime: '11:00',
       onSiteCount: 1,
@@ -304,8 +312,8 @@ describe('createInstallationSchema — visite libre', () => {
   });
 
   it('exige une date valide et la réponse au retrait', () => {
-    const paths = issuePaths(memberSchema.safeParse(withOpenHouse({ date: null, removeNextMonday: null })));
-    expect(paths).toEqual(expect.arrayContaining(['openHouse.date', 'openHouse.removeNextMonday']));
+    const paths = issuePaths(memberSchema.safeParse(withOpenHouse({ dates: [], removeNextMonday: null })));
+    expect(paths).toEqual(expect.arrayContaining(['openHouse.dates', 'openHouse.removeNextMonday']));
   });
 
   it('refuse une heure de fin qui n\'est pas après le début', () => {
@@ -313,14 +321,26 @@ describe('createInstallationSchema — visite libre', () => {
       .toContain('openHouse.endTime');
   });
 
-  it('exige l\'emplacement de chaque directionnelle', () => {
-    const result = memberSchema.safeParse(withOpenHouse({ directionals: [createDirectional()] }));
-    expect(issuePaths(result)).toContain('openHouse.directionals.0.placement');
+  it('emplacement des directionnelles facultatif', () => {
+    expect(memberSchema.safeParse(withOpenHouse({ directionals: [createDirectional()] })).success).toBe(true);
   });
 
   it('applique les règles de répartition des ajouts', () => {
     expect(issuePaths(memberSchema.safeParse(withOpenHouse({ onSite: false }))))
       .toContain('openHouse.frameUids');
+  });
+
+  it('deux dates : exige exactement deux dates, triées dans le domaine', () => {
+    expect(issuePaths(memberSchema.safeParse(withOpenHouse({ twoDates: true, dates: ['2026-10-24'] }))))
+      .toContain('openHouse.dates');
+
+    const result = memberSchema.safeParse(withOpenHouse({ twoDates: true, dates: ['2026-10-25', '2026-10-24'] }));
+    expect(result.success && result.data.openHouse?.dates).toEqual(['2026-10-24', '2026-10-25']);
+  });
+
+  it('deux dates : doivent être consécutives', () => {
+    expect(issuePaths(memberSchema.safeParse(withOpenHouse({ twoDates: true, dates: ['2026-10-24', '2026-10-26'] }))))
+      .toContain('openHouse.dates');
   });
 });
 
@@ -329,38 +349,40 @@ describe('createInstallationSchema — boîte à clés, drapeaux, directionnelle
   const only = (materials: InstallationFormValues['materials'], overrides: Partial<InstallationFormValues> = {}) =>
     form({ materials, frames: createEmptyInstallationForm().frames, ...overrides });
 
-  it('boîte à clés : un seul code, un emplacement par boîte', () => {
-    const result = memberSchema.safeParse(only(['keybox'], { keybox: { code: '1234', units: [placed(), placed('Garage')] } }));
-
-    expect(result.success).toBe(true);
-    if (!result.success) return;
-    expect(result.data.keybox).toMatchObject({ code: '1234', units: [{ placement: 'À côté de la porte' }, { placement: 'Garage' }] });
+  it('boîte à clés : un code et un emplacement', () => {
+    const result = memberSchema.safeParse(only(['keybox'], { keybox: { code: '1234', placement: 'Garage' } }));
+    expect(result.success && result.data.keybox).toEqual({ code: '1234', placement: 'Garage' });
   });
 
   it('boîte à clés : code requis, 6 chiffres maximum, chiffres seulement', () => {
     const codeError = (code: string) =>
-      issuePaths(memberSchema.safeParse(only(['keybox'], { keybox: { code, units: [placed()] } })));
+      issuePaths(memberSchema.safeParse(only(['keybox'], { keybox: { code, placement: '' } })));
     expect(codeError('')).toContain('keybox.code');
     expect(codeError('1234567')).toContain('keybox.code');
     expect(codeError('12a4')).toContain('keybox.code');
   });
 
-  it('boîte à clés : emplacement requis', () => {
-    expect(issuePaths(memberSchema.safeParse(only(['keybox'], { keybox: { code: '1234', units: [placed('')] } }))))
-      .toContain('keybox.units.0.placement');
+  it('boîte à clés : emplacement facultatif', () => {
+    expect(memberSchema.safeParse(only(['keybox'], { keybox: { code: '1234', placement: '' } })).success).toBe(true);
   });
 
   it('drapeaux : mention requise, 2 maximum', () => {
     expect(issuePaths(memberSchema.safeParse(only(['flags'])))).toContain('flags.mention');
-    expect(issuePaths(memberSchema.safeParse(only(['flags'], { flags: { mention: 'sold', quantity: 3 } }))))
+    expect(issuePaths(memberSchema.safeParse(only(['flags'], { flags: { mention: 'sold', customMention: '', quantity: 3 } }))))
       .toContain('flags.quantity');
   });
 
-  it('directionnelles : mention et emplacements requis', () => {
+  it('drapeaux : « Autres » exige une mention', () => {
+    expect(issuePaths(memberSchema.safeParse(only(['flags'], {
+      flags: { mention: 'other', customMention: '', quantity: 1 },
+    })))).toContain('flags.customMention');
+  });
+
+  it('directionnelles : mention requise, emplacement facultatif', () => {
     const paths = issuePaths(memberSchema.safeParse(only(['directional'], {
       directionals: { mention: null, units: [placed('')] },
     })));
-    expect(paths).toEqual(expect.arrayContaining(['directionals.mention', 'directionals.units.0.placement']));
+    expect(paths).toEqual(['directionals.mention']);
   });
 
   it('autres : description requise', () => {
@@ -387,6 +409,7 @@ describe('toInstallationFormValues — aller-retour', () => {
       addons: [
         { ...createAddonEntry('other'), mention: 'Vue sur le fleuve', quantity: 1, frameUids: [units[0].uid], onSite: false },
         { ...createAddonEntry('secondFloor'), quantity: 3, frameUids: [units[1].uid], onSite: true },
+        { ...createAddonEntry('customNoMention'), mention: 'Logo de l’agence', quantity: 1, onSite: true },
       ],
     }));
   });
@@ -397,9 +420,9 @@ describe('toInstallationFormValues — aller-retour', () => {
     { location: 'ramp' },
     { location: 'wall', access: 'smallLadder', mounting: 'vShapeDrilled' },
     { location: 'window', access: 'noLadder', windowSide: 'exterior' },
-    { location: 'window', access: 'keybox', keyboxInfo: 'Code 4821, à gauche de la porte', windowSide: 'interior' },
+    { location: 'window', access: 'keybox', keyboxInfo: 'Code 4821, porte', windowSide: 'interior' },
     { location: 'other', description: 'Derrière la haie' },
-  ] satisfies Partial<InstallationFormValues['placement']>[])('emplacement $location', (placement) => {
+  ] satisfies Partial<InstallationFormValues['placement']>[])('emplacement $location ($access)', (placement) => {
     expectRoundTrip(memberSchema, form({ placement: { ...createEmptyPlacement(), ...placement } }));
   });
 
@@ -444,7 +467,8 @@ describe('toInstallationFormValues — aller-retour', () => {
         quantity: 2,
         frameUids: [unit.uid],
         onSite: true,
-        date: '2026-10-24',
+        dates: ['2026-10-24', '2026-10-25'],
+        twoDates: true,
         startTime: '13:30',
         endTime: '16:00',
         directionals: [{ ...createDirectional(), placement: 'Coin rue Principale' }],
@@ -458,8 +482,8 @@ describe('toInstallationFormValues — aller-retour', () => {
     expectRoundTrip(memberSchema, form({
       materials: ['keybox', 'flags', 'directional', 'other'],
       frames: createEmptyInstallationForm().frames,
-      keybox: { code: '123456', units: [{ ...createPlacedUnit(), placement: 'Porte arrière' }] },
-      flags: { mention: 'forSale', quantity: 2 },
+      keybox: { code: '123456', placement: 'Porte arrière' },
+      flags: { mention: 'other', customMention: 'Prix réduit', quantity: 2 },
       directionals: {
         mention: 'forRent',
         units: [{ ...createPlacedUnit(), placement: 'Coin Principale' }, { ...createPlacedUnit(), placement: 'Sortie 12' }],

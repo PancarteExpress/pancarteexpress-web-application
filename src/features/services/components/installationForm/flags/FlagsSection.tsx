@@ -2,16 +2,17 @@
 
 import { useId } from 'react';
 import { Controller } from 'react-hook-form';
-import { FLAG_MENTIONS, MAX_FLAGS, SIGN_MENTION_LABELS } from '@/features/services/constants/installation';
-import { QuantityField, RadioGroup, toOptions } from '@/features/services/components/fields';
-import { bindField, useInstallationFormContext } from '../formContext';
+import { FLAG_MENTION_LABELS, FLAG_MENTIONS, MAX_FLAGS, TEXT_LIMITS } from '@/features/services/constants/installation';
+import { QuantityField, RadioGroup, TextField, toOptions } from '@/features/services/components/fields';
+import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
 import styles from '../installationForm.module.css';
 
-const FLAG_MENTION_OPTIONS = toOptions(FLAG_MENTIONS, SIGN_MENTION_LABELS);
+const FLAG_MENTION_OPTIONS = toOptions(FLAG_MENTIONS, FLAG_MENTION_LABELS);
 
 export function FlagsSection() {
   const headingId = useId();
   const { control } = useInstallationFormContext();
+  const update = useFormUpdater();
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
@@ -21,13 +22,35 @@ export function FlagsSection() {
         control={control}
         name="flags.mention"
         render={(props) => (
-          <RadioGroup
-            {...bindField(props)}
-            legend="Veuillez choisir la mention du drapeau"
-            options={FLAG_MENTION_OPTIONS}
-            columns={2}
-            required
-          />
+          <>
+            <RadioGroup
+              {...bindField(props)}
+              onChange={(value) => {
+                props.field.onChange(value);
+                if (value !== 'other') update('flags.customMention', '');
+              }}
+              legend="Veuillez choisir la mention du drapeau"
+              options={FLAG_MENTION_OPTIONS}
+              columns={3}
+              required
+            />
+            {props.field.value === 'other' && (
+              <Controller
+                control={control}
+                name="flags.customMention"
+                render={(p) => (
+                  <TextField
+                    {...bindField(p)}
+                    label="Veuillez indiquer la mention du drapeau"
+                    maxLength={TEXT_LIMITS.flagMention}
+                    multiline
+                    rows={2}
+                    required
+                  />
+                )}
+              />
+            )}
+          </>
         )}
       />
 

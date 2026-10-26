@@ -2,7 +2,7 @@ import { format, parse } from 'date-fns';
 import { frCA } from 'date-fns/locale';
 import {
   ADDON_LABELS, FRAME_MODEL_LABELS, KIT_MODEL_LABELS, LADDER_LABELS, LOCATION_LABELS, MOUNTING_LABELS,
-  SIGN_MENTION_LABELS, WINDOW_SIDE_LABELS,
+  FLAG_MENTION_LABELS, SIGN_MENTION_LABELS, WINDOW_SIDE_LABELS,
 } from '@/features/services/constants/installation';
 import type {
   AddonAssignment, FrameDisplayName, FrameModel, InstallationDetails, KitModel, Placement, PlacementAccess,
@@ -37,7 +37,7 @@ function describeAccess(a: PlacementAccess): string {
   }
 }
 
-function describePlacement(p: Placement): string {
+export function describePlacement(p: Placement): string {
   const location = LOCATION_LABELS[p.location];
   switch (p.location) {
     case 'ground':
@@ -55,7 +55,14 @@ function describePlacement(p: Placement): string {
 }
 
 function describeAddon(a: AddonAssignment): string {
-  return a.addon === 'other' ? `${ADDON_LABELS.other} : « ${a.mention} »` : ADDON_LABELS[a.addon];
+  switch (a.addon) {
+    case 'other':
+      return `${ADDON_LABELS.other} : « ${a.mention} »`;
+    case 'customNoMention':
+      return a.details ? `${ADDON_LABELS.customNoMention} : « ${a.details} »` : ADDON_LABELS.customNoMention;
+    default:
+      return ADDON_LABELS[a.addon];
+  }
 }
 
 function describeTargets(a: UnitTargets, frameNumbers: Map<string, number>): string {
@@ -151,8 +158,8 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
         <section>
           <h4 className={styles.subtitle}>Visite libre</h4>
           <dl className={styles.list}>
-            <dt>Date</dt>
-            <dd>{formatDate(openHouse.date)}</dd>
+            <dt>{openHouse.dates.length > 1 ? 'Dates' : 'Date'}</dt>
+            <dd>{openHouse.dates.map(formatDate).join(' et ')}</dd>
 
             <dt>Heures</dt>
             <dd>{formatTime(openHouse.startTime)} à {formatTime(openHouse.endTime)}</dd>
@@ -165,7 +172,7 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
                 <dt>Directionnelles ({openHouse.directionals.length})</dt>
                 <dd>
                   <ol className={styles.inlineList}>
-                    {openHouse.directionals.map((d) => <li key={d.uid}>{d.placement}</li>)}
+                    {openHouse.directionals.map((d) => <li key={d.uid}>{d.placement || 'Non précisé'}</li>)}
                   </ol>
                 </dd>
               </>
@@ -186,16 +193,12 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
 
       {keybox && (
         <section>
-          <h4 className={styles.subtitle}>Boîtes à clés ({keybox.units.length})</h4>
+          <h4 className={styles.subtitle}>Boîte à clés</h4>
           <dl className={styles.list}>
             <dt>Code</dt>
             <dd>{keybox.code}</dd>
-            {keybox.units.map((u, i) => (
-              <div key={u.uid} className={styles.row}>
-                <dt>Boîte {i + 1}</dt>
-                <dd>{u.placement}</dd>
-              </div>
-            ))}
+            <dt>Emplacement</dt>
+            <dd>{keybox.placement || 'Non précisé'}</dd>
           </dl>
         </section>
       )}
@@ -205,7 +208,11 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
           <h4 className={styles.subtitle}>Drapeaux</h4>
           <dl className={styles.list}>
             <dt>Mention</dt>
-            <dd>{SIGN_MENTION_LABELS[flags.mention]}</dd>
+            <dd>
+              {flags.mention === 'other'
+                ? `${FLAG_MENTION_LABELS.other} : « ${flags.customMention} »`
+                : FLAG_MENTION_LABELS[flags.mention]}
+            </dd>
             <dt>Quantité</dt>
             <dd>{flags.quantity}</dd>
           </dl>
@@ -221,7 +228,7 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
             {directionals.units.map((u, i) => (
               <div key={u.uid} className={styles.row}>
                 <dt>Directionnelle {i + 1}</dt>
-                <dd>{u.placement}</dd>
+                <dd>{u.placement || 'Non précisé'}</dd>
               </div>
             ))}
           </dl>

@@ -1,25 +1,25 @@
 import { z } from 'zod';
 import {
-  ACCESS_CHOICES, ADDONS, LADDERS, FLAG_MENTIONS, FRAME_MODELS, IMPLEMENTED_MATERIALS, KEYBOX_CODE_MAX_DIGITS, KIT_MODELS,
-  LOCATIONS, MAX_ADDONS, MAX_DIRECTIONALS, MAX_FLAGS, MAX_FRAMES, MAX_KEYBOXES, MAX_KITS, MOUNTINGS, OPEN_HOUSE,
-  SIGN_MENTIONS, TEXT_LIMITS, WINDOW_SIDES, type Addon, type ImplementedMaterial, type AccessChoice, type Ladder,
+  ADDONS, FLAG_MENTIONS, FRAME_MODELS, IMPLEMENTED_MATERIALS, KEYBOX_CODE_MAX_DIGITS, KIT_MODELS,
+  MAX_ADDONS, MAX_DIRECTIONALS, MAX_FLAGS, MAX_FRAMES, MAX_KITS, OPEN_HOUSE, SIGN_MENTIONS, TEXT_LIMITS,
+  type Addon, type ImplementedMaterial,
 } from '../constants/installation';
 import type {
-  AddonAssignment, FrameUnit, InstallationDetails, KitUnit, OpenHouseDetails, Placement, PlacementAccess, PlacedUnit, UnitTargets,
+  AddonAssignment, FlagsDetails, FrameUnit, InstallationDetails, KitUnit, OpenHouseDetails, PlacedUnit, UnitTargets,
 } from '../types/installation';
-import { addMinutesClamped, isValidIsoDate, isValidTime, toMinutes } from '../utils/time';
+import { addMinutesClamped, isNextDay, isValidIsoDate, isValidTime, toMinutes } from '../utils/time';
+import {
+  createEmptyPlacement, fromPlacement, placementFormSchema, toPlacement, validatePlacement,
+} from './placement.schema';
+import { REQUIRED, defined, text, type Path, type Report } from './shared';
+
+// Réexport : les composants et les tests continuent d'importer depuis ce fichier
+export { createEmptyPlacement, type PlacementFormValues } from './placement.schema';
 
 interface SessionContext {
   isMember: boolean;
   accountName: string | null;
 }
-
-const REQUIRED = 'Ce champ est requis';
-const tooLong = (max: number) => `Maximum ${max} caractères`;
-const text = (max: number) => z.string().trim().max(max, tooLong(max));
-
-const LADDER_SET: ReadonlySet<string> = new Set(LADDERS);
-const isLadder = (a: AccessChoice): a is Ladder => LADDER_SET.has(a);
 
 /* ==========================================================================
    Forme du formulaire (plate, nullable)
@@ -35,23 +35,13 @@ const targetsFormShape = {
   onSite: z.boolean(),
 };
 
-/** Unité dont seul l'emplacement est précisé (directionnelle, boîte à clés) */
+/** Unité dont seul l'emplacement est précisé (directionnelles) */
 const placedUnitFormSchema = (maxLength: number) =>
   z.object({ uid: z.string().min(1), placement: text(maxLength) });
 
 const KEYBOX_CODE_REGEX = new RegExp(`^\\d{0,${KEYBOX_CODE_MAX_DIGITS}}$`);
 
 /* ---------- Schémas par matériel ---------- */
-
-const placementFormSchema = z.object({
-  location: z.enum(LOCATIONS).nullable(),
-  access: z.enum(ACCESS_CHOICES).nullable(),
-  mounting: z.enum(MOUNTINGS).nullable(),
-  windowSide: z.enum(WINDOW_SIDES).nullable(),
-  contact: text(TEXT_LIMITS.appointmentContact),
-  keyboxInfo: text(TEXT_LIMITS.keyboxAccess),
-  description: text(TEXT_LIMITS.placementDescription),
-});
 
 const frameUnitFormSchema = z.object({
   uid: z.string().min(1),
@@ -75,7 +65,8 @@ const addonEntryFormSchema = z.object({
 
 const openHouseFormSchema = z.object({
   ...targetsFormShape,
-  date: z.string().nullable(),
+  dates: z.array(z.string()).max(OPEN_HOUSE.maxDates),
+  twoDates: z.boolean(),
   startTime: z.string(),
   endTime: z.string(),
   directionals: z
@@ -102,12 +93,11 @@ const installationFormSchema = z.object({
   openHouse: openHouseFormSchema,
   keybox: z.object({
     code: z.string().trim().regex(KEYBOX_CODE_REGEX, `Code de ${KEYBOX_CODE_MAX_DIGITS} chiffres maximum`),
-    units: z
-      .array(placedUnitFormSchema(TEXT_LIMITS.keyboxPlacement))
-      .max(MAX_KEYBOXES, `Maximum ${MAX_KEYBOXES} boîtes`),
+    placement: text(TEXT_LIMITS.keyboxPlacement),
   }),
   flags: z.object({
     mention: z.enum(FLAG_MENTIONS).nullable(),
+    customMention: text(TEXT_LIMITS.flagMention),
     quantity: z.number().int().min(1, 'Minimum 1').max(MAX_FLAGS, `Maximum ${MAX_FLAGS} drapeaux`),
   }),
   directionals: z.object({
@@ -121,41 +111,15 @@ const installationFormSchema = z.object({
 
 type FormOutput = z.output<typeof installationFormSchema>;
 type FrameUnitOutput = z.output<typeof frameUnitFormSchema>;
-type PlacementOutput = z.output<typeof placementFormSchema>;
 type AddonEntryOutput = z.output<typeof addonEntryFormSchema>;
 type KitUnitOutput = z.output<typeof kitUnitFormSchema>;
 type OpenHouseOutput = z.output<typeof openHouseFormSchema>;
 type TargetsOutput = { quantity: number; frameUids: string[]; onSite: boolean };
 type PlacedUnitOutput = { uid: string; placement: string };
-type Path = (string | number)[];
-type Report = (path: Path, message: string) => void;
 
 /* ==========================================================================
    Règles conditionnelles
    ========================================================================== */
-
-function validatePlacement(p: PlacementOutput, path: Path, report: Report) {
-  if (p.location === null) return report([...path, 'location'], 'Choisissez un emplacement');
-
-  switch (p.location) {
-    case 'wall':
-      if (p.access === null || !isLadder(p.access)) {
-        report([...path, 'access'], "Choisissez une option d'échelle");
-      }
-      if (p.mounting === null) report([...path, 'mounting'], 'Choisissez une méthode de fixation');
-      break;
-    case 'balcony':
-      validateAccess(p, path, report);
-      break;
-    case 'window':
-      validateAccess(p, path, report);
-      if (p.windowSide === null) report([...path, 'windowSide'], "Choisissez l'emplacement sur la fenêtre");
-      break;
-    case 'other':
-      if (!p.description) report([...path, 'description'], "Décrivez l'emplacement");
-      break;
-  }
-}
 
 function validateFrameUnit(u: FrameUnitOutput, path: Path, session: SessionContext, report: Report) {
   if (session.isMember) {
@@ -201,22 +165,20 @@ function validateAddon(a: AddonEntryOutput, path: Path, validFrameUids: Set<stri
   validateTargets(a, path, validFrameUids, report);
 }
 
-function validatePlacedUnits(
-  units: PlacedUnitOutput[],
-  path: Path,
-  messages: { empty?: string; placement: string },
-  report: Report,
-) {
-  if (messages.empty && units.length === 0) report(path, messages.empty);
-  units.forEach((u, i) => {
-    if (!u.placement) report([...path, i, 'placement'], messages.placement);
-  });
+function validatePlacedUnits(units: PlacedUnitOutput[], path: Path, emptyMessage: string, report: Report) {
+  if (units.length === 0) report(path, emptyMessage);
 }
 
 function validateOpenHouse(o: OpenHouseOutput, path: Path, validFrameUids: Set<string>, report: Report) {
   validateTargets(o, path, validFrameUids, report);
 
-  if (o.date === null || !isValidIsoDate(o.date)) report([...path, 'date'], 'Choisissez la date de la visite libre');
+  const expected = o.twoDates ? 2 : 1;
+  if (o.dates.length !== expected || !o.dates.every(isValidIsoDate)) {
+    report([...path, 'dates'], o.twoDates ? 'Choisissez deux dates' : 'Choisissez la date de la visite libre');
+  } else if (o.twoDates) {
+    const [first, second] = [...o.dates].sort();
+    if (!isNextDay(first, second)) report([...path, 'dates'], 'Les deux dates doivent être consécutives');
+  }
 
   const startValid = isValidTime(o.startTime);
   if (!startValid) report([...path, 'startTime'], 'Heure de début invalide');
@@ -225,52 +187,12 @@ function validateOpenHouse(o: OpenHouseOutput, path: Path, validFrameUids: Set<s
     report([...path, 'endTime'], "L'heure de fin doit être après l'heure de début");
   }
 
-  // Directionnelles de la visite libre : facultatives (0 à 5), mais chacune doit être située
-  validatePlacedUnits(o.directionals, [...path, 'directionals'], {
-    placement: "Indiquez l'emplacement de la directionnelle",
-  }, report);
-
   if (o.removeNextMonday === null) report([...path, 'removeNextMonday'], REQUIRED);
-}
-
-function validateAccess(p: PlacementOutput, path: Path, report: Report) {
-  if (p.access === null) report([...path, 'access'], REQUIRED);
-  else if (p.access === 'phoneAppointment' && !p.contact) {
-    report([...path, 'contact'], 'Indiquez vos coordonnées');
-  } else if (p.access === 'keybox' && !p.keyboxInfo) {
-    report([...path, 'keyboxInfo'], 'Indiquez les informations de la boîte à clés');
-  }
 }
 
 /* ==========================================================================
    Transformation vers le domaine
    ========================================================================== */
-
-/** Invariant : appelée uniquement après un superRefine réussi. */
-function defined<T>(value: T | null): T {
-  if (value === null) throw new Error('Invariant violé : valeur non validée');
-  return value;
-}
-
-function toPlacement(p: PlacementOutput): Placement {
-  const location = defined(p.location);
-  switch (location) {
-    case 'ground':
-    case 'ramp':
-      return { location };
-    case 'wall': {
-      const access = defined(p.access);
-      if (!isLadder(access)) throw new Error('Invariant violé : accès mural');
-      return { location, ladder: access, mounting: defined(p.mounting) };
-    }
-    case 'balcony':
-      return { location, access: toAccess(p) };
-    case 'window':
-      return { location, access: toAccess(p), side: defined(p.windowSide) };
-    case 'other':
-      return { location, description: p.description };
-  }
-}
 
 function toFrameUnit(u: FrameUnitOutput, { isMember, accountName }: SessionContext): FrameUnit {
   const model = isMember ? defined(u.model) : null;
@@ -307,13 +229,21 @@ const toPlacedUnit = (u: PlacedUnitOutput): PlacedUnit => ({ uid: u.uid, placeme
 
 function toAddonAssignment(a: AddonEntryOutput): AddonAssignment {
   const base = toTargets(a);
-  return a.addon === 'other' ? { ...base, addon: 'other', mention: a.mention } : { ...base, addon: a.addon };
+  switch (a.addon) {
+    case 'other':
+      return { ...base, addon: 'other', mention: a.mention };
+    case 'customNoMention':
+      return { ...base, addon: 'customNoMention', details: a.mention || null };
+    default:
+      return { ...base, addon: a.addon };
+  }
 }
 
 function toOpenHouse(o: OpenHouseOutput): OpenHouseDetails {
   return {
     ...toTargets(o),
-    date: defined(o.date),
+    // Le format yyyy-MM-dd se trie correctement comme une chaîne
+    dates: [...o.dates].sort(),
     startTime: o.startTime,
     endTime: o.endTime,
     directionals: o.directionals.map(toPlacedUnit),
@@ -322,11 +252,11 @@ function toOpenHouse(o: OpenHouseOutput): OpenHouseDetails {
   };
 }
 
-function toAccess(p: PlacementOutput): PlacementAccess {
-  const access = defined(p.access);
-  if (access === 'phoneAppointment') return { type: 'phoneAppointment', contact: p.contact };
-  if (access === 'keybox') return { type: 'keybox', info: p.keyboxInfo };
-  return { type: 'ladder', ladder: access };
+function toFlags(f: FormOutput['flags']): FlagsDetails {
+  const mention = defined(f.mention);
+  return mention === 'other'
+    ? { mention, customMention: f.customMention, quantity: f.quantity }
+    : { mention, quantity: f.quantity };
 }
 
 /* ==========================================================================
@@ -372,26 +302,20 @@ export function createInstallationSchema(session: SessionContext) {
 
       if (has('openHouse')) validateOpenHouse(v.openHouse, ['openHouse'], validFrameUids, report);
 
-      if (has('keybox')) {
-        if (!v.keybox.code) report(['keybox', 'code'], 'Indiquez le code des boîtes à clés');
-        validatePlacedUnits(v.keybox.units, ['keybox', 'units'], {
-          empty: 'Indiquez au moins une boîte à clés',
-          placement: "Indiquez l'emplacement de la boîte à clés",
-        }, report);
-      }
+      if (has('keybox') && !v.keybox.code) report(['keybox', 'code'], 'Indiquez le code de la boîte à clés');
 
-      if (has('flags') && v.flags.mention === null) {
-        report(['flags', 'mention'], 'Choisissez la mention du drapeau');
+      if (has('flags')) {
+        if (v.flags.mention === null) report(['flags', 'mention'], 'Choisissez la mention du drapeau');
+        else if (v.flags.mention === 'other' && !v.flags.customMention) {
+          report(['flags', 'customMention'], 'Indiquez la mention du drapeau');
+        }
       }
 
       if (has('directional')) {
         if (v.directionals.mention === null) {
           report(['directionals', 'mention'], 'Choisissez la mention de la directionnelle');
         }
-        validatePlacedUnits(v.directionals.units, ['directionals', 'units'], {
-          empty: 'Indiquez au moins une directionnelle',
-          placement: "Indiquez l'emplacement de la directionnelle",
-        }, report);
+        validatePlacedUnits(v.directionals.units, ['directionals', 'units'], 'Indiquez au moins une directionnelle', report);
       }
 
       if (has('other') && !v.otherNeeds) report(['otherNeeds'], 'Décrivez votre besoin');
@@ -411,8 +335,8 @@ export function createInstallationSchema(session: SessionContext) {
         kits: has('kit') && !hasFrames ? { units: v.kits.units.map(toKitUnit) } : null,
         addons: has('addons') ? v.addons.map(toAddonAssignment) : null,
         openHouse: has('openHouse') ? toOpenHouse(v.openHouse) : null,
-        keybox: has('keybox') ? { code: v.keybox.code, units: v.keybox.units.map(toPlacedUnit) } : null,
-        flags: has('flags') ? { mention: defined(v.flags.mention), quantity: v.flags.quantity } : null,
+        keybox: has('keybox') ? { code: v.keybox.code, placement: v.keybox.placement } : null,
+        flags: has('flags') ? toFlags(v.flags) : null,
         directionals: has('directional')
           ? { mention: defined(v.directionals.mention), units: v.directionals.units.map(toPlacedUnit) }
           : null,
@@ -427,16 +351,11 @@ export function createInstallationSchema(session: SessionContext) {
 
 export type InstallationSchema = ReturnType<typeof createInstallationSchema>;
 export type InstallationFormValues = z.input<InstallationSchema>;
-export type PlacementFormValues = z.input<typeof placementFormSchema>;
 export type FrameUnitFormValues = z.input<typeof frameUnitFormSchema>;
 export type KitUnitFormValues = z.input<typeof kitUnitFormSchema>;
 export type AddonEntryFormValues = z.input<typeof addonEntryFormSchema>;
 export type OpenHouseFormValues = z.input<typeof openHouseFormSchema>;
 export type PlacedUnitFormValues = PlacedUnitOutput;
-
-export const createEmptyPlacement = (): PlacementFormValues => ({
-  location: null, access: null, mounting: null, windowSide: null, contact: '', keyboxInfo: '', description: '',
-});
 
 export const createFrameUnit = (): FrameUnitFormValues => ({
   uid: crypto.randomUUID(),
@@ -469,7 +388,8 @@ export const createEmptyOpenHouse = (): OpenHouseFormValues => ({
   quantity: 1,
   frameUids: [],
   onSite: false,
-  date: null,
+  dates: [],
+  twoDates: false,
   startTime: OPEN_HOUSE.defaultStartTime,
   endTime: addMinutesClamped(OPEN_HOUSE.defaultStartTime, OPEN_HOUSE.defaultDurationMinutes),
   directionals: [],
@@ -484,8 +404,8 @@ export const createEmptyInstallationForm = (): InstallationFormValues => ({
   kits: { units: [] },
   addons: [],
   openHouse: createEmptyOpenHouse(),
-  keybox: { code: '', units: [] },
-  flags: { mention: null, quantity: 1 },
+  keybox: { code: '', placement: '' },
+  flags: { mention: null, customMention: '', quantity: 1 },
   directionals: { mention: null, units: [] },
   otherNeeds: '',
 });
@@ -494,23 +414,6 @@ export const createEmptyInstallationForm = (): InstallationFormValues => ({
    Conversion inverse (domaine → formulaire)
    Permet de rouvrir une installation enregistrée pour la modifier.
    ========================================================================== */
-
-function fromPlacement(p: Placement): PlacementFormValues {
-  const empty = createEmptyPlacement();
-  switch (p.location) {
-    case 'ground':
-    case 'ramp':
-      return { ...empty, location: p.location };
-    case 'wall':
-      return { ...empty, location: p.location, access: p.ladder, mounting: p.mounting };
-    case 'balcony':
-      return { ...empty, location: p.location, ...fromAccess(p.access) };
-    case 'window':
-      return { ...empty, location: p.location, windowSide: p.side, ...fromAccess(p.access) };
-    case 'other':
-      return { ...empty, location: p.location, description: p.description };
-  }
-}
 
 function fromFrameUnit(u: FrameUnit): FrameUnitFormValues {
   return {
@@ -540,7 +443,10 @@ const fromPlacedUnit = (u: PlacedUnit): PlacedUnitFormValues => ({ ...u });
 function fromAddon(a: AddonAssignment): AddonEntryFormValues {
   return {
     addon: a.addon,
-    mention: a.addon === 'other' ? a.mention : '',
+    mention:
+      a.addon === 'other' ? a.mention
+      : a.addon === 'customNoMention' ? a.details ?? ''
+      : '',
     ...fromTargets(a),
   };
 }
@@ -548,24 +454,14 @@ function fromAddon(a: AddonAssignment): AddonEntryFormValues {
 function fromOpenHouse(o: OpenHouseDetails): OpenHouseFormValues {
   return {
     ...fromTargets(o),
-    date: o.date,
+    dates: [...o.dates],
+    twoDates: o.dates.length > 1,
     startTime: o.startTime,
     endTime: o.endTime,
     directionals: o.directionals.map(fromPlacedUnit),
     flagCount: o.flagCount,
     removeNextMonday: o.removeNextMonday,
   };
-}
-
-function fromAccess(a: PlacementAccess): Pick<PlacementFormValues, 'access' | 'contact' | 'keyboxInfo'> {
-  switch (a.type) {
-    case 'ladder':
-      return { access: a.ladder, contact: '', keyboxInfo: '' };
-    case 'phoneAppointment':
-      return { access: 'phoneAppointment', contact: a.contact, keyboxInfo: '' };
-    case 'keybox':
-      return { access: 'keybox', contact: '', keyboxInfo: a.info };
-  }
 }
 
 export function toInstallationFormValues(details: InstallationDetails): InstallationFormValues {
@@ -596,9 +492,15 @@ export function toInstallationFormValues(details: InstallationDetails): Installa
     addons: details.addons?.map(fromAddon) ?? [],
     openHouse: details.openHouse ? fromOpenHouse(details.openHouse) : empty.openHouse,
     keybox: details.keybox
-      ? { code: details.keybox.code, units: details.keybox.units.map(fromPlacedUnit) }
+      ? { code: details.keybox.code, placement: details.keybox.placement ?? '' }
       : empty.keybox,
-    flags: details.flags ? { ...details.flags } : empty.flags,
+    flags: details.flags
+      ? {
+          mention: details.flags.mention,
+          customMention: details.flags.mention === 'other' ? details.flags.customMention : '',
+          quantity: details.flags.quantity,
+        }
+      : empty.flags,
     directionals: details.directionals
       ? { mention: details.directionals.mention, units: details.directionals.units.map(fromPlacedUnit) }
       : empty.directionals,

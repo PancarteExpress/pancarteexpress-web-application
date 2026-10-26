@@ -1,5 +1,5 @@
 import { TIME_MINUTE_STEP } from '@/features/services/constants/installation';
-import { isValid, parse } from 'date-fns';
+import { addDays, format, isValid, parse } from 'date-fns';
 
 const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
@@ -24,3 +24,7 @@ export const fromMinutes = (total: number): string =>
 /** Ajoute des minutes sans dépasser la dernière heure de la journée */
 export const addMinutesClamped = (time: string, minutes: number): string =>
   fromMinutes(Math.min(toMinutes(time) + minutes, LATEST_TIME_MINUTES));
+
+/** `second` est-il le lendemain de `first` ? (dates yyyy-MM-dd) */
+export const isNextDay = (first: string, second: string): boolean =>
+  isValidIsoDate(first) && format(addDays(parse(first, 'yyyy-MM-dd', new Date()), 1), 'yyyy-MM-dd') === second;

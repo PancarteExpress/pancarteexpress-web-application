@@ -6,7 +6,10 @@ import type { Address } from '@/features/services/types/address';
 import type { Service } from '@/features/services/types/services';
 import { formatAddress } from '@/features/services/utils/formatAddress';
 import { ADDRESS_LABELS } from '@/features/services/constants/installation';
+
 import { InstallationSummary } from './installation/installationSummary';
+import { RemovalSummary } from './removal/RemovalSummary';
+
 import styles from './servicesSummary.module.css';
 
 interface ServicesSummaryProps {
@@ -80,6 +83,7 @@ function ServiceItem({ service, onRemove }: { service: Service; onRemove: () => 
 
       <div id={detailsId} hidden={!expanded} className={styles.details}>
         {service.type === 'installation' && <InstallationSummary details={service} />}
+        {service.type === 'removal' && <RemovalSummary details={service} />}
       </div>
     </li>
   );

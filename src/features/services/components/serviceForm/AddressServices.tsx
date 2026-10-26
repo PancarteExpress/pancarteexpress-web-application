@@ -1,52 +1,68 @@
 'use client';
 
 import { useState } from 'react';
-import { SERVICE_LABELS, SERVICE_TYPES, type ServiceType } from '@/features/services/constants/installation';
+import {
+  IMPLEMENTED_SERVICES, SERVICE_LABELS, SERVICE_TYPES, type ServiceType,
+} from '@/features/services/constants/installation';
 import { CheckboxGroup, Notice, type ChoiceOption } from '@/features/services/components/fields';
-
+import { InstallationForm } from '@/features/services/components/installationForm/InstallationForm';
+import { RemovalForm } from '@/features/services/components/removalForm/RemovalForm';
 import { useAddressStore } from '@/features/services/store/addressStore';
 import type { Address } from '@/features/services/types/address';
 import type { Service } from '@/features/services/types/services';
-import { InstallationForm } from '../installationForm/installationForm';
 
 type InstallationService = Extract<Service, { type: 'installation' }>;
+type RemovalService = Extract<Service, { type: 'removal' }>;
+type SavedIds = Partial<Record<ServiceType, string>>;
+
+const IMPLEMENTED: readonly ServiceType[] = IMPLEMENTED_SERVICES;
 
 const SERVICE_OPTIONS: ChoiceOption<ServiceType>[] = SERVICE_TYPES.map((type) => ({
   value: type,
   label: SERVICE_LABELS[type],
-  disabled: type !== 'installation',
+  disabled: !IMPLEMENTED.includes(type),
 }));
 
 /** Monté avec key={address.id} : l'état local repart de zéro à chaque changement d'adresse. */
 export function AddressServices({ address }: { address: Address }) {
-  const saveInstallation = useAddressStore((s) => s.saveInstallation);
+  const saveService = useAddressStore((s) => s.saveService);
   const removeService = useAddressStore((s) => s.removeServiceFromAddress);
 
   const installation = address.services.find((s): s is InstallationService => s.type === 'installation');
+  const removal = address.services.find((s): s is RemovalService => s.type === 'removal');
+  const savedIds: SavedIds = { installation: installation?.id, removal: removal?.id };
 
-  const [selected, setSelected] = useState<ServiceType[]>(() => (installation ? ['installation'] : []));
-  const [saved, setSaved] = useState(false);
+  const [selected, setSelected] = useState<ServiceType[]>(() => IMPLEMENTED.filter((t) => savedIds[t]));
+  const [justSaved, setJustSaved] = useState<Partial<Record<ServiceType, boolean>>>({});
+
+  // Service supprimé ailleurs (ex. depuis le résumé) : on le décoche, pendant le rendu
+  const [prevIds, setPrevIds] = useState<SavedIds>(savedIds);
+  if (IMPLEMENTED.some((t) => prevIds[t] !== savedIds[t])) {
+    const removed = IMPLEMENTED.filter((t) => prevIds[t] && !savedIds[t]);
+    setPrevIds(savedIds);
+    if (removed.length > 0) setSelected((s) => s.filter((t) => !removed.includes(t)));
+  }
 
   const handleServicesChange = (next: ServiceType[]) => {
-    const removing = selected.includes('installation') && !next.includes('installation');
-    if (removing && installation) {
-      if (!window.confirm("Supprimer l'installation enregistrée pour cette adresse ?")) return;
-      removeService(address.id, installation.id);
-      setSaved(false);
+    const removing = selected.flatMap((type) => {
+      const id = savedIds[type];
+      return !next.includes(type) && id ? [{ type, id }] : [];
+    });
+
+    for (const { type } of removing) {
+      if (!window.confirm(`Supprimer le service « ${SERVICE_LABELS[type]} » enregistré pour cette adresse ?`)) return;
     }
+    removing.forEach(({ id }) => removeService(address.id, id));
     setSelected(next);
   };
 
-  // Installation supprimée ailleurs (ex. depuis le résumé) : on décoche
-  const installationId = installation?.id ?? null;
-  const [prevInstallationId, setPrevInstallationId] = useState(installationId);
-  if (installationId !== prevInstallationId) {
-    setPrevInstallationId(installationId);
-    if (installationId === null) {
-      setSelected((s) => s.filter((t) => t !== 'installation'));
-      setSaved(false);
-    }
-  }
+  // Le message ne s'affiche que si le service existe toujours
+  const savedNotice = (type: ServiceType) =>
+    justSaved[type] && savedIds[type] && (
+      <div role="status">
+        <Notice>{SERVICE_LABELS[type]} enregistré.</Notice>
+      </div>
+    );
 
   return (
     <>
@@ -59,20 +75,32 @@ export function AddressServices({ address }: { address: Address }) {
       />
 
       {selected.includes('installation') && (
-        <InstallationForm
-          key={installation?.id ?? 'new'}
-          initialValues={installation}
-          onSubmit={(details) => {
-            saveInstallation(address.id, details);
-            setSaved(true);
-          }}
-        />
+        <>
+          <InstallationForm
+            // 'new' → id après le 1er enregistrement : remontage unique avec les données sauvegardées
+            key={installation?.id ?? 'new'}
+            initialValues={installation}
+            onSubmit={(details) => {
+              saveService(address.id, { type: 'installation', ...details });
+              setJustSaved((j) => ({ ...j, installation: true }));
+            }}
+          />
+          {savedNotice('installation')}
+        </>
       )}
 
-      {saved && (
-        <div role="status">
-          <Notice>Installation enregistrée.</Notice>
-        </div>
+      {selected.includes('removal') && (
+        <>
+          <RemovalForm
+            key={removal?.id ?? 'new'}
+            initialValues={removal}
+            onSubmit={(details) => {
+              saveService(address.id, { type: 'removal', ...details });
+              setJustSaved((j) => ({ ...j, removal: true }));
+            }}
+          />
+          {savedNotice('removal')}
+        </>
       )}
     </>
   );

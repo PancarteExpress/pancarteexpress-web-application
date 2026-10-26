@@ -66,8 +66,8 @@ export function MaterialsSelector() {
           // Cocher ou décocher repart toujours de zéro ; les unités démarrent à 1
           const toggled = (m: Material) => current.includes(m) !== materials.includes(m);
           const isOn = (m: Material) => materials.includes(m);
-          if (toggled('keybox')) update('keybox', { code: '', units: isOn('keybox') ? [createPlacedUnit()] : [] });
-          if (toggled('flags')) update('flags', { mention: null, quantity: 1 });
+          if (toggled('keybox')) update('keybox', { code: '', placement: '' });
+          if (toggled('flags')) update('flags', { mention: null, customMention: '', quantity: 1 });
           if (toggled('directional')) {
             update('directionals', { mention: null, units: isOn('directional') ? [createPlacedUnit()] : [] });
           }
