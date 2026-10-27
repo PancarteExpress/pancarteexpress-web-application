@@ -5,7 +5,7 @@ import {
   EXCLUSIVE_REMOVAL_MATERIALS, IMPLEMENTED_REMOVAL_MATERIALS, REMOVAL_MATERIAL_LABELS, REMOVAL_MATERIALS,
   type ImplementedRemovalMaterial, type RemovalMaterial,
 } from '@/features/services/constants/removal';
-import { createRemovalFrameUnit } from '@/features/services/schemas/removal.schema';
+import { createRemovalDirectional, createRemovalUnit } from '@/features/services/schemas/removal.schema';
 import { CheckboxGroup, type ChoiceOption } from '@/features/services/components/fields';
 import { useRemovalFormContext, useRemovalUpdater } from './formContext';
 
@@ -36,11 +36,19 @@ export function RemovalMaterialsSelector() {
 
         const handleChange = (next: RemovalMaterial[]) => {
           const materials = next.filter(isImplemented);
-          const hadFrames = field.value.includes('frames');
-          const hasFrames = materials.includes('frames');
-          if (hadFrames !== hasFrames) {
-            update('frames', { units: hasFrames ? [createRemovalFrameUnit()] : [] });
+          const toggled = (m: ImplementedRemovalMaterial) => field.value.includes(m) !== materials.includes(m);
+          const isOn = (m: ImplementedRemovalMaterial) => materials.includes(m);
+
+          // Cocher ou décocher repart toujours de zéro ; les unités démarrent à 1
+          if (toggled('frames')) update('frames', { units: isOn('frames') ? [createRemovalUnit()] : [] });
+          if (toggled('addons')) update('addons', { units: isOn('addons') ? [createRemovalUnit()] : [], details: '' });
+          if (toggled('keybox')) update('keybox', { quantity: 1, code: '', placement: '' });
+          if (toggled('flags')) update('flags', { quantity: 1, placement: '' });
+          if (toggled('directional')) {
+            update('directionals', { units: isOn('directional') ? [createRemovalDirectional()] : [] });
           }
+          if (toggled('other')) update('otherDetails', '');
+
           field.onChange(materials);
         };
 

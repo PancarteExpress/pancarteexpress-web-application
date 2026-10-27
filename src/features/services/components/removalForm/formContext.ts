@@ -1,5 +1,8 @@
 import { useCallback } from 'react';
-import { useFormContext, useFormState, type FieldPath, type PathValue } from 'react-hook-form';
+import {
+  useFormContext, useFormState,
+  type ControllerFieldState, type ControllerRenderProps, type FieldPath, type PathValue,
+} from 'react-hook-form';
 import type { RemovalFormValues } from '@/features/services/schemas/removal.schema';
 import type { RemovalDetails } from '@/features/services/types/removal';
 
@@ -18,4 +21,21 @@ export function useRemovalUpdater() {
     },
     [setValue, isSubmitted],
   );
+}
+
+/** Adapte un Controller aux props contrôlées des primitives (value, onChange, error…). */
+export function bindRemovalField<TName extends RemovalPath>({
+  field,
+  fieldState,
+}: {
+  field: ControllerRenderProps<RemovalFormValues, TName>;
+  fieldState: ControllerFieldState;
+}) {
+  return {
+    value: field.value,
+    onChange: field.onChange,
+    onBlur: field.onBlur,
+    inputRef: field.ref,
+    error: fieldState.error?.message,
+  };
 }

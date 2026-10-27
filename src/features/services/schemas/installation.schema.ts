@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import {
-  ADDONS, FLAG_MENTIONS, FRAME_MODELS, IMPLEMENTED_MATERIALS, KEYBOX_CODE_MAX_DIGITS, KIT_MODELS,
+  ADDONS, FLAG_MENTIONS, FRAME_MODELS, IMPLEMENTED_MATERIALS, KIT_MODELS,
   MAX_ADDONS, MAX_DIRECTIONALS, MAX_FLAGS, MAX_FRAMES, MAX_KITS, OPEN_HOUSE, SIGN_MENTIONS, TEXT_LIMITS,
   type Addon, type ImplementedMaterial,
 } from '../constants/installation';
@@ -9,9 +9,9 @@ import type {
 } from '../types/installation';
 import { addMinutesClamped, isNextDay, isValidIsoDate, isValidTime, toMinutes } from '../utils/time';
 import {
-  createEmptyPlacement, fromPlacement, placementFormSchema, toPlacement, validatePlacement,
+  createDefaultPlacement, fromPlacement, placementFormSchema, toPlacement, validatePlacement,
 } from './placement.schema';
-import { REQUIRED, defined, text, type Path, type Report } from './shared';
+import { REQUIRED, defined, keyboxCode, text, type Path, type Report } from './shared';
 
 // Réexport : les composants et les tests continuent d'importer depuis ce fichier
 export { createEmptyPlacement, type PlacementFormValues } from './placement.schema';
@@ -36,10 +36,7 @@ const targetsFormShape = {
 };
 
 /** Unité dont seul l'emplacement est précisé (directionnelles) */
-const placedUnitFormSchema = (maxLength: number) =>
-  z.object({ uid: z.string().min(1), placement: text(maxLength) });
-
-const KEYBOX_CODE_REGEX = new RegExp(`^\\d{0,${KEYBOX_CODE_MAX_DIGITS}}$`);
+const placedUnitFormSchema = (maxLength: number) => z.object({ uid: z.string().min(1), placement: text(maxLength) });
 
 /* ---------- Schémas par matériel ---------- */
 
@@ -92,7 +89,7 @@ const installationFormSchema = z.object({
   addons: z.array(addonEntryFormSchema).max(MAX_ADDONS, `Maximum ${MAX_ADDONS} ajouts`),
   openHouse: openHouseFormSchema,
   keybox: z.object({
-    code: z.string().trim().regex(KEYBOX_CODE_REGEX, `Code de ${KEYBOX_CODE_MAX_DIGITS} chiffres maximum`),
+    code: keyboxCode(),
     placement: text(TEXT_LIMITS.keyboxPlacement),
   }),
   flags: z.object({
@@ -399,7 +396,7 @@ export const createEmptyOpenHouse = (): OpenHouseFormValues => ({
 
 export const createEmptyInstallationForm = (): InstallationFormValues => ({
   materials: [],
-  placement: createEmptyPlacement(),
+  placement: createDefaultPlacement(),
   frames: { pickup: null, pickupAddress: '', units: [] },
   kits: { units: [] },
   addons: [],

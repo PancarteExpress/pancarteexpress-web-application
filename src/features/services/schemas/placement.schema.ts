@@ -25,6 +25,9 @@ export const createEmptyPlacement = (): PlacementFormValues => ({
   location: null, access: null, mounting: null, windowSide: null, contact: '', keyboxInfo: '', description: '',
 });
 
+/** Valeur initiale d'un nouvel emplacement : « Au sol » présélectionné */
+export const createDefaultPlacement = (): PlacementFormValues => ({ ...createEmptyPlacement(), location: 'ground' });
+
 const LADDER_SET: ReadonlySet<string> = new Set(LADDERS);
 const isLadder = (a: AccessChoice): a is Ladder => LADDER_SET.has(a);
 

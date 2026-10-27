@@ -6,10 +6,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   createEmptyRemovalForm, removalSchema, toRemovalFormValues, type RemovalFormValues,
 } from '@/features/services/schemas/removal.schema';
+import {
+  RemovalDirectionalsSection, RemovalFlagsSection, RemovalKeyboxSection, RemovalOtherSection,
+} from './RemovalSimpleSections';
 import type { RemovalDetails } from '@/features/services/types/removal';
 import styles from '../installationForm/installationForm.module.css';
 import { RemovalMaterialsSelector } from './RemovalMaterialsSelector';
 import { RemovalFramesSection } from './frames/RemovalFramesSection';
+import { RemovalAddonsSection } from './addons/RemovalAddonsSection';
 
 interface RemovalFormProps {
   onSubmit: (details: RemovalDetails) => void;
@@ -35,6 +39,11 @@ export function RemovalForm({ onSubmit, initialValues }: RemovalFormProps) {
       <form noValidate className={styles.form} onSubmit={methods.handleSubmit(onSubmit)}>
         <RemovalMaterialsSelector />
         {materials.includes('frames') && <RemovalFramesSection />}
+        {materials.includes('addons') && <RemovalAddonsSection />}
+        {materials.includes('keybox') && <RemovalKeyboxSection />}
+        {materials.includes('flags') && <RemovalFlagsSection />}
+        {materials.includes('directional') && <RemovalDirectionalsSection />}
+        {materials.includes('other') && <RemovalOtherSection />}
         <button type="submit" className={styles.submit}>Enregistrer le retrait</button>
       </form>
     </FormProvider>
