@@ -49,3 +49,20 @@ export function getUserOrders(userId: string): Promise<UserOrder[]> {
     orderBy: { createdAt: 'desc' },
   });
 }
+
+const teamOrderSelect = {
+  ...userOrderSelect,
+  user: { select: { id: true, firstName: true, lastName: true, email: true } },
+} satisfies Prisma.OrderSelect;
+
+export type TeamOrder = Prisma.OrderGetPayload<{ select: typeof teamOrderSelect }>;
+export type OrderOwner = NonNullable<TeamOrder['user']>;
+
+/** Commandes des membres du groupe (hors admin), les plus récentes en premier */
+export function getTeamOrders(groupId: string, adminId: string): Promise<TeamOrder[]> {
+  return prisma.order.findMany({
+    where: { user: { groupId }, userId: { not: adminId } },
+    select: teamOrderSelect,
+    orderBy: { createdAt: 'desc' },
+  });
+}

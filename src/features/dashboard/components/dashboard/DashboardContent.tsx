@@ -5,7 +5,7 @@ import { useState } from "react";
 import UpdateProfile from "../updateProfile/updateProfile";
 
 import { useSession } from "next-auth/react";
-import type { UserOrder } from '@/lib/orders/server/orders.service';
+import type { TeamOrder, UserOrder } from '@/lib/orders/server/orders.service';
 import ServiceOrders from '../serviceOrders/ServiceOrders';
 import { CreateGroupDialog } from "../createGroupDialog/CreateGroupDialog";
 import UpdateGroup from "../updateGroup/updateGroup";
@@ -15,9 +15,10 @@ import { useRouter } from "next/navigation";
 interface Props {
   orders: UserOrder[];
   group: GroupDetails | null;
+  teamOrders: TeamOrder[];
 }
 
-export function DashboardContent({ orders, group }: Props) {
+export function DashboardContent({ orders, group, teamOrders  }: Props) {
   const router = useRouter();
   const { data: session, update } = useSession();
   
@@ -128,7 +129,11 @@ export function DashboardContent({ orders, group }: Props) {
         </div>
       </div>}
 
-      <ServiceOrders orders={orders} />
+      <ServiceOrders orders={orders} title={canManageGroup ? "Mes demandes de service" : "Demandes de service"} />
+
+      {canManageGroup && (
+        <ServiceOrders orders={teamOrders} title="Demandes de service de l'équipe" />
+      )}
 
       {updateProfileOpen && (
         <UpdateProfile 

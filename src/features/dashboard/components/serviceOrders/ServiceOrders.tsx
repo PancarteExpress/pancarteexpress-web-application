@@ -1,12 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import type { UserOrder } from '@/lib/orders/server/orders.service';
+import type { OrderOwner, UserOrder } from '@/lib/orders/server/orders.service';
 import { formatCents } from '@/lib/pricing/money';
+
 import styles from './ServiceOrders.module.css';
 
 interface Props {
-  orders: UserOrder[];
+  orders: (UserOrder & { user?: OrderOwner | null })[];
+  title?: string;
 }
 
 type ServiceAddressRow = UserOrder['serviceRequests'][number]['addresses'][number];
@@ -21,13 +23,13 @@ const SERVICE_LABELS: Record<OrderService['type'], string> = {
 // null = le SuperAdmin n'a pas encore fixé le prix
 const formatServicePrice = (price: OrderService['price']): string => price === null ? 'sur soumission' : formatCents(price, 'fr');
 
-export default function ServiceOrders({ orders }: Props) {
+export default function ServiceOrders({ orders, title = 'Demandes de service' }: Props) {
   const [openOrderId, setOpenOrderId] = useState<string | null>(null);
   const toggleOrder = (id: string) => setOpenOrderId((prev) => (prev === id ? null : id));
 
   return (
     <div className={styles.mainContainer}>
-      <h3 className={styles.title}>Demandes de service</h3>
+      <h3 className={styles.title}>{title}</h3>
 
       <div className={styles.header}>
         <div>
@@ -48,6 +50,11 @@ export default function ServiceOrders({ orders }: Props) {
               <div className={styles.resume}>
                 <div className={styles.orderNumber}>
                   <label className={styles.orderNumber}>#{order.orderNumber}</label>
+                  {order.user && (
+                    <span className={styles.orderOwner}>
+                      {[order.user.firstName, order.user.lastName].filter(Boolean).join(' ') || order.user.email}
+                    </span>
+                  )}
                 </div>
 
                 <div className={styles.status}>
@@ -55,7 +62,7 @@ export default function ServiceOrders({ orders }: Props) {
                     {openOrderId === order.id ? 'Fermer' : 'Détails'}
                   </button>
 
-                                    {order.status === 'PENDING' && (
+                  {order.status === 'PENDING' && (
                     <button type="button" className={styles.billNotAvailable} disabled>
                       <span className={styles.isNotPayed}>En traitement</span>
                     </button>
