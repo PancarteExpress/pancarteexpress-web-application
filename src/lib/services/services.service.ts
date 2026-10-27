@@ -7,7 +7,6 @@ const adminServiceSelect = {
   type: true,
   status: true,
   price: true,
-  draftPrice: true,
   scheduledFor: true,
   serviceAddress: {
     select: {
@@ -26,11 +25,6 @@ const adminServiceSelect = {
               id: true,
               orderNumber: true,
               createdAt: true,
-              payments: {
-                where: { kind: "SERVICES", status: "SUCCEEDED" },
-                select: { id: true },
-                take: 1,
-              },
               userId: true,
               firstName: true,
               lastName: true,
@@ -50,15 +44,13 @@ export interface AdminServiceRow {
   id: string;
   type: ServiceType;
   status: ServiceStatus;
-  price: number | null;      // envoyé au client
-  draftPrice: number | null; // brouillon
+  price: number | null;
   orderId: string;
   scheduledFor: Date | null;
   address: string;
   requestType: RequestType;
   orderNumber: number;
   orderedAt: Date;
-  isPaid: boolean;
 }
 
 export interface AdminClientServices {
@@ -104,14 +96,12 @@ export async function listServicesForAdmin(): Promise<AdminClientServices[]> {
       type: s.type,
       status: s.status,
       price: s.price,
-      draftPrice: s.draftPrice,
       orderId: order.id,
       scheduledFor: s.scheduledFor,
       address: formatAddress(s.serviceAddress),
       requestType,
       orderNumber: order.orderNumber,
       orderedAt: order.createdAt,
-      isPaid: order.payments.length > 0,
     });
 
     clients.set(key, client);

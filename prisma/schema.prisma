@@ -8,7 +8,6 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
-
 // Tables en lien avec les utilisateurs et les groupes :
 // -- User : gere le stockage des informations des courtiers inscrit chez PancarteExpress
 // -- VerificationToken : permet de valider qu'un compte crée n'est pas un bot (evite le spamming)
@@ -17,30 +16,30 @@ datasource db {
 // -- Group : permet la gestion d'un group
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  firstName     String?
-  lastName      String?
-  phoneNumber   String?   
-  companyName   String?
-  
+  id          String  @id @default(cuid())
+  email       String  @unique
+  firstName   String?
+  lastName    String?
+  phoneNumber String?
+  companyName String?
+
   emailVerified DateTime?
-  password      String?   // null si OAuth
+  password      String? // null si OAuth
 
-  provider           String?   // "google" ou null
-  providerAccountId  String?   // ID unique chez le provider
+  provider          String? // "google" ou null
+  providerAccountId String? // ID unique chez le provider
 
-  orders        Order[]
+  orders Order[]
 
-  role          UserRole  @default(user)
-  groupStatus   GroupStatus  @default(SOLO)
-  groupId       String?
-  group         Group?    @relation("GroupUsers", fields: [groupId], references: [id], onDelete: SetNull)
+  role        UserRole    @default(user)
+  groupStatus GroupStatus @default(SOLO)
+  groupId     String?
+  group       Group?      @relation("GroupUsers", fields: [groupId], references: [id], onDelete: SetNull)
 
-  sessions      Session[]
+  sessions Session[]
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([provider, providerAccountId])
   @@index([email])
@@ -49,11 +48,11 @@ model User {
 }
 
 model VerificationToken {
-  id        String   @id @default(cuid())
-  email     String
-  token     String   
-  expires   DateTime
-  type      TokenType @default(EMAIL_VERIFICATION)
+  id       String    @id @default(cuid())
+  email    String
+  token    String
+  expires  DateTime
+  type     TokenType @default(EMAIL_VERIFICATION)
   attempts Int       @default(0)
 
   @@index([email, type])
@@ -71,9 +70,9 @@ model Session {
 }
 
 model Group {
-  id        String   @id @default(cuid())
-  name      String?  @unique
-  users     User[]   @relation("GroupUsers")
+  id    String  @id @default(cuid())
+  name  String? @unique
+  users User[]  @relation("GroupUsers")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -98,68 +97,63 @@ enum TokenType {
   PASSWORD_RESET
 }
 
-
 // Tables en lien avec les commandes (Services et Produits) :
 // -- Order : contient toutes les informations d'une commande (Services et Produits)
 // -- OrderProduct : Un produit de la boutique commandé
 // -- ServiceRequest : Une demande de service complete
 // -- ServiceAddress : L'adresse liée à un service
 // -- Service : Un service
-// -- Payment : un paiement Stripe lié à une commande.
-//              Une commande peut en avoir plusieurs (produits au checkout, services plus tard).
-//              Les montants sont en cents, figés au moment de la création du PaymentIntent.
 
 model Order {
-  id                 String             @id @default(cuid())
-  orderNumber        Int                @unique @default(autoincrement())
-  idempotencyKey     String             @unique
+  id             String @id @default(cuid())
+  orderNumber    Int    @unique @default(autoincrement())
+  idempotencyKey String @unique
 
   // Nullable : commande invité, ou compte supprimé (on garde l'historique comptable)
-  userId             String?
-  user               User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  firstName          String
-  lastName           String
-  email              String
-  phone              String?
+  firstName String
+  lastName  String
+  email     String
+  phone     String?
 
   // null si services seulement
-  deliveryMode       DeliveryMode? 
+  deliveryMode       DeliveryMode?
   deliveryStreet     String?
   deliveryCity       String?
   deliveryPostalCode String?
   deliveryProvince   String?
 
   // Montants en cents, figés au moment de la commande
-  subtotal           Int
-  tps                Int
-  tvq                Int
-  total              Int
+  subtotal Int
+  tps      Int
+  tvq      Int
+  total    Int
 
-  paymentIntentId    String?            @unique
-  paidAt             DateTime?
-  payments           Payment[]
+  paymentIntentId String?   @unique
+  paidAt          DateTime?
 
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  products           OrderProduct[]
-  productsStatus     ProductsStatus?
-  serviceRequests    ServiceRequest[]
-  status             OrderStatus
+  products        OrderProduct[]
+  productsStatus  ProductsStatus?
+  serviceRequests ServiceRequest[]
+  status          OrderStatus
 
-  @@index([userId, createdAt])  // historique du dashboard
-  @@index([status, createdAt])  // cron de nettoyage + vue SuperAdmin
+  @@index([userId, createdAt]) // historique du dashboard
+  @@index([status, createdAt]) // cron de nettoyage + vue SuperAdmin
 }
 
 model OrderProduct {
-  id          String @id @default(cuid())
-  orderId     String
-  order       Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   productSlug String // slug du catalogue ; plus de clé étrangère
   productName String // copie figée (fr)
-  unitPrice   Int    // cents, copie figée
+  unitPrice   Int // cents, copie figée
   quantity    Int
 
   @@index([orderId])
@@ -167,13 +161,13 @@ model OrderProduct {
 }
 
 model ServiceRequest {
-  id          String           @id @default(cuid())
-  orderId     String
-  order       Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   requestType RequestType
 
-  addresses   ServiceAddress[]
+  addresses ServiceAddress[]
 
   @@index([orderId])
 }
@@ -183,21 +177,21 @@ model ServiceAddress {
   serviceRequestId String
   serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
 
-  kind             AddressKind    // civicaddress | terrain
+  kind AddressKind // civicaddress | terrain
 
   // Adresse civique
-  streetNumber     String?
-  streetName       String?
-  apartment        String?
-  postalCode       String?
+  streetNumber String?
+  streetName   String?
+  apartment    String?
+  postalCode   String?
 
   // Terrain
-  description      String?        @db.Text
-  nearbyAddress    String?
-  
-  city             String
+  description   String? @db.Text
+  nearbyAddress String?
 
-  services         Service[]
+  city String
+
+  services Service[]
 
   @@index([serviceRequestId])
   @@index([city])
@@ -208,47 +202,24 @@ model Service {
   serviceAddressId String
   serviceAddress   ServiceAddress @relation(fields: [serviceAddressId], references: [id], onDelete: Cascade)
 
-  type             ServiceType    // installation | removal | correction
-  draftPrice       Int?           // brouillon du superAdmin, invisible pour le client
-  price            Int?           // prix envoyé au client
-  status           ServiceStatus  @default(TO_SCHEDULE)  
-  scheduledFor     DateTime?                             
-  completedAt      DateTime?                             
+  type   ServiceType // installation | removal | correction
+  price  Int? // prix envoyé au client
+  status ServiceStatus @default(TO_SCHEDULE)
 
-  details          Json           // validé par Zod à l'écriture
+  scheduledFor DateTime?
+  completedAt  DateTime?
 
+  details Json // validé par Zod à l'écriture
 
   @@index([serviceAddressId])
   @@index([type])
   @@index([status, scheduledFor]) // NOUVEAU : planning du SuperAdmin
 }
 
-model Payment {
-  id              String        @id @default(cuid())
-  orderId         String
-  order           Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  kind            PaymentKind
-  status          PaymentStatus @default(PENDING)
-
-  subtotal        Int
-  tps             Int
-  tvq             Int
-  total           Int
-
-  paymentIntentId String        @unique
-  paidAt          DateTime?
-
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-
-  @@index([orderId, kind, status])
-}
-
 enum OrderStatus {
   AWAITING_PAYMENT
   PENDING
-  PAID  
+  PAID
   COMPLETED
   CANCELLED
 }
@@ -286,15 +257,4 @@ enum ServiceStatus {
   SCHEDULED
   COMPLETED
   CANCELLED
-}
-
-enum PaymentKind {
-  PRODUCTS
-  SERVICES
-}
-
-enum PaymentStatus {
-  PENDING    // PaymentIntent créé, en attente de confirmation
-  SUCCEEDED  // confirmé par le webhook
-  CANCELLED  // remplacé (prix modifié) ou abandonné
 }

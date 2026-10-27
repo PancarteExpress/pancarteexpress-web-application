@@ -37,12 +37,6 @@ const userOrderSelect = {
       },
     },
   },
-  // Paiement des services (présent seulement s'il a réussi)
-  payments: {
-    where: { kind: 'SERVICES', status: 'SUCCEEDED' },
-    select: { id: true },
-    take: 1,
-  },
 } satisfies Prisma.OrderSelect;
 
 export type UserOrder = Prisma.OrderGetPayload<{ select: typeof userOrderSelect }>;
