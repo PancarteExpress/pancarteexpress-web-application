@@ -67,21 +67,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const email = user.email.trim().toLowerCase();
 
         const cookieStore = await cookies();
-        const groupStatus = (cookieStore.get('pendingGroupStatus')?.value || 'SOLO') as 'SOLO' | 'PENDING';
+        const intent = cookieStore.get("authIntent")?.value;
+        const groupStatus = (cookieStore.get("pendingGroupStatus")?.value || "SOLO") as "SOLO" | "PENDING";
         const locale: EmailLocale = cookieStore.get("pendingLocale")?.value === "en" ? "en" : "fr";
 
-        const existingUser = await prisma.user.findUnique({
-          where: { email: email },
-        });
+        cookieStore.delete("authIntent");
+        cookieStore.delete("pendingGroupStatus");
+        cookieStore.delete("pendingLocale");
+
+        const existingUser = await prisma.user.findUnique({ where: { email } });
+
+        // Connexion : le compte doit exister, sinon on ne crée rien
+        if (intent === "login" && !existingUser) {
+          return `/${locale}/login?error=no_account`;
+        }
+
+        // Inscription : le compte ne doit pas exister
+        if (intent === "register" && existingUser) {
+          return `/${locale}/login?error=account_exists`;
+        }
 
         if (existingUser) {
-          
-          // On oblige le superAdmin a se connecter avec ses identifiants
-          if (existingUser.role === 'superAdmin') return false;
+          if (existingUser.role === "superAdmin") return false;
 
-          // User existe — mettre à jour provider si nécessaire
           if (!existingUser.provider) {
-
             await prisma.user.update({
               where: { id: existingUser.id },
               data: {
@@ -90,21 +99,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               },
             });
           }
+
           user.id = existingUser.id;
           user.firstName = existingUser.firstName;
           user.lastName = existingUser.lastName;
-
-          await sendAccountCreatedEmails({
-            name: fullName || email, // Google ne fournit pas toujours de nom
-            email,
-            provider: "google",
-            locale,
-          });
+          // Connexion d'un compte existant : pas de courriel de création
         } else {
-          // User n'existe pas — créer User avec provider OAuth
+          // Inscription : création du compte
           const newUser = await prisma.user.create({
             data: {
-              email: email,
+              email,
               firstName,
               lastName,
               emailVerified: new Date(),
@@ -125,10 +129,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             locale,
           });
         }
-
-        cookieStore.delete('pendingGroupStatus');
-        cookieStore.delete("pendingLocale");
       }
+
       return true;
     },
     

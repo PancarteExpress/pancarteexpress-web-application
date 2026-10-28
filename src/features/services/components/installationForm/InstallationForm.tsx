@@ -1,12 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useImperativeHandle, useState, type Ref } from 'react';
 import { useSession } from 'next-auth/react';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  createEmptyInstallationForm, createInstallationSchema, toInstallationFormValues, type InstallationFormValues,
-} from '../../schemas/installation.schema';
+import { createEmptyInstallationForm, createInstallationSchema, toInstallationFormValues, type InstallationFormValues, } from '../../schemas/installation.schema';
+import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
 import type { InstallationDetails } from '../../types/installation';
 import styles from './installationForm.module.css';
 import { MaterialsSelector } from './MaterialsSelector';
@@ -23,11 +22,11 @@ import { KeyboxSection } from './keybox/KeyboxSection';
 import { OtherSection } from './other/OtherSection';
 
 interface InstallationFormProps {
-  onSubmit: (details: InstallationDetails) => void;
+  handle: Ref<ServiceFormHandle<InstallationDetails>>;
   initialValues?: InstallationDetails;
 }
 
-export function InstallationForm({ onSubmit, initialValues }: InstallationFormProps) {
+export function InstallationForm({ handle, initialValues }: InstallationFormProps) {
   const { data: session, status } = useSession();
   
   if (status === 'loading') return <p aria-busy="true">Chargement…</p>;
@@ -42,7 +41,7 @@ export function InstallationForm({ onSubmit, initialValues }: InstallationFormPr
   return (
     <InstallationFormInner
       key={`${status}:${accountName ?? ''}`}
-      onSubmit={onSubmit}
+      handle={handle}
       isMember={status === 'authenticated'}
       accountName={accountName}
       initialValues={initialValues}
@@ -55,7 +54,7 @@ interface InnerProps extends InstallationFormProps {
   accountName: string | null;
 }
 
-function InstallationFormInner({ onSubmit, initialValues, isMember, accountName }: InnerProps) {
+function InstallationFormInner({ handle, initialValues, isMember, accountName }: InnerProps) {
   const [schema] = useState(() => createInstallationSchema({ isMember, accountName }));
   const [defaultValues] = useState(() => initialValues ? toInstallationFormValues(initialValues) : createEmptyInstallationForm(),);
   const methods = useForm<InstallationFormValues, unknown, InstallationDetails>({
@@ -65,10 +64,19 @@ function InstallationFormInner({ onSubmit, initialValues, isMember, accountName 
   });
 
   const materials = useWatch({ control: methods.control, name: 'materials' });
+  const { handleSubmit } = methods;
+
+  useImperativeHandle(handle, () => ({
+    // handleSubmit valide, affiche les erreurs et place le focus sur la première
+    submit: () =>
+      new Promise<InstallationDetails | null>((resolve) => {
+        void handleSubmit((details) => resolve(details), () => resolve(null))();
+      }),
+  }), [handleSubmit]);
 
   return (
     <FormProvider {...methods}>
-      <form noValidate className={styles.form} onSubmit={methods.handleSubmit(onSubmit)}>
+      <form noValidate className={styles.form} onSubmit={(e) => e.preventDefault()}>
         <MaterialsSelector />
         {materials.includes('frames') && <FramesSection isMember={isMember} accountName={accountName} />}
         {materials.includes('kit') && <KitSection />}
@@ -80,7 +88,6 @@ function InstallationFormInner({ onSubmit, initialValues, isMember, accountName 
         {materials.includes('other') && <OtherSection />}
         <AssignmentsSection />
         {materials.length > 0 && <PlacementFields />}
-        <button type="submit" className={styles.submit}>Enregistrer l&apos;installation</button>
       </form>
     </FormProvider>
   );

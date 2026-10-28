@@ -7,6 +7,7 @@ import { GoogleLoginButton } from "../../googleLoginButton/GoogleLoginButton";
 import { LoginForm } from '../LoginForm/LoginForm';
 import { FaHouseChimney } from 'react-icons/fa6';
 import { useTranslations } from 'next-intl';
+import { LoginErrorMessage } from '../../loginErrorMessage/LoginErrorMessage';
 
 interface LoginCredentialsProps {
   locale: string;
@@ -23,7 +24,8 @@ export default function LoginCredentials({ locale }: LoginCredentialsProps) {
           <label>{t('loginTitle')}</label>
         </div>
         
-        <GoogleLoginButton locale={locale} />
+        <LoginErrorMessage locale={locale} />
+        <GoogleLoginButton locale={locale} intent="login" />
         
         <LoginForm locale={locale} />
         

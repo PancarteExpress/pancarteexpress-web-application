@@ -1,15 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import {
-  IMPLEMENTED_SERVICES, SERVICE_LABELS, SERVICE_TYPES, type ServiceType,
-} from '@/features/services/constants/installation';
+import { useRef, useState } from 'react';
+import { IMPLEMENTED_SERVICES, SERVICE_LABELS, SERVICE_TYPES, type ServiceType, } from '@/features/services/constants/installation';
 import { CheckboxGroup, Notice, type ChoiceOption } from '@/features/services/components/fields';
 import { InstallationForm } from '@/features/services/components/installationForm/InstallationForm';
 import { RemovalForm } from '@/features/services/components/removalForm/RemovalForm';
 import { useAddressStore } from '@/features/services/store/addressStore';
 import type { Address } from '@/features/services/types/address';
 import type { Service } from '@/features/services/types/services';
+
+import type { InstallationDetails } from '@/features/services/types/installation';
+import type { RemovalDetails } from '@/features/services/types/removal';
+import type { ServiceFormHandle } from './serviceFormHandle';
+import styles from '../installationForm/installationForm.module.css';
 
 type InstallationService = Extract<Service, { type: 'installation' }>;
 type RemovalService = Extract<Service, { type: 'removal' }>;
@@ -33,7 +36,11 @@ export function AddressServices({ address }: { address: Address }) {
   const savedIds: SavedIds = { installation: installation?.id, removal: removal?.id };
 
   const [selected, setSelected] = useState<ServiceType[]>(() => IMPLEMENTED.filter((t) => savedIds[t]));
-  const [justSaved, setJustSaved] = useState<Partial<Record<ServiceType, boolean>>>({});
+  const [justSaved, setJustSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  const installationRef = useRef<ServiceFormHandle<InstallationDetails>>(null);
+  const removalRef = useRef<ServiceFormHandle<RemovalDetails>>(null);
 
   // Service supprimé ailleurs (ex. depuis le résumé) : on le décoche, pendant le rendu
   const [prevIds, setPrevIds] = useState<SavedIds>(savedIds);
@@ -54,15 +61,30 @@ export function AddressServices({ address }: { address: Address }) {
     }
     removing.forEach(({ id }) => removeService(address.id, id));
     setSelected(next);
+    setJustSaved(false);
   };
 
-  // Le message ne s'affiche que si le service existe toujours
-  const savedNotice = (type: ServiceType) =>
-    justSaved[type] && savedIds[type] && (
-      <div role="status">
-        <Notice>{SERVICE_LABELS[type]} enregistré.</Notice>
-      </div>
-    );
+  /** Valide tous les services cochés ; n'enregistre que si tous sont valides */
+  const handleSaveAll = async () => {
+    setSaving(true);
+    try {
+      // undefined = service non coché ; null = invalide (erreurs affichées dans son formulaire)
+      const [installation, removal] = await Promise.all([
+        selected.includes('installation') ? (installationRef.current?.submit() ?? null) : undefined,
+        selected.includes('removal') ? (removalRef.current?.submit() ?? null) : undefined,
+      ]);
+      if (installation === null || removal === null) {
+        setJustSaved(false);
+        return;
+      }
+
+      if (installation) saveService(address.id, { type: 'installation', ...installation });
+      if (removal) saveService(address.id, { type: 'removal', ...removal });
+      setJustSaved(true);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <>
@@ -75,32 +97,23 @@ export function AddressServices({ address }: { address: Address }) {
       />
 
       {selected.includes('installation') && (
-        <>
-          <InstallationForm
-            // 'new' → id après le 1er enregistrement : remontage unique avec les données sauvegardées
-            key={installation?.id ?? 'new'}
-            initialValues={installation}
-            onSubmit={(details) => {
-              saveService(address.id, { type: 'installation', ...details });
-              setJustSaved((j) => ({ ...j, installation: true }));
-            }}
-          />
-          {savedNotice('installation')}
-        </>
+        <InstallationForm key={`installation-${installation?.id ?? 'new'}`} handle={installationRef} initialValues={installation} />
       )}
 
       {selected.includes('removal') && (
-        <>
-          <RemovalForm
-            key={removal?.id ?? 'new'}
-            initialValues={removal}
-            onSubmit={(details) => {
-              saveService(address.id, { type: 'removal', ...details });
-              setJustSaved((j) => ({ ...j, removal: true }));
-            }}
-          />
-          {savedNotice('removal')}
-        </>
+        <RemovalForm key={`removal-${removal?.id ?? 'new'}`} handle={removalRef} initialValues={removal} />
+      )}
+
+      {selected.length > 0 && (
+        <button type="button" className={styles.submit} onClick={handleSaveAll} disabled={saving}>
+          {saving ? 'Enregistrement…' : 'Enregistrer les services'}
+        </button>
+      )}
+
+      {justSaved && (
+        <div role="status">
+          <Notice>Services enregistrés.</Notice>
+        </div>
       )}
     </>
   );

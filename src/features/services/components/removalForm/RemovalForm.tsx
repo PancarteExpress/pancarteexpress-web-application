@@ -1,26 +1,24 @@
 'use client';
 
-import { useState } from 'react';
+import { useImperativeHandle, useState, type Ref } from 'react';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import {
-  createEmptyRemovalForm, removalSchema, toRemovalFormValues, type RemovalFormValues,
-} from '@/features/services/schemas/removal.schema';
-import {
-  RemovalDirectionalsSection, RemovalFlagsSection, RemovalKeyboxSection, RemovalOtherSection,
-} from './RemovalSimpleSections';
+import { createEmptyRemovalForm, removalSchema, toRemovalFormValues, type RemovalFormValues, } from '@/features/services/schemas/removal.schema';
+import { RemovalDirectionalsSection, RemovalFlagsSection, RemovalKeyboxSection, RemovalOtherSection, } from './RemovalSimpleSections';
 import type { RemovalDetails } from '@/features/services/types/removal';
+import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
+
 import styles from '../installationForm/installationForm.module.css';
 import { RemovalMaterialsSelector } from './RemovalMaterialsSelector';
 import { RemovalFramesSection } from './frames/RemovalFramesSection';
 import { RemovalAddonsSection } from './addons/RemovalAddonsSection';
 
 interface RemovalFormProps {
-  onSubmit: (details: RemovalDetails) => void;
+  handle: Ref<ServiceFormHandle<RemovalDetails>>;
   initialValues?: RemovalDetails;
 }
 
-export function RemovalForm({ onSubmit, initialValues }: RemovalFormProps) {
+export function RemovalForm({ handle, initialValues }: RemovalFormProps) {
   // Calculé une seule fois : useForm ne lit defaultValues qu'au montage
   const [defaultValues] = useState(() =>
     initialValues ? toRemovalFormValues(initialValues) : createEmptyRemovalForm(),
@@ -33,10 +31,18 @@ export function RemovalForm({ onSubmit, initialValues }: RemovalFormProps) {
   });
 
   const materials = useWatch({ control: methods.control, name: 'materials' });
+  const { handleSubmit } = methods;
+
+  useImperativeHandle(handle, () => ({
+    submit: () =>
+      new Promise<RemovalDetails | null>((resolve) => {
+        void handleSubmit((details) => resolve(details), () => resolve(null))();
+      }),
+  }), [handleSubmit]);
 
   return (
     <FormProvider {...methods}>
-      <form noValidate className={styles.form} onSubmit={methods.handleSubmit(onSubmit)}>
+      <form noValidate className={styles.form} onSubmit={(e) => e.preventDefault()}>
         <RemovalMaterialsSelector />
         {materials.includes('frames') && <RemovalFramesSection />}
         {materials.includes('addons') && <RemovalAddonsSection />}
@@ -44,7 +50,6 @@ export function RemovalForm({ onSubmit, initialValues }: RemovalFormProps) {
         {materials.includes('flags') && <RemovalFlagsSection />}
         {materials.includes('directional') && <RemovalDirectionalsSection />}
         {materials.includes('other') && <RemovalOtherSection />}
-        <button type="submit" className={styles.submit}>Enregistrer le retrait</button>
       </form>
     </FormProvider>
   );

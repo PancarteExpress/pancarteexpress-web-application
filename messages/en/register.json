@@ -47,6 +47,8 @@
     "formBtnSolo": "Individual plan",
     "formBtnGroup": "Team plan",
 
+    "registerWithGoogle": "Sign up with Google",
+
     "formFirstName": "First name",
     "formLastName": "Last name",
     "formPhoneNumber": "Phone",

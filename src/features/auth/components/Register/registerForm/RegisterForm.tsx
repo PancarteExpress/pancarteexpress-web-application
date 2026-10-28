@@ -132,7 +132,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
             </div>
         </fieldset>
 
-        <GoogleLoginButton locale={locale} groupStatus={groupStatus} />
+        <GoogleLoginButton locale={locale} intent="register" groupStatus={groupStatus} />
 
         <div className={styles.groupInputs}>
           <div className={styles.inputs}>

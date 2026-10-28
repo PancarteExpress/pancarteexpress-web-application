@@ -43,6 +43,49 @@ export function OpenHouseSection() {
     <section aria-labelledby={headingId} className={styles.section}>
       <h3 id={headingId} className={styles.sectionTitle}>Détails de la visite libre</h3>
 
+      <QuantityField
+        label="Combien de directionnelles visite libre avez-vous besoin ?"
+        value={fields.length}
+        onChange={handleDirectionalsChange}
+        min={0}
+        max={OPEN_HOUSE.maxDirectionals}
+        hint={`Max ${OPEN_HOUSE.maxDirectionals}`}
+      />
+      
+      {fields.map((field, index) => (
+        <Controller
+          key={field.id}
+          control={control}
+          name={`openHouse.directionals.${index}.placement`}
+          render={(props) => (
+            <TextField
+              {...bindField(props)}
+              label={`Veuillez indiquer l'emplacement de la directionnelle #${index + 1}`}
+              maxLength={TEXT_LIMITS.directionalPlacement}
+              placeholder="Ex. : Newman et Léger"
+              multiline
+              rows={1}
+            />
+          )}
+        />
+      ))}
+
+      <Controller
+        control={control}
+        name="openHouse.flagCount"
+        render={({ field, fieldState }) => (
+          <QuantityField
+            label="Combien de drapeaux visite libre avez-vous besoin ?"
+            value={field.value}
+            onChange={field.onChange}
+            min={0}
+            max={OPEN_HOUSE.maxFlags}
+            hint={`Max ${OPEN_HOUSE.maxFlags}`}
+            error={fieldState.error?.message}
+          />
+        )}
+      />
+
       <div>
         <button
           type="button"
@@ -112,49 +155,7 @@ export function OpenHouseSection() {
           )}
         />
       </div>
-
-      <QuantityField
-        label="Combien de directionnelles visite libre avez-vous besoin ?"
-        value={fields.length}
-        onChange={handleDirectionalsChange}
-        min={0}
-        max={OPEN_HOUSE.maxDirectionals}
-        hint={`Max ${OPEN_HOUSE.maxDirectionals}`}
-      />
       
-      {fields.map((field, index) => (
-        <Controller
-          key={field.id}
-          control={control}
-          name={`openHouse.directionals.${index}.placement`}
-          render={(props) => (
-            <TextField
-              {...bindField(props)}
-              label={`Veuillez indiquer l'emplacement de la directionnelle #${index + 1}`}
-              maxLength={TEXT_LIMITS.directionalPlacement}
-              placeholder="Ex. : Newman et Léger"
-              multiline
-              rows={1}
-            />
-          )}
-        />
-      ))}
-
-      <Controller
-        control={control}
-        name="openHouse.flagCount"
-        render={({ field, fieldState }) => (
-          <QuantityField
-            label="Combien de drapeaux visite libre avez-vous besoin ?"
-            value={field.value}
-            onChange={field.onChange}
-            min={0}
-            max={OPEN_HOUSE.maxFlags}
-            hint={`Max ${OPEN_HOUSE.maxFlags}`}
-            error={fieldState.error?.message}
-          />
-        )}
-      />
 
       <Controller
         control={control}

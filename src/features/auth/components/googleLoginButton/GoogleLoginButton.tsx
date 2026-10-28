@@ -8,23 +8,23 @@ import { useTranslations } from 'next-intl';
 
 interface GoogleLoginButtonProps {
   locale: string;
+  intent: "login" | "register";
   groupStatus?: "solo" | "group";
 }
 
-export function GoogleLoginButton({ locale, groupStatus }: GoogleLoginButtonProps) {
-  const t = useTranslations('login');
+export function GoogleLoginButton({ locale, intent, groupStatus }: GoogleLoginButtonProps) {
+  const login = useTranslations('login');
+  const register = useTranslations('register');
 
   const handleGoogleSignIn = async () => {
-
-    if (groupStatus) {
-      await fetch("/api/auth/store-group-status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          groupStatus: groupStatus === 'group' ? 'PENDING' : 'SOLO' 
-        }),
-      });
-    }
+    await fetch("/api/auth/store-group-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        intent,
+        groupStatus: groupStatus === "group" ? "PENDING" : "SOLO",
+      }),
+    });
     
     document.cookie = `pendingLocale=${locale === "en" ? "en" : "fr"}; max-age=300; path=/; samesite=lax`;
 
@@ -38,7 +38,7 @@ export function GoogleLoginButton({ locale, groupStatus }: GoogleLoginButtonProp
     <div className={styles.googleLoginContainer}>
       <button type="button" onClick={handleGoogleSignIn} className={styles.googleBtn}>
         <FcGoogle size={20} />
-        {t('loginWithGoogle')}
+        {intent === "login" ? login('loginWithGoogle') : register('registerWithGoogle')}
       </button>
     </div>
   );

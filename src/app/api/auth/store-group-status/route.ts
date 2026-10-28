@@ -2,19 +2,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 
-export async function POST(request: NextRequest) {
-  try {
-    const { groupStatus } = await request.json();
-    
-    const cookieStore = await cookies();
-    cookieStore.set('pendingGroupStatus', groupStatus, {
-      maxAge: 60 * 5, // 5 minutes
-      httpOnly: true,
-      path: '/',
-    });
+export async function POST(req: Request) {
+  const { intent, groupStatus } = await req.json();
+  const cookieStore = await cookies();
+  const opts = { httpOnly: true, path: "/", maxAge: 300 };
 
-    return NextResponse.json({ success: true });
-  } catch (err) {
-    return NextResponse.json({ error: "Failed" }, { status: 500 });
-  }
+  cookieStore.set("authIntent", intent, opts);
+  cookieStore.set("pendingGroupStatus", groupStatus, opts);
+
+  return NextResponse.json({ ok: true });
 }
