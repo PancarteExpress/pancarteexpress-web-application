@@ -275,3 +275,37 @@
     margin-bottom: 6px;
     display: block;
 }
+
+.billingOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.billingOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid #d6dbe4;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.billingOption > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.billingOption input {
+  margin-top: 3px;
+}
+
+.billingOptionSelected {
+  border-color: #0b2a5b;
+  background: #f1f5fb;
+}

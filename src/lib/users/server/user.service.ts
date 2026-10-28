@@ -14,7 +14,8 @@ const adminUserSelect = {
   groupStatus: true,
   provider: true,
   createdAt: true,
-  group: { select: { id: true, name: true } },
+  serviceBlockStartsAt: true,
+  group: { select: { id: true, name: true, billingMode: true } },
   _count: { select: { orders: true } },
 } satisfies Prisma.UserSelect;
 

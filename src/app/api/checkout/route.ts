@@ -6,6 +6,7 @@ import {
   CheckoutConflictError,
   PaymentProviderError,
   ProductUnavailableError,
+  ServiceBlockedError,
 } from '@/lib/orders/server/errors';
 
 export async function POST(request: Request) {
@@ -37,7 +38,7 @@ export async function POST(request: Request) {
   const user: CheckoutUser | null =
     session?.user?.id && session.user.email ? { id: session.user.id, email: session.user.email } : null;
 
-  // NOUVEAU : un invité doit laisser un téléphone, seul moyen de le joindre en dehors du courriel
+  // Un invité doit laisser un téléphone, seul moyen de le joindre en dehors du courriel
   if (!user && !parsed.data.contact.phone) {
     return NextResponse.json(
       { error: 'validationFailed', issues: [{ path: 'contact.phone', message: 'required' }] },
@@ -49,6 +50,9 @@ export async function POST(request: Request) {
     const result = await createOrder(parsed.data, user);
     return NextResponse.json(result, { status: 201 });
   } catch (error) {
+    if (error instanceof ServiceBlockedError) {
+      return NextResponse.json({ error: 'serviceBlocked' }, { status: 403 });
+    }
     if (error instanceof ProductUnavailableError) {
       return NextResponse.json(
         { error: 'productUnavailable', unavailableProductIds: error.productIds },

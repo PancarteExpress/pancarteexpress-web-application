@@ -94,3 +94,53 @@
   background: #0E4D9A;
   color: #ffffff;
 }
+
+.colServiceBlock {
+  width: 170px;
+}
+
+.serviceBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.blockActive {
+  color: #027a48;
+  font-size: 12px;
+}
+
+.blockPending {
+  color: #b54708;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.blockBlocked {
+  color: #b42318;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.btnServiceBlock {
+  padding: 4px 10px;
+  border: 1px solid #0b2a5b;
+  border-radius: 6px;
+  background: #fff;
+  color: #0b2a5b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btnServiceBlock:disabled {
+  border-color: #c4c9d4;
+  color: #8a93a6;
+  cursor: not-allowed;
+}
+
+.blockNote {
+  font-size: 11px;
+  color: #5b6475;
+}

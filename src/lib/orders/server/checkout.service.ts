@@ -1,4 +1,5 @@
 import 'server-only';
+import { resolveBilledToId } from '../billing';
 import { getTranslations } from 'next-intl/server';
 import { getProductBySlug } from '@/lib/catalog/catalog';
 import { Prisma, type OrderStatus } from '@prisma/client';
@@ -6,7 +7,8 @@ import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe/server';
 import { calculateTotals } from '@/lib/pricing/calculateTotals';
 import type { CheckoutItemPayload, CheckoutPayload, CheckoutResponse } from '@/lib/validations/checkout';
-import { CheckoutConflictError, PaymentProviderError, ProductUnavailableError } from './errors';
+import { CheckoutConflictError, PaymentProviderError, ProductUnavailableError, ServiceBlockedError } from './errors';
+import { getServiceAccess } from '@/lib/users/server/serviceAccess.service';
 
 import { after } from 'next/server';
 import { sendReceipts } from '@/features/checkout/emailSender/sendReceipts';
@@ -42,6 +44,12 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
   const productItems = payload.items.filter((i): i is ProductItem => i.kind === 'product');
   const serviceItems = payload.items.filter((i): i is ServiceRequestItem => i.kind === 'serviceRequest');
 
+  // Blocage par le superAdmin : plus de demandes de service (les produits restent permis)
+  if (user && serviceItems.length > 0) {
+    const access = await getServiceAccess(user.id);
+    if (access.status === 'blocked') throw new ServiceBlockedError();
+  }
+
   const orderLines = await buildProductLines(productItems);
   const totals = calculateTotals(orderLines);
 
@@ -50,10 +58,9 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
   const requiresPayment = totals.total > 0;
   const status: OrderStatus = requiresPayment ? 'AWAITING_PAYMENT' : 'PENDING';
 
-  // NOUVEAU : connecté → téléphone du compte (comme le courriel) ; invité → celui du formulaire
-  const phone = user
-    ? (await prisma.user.findUnique({ where: { id: user.id }, select: { phoneNumber: true } }))?.phoneNumber ?? null
-    : payload.contact.phone ?? null;
+  // Connecté : téléphone du compte + payeur des services ; invité : téléphone du formulaire
+  const account = user ? await getCheckoutAccount(user.id) : null;
+  const phone = account ? account.phone : payload.contact.phone ?? null;
 
   let order: { id: string; orderNumber: number; total: number };
   try {
@@ -65,6 +72,7 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
         // Les produits commencent en préparation ; null s'il n'y en a pas
         productsStatus: orderLines.length > 0 ? 'PREPARING' : null,
         userId: user?.id ?? null,
+        billedToId: account?.billedToId ?? null,
         firstName: payload.contact.firstName,
         lastName: payload.contact.lastName,
         // Connecté : le courriel du compte fait foi, pas celui du formulaire
@@ -221,4 +229,34 @@ async function replay(order: ExistingOrder): Promise<CheckoutResponse> {
   }
 
   return { mode: 'payment', orderNumber: order.orderNumber, clientSecret: intent.client_secret, total: order.total };
+}
+
+/* ── Compte connecté ──────────────────────────────────────────── */
+
+async function getCheckoutAccount(userId: string): Promise<{ phone: string | null; billedToId: string }> {
+  const account = await prisma.user.findUniqueOrThrow({
+    where: { id: userId },
+    select: {
+      phoneNumber: true,
+      groupStatus: true,
+      group: {
+        select: {
+          billingMode: true,
+          users: { where: { role: 'groupAdmin' }, select: { id: true }, take: 1 },
+        },
+      },
+    },
+  });
+
+  return {
+    phone: account.phoneNumber,
+    billedToId: resolveBilledToId({
+      id: userId,
+      groupStatus: account.groupStatus,
+      group: account.group && {
+        billingMode: account.group.billingMode,
+        adminId: account.group.users[0]?.id ?? null,
+      },
+    }),
+  };
 }

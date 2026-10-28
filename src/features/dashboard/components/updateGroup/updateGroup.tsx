@@ -7,10 +7,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { groupNameSchema, type GroupNameInput } from "@/lib/groups/groups.schema";
+import type { BillingMode } from "@prisma/client";
 import {
   renameGroupAction,
   addGroupMembersAction,
   removeGroupMemberAction,
+  setBillingModeAction,
   type UserSearchResult,
 } from "@/lib/groups/server/groups.actions";
 import type { GroupDetails, GroupMember } from "@/lib/groups/server/groups.service";
@@ -29,6 +31,19 @@ const STATUS_LABELS: Record<GroupMember["groupStatus"], string> = {
   JOINED: "Membre",
 };
 
+const BILLING_OPTIONS: readonly { value: BillingMode; label: string; description: string }[] = [
+  {
+    value: "INDIVIDUAL",
+    label: "Chaque membre paie ses factures",
+    description: "Chaque membre reçoit et règle les factures de ses propres demandes.",
+  },
+  {
+    value: "GROUP",
+    label: "Je paie pour toute l'équipe",
+    description: "Toutes les factures de l'équipe, y compris les vôtres, vous sont adressées.",
+  },
+];
+
 export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps) {
   const router = useRouter();
   const { data: session, update } = useSession();
@@ -40,6 +55,10 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
   const [toAdd, setToAdd] = useState<UserSearchResult[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
+
+  const [billingMode, setBillingMode] = useState<BillingMode>(initialGroup.billingMode);
+  const [billingFeedback, setBillingFeedback] = useState<Feedback>(null);
+  const [isSavingBilling, setIsSavingBilling] = useState(false);
 
   const {
     register,
@@ -116,6 +135,29 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
     }
   };
 
+  const handleSaveBilling = async () => {
+    setIsSavingBilling(true);
+    setBillingFeedback(null);
+    try {
+      const res = await setBillingModeAction(billingMode);
+      if (!res.ok) {
+        setBillingFeedback({ type: "error", message: res.error });
+        return;
+      }
+      setGroup(res.group);
+      setBillingMode(res.group.billingMode);
+      setBillingFeedback({
+        type: "success",
+        message: "Mode de facturation mis à jour. Il s'applique aux prochaines commandes.",
+      });
+      router.refresh();
+    } catch {
+      setBillingFeedback({ type: "error", message: "Une erreur est survenue" });
+    } finally {
+      setIsSavingBilling(false);
+    }
+  };
+
   if (!isGroupAdmin) return null;
 
   return (
@@ -147,6 +189,48 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
                 </button>
               </div>
             </form>
+          </section>
+
+          {/* Facturation */}
+          <section className={styles.section}>
+            <h3>Facturation</h3>
+            <fieldset className={styles.billingOptions} disabled={isSavingBilling}>
+              <legend className={styles.membersLabel}>Qui paie les demandes de service ?</legend>
+              {BILLING_OPTIONS.map((option) => (
+                <label
+                  key={option.value}
+                  className={`${styles.billingOption} ${billingMode === option.value ? styles.billingOptionSelected : ""}`}
+                >
+                  <input
+                    type="radio"
+                    name="billingMode"
+                    value={option.value}
+                    checked={billingMode === option.value}
+                    onChange={() => setBillingMode(option.value)}
+                  />
+                  <span>
+                    <span className={styles.memberName}>{option.label}</span>
+                    <span className={styles.memberEmail}>{option.description}</span>
+                  </span>
+                </label>
+              ))}
+            </fieldset>
+
+            {billingFeedback && (
+              <p className={billingFeedback.type === "error" ? styles.error : styles.success}>
+                {billingFeedback.message}
+              </p>
+            )}
+
+            <div className={styles.btnSave}>
+              <button
+                type="button"
+                onClick={handleSaveBilling}
+                disabled={isSavingBilling || billingMode === group.billingMode}
+              >
+                {isSavingBilling ? "Enregistrement…" : "Enregistrer"}
+              </button>
+            </div>
           </section>
 
           {/* Membres */}

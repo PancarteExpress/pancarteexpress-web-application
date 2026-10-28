@@ -3,7 +3,7 @@
 import { Prisma } from "@prisma/client";
 import { auth } from "@/app/auth";
 import { prisma } from "@/lib/prisma";
-import { addMembersSchema, createGroupSchema, groupNameSchema, memberIdSchema } from "../groups.schema";
+import { addMembersSchema, createGroupSchema, groupNameSchema, memberIdSchema, billingModeSchema } from "../groups.schema";
 import { getGroupDetails, type GroupDetails } from "./groups.service";
 
 const userSearchSelect = {
@@ -203,4 +203,20 @@ export async function deleteGroupAction(groupId: string): Promise<ActionResult> 
     }
     throw e;
   }
+}
+
+export async function setBillingModeAction(mode: unknown): Promise<GroupResult> {
+  const ctx = await getAdminContext();
+  if (!ctx.ok) return ctx;
+
+  const parsed = billingModeSchema.safeParse(mode);
+  if (!parsed.success) return { ok: false, error: "Mode de facturation invalide" };
+
+  // Le payeur est figé sur chaque commande : le changement ne vaut que pour les prochaines
+  await prisma.group.update({
+    where: { id: ctx.groupId },
+    data: { billingMode: parsed.data },
+  });
+
+  return { ok: true, group: await getGroupDetails(ctx.groupId) };
 }

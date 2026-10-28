@@ -61,24 +61,6 @@ export default function ServiceOrders({ orders, title = 'Demandes de service' }:
                   <button type="button" onClick={() => toggleOrder(order.id)} aria-expanded={openOrderId === order.id}>
                     {openOrderId === order.id ? 'Fermer' : 'Détails'}
                   </button>
-
-                  {order.status === 'PENDING' && (
-                    <button type="button" className={styles.billNotAvailable} disabled>
-                      <span className={styles.isNotPayed}>En traitement</span>
-                    </button>
-                  )}
-
-                  {order.status === 'PAID' && (
-                    <label className={styles.billPayed}>
-                      <span className={styles.isNotPayed}>Payé</span>
-                    </label>
-                  )}
-
-                  {order.status === 'CANCELLED' && (
-                    <label className={styles.canceled}>
-                      <span className={styles.isNotPayed}>Annulé</span>
-                    </label>
-                  )}
                 </div>
               </div>
 

@@ -1,5 +1,7 @@
 import type { GroupStatus, UserRole } from "@prisma/client";
 import type { AdminUserRow } from "@/lib/users/server/user.service";
+import { ServiceBlockButton } from "./ServiceBlockButton";
+import { isBilledToGroupAdmin } from "@/lib/orders/billing";
 import styles from "./UsersTable.module.css";
 
 import { IoMdCloseCircle } from "react-icons/io";
@@ -20,6 +22,21 @@ const GROUP_STATUS_LABELS: Record<GroupStatus, string> = {
 
 const dateFormatter = new Intl.DateTimeFormat("fr-CA", { dateStyle: "medium", timeZone: "America/Toronto", });
 
+type BlockTone = "active" | "pending" | "blocked";
+
+/** Blocage direct du compte (les blocages hérités du groupe ne sont pas affichés ici) */
+function getBlockLabel(startsAt: Date | null, now: Date): { label: string; tone: BlockTone } {
+  if (!startsAt) return { label: "Actif", tone: "active" };
+  if (startsAt <= now) return { label: "Bloqué", tone: "blocked" };
+  return { label: `Bloqué le ${dateFormatter.format(startsAt)}`, tone: "pending" };
+}
+
+const BLOCK_TONE_CLASS: Record<BlockTone, string> = {
+  active: styles.blockActive,
+  pending: styles.blockPending,
+  blocked: styles.blockBlocked,
+};
+
 interface UsersTableProps {
   users: AdminUserRow[];
   allUsers: AdminUserRow[];
@@ -31,6 +48,8 @@ export function UsersTable({ users, allUsers }: UsersTableProps) {
   if (users.length === 0) {
     return <p className={styles.empty}>Aucun utilisateur inscrit.</p>;
   }
+
+  const now = new Date();
 
   const membersByGroup = new Map<string, GroupMemberOption[]>();
   for (const u of allUsers) {
@@ -52,6 +71,7 @@ export function UsersTable({ users, allUsers }: UsersTableProps) {
           <col className={styles.colGroup} />
           <col className={styles.colStatus} />
           <col className={styles.colRegisterDate} />
+          <col className={styles.colServiceBlock} />
           <col className={styles.colDeleteUser} />
         </colgroup>
         <thead>
@@ -64,12 +84,15 @@ export function UsersTable({ users, allUsers }: UsersTableProps) {
             <th scope="col">Groupe</th>
             <th scope="col">Statut</th>
             <th scope="col">Inscrit le</th>
+            <th scope="col">Demandes de service</th>
             <th scope="col">Supprimer</th>
           </tr>
         </thead>
         <tbody>
           {users.map((user) => {
             const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ") || "—";
+            const block = getBlockLabel(user.serviceBlockStartsAt, now);
+            const isBlocked = user.serviceBlockStartsAt !== null;
 
             return (
               <tr key={user.id}>
@@ -97,6 +120,21 @@ export function UsersTable({ users, allUsers }: UsersTableProps) {
                 <td>{user.group?.name ?? "—"}</td>
                 <td>{GROUP_STATUS_LABELS[user.groupStatus]}</td>
                 <td>{dateFormatter.format(user.createdAt)}</td>
+                <td>
+                  <div className={styles.serviceBlock}>
+                    <span className={BLOCK_TONE_CLASS[block.tone]}>{block.label}</span>
+                    <ServiceBlockButton
+                      userId={user.id}
+                      userName={fullName}
+                      isBlocked={isBlocked}
+                      disabledReason={
+                        !isBlocked && isBilledToGroupAdmin(user) ? "Facturé à l'admin du groupe" : undefined
+                      }
+                      className={styles.btnServiceBlock}
+                      noteClassName={styles.blockNote}
+                    />
+                  </div>
+                </td>
                 <td>
                   <DeleteUserButton
                     userId={user.id}

@@ -20,3 +20,9 @@ export class PaymentProviderError extends Error {
     this.name = 'PaymentProviderError';
   }
 }
+
+export class ServiceBlockedError extends Error {
+  constructor() {
+    super('Demandes de service suspendues');
+  }
+}

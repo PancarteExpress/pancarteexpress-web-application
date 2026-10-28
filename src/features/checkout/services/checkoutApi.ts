@@ -21,12 +21,12 @@ export function buildCheckoutPayload(
 
   return {
     idempotencyKey,
-    contact: { 
+    contact: {
       firstName: form.firstName,
       lastName: form.lastName,
       email: form.email,
       phone: form.phone || undefined,
-     },
+    },
     // L'API refuse un mode de réception quand il n'y a que des services
     fulfillment: !hasProducts
       ? null
@@ -56,10 +56,18 @@ export type CheckoutErrorCode =
   | 'productUnavailable'
   | 'alreadyProcessed'
   | 'inProgress'
+  | 'serviceBlocked'
   | 'network'
   | 'serverError';
 
-const KNOWN_CODES: ReadonlySet<string> = new Set(['validationFailed', 'productUnavailable', 'alreadyProcessed', 'inProgress']);
+// Codes renvoyés par l'API ; tout autre code devient 'serverError'
+const KNOWN_CODES: ReadonlySet<string> = new Set([
+  'validationFailed',
+  'productUnavailable',
+  'alreadyProcessed',
+  'inProgress',
+  'serviceBlocked',
+]);
 
 export class CheckoutApiError extends Error {
   constructor(public readonly code: CheckoutErrorCode) {
@@ -84,7 +92,9 @@ export async function submitCheckout(payload: CheckoutPayload): Promise<Checkout
 
   if (!res.ok) {
     const code = (body as { error?: unknown } | null)?.error;
-    throw new CheckoutApiError(typeof code === 'string' && KNOWN_CODES.has(code) ? (code as CheckoutErrorCode) : 'serverError');
+    throw new CheckoutApiError(
+      typeof code === 'string' && KNOWN_CODES.has(code) ? (code as CheckoutErrorCode) : 'serverError',
+    );
   }
 
   // On vérifie que la réponse a bien la forme attendue avant de l'utiliser

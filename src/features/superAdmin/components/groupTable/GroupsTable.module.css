@@ -24,10 +24,11 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
-.colName    { width: 35%; }
-.colAdmin   { width: 30%; }
-.colMembers { width: 15%; }
-.colActions { width: 20%; }
+.colName    { width: 15%; }
+.colAdmin   { width: 15%; }
+.colMembers { width: 5%; }
+.colPayedBy { width: 15%; }
+.colActions { width: 10%; }
 
 .rowOpen td { background: #EEF4FB; }
 

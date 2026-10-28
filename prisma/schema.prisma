@@ -29,12 +29,15 @@ model User {
   provider          String? // "google" ou null
   providerAccountId String? // ID unique chez le provider
 
-  orders Order[]
+  orders        Order[]   @relation("OrderOwner")
+  billedOrders  Order[]   @relation("OrderBilledTo")
 
   role        UserRole    @default(user)
   groupStatus GroupStatus @default(SOLO)
   groupId     String?
   group       Group?      @relation("GroupUsers", fields: [groupId], references: [id], onDelete: SetNull)
+
+  serviceBlockStartsAt DateTime?
 
   sessions Session[]
 
@@ -70,9 +73,10 @@ model Session {
 }
 
 model Group {
-  id    String  @id @default(cuid())
-  name  String? @unique
-  users User[]  @relation("GroupUsers")
+  id          String      @id @default(cuid())
+  name        String?     @unique
+  billingMode BillingMode @default(INDIVIDUAL)
+  users       User[]      @relation("GroupUsers")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -97,6 +101,11 @@ enum TokenType {
   PASSWORD_RESET
 }
 
+enum BillingMode {
+  INDIVIDUAL // chaque membre paie ses propres commandes
+  GROUP      // le groupAdmin paie toutes les commandes de l'équipe, y compris les siennes
+}
+
 // Tables en lien avec les commandes (Services et Produits) :
 // -- Order : contient toutes les informations d'une commande (Services et Produits)
 // -- OrderProduct : Un produit de la boutique commandé
@@ -111,12 +120,17 @@ model Order {
 
   // Nullable : commande invité, ou compte supprimé (on garde l'historique comptable)
   userId String?
-  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  user   User?   @relation("OrderOwner", fields: [userId], references: [id], onDelete: SetNull)
 
   firstName String
   lastName  String
   email     String
   phone     String?
+
+  // Qui doit payer les services, figé à la création selon le mode du groupe à ce moment.
+  // Sert au suivi manuel de la facturation. null = invité.
+  billedToId String?
+  billedTo   User?   @relation("OrderBilledTo", fields: [billedToId], references: [id], onDelete: SetNull)
 
   // null si services seulement
   deliveryMode       DeliveryMode?
@@ -144,6 +158,7 @@ model Order {
 
   @@index([userId, createdAt]) // historique du dashboard
   @@index([status, createdAt]) // cron de nettoyage + vue SuperAdmin
+  @@index([billedToId, createdAt])
 }
 
 model OrderProduct {

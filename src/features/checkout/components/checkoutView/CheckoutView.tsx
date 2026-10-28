@@ -32,6 +32,7 @@ const ERROR_MESSAGES: Record<CheckoutErrorCode, string> = {
   inProgress: 'Votre commande est en cours de traitement. Patientez quelques secondes, puis réessayez.',
   network: 'Connexion impossible. Vérifiez votre connexion internet et réessayez.',
   serverError: 'Une erreur est survenue. Réessayez dans quelques instants.',
+  serviceBlocked: 'Vos demandes de service sont suspendues pour défaut de paiement. Retirez les services du panier pour commander vos produits.',
 };
 
 export default function Checkout() {

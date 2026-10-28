@@ -7,6 +7,12 @@ import styles from "./GroupsTable.module.css";
 import type { AdminGroupRow } from "@/lib/groups/server/groups.service";
 import { normalize } from "@/shared/utils/normalize";
 import { DeleteGroupButton } from "./DeleteGroupButton";
+import type { BillingMode } from "@prisma/client";
+
+const BILLING_MODE_LABELS: Record<BillingMode, string> = {
+  INDIVIDUAL: "Chaque membre",
+  GROUP: "L'administrateur",
+};
 
 const getDisplayName = (u: { firstName: string | null; lastName: string | null; email: string }) =>
   [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email;
@@ -63,6 +69,7 @@ export function GroupsTable({ groups, users, search }: GroupsTableProps) {
           <col className={styles.colName} />
           <col className={styles.colAdmin} />
           <col className={styles.colMembers} />
+          <col className={styles.colPayedBy} />
           <col className={styles.colActions} />
         </colgroup>
         <thead>
@@ -70,6 +77,7 @@ export function GroupsTable({ groups, users, search }: GroupsTableProps) {
             <th scope="col">Nom</th>
             <th scope="col">Administrateur</th>
             <th scope="col">Membres</th>
+            <th scope="col">Facturé à</th>
             <th scope="col">Actions</th>
           </tr>
         </thead>
@@ -85,6 +93,7 @@ export function GroupsTable({ groups, users, search }: GroupsTableProps) {
                   <td title={group.name ?? undefined}>{group.name ?? "Sans nom"}</td>
                   <td>{group.admin ? getDisplayName(group.admin) : "—"}</td>
                   <td>{group.memberCount}</td>
+                  <td>{BILLING_MODE_LABELS[group.billingMode]}</td>
                   <td>
                     <div className={styles.groupActions}>
                       <button

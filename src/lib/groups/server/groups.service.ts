@@ -1,10 +1,11 @@
 import "server-only";
-import type { Prisma } from "@prisma/client";
+import type { BillingMode, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export interface AdminGroupRow {
   id: string;
   name: string | null;
+  billingMode: BillingMode;
   createdAt: Date;
   memberCount: number;
   admin: {
@@ -27,6 +28,7 @@ const groupMemberSelect = {
 const groupDetailsSelect = {
   id: true,
   name: true,
+  billingMode: true,
   users: { select: groupMemberSelect, orderBy: { email: "asc" } },
 } satisfies Prisma.GroupSelect;
 
@@ -39,6 +41,7 @@ export async function listGroupsForAdmin(): Promise<AdminGroupRow[]> {
     select: {
       id: true,
       name: true,
+      billingMode: true,
       createdAt: true,
       _count: { select: { users: true } },
       users: {
