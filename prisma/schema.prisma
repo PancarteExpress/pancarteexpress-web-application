@@ -9,11 +9,10 @@ datasource db {
 }
 
 // Tables en lien avec les utilisateurs et les groupes :
-// -- User : gere le stockage des informations des courtiers inscrit chez PancarteExpress
-// -- VerificationToken : permet de valider qu'un compte crée n'est pas un bot (evite le spamming)
-//                        Tant que le VerificationToken n'est pas entré, le User ne se crée pas
-// -- Session : permet de faire le tracking lorsqu'un user est connecté
-// -- Group : permet la gestion d'un group
+// -- User : les courtiers inscrits chez Pancarte Express
+// -- VerificationToken : codes à usage unique (réinitialisation du mot de passe, etc.)
+// -- Session : sessions des utilisateurs connectés
+// -- Group : une équipe de courtiers, gérée par un groupAdmin
 
 model User {
   id          String  @id @default(cuid())
@@ -29,14 +28,16 @@ model User {
   provider          String? // "google" ou null
   providerAccountId String? // ID unique chez le provider
 
-  orders        Order[]   @relation("OrderOwner")
-  billedOrders  Order[]   @relation("OrderBilledTo")
+  orders       Order[] @relation("OrderOwner")
+  billedOrders Order[] @relation("OrderBilledTo")
 
   role        UserRole    @default(user)
   groupStatus GroupStatus @default(SOLO)
   groupId     String?
   group       Group?      @relation("GroupUsers", fields: [groupId], references: [id], onDelete: SetNull)
 
+  // Blocage manuel des demandes de service par le superAdmin :
+  // date à partir de laquelle elles sont refusées (clic + 3 jours). null = aucun blocage.
   serviceBlockStartsAt DateTime?
 
   sessions Session[]
@@ -45,7 +46,6 @@ model User {
   updatedAt DateTime @updatedAt
 
   @@unique([provider, providerAccountId])
-  @@index([email])
   @@index([groupId])
   @@index([groupStatus])
 }
@@ -80,8 +80,6 @@ model Group {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@index([name])
 }
 
 enum UserRole {
@@ -103,15 +101,15 @@ enum TokenType {
 
 enum BillingMode {
   INDIVIDUAL // chaque membre paie ses propres commandes
-  GROUP      // le groupAdmin paie toutes les commandes de l'équipe, y compris les siennes
+  GROUP // le groupAdmin paie toutes les commandes de l'équipe, y compris les siennes
 }
 
 // Tables en lien avec les commandes (Services et Produits) :
-// -- Order : contient toutes les informations d'une commande (Services et Produits)
-// -- OrderProduct : Un produit de la boutique commandé
-// -- ServiceRequest : Une demande de service complete
-// -- ServiceAddress : L'adresse liée à un service
-// -- Service : Un service
+// -- Order : une commande complète (produits et/ou services)
+// -- OrderProduct : un produit de la boutique commandé
+// -- ServiceRequest : une demande de service complète
+// -- ServiceAddress : l'adresse liée à un service
+// -- Service : un service
 
 model Order {
   id             String @id @default(cuid())
@@ -129,8 +127,10 @@ model Order {
 
   // Qui doit payer les services, figé à la création selon le mode du groupe à ce moment.
   // Sert au suivi manuel de la facturation. null = invité.
-  billedToId String?
-  billedTo   User?   @relation("OrderBilledTo", fields: [billedToId], references: [id], onDelete: SetNull)
+  billedToId    String?
+  billedTo      User?   @relation("OrderBilledTo", fields: [billedToId], references: [id], onDelete: SetNull)
+  // Copie figée : reste lisible même si le compte du payeur est supprimé
+  billedToEmail String?
 
   // null si services seulement
   deliveryMode       DeliveryMode?
@@ -139,7 +139,7 @@ model Order {
   deliveryPostalCode String?
   deliveryProvince   String?
 
-  // Montants en cents, figés au moment de la commande
+  // Montants des produits en cents, figés au moment de la commande
   subtotal Int
   tps      Int
   tvq      Int
@@ -158,7 +158,7 @@ model Order {
 
   @@index([userId, createdAt]) // historique du dashboard
   @@index([status, createdAt]) // cron de nettoyage + vue SuperAdmin
-  @@index([billedToId, createdAt])
+  @@index([billedToId, createdAt]) // suivi de la facturation par payeur
 }
 
 model OrderProduct {
@@ -192,7 +192,7 @@ model ServiceAddress {
   serviceRequestId String
   serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
 
-  kind AddressKind // civicaddress | terrain
+  kind AddressKind // civicAddress | terrain
 
   // Adresse civique
   streetNumber String?
@@ -218,7 +218,8 @@ model Service {
   serviceAddress   ServiceAddress @relation(fields: [serviceAddressId], references: [id], onDelete: Cascade)
 
   type   ServiceType // installation | removal | correction
-  price  Int? // prix envoyé au client
+  // Prix en cents, réservé à la facturation manuelle (non utilisé pour l'instant)
+  price  Int?
   status ServiceStatus @default(TO_SCHEDULE)
 
   scheduledFor DateTime?
@@ -226,9 +227,12 @@ model Service {
 
   details Json // validé par Zod à l'écriture
 
+  // @default(now()) : remplit les lignes existantes lors de la migration
+  updatedAt DateTime @default(now()) @updatedAt
+
   @@index([serviceAddressId])
   @@index([type])
-  @@index([status, scheduledFor]) // NOUVEAU : planning du SuperAdmin
+  @@index([status, scheduledFor]) // planning du SuperAdmin
 }
 
 enum OrderStatus {

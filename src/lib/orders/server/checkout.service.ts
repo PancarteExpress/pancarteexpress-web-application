@@ -73,6 +73,7 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
         productsStatus: orderLines.length > 0 ? 'PREPARING' : null,
         userId: user?.id ?? null,
         billedToId: account?.billedToId ?? null,
+        billedToEmail: account?.billedToEmail ?? null,
         firstName: payload.contact.firstName,
         lastName: payload.contact.lastName,
         // Connecté : le courriel du compte fait foi, pas celui du formulaire
@@ -233,30 +234,34 @@ async function replay(order: ExistingOrder): Promise<CheckoutResponse> {
 
 /* ── Compte connecté ──────────────────────────────────────────── */
 
-async function getCheckoutAccount(userId: string): Promise<{ phone: string | null; billedToId: string }> {
+async function getCheckoutAccount(
+  userId: string,
+): Promise<{ phone: string | null; billedToId: string; billedToEmail: string }> {
   const account = await prisma.user.findUniqueOrThrow({
     where: { id: userId },
     select: {
+      email: true,
       phoneNumber: true,
       groupStatus: true,
       group: {
         select: {
           billingMode: true,
-          users: { where: { role: 'groupAdmin' }, select: { id: true }, take: 1 },
+          users: { where: { role: 'groupAdmin' }, select: { id: true, email: true }, take: 1 },
         },
       },
     },
   });
 
+  const admin = account.group?.users[0] ?? null;
+  const billedToId = resolveBilledToId({
+    id: userId,
+    groupStatus: account.groupStatus,
+    group: account.group && { billingMode: account.group.billingMode, adminId: admin?.id ?? null },
+  });
+
   return {
     phone: account.phoneNumber,
-    billedToId: resolveBilledToId({
-      id: userId,
-      groupStatus: account.groupStatus,
-      group: account.group && {
-        billingMode: account.group.billingMode,
-        adminId: account.group.users[0]?.id ?? null,
-      },
-    }),
+    billedToId,
+    billedToEmail: admin && billedToId === admin.id ? admin.email : account.email,
   };
 }
