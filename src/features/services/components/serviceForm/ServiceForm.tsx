@@ -61,13 +61,6 @@ export default function ServiceForm() {
 
   return (
     <div className={styles.mainContainer}>
-      <div className={styles.existingService}>
-        <label htmlFor="searchExistingService">
-          Vous aimeriez connaître l&apos;état ou modifier une demande de service existante ?
-        </label>
-        <AddressAutocomplete id="searchExistingService" value={searchAddress} onChange={setSearchAddress} />
-      </div>
-
       <div className={styles.serviceForm}>
         <RadioGroup
           legend="Faire une nouvelle demande de service"
