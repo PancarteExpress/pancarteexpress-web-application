@@ -1,5 +1,6 @@
 import { TIME_MINUTE_STEP } from '@/features/services/constants/installation';
-import { addDays, format, isValid, parse } from 'date-fns';
+import { addDays, format, isValid, nextMonday, parse } from 'date-fns';
+import { firstBusinessDayFrom } from './holidays';
 
 const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
@@ -10,21 +11,27 @@ export const LATEST_TIME_MINUTES = 24 * 60 - TIME_MINUTE_STEP;
 export const isValidTime = (time: string): boolean => TIME_REGEX.test(time);
 
 /** Format strict yyyy-MM-dd et date réelle (refuse 2026-02-31) */
-export const isValidIsoDate = (date: string): boolean =>
-  DATE_REGEX.test(date) && isValid(parse(date, 'yyyy-MM-dd', new Date()));
+export const isValidIsoDate = (date: string): boolean => DATE_REGEX.test(date) && isValid(parse(date, 'yyyy-MM-dd', new Date()));
 
 export const toMinutes = (time: string): number => {
   const [hours, minutes] = time.split(':').map(Number);
   return hours * 60 + minutes;
 };
 
-export const fromMinutes = (total: number): string =>
-  `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
+export const fromMinutes = (total: number): string => `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`;
 
 /** Ajoute des minutes sans dépasser la dernière heure de la journée */
-export const addMinutesClamped = (time: string, minutes: number): string =>
-  fromMinutes(Math.min(toMinutes(time) + minutes, LATEST_TIME_MINUTES));
+export const addMinutesClamped = (time: string, minutes: number): string => fromMinutes(Math.min(toMinutes(time) + minutes, LATEST_TIME_MINUTES));
 
 /** `second` est-il le lendemain de `first` ? (dates yyyy-MM-dd) */
-export const isNextDay = (first: string, second: string): boolean =>
-  isValidIsoDate(first) && format(addDays(parse(first, 'yyyy-MM-dd', new Date()), 1), 'yyyy-MM-dd') === second;
+export const isNextDay = (first: string, second: string): boolean => isValidIsoDate(first) && format(addDays(parse(first, 'yyyy-MM-dd', new Date()), 1), 'yyyy-MM-dd') === second;
+
+/**
+ * Jour du retrait après une visite libre : le lundi qui suit la dernière date,
+ * ou le jour ouvrable suivant si ce lundi est férié. null si aucune date valide.
+ */
+export const removalDayAfter = (dates: readonly string[]): string | null => {
+  const last = [...dates].filter(isValidIsoDate).sort().at(-1);
+  if (!last) return null;
+  return format(firstBusinessDayFrom(nextMonday(parse(last, 'yyyy-MM-dd', new Date()))), 'yyyy-MM-dd');
+};

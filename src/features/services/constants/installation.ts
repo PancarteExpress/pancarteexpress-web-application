@@ -168,6 +168,9 @@ export const ADDON_LABELS: Record<Addon, string> = {
   other: 'Autres',
 };
 
+export const ADDONS_WITH_MODEL = ['sold'] as const satisfies readonly Addon[];
+export type AddonWithModel = (typeof ADDONS_WITH_MODEL)[number];
+
 /** Mentions des drapeaux et directionnelles */
 export const SIGN_MENTIONS = ['forSale', 'sold', 'forRent'] as const;
 export type SignMention = (typeof SIGN_MENTIONS)[number];

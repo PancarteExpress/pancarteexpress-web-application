@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { addMinutesClamped, fromMinutes, isNextDay, isValidIsoDate, isValidTime, LATEST_TIME_MINUTES } from './time';
+import {
+  addMinutesClamped, fromMinutes, isNextDay, isValidIsoDate, isValidTime, LATEST_TIME_MINUTES, removalDayAfter,
+} from './time';
 
 describe('time utils', () => {
   it('valide le format HH:mm en 24 h', () => {
@@ -24,5 +26,14 @@ describe('time utils', () => {
     expect(isNextDay('2026-10-24', '2026-10-25')).toBe(true);
     expect(isNextDay('2026-10-31', '2026-11-01')).toBe(true);
     expect(isNextDay('2026-10-24', '2026-10-26')).toBe(false);
+  });
+
+  it('donne le jour du retrait : lundi suivant, ou jour ouvrable suivant si férié', () => {
+    expect(removalDayAfter(['2026-10-24'])).toBe('2026-10-26');               // samedi → lundi
+    expect(removalDayAfter(['2026-10-25', '2026-10-24'])).toBe('2026-10-26'); // ordre indifférent
+    expect(removalDayAfter(['2026-10-26'])).toBe('2026-11-02');               // lundi → lundi suivant
+    expect(removalDayAfter(['2026-10-10', '2026-10-11'])).toBe('2026-10-13'); // Action de grâce → mardi
+    expect(removalDayAfter(['2028-12-23', '2028-12-24'])).toBe('2028-12-26'); // Noël un lundi → mardi
+    expect(removalDayAfter([])).toBeNull();
   });
 });

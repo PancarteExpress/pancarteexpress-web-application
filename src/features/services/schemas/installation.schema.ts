@@ -1,17 +1,23 @@
 import { z } from 'zod';
 import {
-  ADDONS, FLAG_MENTIONS, FRAME_MODELS, IMPLEMENTED_MATERIALS, KIT_MODELS,
+  ADDONS, ADDONS_WITH_MODEL, FLAG_MENTIONS, FRAME_MODELS, IMPLEMENTED_MATERIALS, KIT_MODELS,
   MAX_ADDONS, MAX_DIRECTIONALS, MAX_FLAGS, MAX_FRAMES, MAX_KITS, OPEN_HOUSE, SIGN_MENTIONS, TEXT_LIMITS,
-  type Addon, type ImplementedMaterial,
+  type Addon, type AddonWithModel, type FrameModelType, type ImplementedMaterial,
 } from '../constants/installation';
 import type {
-  AddonAssignment, FlagsDetails, FrameUnit, InstallationDetails, KitUnit, OpenHouseDetails, PlacedUnit, UnitTargets,
+  AddonAssignment, FlagsDetails, FrameModel, FrameUnit, InstallationDetails, KitUnit, OpenHouseDetails, PlacedUnit, UnitTargets,
 } from '../types/installation';
 import { addMinutesClamped, isNextDay, isValidIsoDate, isValidTime, toMinutes } from '../utils/time';
 import {
   createDefaultPlacement, fromPlacement, placementFormSchema, toPlacement, validatePlacement,
 } from './placement.schema';
 import { REQUIRED, defined, keyboxCode, text, type Path, type Report } from './shared';
+
+const ADDON_WITH_MODEL_SET: ReadonlySet<string> = new Set(ADDONS_WITH_MODEL);
+const hasModel = (addon: Addon): addon is AddonWithModel => ADDON_WITH_MODEL_SET.has(addon);
+
+const toFrameModel = (model: FrameModelType, description: string): FrameModel =>
+  model === 'custom' ? { type: 'custom', description } : { type: model };
 
 // Réexport : les composants et les tests continuent d'importer depuis ce fichier
 export { createEmptyPlacement, type PlacementFormValues } from './placement.schema';
@@ -57,6 +63,8 @@ const kitUnitFormSchema = z.object({
 const addonEntryFormSchema = z.object({
   addon: z.enum(ADDONS),
   mention: text(TEXT_LIMITS.addonMention),
+  model: z.enum(FRAME_MODELS).nullable(),
+  modelDescription: text(TEXT_LIMITS.modelDescription),
   ...targetsFormShape,
 });
 
@@ -159,6 +167,12 @@ function validateTargets(t: TargetsOutput, path: Path, validFrameUids: Set<strin
 
 function validateAddon(a: AddonEntryOutput, path: Path, validFrameUids: Set<string>, report: Report) {
   if (a.addon === 'other' && !a.mention) report([...path, 'mention'], 'Indiquez la mention à afficher');
+  if (hasModel(a.addon)) {
+    if (a.model === null) report([...path, 'model'], 'Choisissez un modèle');
+    else if (a.model === 'custom' && !a.modelDescription) {
+      report([...path, 'modelDescription'], 'Décrivez le modèle');
+    }
+  }
   validateTargets(a, path, validFrameUids, report);
 }
 
@@ -197,8 +211,7 @@ function toFrameUnit(u: FrameUnitOutput, { isMember, accountName }: SessionConte
     uid: u.uid,
     model:
       model === null ? null
-      : model === 'custom' ? { type: 'custom', description: u.modelDescription }
-      : { type: model },
+      : toFrameModel(model, u.modelDescription),
     displayName:
       accountName === null ? null
       : u.useAccountName ? { type: 'account', name: accountName }
@@ -226,13 +239,16 @@ const toPlacedUnit = (u: PlacedUnitOutput): PlacedUnit => ({ uid: u.uid, placeme
 
 function toAddonAssignment(a: AddonEntryOutput): AddonAssignment {
   const base = toTargets(a);
-  switch (a.addon) {
+  const { addon } = a;
+  switch (addon) {
     case 'other':
       return { ...base, addon: 'other', mention: a.mention };
     case 'customNoMention':
       return { ...base, addon: 'customNoMention', details: a.mention || null };
     default:
-      return { ...base, addon: a.addon };
+      return hasModel(addon)
+        ? { ...base, addon, model: toFrameModel(defined(a.model), a.modelDescription) }
+        : { ...base, addon };
   }
 }
 
@@ -371,6 +387,8 @@ export const createKitUnit = (): KitUnitFormValues => ({
 export const createAddonEntry = (addon: Addon): AddonEntryFormValues => ({
   addon,
   mention: '',
+  model: 'regular',
+  modelDescription: '',
   quantity: 1,
   frameUids: [],
   onSite: false,
@@ -438,12 +456,15 @@ function fromTargets(t: UnitTargets): TargetsOutput {
 const fromPlacedUnit = (u: PlacedUnit): PlacedUnitFormValues => ({ ...u });
 
 function fromAddon(a: AddonAssignment): AddonEntryFormValues {
+  const model = 'model' in a && a.model ? a.model : null;
   return {
     addon: a.addon,
     mention:
       a.addon === 'other' ? a.mention
       : a.addon === 'customNoMention' ? a.details ?? ''
       : '',
+    model: model?.type ?? 'regular',
+    modelDescription: model?.type === 'custom' ? model.description : '',
     ...fromTargets(a),
   };
 }

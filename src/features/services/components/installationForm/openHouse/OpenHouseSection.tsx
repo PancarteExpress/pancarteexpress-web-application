@@ -4,11 +4,14 @@ import { useId, useState } from 'react';
 import { Controller, useFieldArray, useWatch } from 'react-hook-form';
 import { OPEN_HOUSE, TEXT_LIMITS, TIME_MINUTE_STEP } from '@/features/services/constants/installation';
 import { createDirectional } from '@/features/services/schemas/installation.schema';
-import { addMinutesClamped, toMinutes } from '@/features/services/utils/time';
+import { addMinutesClamped, removalDayAfter, toMinutes } from '@/features/services/utils/time';
+import { parseIso } from '@/features/services/utils/holidays';
+import { getDay, nextMonday } from 'date-fns';
 import { DateField, QuantityField, TextField, TimeField, YesNoField } from '@/features/services/components/fields';
 import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
 import styles from '../installationForm.module.css';
 import { addDays, format, parse } from 'date-fns';
+import { frCA } from 'date-fns/locale';
 
 const defaultEnd = (start: string) => addMinutesClamped(start, OPEN_HOUSE.defaultDurationMinutes);
 
@@ -18,6 +21,16 @@ export function OpenHouseSection() {
   const update = useFormUpdater();
 
   const openHouse = useWatch({ control, name: 'openHouse' });
+  const removalDay = removalDayAfter(openHouse.dates);
+  const formatDay = (iso: string) => format(parseIso(iso), 'EEEE d MMMM', { locale: frCA });
+  const removalHint = (() => {
+    if (!removalDay) return undefined;
+    if (getDay(parseIso(removalDay)) === 1) return `Retrait prévu le ${formatDay(removalDay)}.`;
+    // Lundi férié : on précise lequel
+    const last = [...openHouse.dates].sort().at(-1);
+    const monday = last ? format(nextMonday(parseIso(last)), 'yyyy-MM-dd') : null;
+    return `Retrait prévu le ${formatDay(removalDay)}${monday ? ` (${formatDay(monday)} férié)` : ''}.`;
+  })();
 
   const { fields, append, remove } = useFieldArray({ control, name: 'openHouse.directionals' });
 
@@ -156,7 +169,6 @@ export function OpenHouseSection() {
         />
       </div>
       
-
       <Controller
         control={control}
         name="openHouse.removeNextMonday"
@@ -164,6 +176,7 @@ export function OpenHouseSection() {
           <YesNoField
             {...bindField(props)}
             legend="Devons-nous retirer le matériel de la visite libre le lundi qui suit ?"
+            hint={removalHint}
             required
           />
         )}

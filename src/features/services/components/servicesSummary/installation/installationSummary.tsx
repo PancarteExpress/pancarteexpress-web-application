@@ -8,6 +8,7 @@ import type {
   AddonAssignment, FrameDisplayName, FrameModel, InstallationDetails, KitModel, Placement, PlacementAccess,
   UnitTargets,
 } from '@/features/services/types/installation';
+import { removalDayAfter } from '@/features/services/utils/time';
 import styles from '../servicesSummary.module.css';
 
 /* ---------- Formatage (fonctions pures) ---------- */
@@ -61,7 +62,9 @@ function describeAddon(a: AddonAssignment): string {
     case 'customNoMention':
       return a.details ? `${ADDON_LABELS.customNoMention} : « ${a.details} »` : ADDON_LABELS.customNoMention;
     default:
-      return ADDON_LABELS[a.addon];
+      return 'model' in a && a.model
+        ? `${ADDON_LABELS[a.addon]} — ${describeModel(a.model)}`
+        : ADDON_LABELS[a.addon];
   }
 }
 
@@ -186,7 +189,11 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
             )}
 
             <dt>Retrait le lundi suivant</dt>
-            <dd>{openHouse.removeNextMonday ? 'Oui' : 'Non'}</dd>
+            <dd>
+              {openHouse.removeNextMonday
+                ? `Oui (${formatDate(removalDayAfter(openHouse.dates) ?? openHouse.dates[0])})`
+                : 'Non'}
+            </dd>
           </dl>
         </section>
       )}

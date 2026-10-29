@@ -35,15 +35,15 @@ export function ServicesTable({ clients }: ServicesTableProps) {
                 <col className={styles.colType} />
                 <col className={styles.colAddress} />
                 <col className={styles.colDate} />
-                <col className={styles.colStatus} />
+                {/*<col className={styles.colStatus} />*/}
               </colgroup>
               <thead>
                 <tr>
-                  <th scope="col">Commande</th>
+                  <th scope="col"># Commande</th>
                   <th scope="col">Type</th>
                   <th scope="col">Adresse</th>
                   <th scope="col">Demandé le</th>
-                  <th scope="col">Statut</th>
+                  {/*<th scope="col">Statut</th>*/}
                 </tr>
               </thead>
               <tbody>
@@ -53,7 +53,7 @@ export function ServicesTable({ clients }: ServicesTableProps) {
                     <td>{SERVICE_TYPE_LABELS[s.type]}</td>
                     <td title={s.address}>{s.address}</td>
                     <td>{dateFormatter.format(s.orderedAt)}</td>
-                    <td>{SERVICE_STATUS_LABELS[s.status]}</td>
+                    {/*<td>{SERVICE_STATUS_LABELS[s.status]}</td>*/}
                   </tr>
                 ))}
               </tbody>

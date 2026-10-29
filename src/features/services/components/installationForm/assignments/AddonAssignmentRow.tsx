@@ -1,8 +1,10 @@
 'use client';
 
 import { Controller, useFormState, useWatch } from 'react-hook-form';
-import { ADDON_LABELS, TEXT_LIMITS, type Addon } from '@/features/services/constants/installation';
-import { TextField } from '@/features/services/components/fields';
+import {
+  ADDON_LABELS, ADDONS_WITH_MODEL, FRAME_MODEL_LABELS, FRAME_MODELS, TEXT_LIMITS, type Addon,
+} from '@/features/services/constants/installation';
+import { RadioGroup, TextField, toOptions } from '@/features/services/components/fields';
 import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
 import { TargetsPicker } from './TargetsPicker';
 import styles from '../installationForm.module.css';
@@ -11,6 +13,9 @@ const MENTION_FIELDS: Partial<Record<Addon, { label: string; required: boolean }
   other: { label: 'Veuillez indiquer la mention qui doit être affichée', required: true },
   customNoMention: { label: 'Précisions sur votre ajout personnalisé (facultatif)', required: false },
 };
+
+const MODEL_OPTIONS = toOptions(FRAME_MODELS, FRAME_MODEL_LABELS);
+const WITH_MODEL: readonly Addon[] = ADDONS_WITH_MODEL;
 
 interface AddonAssignmentRowProps {
   index: number;
@@ -30,6 +35,43 @@ export function AddonAssignmentRow({ index, frameUids }: AddonAssignmentRowProps
   return (
     <fieldset className={styles.assignment}>
       <legend className={styles.unitTitle}>{label}</legend>
+
+      {WITH_MODEL.includes(entry.addon) && (
+        <Controller
+          control={control}
+          name={`${path}.model`}
+          render={(props) => (
+            <>
+              <RadioGroup
+                {...bindField(props)}
+                onChange={(value) => {
+                  props.field.onChange(value);
+                  if (value !== 'custom') update(`${path}.modelDescription`, '');
+                }}
+                legend="Quel modèle voulez-vous ?"
+                options={MODEL_OPTIONS}
+                required
+              />
+              {props.field.value === 'custom' && (
+                <Controller
+                  control={control}
+                  name={`${path}.modelDescription`}
+                  render={(p) => (
+                    <TextField
+                      {...bindField(p)}
+                      label="Veuillez décrire le modèle"
+                      maxLength={TEXT_LIMITS.modelDescription}
+                      multiline
+                      rows={2}
+                      required
+                    />
+                  )}
+                />
+              )}
+            </>
+          )}
+        />
+      )}
 
       {mentionField && (
         <Controller

@@ -41,10 +41,10 @@
 .table tbody tr:last-child td { border-bottom: none; }
 
 .colOrder   { width: 10%; }
-.colType    { width: 12%; }
-.colAddress { width: 30%; }
-.colDate    { width: 13%; }
-.colStatus  { width: 12%; }
+.colType    { width: 10%; }
+.colAddress { width: 50%; }
+.colDate    { width: 30%; }
+/*.colStatus  { width: 12%; }*/
 
 .mono { font-family: "JetBrains Mono", monospace; }
 

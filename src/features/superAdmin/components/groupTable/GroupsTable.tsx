@@ -129,9 +129,6 @@ export function GroupsTable({ groups, users, search }: GroupsTableProps) {
                                 {m.email}
                               </a>
                               <span className={styles.memberRole}>{ROLE_LABELS[m.role]}</span>
-                              <span className={styles.memberStatus}>
-                                {GROUP_STATUS_LABELS[m.groupStatus]}
-                              </span>
                             </li>
                           ))}
                         </ul>

@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import { FaUser } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import { GiSandsOfTime } from "react-icons/gi";
-import { FaRegMoneyBillAlt } from "react-icons/fa";
+import { IoConstructSharp } from "react-icons/io5";
 
 import type { AdminGroupRow } from "@/lib/groups/server/groups.service";
 import { GroupsTable } from "../groupTable/GroupsTable";
@@ -23,7 +23,7 @@ interface AdminDashboardProps {
 }
 
 export function AdminDashboard({ users, groups, services }: AdminDashboardProps) {
-    const [activeSection, setActiveSection] = useState<'users' | 'teams' | 'billing'>('users');
+    const [activeSection, setActiveSection] = useState<'users' | 'teams' | 'services'>('users');
 
     const pendingCount = users.filter((u) => u.groupStatus === "PENDING").length;
 
@@ -59,9 +59,9 @@ export function AdminDashboard({ users, groups, services }: AdminDashboardProps)
                 <FaUserGroup size={20} style={{color : '#D8E8F8'}} /> Équipes
             </div>
             
-            <div className={`${styles.navItem} ${activeSection === 'billing' ? styles.active : ''}`}
-                onClick={() => setActiveSection('billing')}>
-                <FaRegMoneyBillAlt size={20} style={{color : '#D8E8F8'}} /> Facturation
+            <div className={`${styles.navItem} ${activeSection === 'services' ? styles.active : ''}`}
+                onClick={() => setActiveSection('services')}>
+                <IoConstructSharp size={20} style={{color : '#D8E8F8'}} /> Demandes de services
             </div>
         </nav>
       </div>
@@ -149,11 +149,11 @@ export function AdminDashboard({ users, groups, services }: AdminDashboardProps)
         )}
         
         {/* ─── Teams ─── */}
-        {activeSection === 'billing' && (
+        {activeSection === 'services' && (
         <>
             <div className={styles.topbar}>
             <p className={styles.pageTitle}>Demandes de service</p>
-            <p className={styles.pageSub}>Fixez le prix de chaque service demandé.</p>
+            <p className={styles.pageSub}>Liste de toutes les demandes de services</p>
             </div>
             <ServicesTable clients={services} />
         </>

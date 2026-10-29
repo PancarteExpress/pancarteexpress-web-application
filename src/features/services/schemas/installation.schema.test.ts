@@ -241,6 +241,19 @@ describe('createInstallationSchema — ajouts', () => {
     const filled = memberSchema.safeParse(withAddons([addon({ addon: 'customNoMention', mention: 'Logo de l’agence' })]));
     expect(filled.success && filled.data.addons?.[0]).toMatchObject({ details: 'Logo de l’agence' });
   });
+
+  it('« Vendu » : Régulier par défaut, description exigée pour un modèle particulier', () => {
+    const regular = memberSchema.safeParse(withAddons([addon({ addon: 'sold' })]));
+    expect(regular.success && regular.data.addons?.[0]).toMatchObject({ addon: 'sold', model: { type: 'regular' } });
+
+    expect(issuePaths(memberSchema.safeParse(withAddons([addon({ addon: 'sold', model: 'custom' })]))))
+      .toContain('addons.0.modelDescription');
+  });
+
+  it('les autres ajouts n\'ont pas de modèle', () => {
+    const result = memberSchema.safeParse(withAddons([addon({ addon: 'secondFloor', model: 'prestige' })]));
+    expect(result.success && result.data.addons?.[0]).not.toHaveProperty('model');
+  });
 });
 
 describe('createInstallationSchema — kit seul', () => {
@@ -489,6 +502,14 @@ describe('toInstallationFormValues — aller-retour', () => {
         units: [{ ...createPlacedUnit(), placement: 'Coin Principale' }, { ...createPlacedUnit(), placement: 'Sortie 12' }],
       },
       otherNeeds: 'Installer avant 10 h',
+    }));
+  });
+
+  it('ajout « Vendu » avec modèle particulier', () => {
+    expectRoundTrip(memberSchema, form({
+      materials: ['addons'],
+      frames: createEmptyInstallationForm().frames,
+      addons: [{ ...createAddonEntry('sold'), model: 'custom', modelDescription: 'Lettres dorées', quantity: 2, onSite: true }],
     }));
   });
 });

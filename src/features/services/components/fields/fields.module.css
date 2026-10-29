@@ -198,6 +198,24 @@
 
 .calendar[data-invalid='true'] { border-color: #c62828; }
 
+/* Jour sélectionné (une date, ou chacune des deux dates) */
+.calendar :global(.rdp-selected .rdp-day_button) {
+  background-color: #0e4d9a;
+  border-color: #0e4d9a;
+  color: #fff;
+}
+
+/* Date du jour */
+.calendar :global(.rdp-today .rdp-day_button) {
+  color: #0e4d9a;
+  font-weight: 700;
+}
+
+/* Date du jour quand elle est aussi sélectionnée : le style « sélectionné » l'emporte */
+.calendar :global(.rdp-today.rdp-selected .rdp-day_button) {
+  color: #fff;
+}
+
 /* ---------- Heures ---------- */
 
 .time {

@@ -1,5 +1,5 @@
 import type {
-  Addon, FlagMention, KitModelType, Ladder, Mounting, SignMention, WindowSide,
+  Addon, AddonWithModel, FlagMention, KitModelType, Ladder, Mounting, SignMention, WindowSide,
 } from '../constants/installation';
 
 /** Accès commun au balcon et à la fenêtre */
@@ -47,10 +47,11 @@ export interface UnitTargets {
 
 export type AddonAssignment = UnitTargets &
   (
-    | { addon: Exclude<Addon, 'other' | 'customNoMention'> }
+    | { addon: Exclude<Addon, 'other' | 'customNoMention' | AddonWithModel> }
     | { addon: 'other'; mention: string }
     /** Précisions facultatives sur l'ajout personnalisé */
     | { addon: 'customNoMention'; details: string | null }
+    | { addon: AddonWithModel; model: FrameModel }
   );
 
 export type KitModel =
