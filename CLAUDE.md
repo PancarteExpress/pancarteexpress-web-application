@@ -72,6 +72,14 @@ Enum Prisma `UserRole` : `user`, `groupAdmin`, `superAdmin` (défaut `user`).
 - Pas d'environnement DOM installé (ni jsdom ni React Testing Library) : tests de composants React non disponibles, demander avant d'en ajouter ou de modifier `vitest.config.mts`
 - Tout bug corrigé dans une logique critique (auth, rôles, paiement, pricing) reçoit un test
 
+## Avant le lancement en production
+
+Le site n'est pas encore en production : une seule base Neon, aucune donnée réelle sauf le compte superAdmin. À faire avant le lancement :
+
+- Séparer dev et prod en deux branches Neon (URLs distinctes dans les environnements Vercel `development`/`preview` et `production`)
+- Ajouter `prisma migrate deploy` au build Vercel de production uniquement (jamais `migrate dev` sur la base de prod)
+- Rate limiting (audit É4) : créer le compte Upstash et ajouter `UPSTASH_REDIS_REST_URL` et `UPSTASH_REDIS_REST_TOKEN` aux variables d'env, puis brancher `@upstash/ratelimit` sur login, inscription, codes, mot de passe, contact, checkout et recherche de membres
+
 ## Règles de travail
 
 - Diffs minimaux, corriger la cause racine
