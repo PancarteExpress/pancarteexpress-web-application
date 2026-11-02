@@ -140,6 +140,12 @@
     color: #C62828;
 }
 
+/* Erreur serveur non rattachée à un champ */
+.mainContainer .personalInfos .formError {
+    font-size: 11px;
+    color: #C62828;
+}
+
 /* ─── Account status badges ─── */
 
 .mainContainer .personalInfos .accountStatus {

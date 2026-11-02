@@ -13,7 +13,15 @@ import {
 import { useSession } from "next-auth/react";
 import { User } from "next-auth";
 import { useTranslations } from "next-intl";
-import { readErrorCode } from "@/lib/errors/appError";
+import { readErrorCode, type AppErrorCode } from "@/lib/errors/appError";
+
+// Erreurs serveur rattachées à un champ ; les autres codes s'affichent en message global du formulaire
+const PROFILE_ERROR_FIELDS: Partial<Record<AppErrorCode, keyof UpdateProfileInput>> = {
+  emailChangeNotAllowed: "email",
+};
+const PASSWORD_ERROR_FIELDS: Partial<Record<AppErrorCode, keyof UpdatePasswordInput>> = {
+  currentPasswordIncorrect: "currentPassword",
+};
 
 interface UpdateProfileProps {
   sessionUser?: User; // ou type complet
@@ -43,6 +51,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
     handleSubmit: handleSubmitProfile,
     formState: { errors: profileErrors },
     reset: resetProfile,
+    setError: setProfileFieldError,
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
@@ -74,6 +83,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
     handleSubmit: handleSubmitPassword,
     formState: { errors: passwordErrors },
     reset: resetPassword,
+    setError: setPasswordFieldError,
   } = useForm<UpdatePasswordInput>({
     resolver: zodResolver(updatePasswordSchema),
   });
@@ -91,7 +101,10 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       });
 
       if (!res.ok) {
-        setProfileError(tErrors(await readErrorCode(res)));
+        const code = await readErrorCode(res);
+        const field = PROFILE_ERROR_FIELDS[code];
+        if (field) setProfileFieldError(field, { type: "server", message: tErrors(code) });
+        else setProfileError(tErrors(code));
         return;
       }
 
@@ -119,7 +132,10 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       });
 
       if (!res.ok) {
-        setPasswordError(tErrors(await readErrorCode(res)));
+        const code = await readErrorCode(res);
+        const field = PASSWORD_ERROR_FIELDS[code];
+        if (field) setPasswordFieldError(field, { type: "server", message: tErrors(code) });
+        else setPasswordError(tErrors(code));
         return;
       }
 
@@ -152,6 +168,12 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
             <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
               {profileSuccess}
             </div>
+          )}
+
+          {profileError && (
+            <p role="alert" className={styles.formError}>
+              {profileError}
+            </p>
           )}
 
           <form onSubmit={handleSubmitProfile(onSubmitProfile)} className="space-y-4">
@@ -198,11 +220,6 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
                 {profileErrors.email && (
                   <span className="text-red-500 text-sm">
                     {profileErrors.email.message}
-                  </span>
-                )}
-                {profileError && (
-                  <span role="alert" className="text-red-500 text-sm">
-                    {profileError}
                   </span>
                 )}
               </div>
@@ -260,6 +277,12 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
             </div>
           )}
 
+          {passwordError && (
+            <p role="alert" className={styles.formError}>
+              {passwordError}
+            </p>
+          )}
+
           <form onSubmit={handleSubmitPassword(onSubmitPassword)} className="space-y-4">
             <div className={styles.formGroup}>
               <div className={styles.inputs}>
@@ -275,11 +298,6 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
                 {passwordErrors.currentPassword && (
                   <span className="text-red-500 text-sm">
                     {passwordErrors.currentPassword.message}
-                  </span>
-                )}
-                {passwordError && (
-                  <span role="alert" className="text-red-500 text-sm">
-                    {passwordError}
                   </span>
                 )}
               </div>
