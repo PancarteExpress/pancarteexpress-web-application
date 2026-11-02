@@ -204,9 +204,9 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
           </div>
           
           <div className={styles.inputs}>
-            <label htmlFor="registerPassword" className="block text-sm font-medium mb-1">{t('formConfirmPassword')} <span className={styles.req}>*</span></label>
+            <label htmlFor="registerConfirmPassword" className="block text-sm font-medium mb-1">{t('formConfirmPassword')} <span className={styles.req}>*</span></label>
             <input
-              id="registerPassword"
+              id="registerConfirmPassword"
               type="password"
               autoComplete="new-password"
               {...register("confirmPassword")}

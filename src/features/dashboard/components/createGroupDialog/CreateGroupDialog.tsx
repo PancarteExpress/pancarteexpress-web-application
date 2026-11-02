@@ -56,6 +56,12 @@ export function CreateGroupDialog({ onCreated }: Props) {
             aria-invalid={!!errors.name}
           />
 
+          {errors.name?.message && (
+            <p role="alert" className={styles.error}>
+              {errors.name.message}
+            </p>
+          )}
+
           {serverError && (
             <p role="alert" className={styles.error}>
               {serverError}

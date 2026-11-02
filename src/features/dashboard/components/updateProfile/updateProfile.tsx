@@ -25,6 +25,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
   const tErrors = useTranslations("errors");
   const [isLoading, setIsLoading] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
@@ -81,6 +82,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
     try {
       setIsLoading(true);
       setProfileSuccess(null);
+      setProfileError(null);
 
       const res = await fetch("/api/auth/update-profile", {
         method: "POST",
@@ -89,7 +91,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       });
 
       if (!res.ok) {
-        setProfileSuccess(tErrors(await readErrorCode(res)));
+        setProfileError(tErrors(await readErrorCode(res)));
         return;
       }
 
@@ -98,7 +100,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
 
       setTimeout(() => setProfileSuccess(null), 3000);
     } catch {
-      setProfileSuccess(tErrors("serverError"));
+      setProfileError(tErrors("serverError"));
     } finally {
       setIsLoading(false);
     }
@@ -196,6 +198,11 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
                 {profileErrors.email && (
                   <span className="text-red-500 text-sm">
                     {profileErrors.email.message}
+                  </span>
+                )}
+                {profileError && (
+                  <span role="alert" className="text-red-500 text-sm">
+                    {profileError}
                   </span>
                 )}
               </div>
