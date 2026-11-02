@@ -144,12 +144,21 @@ export const authService = {
   },
 
   async updateProfile(userId: string, input: UpdateProfileInput) {
-    const existingUser = await prisma.user.findUnique({
-      where: { email: input.email },
+    const current = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
     });
 
-    if (existingUser && existingUser.id !== userId) {
-      throw new Error("Email already in use");
+    if (!current) {
+      throw new Error("User not found");
+    }
+
+    // Changement de courriel bloqué : sans re-vérification, il permettait de préempter
+    // l'adresse d'un tiers (puis la liaison Google lui ouvrait ce compte).
+    // TODO: flux de changement de courriel avec code envoyé à la nouvelle adresse ;
+    // emailVerified devra repasser à null jusqu'à la validation du code.
+    if (input.email.trim().toLowerCase() !== current.email.toLowerCase()) {
+      throw new Error("Email change not allowed");
     }
 
     return await prisma.user.update({
@@ -157,7 +166,6 @@ export const authService = {
       data: {
         firstName: input.firstName,
         lastName: input.lastName,
-        email: input.email,
         phoneNumber: input.phoneNumber,
         companyName: input.companyName,
       },

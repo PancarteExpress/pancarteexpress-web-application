@@ -91,6 +91,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           if (existingUser.role === "superAdmin") return false;
 
           if (!existingUser.provider) {
+            // Liaison Google seulement si l'adresse du compte a été vérifiée
+            if (!existingUser.emailVerified) {
+              return `/${locale}/login?error=account_exists`;
+            }
             await prisma.user.update({
               where: { id: existingUser.id },
               data: {

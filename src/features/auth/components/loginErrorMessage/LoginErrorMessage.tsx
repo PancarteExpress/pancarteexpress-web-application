@@ -2,22 +2,28 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Suspense } from "react";
 
-const messages: Record<string, string> = {
-  no_account: "Aucun compte n'est associé à ce compte Google.",
-  account_exists: "Un compte existe déjà avec cette adresse. Connectez-vous.",
-};
+const messageKeys = {
+  no_account: "errorNoAccount",
+  account_exists: "errorAccountExists",
+} as const;
+
+function isKnownError(error: string): error is keyof typeof messageKeys {
+  return error in messageKeys;
+}
 
 function ErrorContent({ locale }: { locale: string }) {
+  const t = useTranslations("login");
   const error = useSearchParams().get("error");
-  if (!error || !messages[error]) return null;
+  if (!error || !isKnownError(error)) return null;
 
   return (
     <div>
-      <p>{messages[error]}</p>
+      <p>{t(messageKeys[error])}</p>
       {error === "no_account" && (
-        <Link href={`/${locale}/register`}>Devenir membre</Link>
+        <Link href={`/${locale}/register`}>{t("becomeMember")}</Link>
       )}
     </div>
   );

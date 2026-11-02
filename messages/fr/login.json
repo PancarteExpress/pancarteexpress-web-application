@@ -13,5 +13,9 @@
     "connectionBtn": "Se connecter",
 
     "notRegisteredYet": "Pas encore membre ?",
-    "createAccount": "Créer un compte"
+    "createAccount": "Créer un compte",
+
+    "errorNoAccount": "Aucun compte n'est associé à ce compte Google.",
+    "errorAccountExists": "Un compte existe déjà avec cette adresse. Connectez-vous avec votre mot de passe.",
+    "becomeMember": "Devenir membre"
 }

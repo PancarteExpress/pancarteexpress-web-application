@@ -187,6 +187,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
                 <input
                   {...registerProfile("email")}
                   type="email"
+                  readOnly
                   className="w-full px-3 py-2 border rounded"
                 />
                 {profileErrors.email && (

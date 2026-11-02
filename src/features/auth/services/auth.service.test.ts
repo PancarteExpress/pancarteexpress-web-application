@@ -31,19 +31,33 @@ describe("authService — retours de user sans hash", () => {
     vi.clearAllMocks();
   });
 
-  it("updateProfile utilise le select public", async () => {
-    prismaMock.user.findUnique.mockResolvedValue(null);
+  it("updateProfile utilise le select public et n'écrit pas le courriel", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ email: "ana@example.com" });
     prismaMock.user.update.mockResolvedValue({ id: "u1" });
 
     await authService.updateProfile("u1", {
       firstName: "Ana",
       lastName: "Roy",
-      email: "ana@example.com",
+      email: " Ana@Example.com ",
     });
 
     expect(prismaMock.user.update).toHaveBeenCalledWith(
       expect.objectContaining({ where: { id: "u1" }, select: publicUserSelect }),
     );
+    expect(prismaMock.user.update.mock.calls[0][0].data).not.toHaveProperty("email");
+  });
+
+  it("updateProfile refuse un changement de courriel", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ email: "ana@example.com" });
+
+    await expect(
+      authService.updateProfile("u1", {
+        firstName: "Ana",
+        lastName: "Roy",
+        email: "victime@gmail.com",
+      }),
+    ).rejects.toThrow("Email change not allowed");
+    expect(prismaMock.user.update).not.toHaveBeenCalled();
   });
 
   it("updatePassword utilise le select public", async () => {

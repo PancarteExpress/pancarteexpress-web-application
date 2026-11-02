@@ -13,5 +13,9 @@
     "connectionBtn": "Log in",
 
     "notRegisteredYet": "Not a member yet?",
-    "createAccount": "Create an account"
+    "createAccount": "Create an account",
+
+    "errorNoAccount": "No account is linked to this Google account.",
+    "errorAccountExists": "An account already exists with this address. Log in with your password.",
+    "becomeMember": "Become a member"
 }
