@@ -14,6 +14,19 @@ const emailMock = vi.hoisted(() => ({
   sendVerificationEmail: vi.fn(),
 }));
 
+// after() exige un contexte de requête Next : on met les tâches en file pour les exécuter à la main
+const afterQueue = vi.hoisted(() => [] as Array<() => unknown>);
+vi.mock("next/server", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/server")>()),
+  after: (task: () => unknown) => {
+    afterQueue.push(task);
+  },
+}));
+
+async function flushAfter() {
+  while (afterQueue.length) await afterQueue.shift()?.();
+}
+
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("@/utils/bcrypt", () => ({ hashPassword: vi.fn(), bcryptCompare: vi.fn() }));
@@ -36,6 +49,7 @@ async function snapshot(res: Response) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  afterQueue.length = 0;
   vi.spyOn(console, "error").mockImplementation(() => {});
   prismaMock.$transaction.mockResolvedValue([]);
 });
@@ -48,23 +62,38 @@ describe("POST /api/custom/forgot-password", () => {
   it("même réponse : compte inexistant, compte existant, superAdmin, échec SMTP, échec base", async () => {
     prismaMock.user.findUnique.mockResolvedValueOnce(null);
     const missing = await snapshot(await forgotPassword(jsonRequest(body)));
+    await flushAfter();
 
     prismaMock.user.findUnique.mockResolvedValueOnce({ role: "user" });
     const existing = await snapshot(await forgotPassword(jsonRequest(body)));
+    await flushAfter();
 
     prismaMock.user.findUnique.mockResolvedValueOnce({ role: "superAdmin" });
     const superAdmin = await snapshot(await forgotPassword(jsonRequest(body)));
+    await flushAfter();
 
     prismaMock.user.findUnique.mockResolvedValueOnce({ role: "user" });
     emailMock.sendPasswordResetEmail.mockRejectedValueOnce(new Error("Invalid login: 535 Authentication failed"));
     const smtpDown = await snapshot(await forgotPassword(jsonRequest(body)));
+    await flushAfter();
 
     prismaMock.user.findUnique.mockRejectedValueOnce(new Error("connexion Neon perdue"));
     const dbDown = await snapshot(await forgotPassword(jsonRequest(body)));
+    await flushAfter();
 
     for (const res of [missing, existing, superAdmin, smtpDown, dbDown]) {
       expect(res).toEqual(SUCCESS);
     }
+    expect(emailMock.sendPasswordResetEmail).toHaveBeenCalledTimes(2);
+  });
+
+  it("répond avant toute lecture de la base ou envoi SMTP (temps de réponse indépendant du compte)", async () => {
+    prismaMock.user.findUnique.mockResolvedValueOnce({ role: "user" });
+    emailMock.sendPasswordResetEmail.mockReturnValueOnce(new Promise(() => {}));
+
+    await expect(snapshot(await forgotPassword(jsonRequest(body)))).resolves.toEqual(SUCCESS);
+    expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
+    expect(afterQueue).toHaveLength(1);
   });
 
   it("requête invalide → validationFailed ou invalidJson, sans consulter la base", async () => {
