@@ -3,10 +3,25 @@ import { z } from "zod";
 const firstNameSchema = z.string().min(2, "First name required");
 const lastNameSchema = z.string().min(2, "Last name required");
 const emailSchema = z.string().trim().toLowerCase().email("Adresse courriel requise");
-const passwordSchema = z.string().min(3, "Min 3 characters");
+// Création et changement de mot de passe seulement : le login garde min(1)
+// pour ne pas bloquer les comptes existants au mot de passe plus court.
+// max(72) : bcrypt ignore tout ce qui dépasse 72 octets.
+export const passwordSchema = z
+  .string()
+  .min(8, "Password must be at least 8 characters")
+  .max(72, "Password must be at most 72 characters");
 const phoneSchema = z.string().min(10, "Phone number required");
 
 export const localeSchema = z.enum(["fr", "en"]).optional();
+
+export const authIntentSchema = z.enum(["login", "register"]);
+// JOINED exclu : seul l'ajout par un groupAdmin rattache à un groupe
+export const signupGroupStatusSchema = z.enum(["SOLO", "PENDING"]);
+
+export const storeGroupStatusSchema = z.object({
+  intent: authIntentSchema,
+  groupStatus: signupGroupStatusSchema,
+});
 
 export const registerSchema = z.object({
   firstName: firstNameSchema,
@@ -35,7 +50,7 @@ export const verifyEmailSchema = z.object({
   password: passwordSchema,
   phoneNumber: phoneSchema,
   companyName: z.string().optional(),  
-  groupStatus: z.enum(['SOLO', 'PENDING']),
+  groupStatus: signupGroupStatusSchema,
   locale: localeSchema,
 });
 

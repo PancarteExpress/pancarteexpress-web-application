@@ -1,11 +1,12 @@
 import { z } from "zod";
 import { authService } from "@/features/auth/services/auth.service";
+import { passwordSchema } from "@/features/auth/types";
 import { NextResponse } from "next/server";
 
 const resetPasswordSchema = z.object({
   email: z.string().trim().toLowerCase().email("Invalid email"),
   code: z.string().regex(/^\d{6}$/, "Code must be 6 digits"),
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  password: passwordSchema,
   confirmPassword: z.string(),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",

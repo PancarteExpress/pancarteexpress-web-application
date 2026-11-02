@@ -7,6 +7,7 @@ import { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
 import { cookies } from "next/headers";
 import { sendAccountCreatedEmails, type EmailLocale } from "@/features/auth/services/email";
+import { authIntentSchema, signupGroupStatusSchema } from "@/features/auth/types";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -67,8 +68,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const email = user.email.trim().toLowerCase();
 
         const cookieStore = await cookies();
-        const intent = cookieStore.get("authIntent")?.value;
-        const groupStatus = (cookieStore.get("pendingGroupStatus")?.value || "SOLO") as "SOLO" | "PENDING";
+        const intent = authIntentSchema.safeParse(cookieStore.get("authIntent")?.value).data;
+        const groupStatus =
+          signupGroupStatusSchema.safeParse(cookieStore.get("pendingGroupStatus")?.value).data ?? "SOLO";
         const locale: EmailLocale = cookieStore.get("pendingLocale")?.value === "en" ? "en" : "fr";
 
         cookieStore.delete("authIntent");
