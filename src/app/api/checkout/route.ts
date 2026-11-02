@@ -8,6 +8,7 @@ import {
   ProductUnavailableError,
   ServiceBlockedError,
 } from '@/lib/orders/server/errors';
+import { errorResponse } from '@/lib/errors/server/toClientError';
 
 export async function POST(request: Request) {
   // JSON uniquement : un formulaire cross-site ne peut pas envoyer ce Content-Type
@@ -24,15 +25,7 @@ export async function POST(request: Request) {
   }
 
   const parsed = checkoutPayloadSchema.safeParse(body);
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: 'validationFailed',
-        issues: parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })),
-      },
-      { status: 400 },
-    );
-  }
+  if (!parsed.success) return errorResponse(parsed.error, 'checkout');
 
   const session = await auth();
   const user: CheckoutUser | null =
