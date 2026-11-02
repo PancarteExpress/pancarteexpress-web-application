@@ -1,0 +1,15 @@
+{
+    "unauthorized": "Vous devez être connecté pour effectuer cette action.",
+    "invalidCredentials": "Identifiants invalides.",
+    "userExists": "Un compte existe déjà avec cette adresse courriel.",
+    "userNotFound": "Compte introuvable.",
+    "noPassword": "Ce compte n'a pas de mot de passe (connexion avec Google).",
+    "currentPasswordIncorrect": "Le mot de passe actuel est incorrect.",
+    "emailChangeNotAllowed": "Le changement d'adresse courriel n'est pas permis.",
+    "invalidCode": "Code invalide ou expiré.",
+    "tooManyAttempts": "Trop de tentatives. Demandez un nouveau code.",
+    "validationFailed": "Certaines informations sont invalides.",
+    "invalidJson": "Requête invalide.",
+    "emailSendFailed": "Impossible d'envoyer le courriel, réessayez plus tard",
+    "serverError": "Une erreur est survenue, réessayez plus tard."
+}

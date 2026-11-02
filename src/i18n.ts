@@ -20,6 +20,7 @@ const LOADERS = {
   products: (locale) => import(`@/messages/${locale}/products.json`),
   checkout: (locale) => import(`@/messages/${locale}/checkout.json`),
   groups: (locale) => import(`@/messages/${locale}/groups.json`),
+  errors: (locale) => import(`@/messages/${locale}/errors.json`),
 
   footer: (locale) => import(`@/messages/${locale}/footer.json`),
 

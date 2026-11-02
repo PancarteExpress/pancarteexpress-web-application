@@ -1,0 +1,15 @@
+{
+    "unauthorized": "You must be signed in to do this.",
+    "invalidCredentials": "Invalid credentials.",
+    "userExists": "An account already exists with this email address.",
+    "userNotFound": "Account not found.",
+    "noPassword": "This account has no password (Google sign-in).",
+    "currentPasswordIncorrect": "The current password is incorrect.",
+    "emailChangeNotAllowed": "Changing your email address is not allowed.",
+    "invalidCode": "Invalid or expired code.",
+    "tooManyAttempts": "Too many attempts. Please request a new code.",
+    "validationFailed": "Some information is invalid.",
+    "invalidJson": "Invalid request.",
+    "emailSendFailed": "Unable to send the email, please try again later",
+    "serverError": "Something went wrong, please try again later."
+}
