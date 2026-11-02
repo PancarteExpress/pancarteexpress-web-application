@@ -18,6 +18,9 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Retire les retours à la ligne des valeurs injectées dans les en-têtes du courriel
+const enLigne = (value: string) => value.replace(/[\r\n]+/g, ' ').trim();
+
 export async function sendContact(data: ContactFormData): Promise<SendContactResult> {
   const parsed = contactSchema.safeParse(data);
   if (!parsed.success) {
@@ -27,12 +30,12 @@ export async function sendContact(data: ContactFormData): Promise<SendContactRes
   const { firstName, lastName, phoneNumber, extension, email, company, reason } = parsed.data;
 
   try {
-    // Envoi de la requete à l'interne (pancarteexpress@gmail.com)
+    // Seul destinataire : l'équipe (pancarteexpress@gmail.com) ; le visiteur n'est qu'en replyTo
     await transporter.sendMail({
       from: process.env.SMTP_FROM,
       to: process.env.CONTACT_TO,
-      replyTo: email,
-      subject: `[Demande de contact] ${firstName} ${lastName}`,
+      replyTo: enLigne(email),
+      subject: `[Demande de contact] ${enLigne(firstName)} ${enLigne(lastName)}`,
       text: [
         `Nom : ${firstName} ${lastName}`,
         `Téléphone : ${phoneNumber}${extension ? ` poste ${extension}` : ''}`,
@@ -43,26 +46,6 @@ export async function sendContact(data: ContactFormData): Promise<SendContactRes
         reason,
       ].join('\n'),
     });
-
-    // Confirmation au client : best-effort, son échec ne doit pas faire échouer la demande
-    try {
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM,
-        to: email,
-        replyTo: process.env.CONTACT_TO, // si le client répond, ça arrive dans pancarteexpress@gmail.com
-        subject: 'Nous avons bien reçu votre demande | Pancarte Express',
-        text: [
-          `Bonjour ${firstName},`,
-          '',
-          'Merci de nous avoir contactés. Notre équipe vous répondra dans les plus brefs délais.',
-          '',
-          'Pancarte Express',
-          '514-825-2709 · info@pancarteexpress.com',
-        ].join('\n'),
-      });
-    } catch (err) {
-      console.error('Erreur confirmation client :', err);
-    }
 
     return { success: true };
   } catch (err) {

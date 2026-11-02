@@ -2,6 +2,7 @@ import { randomInt } from "node:crypto";
 import type { TokenType, VerificationToken } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashPassword, bcryptCompare } from "@/utils/bcrypt";
+import { publicUserSelect } from "@/lib/users/publicUser";
 
 import {
   sendAccountCreatedEmails,
@@ -94,6 +95,7 @@ export const authService = {
     return await prisma.user.update({
       where: { id: userId },
       data: { password: hashedPassword },
+      select: publicUserSelect,
     });
   },
 
@@ -124,7 +126,7 @@ export const authService = {
           emailVerified: new Date(),
           groupStatus,
         },
-        select: { id: true, email: true },
+        select: publicUserSelect,
       }),
       prisma.verificationToken.deleteMany({
         where: { email, type: "EMAIL_VERIFICATION" },
@@ -159,6 +161,7 @@ export const authService = {
         phoneNumber: input.phoneNumber,
         companyName: input.companyName,
       },
+      select: publicUserSelect,
     });
   },
 
