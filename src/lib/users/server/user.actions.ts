@@ -111,7 +111,7 @@ export async function updateAccountTypeAction(
         const group = await tx.group.create({ data: {}, select: { id: true } });
         await tx.user.update({
           where: { id: userId },
-          data: { role: "groupAdmin", groupStatus: "JOINED", groupId: group.id },
+          data: { role: "groupAdmin", groupStatus: "JOINED", groupId: group.id, joinedAt: new Date() },
         });
       } else {
         await tx.user.update({
@@ -121,6 +121,7 @@ export async function updateAccountTypeAction(
             groupStatus: accountType === "solo" ? "SOLO" : "PENDING",
             // undefined = champ inchangé pour Prisma
             groupId: accountType === "solo" || ownedGroup ? null : undefined,
+            joinedAt: accountType === "solo" || ownedGroup ? null : undefined,
           },
         });
       }

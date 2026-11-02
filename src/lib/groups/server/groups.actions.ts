@@ -3,7 +3,7 @@
 import { Prisma } from "@prisma/client";
 import { auth } from "@/app/auth";
 import { prisma } from "@/lib/prisma";
-import { addMembersSchema, createGroupSchema, groupNameSchema, memberIdSchema, billingModeSchema } from "../groups.schema";
+import { addMembersSchema, createGroupSchema, groupNameSchema, memberIdSchema, billingModeSchema, userSearchQuerySchema } from "../groups.schema";
 import { getGroupDetails, type GroupDetails } from "./groups.service";
 
 const userSearchSelect = {
@@ -20,17 +20,21 @@ export type ActionResult = { ok: true } | { ok: false; error: string };
 class GroupActionError extends Error {}
 class ActionError extends Error {}
 
-export async function searchUsersByEmailAction(query: string): Promise<UserSearchResult[]> {
+// Règle métier : un groupAdmin n'ajoute sans validation que les users en attente d'équipe (PENDING) et sans groupe
+const addableMemberWhere = { groupId: null, groupStatus: "PENDING" } satisfies Prisma.UserWhereInput;
+const MEMBER_UNAVAILABLE = "Un ou plusieurs coéquipiers ne sont plus disponibles";
+
+export async function searchUsersByEmailAction(query: unknown): Promise<UserSearchResult[]> {
   const session = await auth();
   if (!session?.user?.id || session.user.role !== "groupAdmin") return [];
 
-  const q = query.trim().toLowerCase();
-  if (q.length < 3 || q.length > 254) return [];
+  const parsed = userSearchQuerySchema.safeParse(query);
+  if (!parsed.success) return [];
 
   return prisma.user.findMany({
     where: {
-      email: { startsWith: q },
-      groupId: null,              // seulement les users sans équipe
+      email: { startsWith: parsed.data },
+      ...addableMemberWhere,
       role: "user",
       id: { not: session.user.id },
     },
@@ -61,17 +65,17 @@ export async function createGroupAction(input: unknown): Promise<CreateGroupResu
       // Condition groupId: null dans le WHERE → protège contre double-submit / course
       const admin = await tx.user.updateMany({
         where: { id: userId, groupId: null },
-        data: { groupId: group.id, groupStatus: "JOINED" },
+        data: { groupId: group.id, groupStatus: "JOINED", joinedAt: new Date() },
       });
       if (admin.count !== 1) throw new GroupActionError("Vous êtes déjà lié à une équipe");
 
       if (memberIds.length > 0) {
         const members = await tx.user.updateMany({
-          where: { id: { in: memberIds }, groupId: null, role: "user" },
-          data: { groupId: group.id, groupStatus: "JOINED" },
+          where: { id: { in: memberIds }, ...addableMemberWhere, role: "user" },
+          data: { groupId: group.id, groupStatus: "JOINED", joinedAt: new Date() },
         });
         if (members.count !== memberIds.length) {
-          throw new GroupActionError("Un ou plusieurs coéquipiers ont rejoint une autre équipe entre-temps");
+          throw new GroupActionError(MEMBER_UNAVAILABLE);
         }
       }
     });
@@ -138,11 +142,11 @@ export async function addGroupMembersAction(input: unknown): Promise<GroupResult
   try {
     await prisma.$transaction(async (tx) => {
       const { count } = await tx.user.updateMany({
-        where: { id: { in: memberIds }, groupId: null, role: "user" },
-        data: { groupId: ctx.groupId, groupStatus: "JOINED" },
+        where: { id: { in: memberIds }, ...addableMemberWhere, role: "user" },
+        data: { groupId: ctx.groupId, groupStatus: "JOINED", joinedAt: new Date() },
       });
       if (count !== memberIds.length) {
-        throw new GroupActionError("Un ou plusieurs coéquipiers ont rejoint une autre équipe entre-temps");
+        throw new GroupActionError(MEMBER_UNAVAILABLE);
       }
     });
   } catch (e) {
@@ -162,7 +166,7 @@ export async function removeGroupMemberAction(memberId: string): Promise<GroupRe
   // role: "user" → impossible de retirer un admin (dont soi-même)
   const { count } = await prisma.user.updateMany({
     where: { id: parsed.data, groupId: ctx.groupId, role: "user" },
-    data: { groupId: null, groupStatus: "SOLO" },
+    data: { groupId: null, groupStatus: "SOLO", joinedAt: null },
   });
   if (count === 0) return { ok: false, error: "Ce membre ne peut pas être retiré" };
 
@@ -189,7 +193,7 @@ export async function deleteGroupAction(groupId: string): Promise<ActionResult> 
       // Tous les membres, groupAdmin compris, passent en forfait individuel
       await tx.user.updateMany({
         where: { groupId },
-        data: { role: "user", groupStatus: "SOLO", groupId: null },
+        data: { role: "user", groupStatus: "SOLO", groupId: null, joinedAt: null },
       });
 
       await tx.group.delete({ where: { id: groupId } });

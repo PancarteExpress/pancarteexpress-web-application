@@ -58,10 +58,29 @@ const teamOrderSelect = {
 export type TeamOrder = Prisma.OrderGetPayload<{ select: typeof teamOrderSelect }>;
 export type OrderOwner = NonNullable<TeamOrder['user']>;
 
-/** Commandes des membres du groupe (hors admin), les plus récentes en premier */
-export function getTeamOrders(groupId: string, adminId: string): Promise<TeamOrder[]> {
+type TeamMember = { id: string; joinedAt: Date | null };
+
+/** Une condition par membre : seulement ses commandes passées depuis son entrée dans le groupe */
+export function teamOrdersWhere(members: TeamMember[]): Prisma.OrderWhereInput {
+  return {
+    OR: members.flatMap(({ id, joinedAt }) =>
+      joinedAt ? [{ userId: id, createdAt: { gte: joinedAt } }] : [],
+    ),
+  };
+}
+
+/** Commandes des membres du groupe (hors admin) depuis leur arrivée, les plus récentes en premier */
+export async function getTeamOrders(groupId: string, adminId: string): Promise<TeamOrder[]> {
+  const members = await prisma.user.findMany({
+    where: { groupId, id: { not: adminId } },
+    select: { id: true, joinedAt: true },
+  });
+
+  const where = teamOrdersWhere(members);
+  if (!where.OR?.length) return [];
+
   return prisma.order.findMany({
-    where: { user: { groupId }, userId: { not: adminId } },
+    where,
     select: teamOrderSelect,
     orderBy: { createdAt: 'desc' },
   });

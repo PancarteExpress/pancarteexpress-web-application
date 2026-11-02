@@ -35,6 +35,8 @@ model User {
   groupStatus GroupStatus @default(SOLO)
   groupId     String?
   group       Group?      @relation("GroupUsers", fields: [groupId], references: [id], onDelete: SetNull)
+  // Entrée dans le groupe actuel : le groupAdmin ne voit que les commandes postérieures. null = sans groupe
+  joinedAt    DateTime?
 
   // Blocage manuel des demandes de service par le superAdmin :
   // date à partir de laquelle elles sont refusées (clic + 3 jours). null = aucun blocage.
