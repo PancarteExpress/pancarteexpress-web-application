@@ -11,6 +11,9 @@
     "test": "vitest",
     "test:run": "vitest run"
   },
+  "prisma": {
+    "seed": "node prisma/seed.ts"
+  },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.3",
     "@hookform/resolvers": "^5.9.1",

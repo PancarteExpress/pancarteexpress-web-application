@@ -78,6 +78,7 @@ Le site n'est pas encore en production : une seule base Neon, aucune donnée ré
 
 - Séparer dev et prod en deux branches Neon (URLs distinctes dans les environnements Vercel `development`/`preview` et `production`)
 - Ajouter `prisma migrate deploy` au build Vercel de production uniquement (jamais `migrate dev` sur la base de prod)
+- Créer le superAdmin sur la base de prod : `SUPERADMIN_EMAIL` et `SUPERADMIN_PASSWORD` dans l'environnement, puis `npx prisma db seed` (`prisma/seed.ts`, idempotent, refuse un second superAdmin). La CLI Prisma ne lit pas `.env.local` : charger les variables dans le shell avant. Ne jamais l'exécuter sans demande explicite
 - Rate limiting (audit É4) : créer le compte Upstash et ajouter `UPSTASH_REDIS_REST_URL` et `UPSTASH_REDIS_REST_TOKEN` aux variables d'env, puis brancher `@upstash/ratelimit` sur login, inscription, codes, mot de passe, contact, checkout et recherche de membres
 
 ## Règles de travail
