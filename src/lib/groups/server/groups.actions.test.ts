@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Prisma } from "@prisma/client";
 
 const prismaMock = vi.hoisted(() => ({
   user: { findMany: vi.fn(), findUnique: vi.fn(), updateMany: vi.fn() },
+  group: { update: vi.fn() },
   $transaction: vi.fn(),
 }));
 const authMock = vi.hoisted(() => vi.fn());
@@ -11,7 +13,7 @@ vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("@/app/auth", () => ({ auth: authMock }));
 vi.mock("./groups.service", () => ({ getGroupDetails: vi.fn(async () => ({ id: "g1" })) }));
 
-const { searchUsersByEmailAction, addGroupMembersAction } = await import("./groups.actions");
+const { searchUsersByEmailAction, addGroupMembersAction, renameGroupAction } = await import("./groups.actions");
 
 describe("searchUsersByEmailAction", () => {
   beforeEach(() => {
@@ -75,5 +77,29 @@ describe("addGroupMembersAction", () => {
       ok: false,
       error: "Un ou plusieurs coéquipiers ne sont plus disponibles",
     });
+  });
+});
+
+describe("renameGroupAction", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    authMock.mockResolvedValue({ user: { id: "admin", role: "groupAdmin" } });
+    prismaMock.user.findUnique.mockResolvedValue({ role: "groupAdmin", groupId: "g1" });
+  });
+
+  it("renvoie la clé i18n nameTaken si le nom existe déjà (P2002)", async () => {
+    prismaMock.group.update.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("Unique constraint failed", { code: "P2002", clientVersion: "test" }),
+    );
+
+    await expect(renameGroupAction({ name: "Équipe A" })).resolves.toEqual({ ok: false, errorKey: "nameTaken" });
+  });
+
+  it("relance les autres erreurs Prisma", async () => {
+    prismaMock.group.update.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("Record not found", { code: "P2025", clientVersion: "test" }),
+    );
+
+    await expect(renameGroupAction({ name: "Équipe A" })).rejects.toBeInstanceOf(Prisma.PrismaClientKnownRequestError);
   });
 });

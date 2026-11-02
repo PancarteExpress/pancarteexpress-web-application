@@ -4,7 +4,7 @@ export const createGroupSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Le nom d'equipe doit contenir au moins 2 caractères")
+    .min(2, "Le nom d'équipe doit contenir au moins 2 caractères")
     .max(60, "Le nom ne peut dépasser 60 caractères"),
   memberIds: z.array(z.string().min(1)),
 });

@@ -19,6 +19,7 @@ const LOADERS = {
   cart: (locale) => import(`@/messages/${locale}/cart.json`),
   products: (locale) => import(`@/messages/${locale}/products.json`),
   checkout: (locale) => import(`@/messages/${locale}/checkout.json`),
+  groups: (locale) => import(`@/messages/${locale}/groups.json`),
 
   footer: (locale) => import(`@/messages/${locale}/footer.json`),
 

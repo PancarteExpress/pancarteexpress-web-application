@@ -14,7 +14,10 @@ const userSearchSelect = {
 } satisfies Prisma.UserSelect;
 
 export type UserSearchResult = Prisma.UserGetPayload<{ select: typeof userSearchSelect }>;
-export type CreateGroupResult = { ok: true } | { ok: false; error: string };
+// Erreurs métier traduites côté client (namespace i18n "groups", clé errors.<GroupErrorKey>)
+export type GroupErrorKey = "nameTaken";
+type GroupFailure = { ok: false; error: string } | { ok: false; errorKey: GroupErrorKey };
+export type CreateGroupResult = { ok: true } | GroupFailure;
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
 class GroupActionError extends Error {}
@@ -83,7 +86,7 @@ export async function createGroupAction(input: unknown): Promise<CreateGroupResu
   } catch (e) {
     if (e instanceof GroupActionError) return { ok: false, error: e.message };
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      return { ok: false, error: "Ce nom d'équipe est déjà utilisé" };
+      return { ok: false, errorKey: "nameTaken" };
     }
     throw e;
   }
@@ -91,6 +94,7 @@ export async function createGroupAction(input: unknown): Promise<CreateGroupResu
 
 
 export type GroupResult = { ok: true; group: GroupDetails } | { ok: false; error: string };
+export type RenameGroupResult = { ok: true; group: GroupDetails } | GroupFailure;
 type AdminContext = { ok: true; groupId: string } | { ok: false; error: string };
 
 async function getAdminContext(): Promise<AdminContext> {
@@ -109,7 +113,7 @@ async function getAdminContext(): Promise<AdminContext> {
   return { ok: true, groupId: user.groupId };
 }
 
-export async function renameGroupAction(input: unknown): Promise<GroupResult> {
+export async function renameGroupAction(input: unknown): Promise<RenameGroupResult> {
   const ctx = await getAdminContext();
   if (!ctx.ok) return ctx;
 
@@ -122,7 +126,7 @@ export async function renameGroupAction(input: unknown): Promise<GroupResult> {
     await prisma.group.update({ where: { id: ctx.groupId }, data: { name: parsed.data.name } });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      return { ok: false, error: "Ce nom d'équipe est déjà utilisé" };
+      return { ok: false, errorKey: "nameTaken" };
     }
     throw e;
   }

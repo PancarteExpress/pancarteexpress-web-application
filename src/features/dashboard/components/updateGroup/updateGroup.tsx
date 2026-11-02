@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { groupNameSchema, type GroupNameInput } from "@/lib/groups/groups.schema";
 import type { BillingMode } from "@prisma/client";
 import {
@@ -46,6 +47,7 @@ const BILLING_OPTIONS: readonly { value: BillingMode; label: string; description
 
 export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps) {
   const router = useRouter();
+  const t = useTranslations("groups");
   const { data: session, update } = useSession();
   const isGroupAdmin = session?.user?.role === "groupAdmin";
 
@@ -82,7 +84,7 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
     try {
       const res = await renameGroupAction(values);
       if (!res.ok) {
-        setNameFeedback({ type: "error", message: res.error });
+        setNameFeedback({ type: "error", message: "errorKey" in res ? t(`errors.${res.errorKey}`) : res.error });
         return;
       }
       setGroup(res.group);
