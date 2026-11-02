@@ -220,6 +220,7 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
             <input
               {...resetForm.register("password")}
               type="password"
+              autoComplete="new-password"
               className="w-full px-3 py-2 border rounded"
             />
           </div>
@@ -229,6 +230,7 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
             <input
               {...resetForm.register("confirmPassword")}
               type="password"
+              autoComplete="new-password"
               className="w-full px-3 py-2 border rounded"
             />
           </div>

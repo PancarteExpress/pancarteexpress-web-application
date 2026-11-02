@@ -55,7 +55,7 @@ export function LoginForm({ locale }: LoginFormProps) {
       <div className={styles.inputs}>
         <label htmlFor="loginPassword" className="block text-sm font-medium mb-1">{t('formPassword')}</label>
         <input
-          autoComplete="new-password"
+          autoComplete="current-password"
           id="loginPassword"
           type="password"
           {...register("password")}

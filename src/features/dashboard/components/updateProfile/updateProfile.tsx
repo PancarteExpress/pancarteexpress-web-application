@@ -23,6 +23,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
   const [isLoading, setIsLoading] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -105,6 +106,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
     try {
       setIsLoading(true);
       setPasswordSuccess(null);
+      setPasswordError(null);
 
       const res = await fetch("/api/auth/update-password", {
         method: "POST",
@@ -123,7 +125,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       setTimeout(() => setPasswordSuccess(null), 3000);
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : "Update failed";
-      setPasswordSuccess(errorMessage);
+      setPasswordError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -259,11 +261,17 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
                 <input
                   {...registerPassword("currentPassword")}
                   type="password"
+                  autoComplete="current-password"
                   className="w-full px-3 py-2 border rounded"
                 />
                 {passwordErrors.currentPassword && (
                   <span className="text-red-500 text-sm">
                     {passwordErrors.currentPassword.message}
+                  </span>
+                )}
+                {passwordError && (
+                  <span role="alert" className="text-red-500 text-sm">
+                    {passwordError}
                   </span>
                 )}
               </div>
@@ -275,6 +283,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
                 <input
                   {...registerPassword("newPassword")}
                   type="password"
+                  autoComplete="new-password"
                   className="w-full px-3 py-2 border rounded"
                 />
                 {passwordErrors.newPassword && (
@@ -291,6 +300,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
                 <input
                   {...registerPassword("confirmPassword")}
                     type="password"
+                    autoComplete="new-password"
                     className="w-full px-3 py-2 border rounded"
                 />
                 {passwordErrors.confirmPassword && (

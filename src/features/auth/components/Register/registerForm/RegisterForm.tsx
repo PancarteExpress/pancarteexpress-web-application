@@ -195,6 +195,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
             <input
               id="registerPassword"
               type="password"
+              autoComplete="new-password"
               {...register("password")}
               className="w-full px-3 py-2 border rounded"
               disabled={isLoading}
@@ -206,6 +207,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
             <input
               id="registerPassword"
               type="password"
+              autoComplete="new-password"
               {...register("confirmPassword")}
               className="w-full px-3 py-2 border rounded"
               disabled={isLoading}
