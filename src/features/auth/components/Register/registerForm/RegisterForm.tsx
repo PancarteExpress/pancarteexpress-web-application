@@ -11,6 +11,7 @@ import { useAuthStore } from "../../../store/authStore";
 import { z } from "zod";
 import { GoogleLoginButton } from '../../googleLoginButton/GoogleLoginButton';
 import { useTranslations } from 'next-intl';
+import { readErrorCode } from '@/lib/errors/appError';
 
 interface RegisterFormProps {
   locale: string;
@@ -27,6 +28,7 @@ type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
 
 export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepChange }: RegisterFormProps) {
   const t = useTranslations('register');
+  const tErrors = useTranslations('errors');
   const router = useRouter();
   const { register: registerUser, login } = useAuth();
 
@@ -71,8 +73,8 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Verification failed");
+        useAuthStore.setState({ error: tErrors(await readErrorCode(res)) });
+        return;
       }
 
       await login({
@@ -84,9 +86,8 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
       setTimeout(() => {
         window.location.replace(`/${locale}/dashboard`);
       }, 1000);
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Verification failed";
-      useAuthStore.setState({ error: errorMessage });
+    } catch {
+      useAuthStore.setState({ error: tErrors('serverError') });
     }
   };  
 

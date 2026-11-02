@@ -1,12 +1,14 @@
 import { auth } from "@/app/auth";
 import { updatePasswordSchema } from "@/features/auth/types";
 import { authService } from "@/features/auth/services/auth.service";
+import { AppError } from "@/lib/errors/appError";
+import { errorResponse } from "@/lib/errors/server/toClientError";
 import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return errorResponse(new AppError("unauthorized"), "update-password");
   }
 
   try {
@@ -20,10 +22,6 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Update failed";
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 400 }
-    );
+    return errorResponse(error, "update-password");
   }
 }

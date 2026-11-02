@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod";
 import { authService } from "@/features/auth/services/auth.service";
 import { verifyEmailSchema } from "@/features/auth/types";
+import { errorResponse } from "@/lib/errors/server/toClientError";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,16 +28,6 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: "Validation error", details: error.issues },
-        { status: 400 }
-      );
-    }
-
-    const errorMessage =
-      error instanceof Error ? error.message : "Verification failed";
-
-    return NextResponse.json({ error: errorMessage }, { status: 400 });
+    return errorResponse(error, "verify-email");
   }
 }

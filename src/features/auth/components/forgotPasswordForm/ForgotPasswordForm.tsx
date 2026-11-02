@@ -6,6 +6,8 @@ import { resetPasswordSchema, type ResetPasswordInput } from "@/features/auth/ty
 import { useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
+import { useTranslations } from "next-intl";
+import { readErrorCode } from "@/lib/errors/appError";
 
 import styles from './ForgotPasswordForm.module.css';
 import { FaUnlockKeyhole } from "react-icons/fa6";
@@ -26,6 +28,7 @@ type EmailFormInput = z.infer<typeof emailSchema>;
 type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
 
 export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
+  const tErrors = useTranslations("errors");
   const [step, setStep] = useState<"email" | "code" | "reset">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -60,16 +63,15 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to send code");
+        setError(tErrors(await readErrorCode(res)));
+        return;
       }
 
       setEmail(data.email);
       setStep("code");
       setSuccess("Code sent to your email");
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Failed";
-      setError(errorMessage);
+    } catch {
+      setError(tErrors("serverError"));
     } finally {
       setIsLoading(false);
     }
@@ -87,16 +89,15 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Invalid code");
+        setError(tErrors(await readErrorCode(res)));
+        return;
       }
 
       setCode(data.code);
       setStep("reset");
       setSuccess(null);
-    } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Failed";
-      setError(errorMessage);
+    } catch {
+      setError(tErrors("serverError"));
     } finally {
       setIsLoading(false);
     }
@@ -114,16 +115,14 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Failed to reset password");
+        setError(tErrors(await readErrorCode(res)));
+        return;
       }
 
       setSuccess("Password reset successfully! Redirecting to login...");
       setTimeout(() => window.location.href = `/${locale}/login`, 2000);
-    } catch (err: unknown) {
-      console.error("Reset error:", err);
-      const errorMessage = err instanceof Error ? err.message : "Failed";
-      setError(errorMessage);
+    } catch {
+      setError(tErrors("serverError"));
     } finally {
       setIsLoading(false);
     }

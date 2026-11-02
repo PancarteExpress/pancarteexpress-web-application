@@ -1,4 +1,5 @@
 import { authService } from "@/features/auth/services/auth.service";
+import { errorResponse } from "@/lib/errors/server/toClientError";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -17,10 +18,6 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Failed";
-    return NextResponse.json(
-      { error: errorMessage },
-      { status: 400 }
-    );
+    return errorResponse(error, "verify-reset-code");
   }
 }

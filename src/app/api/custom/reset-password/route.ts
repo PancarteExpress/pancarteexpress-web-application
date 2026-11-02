@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { authService } from "@/features/auth/services/auth.service";
 import { passwordSchema } from "@/features/auth/types";
+import { errorResponse } from "@/lib/errors/server/toClientError";
 import { NextResponse } from "next/server";
 
 const resetPasswordSchema = z.object({
@@ -25,7 +26,6 @@ export async function POST(req: Request) {
       { status: 200 },
     );
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Failed";
-    return NextResponse.json({ error: errorMessage }, { status: 400 });
+    return errorResponse(error, "reset-password");
   }
 }

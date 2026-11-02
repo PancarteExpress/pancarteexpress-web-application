@@ -1,6 +1,7 @@
 import { randomInt } from "node:crypto";
-import type { TokenType, VerificationToken } from "@prisma/client";
+import { Prisma, type TokenType, type VerificationToken } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { AppError } from "@/lib/errors/appError";
 import { hashPassword, bcryptCompare } from "@/utils/bcrypt";
 import { publicUserSelect } from "@/lib/users/publicUser";
 
@@ -17,7 +18,6 @@ import type { RegisterInput, UpdateProfileInput, UpdatePasswordInput, ForgotPass
 
 const CODE_TTL_MS = 15 * 60 * 1000;
 const MAX_CODE_ATTEMPTS = 5;
-const INVALID_CODE = "Invalid or expired code";
 
 /** Un seul code actif par email et par type : l'émission d'un nouveau code invalide les précédents */
 async function issueCode(email: string, type: TokenType): Promise<string> {
@@ -40,7 +40,7 @@ async function assertValidCode(
   type: TokenType,
 ): Promise<VerificationToken> {
   const token = await prisma.verificationToken.findFirst({ where: { email, type } });
-  if (!token || token.expires < new Date()) throw new Error(INVALID_CODE);
+  if (!token || token.expires < new Date()) throw new AppError("invalidCode");
 
   // Incrément conditionnel atomique : des requêtes simultanées ne peuvent pas dépasser la limite
   const { count } = await prisma.verificationToken.updateMany({
@@ -50,10 +50,12 @@ async function assertValidCode(
 
   if (count === 0) {
     await prisma.verificationToken.deleteMany({ where: { id: token.id } });
-    throw new Error("Too many attempts. Please request a new code.");
+    // Anti-énumération : un code de reset n'existe que pour un compte réel ; « trop de tentatives »
+    // révélerait donc l'existence du compte. Même réponse qu'un code faux ou expiré.
+    throw new AppError(type === "PASSWORD_RESET" ? "invalidCode" : "tooManyAttempts");
   }
 
-  if (token.token !== code) throw new Error(INVALID_CODE);
+  if (token.token !== code) throw new AppError("invalidCode");
 
   return token;
 }
@@ -66,11 +68,16 @@ export const authService = {
     });
 
     if (existingUser) {
-      throw new Error("User already exists");
+      throw new AppError("userExists");
     }
 
     const code = await issueCode(input.email, "EMAIL_VERIFICATION");
-    await sendVerificationEmail(input.email, code, input.locale);
+    try {
+      await sendVerificationEmail(input.email, code, input.locale);
+    } catch (err) {
+      console.error("[register] envoi du code de vérification", err);
+      throw new AppError("emailSendFailed");
+    }
 
     return { success: true };
   },
@@ -80,14 +87,13 @@ export const authService = {
       where: { id: userId },
     });
 
-    if (!user || !user.password) {
-      throw new Error("User not found or no password set");
-    }
+    if (!user) throw new AppError("userNotFound");
+    if (!user.password) throw new AppError("noPassword");
 
     const isPasswordValid = await bcryptCompare(input.currentPassword, user.password);
 
     if (!isPasswordValid) {
-      throw new Error("Current password incorrect");
+      throw new AppError("currentPasswordIncorrect");
     }
 
     const hashedPassword = await hashPassword(input.newPassword);
@@ -131,8 +137,13 @@ export const authService = {
       prisma.verificationToken.deleteMany({
         where: { email, type: "EMAIL_VERIFICATION" },
       }),
-    ]);
+    ]).catch((e: unknown) => {
+      // Compte créé entre-temps (double envoi, inscription Google) : erreur métier, pas de détail Prisma
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") throw new AppError("userExists");
+      throw e;
+    });
 
+    // Ne lève jamais : un échec du courriel de bienvenue est journalisé, le compte est déjà créé
     await sendAccountCreatedEmails({
       name: `${firstName} ${lastName}`,
       email: user.email,
@@ -150,7 +161,7 @@ export const authService = {
     });
 
     if (!current) {
-      throw new Error("User not found");
+      throw new AppError("userNotFound");
     }
 
     // Changement de courriel bloqué : sans re-vérification, il permettait de préempter
@@ -158,7 +169,7 @@ export const authService = {
     // TODO: flux de changement de courriel avec code envoyé à la nouvelle adresse ;
     // emailVerified devra repasser à null jusqu'à la validation du code.
     if (input.email.trim().toLowerCase() !== current.email.toLowerCase()) {
-      throw new Error("Email change not allowed");
+      throw new AppError("emailChangeNotAllowed");
     }
 
     return await prisma.user.update({
@@ -173,17 +184,25 @@ export const authService = {
     });
   },
 
-  async forgotPassword(input: ForgotPasswordInput) {
-    const user = await prisma.user.findUnique({
-      where: { email: input.email },
-      select: { role: true },
-    });
+  /**
+   * Anti-énumération : ne lève jamais. Compte inexistant, superAdmin, échec base ou SMTP :
+   * l'appelant renvoie toujours la même réponse ; les échecs ne sont que journalisés.
+   */
+  async forgotPassword(input: ForgotPasswordInput): Promise<void> {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email: input.email },
+        select: { role: true },
+      });
 
-    // Sortie silencieuse : ne révèle ni l'existence du compte ni s'il s'agit du superAdmin
-    if (!user || user.role === "superAdmin") return;
+      // Sortie silencieuse : ne révèle ni l'existence du compte ni s'il s'agit du superAdmin
+      if (!user || user.role === "superAdmin") return;
 
-    const code = await issueCode(input.email, "PASSWORD_RESET");
-    await sendPasswordResetEmail(input.email, code, input.locale);
+      const code = await issueCode(input.email, "PASSWORD_RESET");
+      await sendPasswordResetEmail(input.email, code, input.locale);
+    } catch (err) {
+      console.error("[forgot-password]", err);
+    }
   },
 
   async resetPassword(input: { email: string; code: string; password: string }) {
@@ -194,7 +213,7 @@ export const authService = {
       where: { email: input.email },
       select: { role: true },
     });
-    if (!user || user.role === "superAdmin") throw new Error(INVALID_CODE);
+    if (!user || user.role === "superAdmin") throw new AppError("invalidCode");
 
     const hashedPassword = await hashPassword(input.password);
 

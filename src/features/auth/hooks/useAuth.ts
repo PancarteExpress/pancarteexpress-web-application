@@ -4,11 +4,14 @@ import { useCallback, useEffect } from "react";
 import type { LoginInput, RegisterInput } from "../types";
 import type { UserRole } from "@/shared/types/user";
 import { useParams } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { readErrorCode } from "@/lib/errors/appError";
 
 export function useAuth() {
   const { setError, setLoading, clearError, logout: logoutStore } = useAuthStore();
   const { data: session, status } = useSession();
   const params = useParams<{ locale: string }>();
+  const tErrors = useTranslations("errors");
 
   useEffect(() => {
     if (session?.user && session.user.email) {
@@ -51,19 +54,22 @@ export function useAuth() {
         });
 
         if (result?.error) {
-          throw new Error(result.error === "CredentialsSignin" ? "Identifiants invalides" : result.error);
+          // Auth.js : CredentialsSignin = identifiants refusés ; tout autre code (Configuration…) reste interne
+          const errorMessage = tErrors(result.error === "CredentialsSignin" ? "invalidCredentials" : "serverError");
+          setError(errorMessage);
+          return { success: false, error: errorMessage };
         }
 
         return { success: true };
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Login failed";
+      } catch {
+        const errorMessage = tErrors("serverError");
         setError(errorMessage);
         return { success: false, error: errorMessage };
       } finally {
         setLoading(false);
       }
     },
-    [clearError, setLoading, setError]
+    [clearError, setLoading, setError, tErrors]
   );
 
   const register = useCallback(
@@ -79,20 +85,21 @@ export function useAuth() {
         });
 
         if (!res.ok) {
-          const data = await res.json();
-          throw new Error(data.error || "Registration failed");
+          const errorMessage = tErrors(await readErrorCode(res));
+          setError(errorMessage);
+          return { success: false, error: errorMessage };
         }
 
         return { success: true, data: input };
-      } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : "Registration failed";
+      } catch {
+        const errorMessage = tErrors("serverError");
         setError(errorMessage);
         return { success: false, error: errorMessage };
       } finally {
         setLoading(false);
       }
     },
-    [clearError, setLoading, setError]
+    [clearError, setLoading, setError, tErrors]
   );
 
   const logout = useCallback(async () => {

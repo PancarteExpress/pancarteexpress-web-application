@@ -12,6 +12,8 @@ import {
 } from "@/features/auth/types";
 import { useSession } from "next-auth/react";
 import { User } from "next-auth";
+import { useTranslations } from "next-intl";
+import { readErrorCode } from "@/lib/errors/appError";
 
 interface UpdateProfileProps {
   sessionUser?: User; // ou type complet
@@ -20,6 +22,7 @@ interface UpdateProfileProps {
 
 export default function UpdateProfile({ sessionUser, onClose }: UpdateProfileProps) {
   const { update } = useSession();
+  const tErrors = useTranslations("errors");
   const [isLoading, setIsLoading] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
@@ -86,17 +89,16 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       });
 
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Update failed");
+        setProfileSuccess(tErrors(await readErrorCode(res)));
+        return;
       }
 
       setProfileSuccess("Profile updated successfully");
       await update();
 
       setTimeout(() => setProfileSuccess(null), 3000);
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Update failed";
-      setProfileSuccess(errorMessage);
+    } catch {
+      setProfileSuccess(tErrors("serverError"));
     } finally {
       setIsLoading(false);
     }
@@ -115,17 +117,16 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       });
 
       if (!res.ok) {
-        const error = await res.json();
-        throw new Error(error.error || "Update failed");
+        setPasswordError(tErrors(await readErrorCode(res)));
+        return;
       }
 
       setPasswordSuccess("Password updated successfully");
       resetPassword();
 
       setTimeout(() => setPasswordSuccess(null), 3000);
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Update failed";
-      setPasswordError(errorMessage);
+    } catch {
+      setPasswordError(tErrors("serverError"));
     } finally {
       setIsLoading(false);
     }
