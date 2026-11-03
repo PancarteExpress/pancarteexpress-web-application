@@ -70,7 +70,7 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
             <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
               Cristian Fermin Lopez
             </p>
-            <p className={styles.qcardDesc}>ferminlopez_@hotmail.com</p>
+            <p className={styles.qcardDesc}>{sessionUser?.email}</p>
           </div>
           <span className={styles.qcardLink}>Modifier mon compte →</span>
         </div>
@@ -96,7 +96,7 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
             <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
               Cristian Fermin Lopez
             </p>
-            <p className={styles.qcardDesc}>ferminlopez_@hotmail.com</p>
+            <p className={styles.qcardDesc}>{sessionUser?.email}</p>
           </div>
           <span className={styles.qcardLink}>Modifier mon compte →</span>
         </div>
