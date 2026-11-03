@@ -19,6 +19,7 @@ import LanguageSwitcher from '@/shared/components/languageSwitcher/LanguageSwitc
 import { LocalLink } from '@/shared/components/LocalLink';
 import { AuthNav } from '@/features/auth/components/authNav/AuthNav';
 import { useTranslations } from 'next-intl';
+import { CONTACT, mailtoHref, telHref } from "@/shared/constants/contact";
 import { useAppLocale } from '@/shared/hooks/useAppLocale';
 
 
@@ -37,8 +38,8 @@ export default function Header() {
             <div className={styles.topHeader}>
                 <div className={styles.container}>
                     <div className={styles.contactInfo}>
-                        <Link href="tel:5148252709"><FaPhoneAlt size={15}/> 514-825-2709</Link>
-                        <Link href="mailto:info@pancarteexpress.com"><MdMail size={20} /> info@pancarteexpress.com</Link>
+                        <Link href={telHref(CONTACT.mainPhone)}><FaPhoneAlt size={15}/> {CONTACT.mainPhone}</Link>
+                        <Link href={mailtoHref(CONTACT.infoEmail)}><MdMail size={20} /> {CONTACT.infoEmail}</Link>
                         <LanguageSwitcher />
                     </div>
 

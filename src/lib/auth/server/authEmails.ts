@@ -2,6 +2,7 @@
 export type EmailLocale = "fr" | "en";
 
 import { sendEmail, INTERNAL_EMAIL } from '@/lib/email/sendEmail';
+import { CONTACT } from '@/shared/constants/contact';
 
 const NEXTAUTH_URL = process.env.NEXTAUTH_URL ?? 'https://pancarteexpress.com';
 
@@ -135,12 +136,12 @@ export async function sendAccountCreatedEmails({
       to: email,
       replyTo: INTERNAL_EMAIL,
       subject: t.subject,
-      text: `${t.greeting(name)}\n\n${t.body}\n\n${t.cta} : ${dashboardUrl}\n\nPancarte Express\n514-825-2709 · info@pancarteexpress.com`,
+      text: `${t.greeting(name)}\n\n${t.body}\n\n${t.cta} : ${dashboardUrl}\n\nPancarte Express\n${CONTACT.mainPhone} · ${CONTACT.infoEmail}`,
       html: `
         <p>${t.greeting(safeName)}</p>
         <p>${t.body}</p>
         <p><a href="${dashboardUrl}" style="background:#0E4D9A;color:#fff;padding:12px 20px;border-radius:6px;text-decoration:none;display:inline-block;">${t.cta}</a></p>
-        <p>Pancarte Express<br>514-825-2709 · info@pancarteexpress.com</p>
+        <p>Pancarte Express<br>${CONTACT.mainPhone} · ${CONTACT.infoEmail}</p>
       `,
     }),
     // Notification interne (toujours en français)

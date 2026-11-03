@@ -3,6 +3,7 @@ import type { Prisma, RequestType, ServiceType } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { formatCents } from '@/lib/pricing/money';
 import { sendEmail, INTERNAL_EMAIL } from '@/lib/email/sendEmail';
+import { CONTACT } from '@/shared/constants/contact';
 
 /* ── Données de la commande ───────────────────────────────────── */
 
@@ -113,7 +114,6 @@ const joinSections = (...sections: string[][]): string =>
  * Ne lève jamais d'erreur : la commande est déjà enregistrée, un échec d'envoi est seulement journalisé.
  */
 export async function sendReceipts(orderId: string): Promise<void> {
-    console.info('[receipts] Envoi pour la commande', orderId); // TEMPORAIRE
   let order: Receipt | null;
   try {
     order = await prisma.order.findUnique({ where: { id: orderId }, select: receiptSelect });
@@ -167,7 +167,7 @@ export async function sendReceipts(orderId: string): Promise<void> {
         deliveryLines(order),
         productLines(order),
         serviceLines(order),
-        ['Pancarte Express', '514-825-2709 · info@pancarteexpress.com'],
+        ['Pancarte Express', `${CONTACT.mainPhone} · ${CONTACT.infoEmail}`],
       ),
     });
   } catch (err) {

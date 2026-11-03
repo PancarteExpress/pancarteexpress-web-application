@@ -5,6 +5,7 @@ import Link from "next/link";
 import styles from "./Footer.module.css";
 import Image from "next/image";
 import { useTranslations } from 'next-intl';
+import { CONTACT, mailtoHref, telHref } from "@/shared/constants/contact";
 
 export default function Footer() {
 
@@ -29,23 +30,23 @@ export default function Footer() {
                 
                 <div className={styles.serviceResidentiel}>
                     <h5>{t('contactResidential')}</h5>
-                    <a href="tel:4387223922">514-825-2709</a>
+                    <a href={telHref(CONTACT.mainPhone)}>{CONTACT.mainPhone}</a>
                     <br />
-                    <a href="mailto:info@pancarteexpress.com">info@pancarteexpress.com</a>
+                    <a href={mailtoHref(CONTACT.infoEmail)}>{CONTACT.infoEmail}</a>
                 </div>
 
                 <div className={styles.serviceCommercial}>
                     <h5>{t('contactCommercial')}</h5>
-                    <a href="tel:4387223922">514-833-2709</a>
+                    <a href={telHref(CONTACT.commercialPhone)}>{CONTACT.commercialPhone}</a>
                     <br />
-                    <a href="mailto:structureframd@gmail.com">structureframd@gmail.com</a>
+                    <a href={mailtoHref(CONTACT.commercialEmail)}>{CONTACT.commercialEmail}</a>
                 </div>
 
                 <div className={styles.serviceFacturation}>
                     <h5>{t('contactAccounting')}</h5>
-                    <a href="tel:4387223922">450-543-0769</a>
+                    <a href={telHref(CONTACT.accountingPhone)}>{CONTACT.accountingPhone}</a>
                     <br />
-                    <a href="mailto:stephany@pancarteexpress.com">stephany@pancarteexpress.com</a>
+                    <a href={mailtoHref(CONTACT.accountingEmail)}>{CONTACT.accountingEmail}</a>
                 </div>
             </div>
 

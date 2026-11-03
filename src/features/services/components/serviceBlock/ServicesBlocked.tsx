@@ -1,5 +1,6 @@
 import type { BlockSource } from '@/lib/orders/billing';
 import styles from './ServiceBlock.module.css';
+import { CONTACT, telHref } from '@/shared/constants/contact';
 
 const MESSAGES: Record<BlockSource, string> = {
   self: 'Votre compte présente un défaut de paiement. Réglez vos factures pour pouvoir de nouveau faire des demandes de service.',
@@ -17,8 +18,8 @@ export function ServicesBlocked({ source }: { source: BlockSource }) {
       </h1>
       <p className={styles.blockedText}>{MESSAGES[source]}</p>
       <p className={styles.blockedNote}>Les achats en boutique restent possibles.</p>
-      <a href="tel:+15148252709" className={styles.phone}>
-        📞 514-825-2709
+      <a href={telHref(CONTACT.mainPhone)} className={styles.phone}>
+        📞 {CONTACT.mainPhone}
       </a>
     </section>
   );

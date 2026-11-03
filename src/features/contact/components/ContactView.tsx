@@ -8,6 +8,7 @@ import { type ContactFormData, contactSchema } from '../schemas/contact.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { CONTACT } from '@/shared/constants/contact';
 import { sendContact } from '../emailSender/sendContact';
 
 export default function Contact() {
@@ -51,7 +52,7 @@ export default function Contact() {
               </div>
               <div className={styles.infos}>
                 <label className={styles.contactLabel}>{t('heroLabel1')}</label>
-                <label className={styles.contactValue}>514-825-2709</label>
+                <label className={styles.contactValue}>{CONTACT.mainPhone}</label>
               </div>
             </div>
 
@@ -61,7 +62,7 @@ export default function Contact() {
               </div>
               <div className={styles.infos}>
                 <label className={styles.contactLabel}>{t('heroLabel2')}</label>
-                <label className={styles.contactValue}>438-543-0912</label>
+                <label className={styles.contactValue}>{CONTACT.mobilePhone}</label>
               </div>
             </div>
           </div>
@@ -73,7 +74,7 @@ export default function Contact() {
               </div>
               <div className={styles.infos}>
                 <label className={styles.contactLabel}>{t('heroLabel3')}</label>
-                <label className={styles.contactValue}>info@pancarteexpress.com</label>
+                <label className={styles.contactValue}>{CONTACT.infoEmail}</label>
               </div>
             </div>
 
