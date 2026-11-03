@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { authService } from "@/features/auth/services/auth.service";
+import { authService } from "@/lib/auth/server/auth.service";
 import { passwordSchema } from "@/features/auth/types";
 import { errorResponse } from "@/lib/errors/server/toClientError";
 import { NextResponse } from "next/server";

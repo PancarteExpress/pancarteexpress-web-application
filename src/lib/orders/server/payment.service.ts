@@ -3,7 +3,7 @@ import type Stripe from 'stripe';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe/server';
 import { after } from 'next/server';
-import { sendReceipts } from '@/features/checkout/emailSender/sendReceipts';
+import { sendReceipts } from '@/lib/orders/server/receipts.email';
 
 export async function handlePaymentSucceeded(intent: Stripe.PaymentIntent): Promise<void> {
   const orderId = intent.metadata.orderId;

@@ -9,7 +9,7 @@ import type { TeamOrder, UserOrder } from '@/lib/orders/server/orders.service';
 import ServiceOrders from '../serviceOrders/ServiceOrders';
 import { CreateGroupDialog } from "../createGroupDialog/CreateGroupDialog";
 import UpdateGroup from "../updateGroup/UpdateGroup";
-import { GroupDetails } from "@/lib/groups/server/groups.service";
+import type { GroupDetails } from "@/lib/groups/server/groups.service";
 import { useRouter } from "next/navigation";
 
 interface Props {

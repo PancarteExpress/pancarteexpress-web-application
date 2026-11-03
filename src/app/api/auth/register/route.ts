@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { registerSchema } from "@/features/auth/types";
-import { authService } from "@/features/auth/services/auth.service";
+import { authService } from "@/lib/auth/server/auth.service";
 import { errorResponse } from "@/lib/errors/server/toClientError";
 
 export async function POST(request: NextRequest) {

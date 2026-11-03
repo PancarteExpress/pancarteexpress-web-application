@@ -1,5 +1,5 @@
 import { forgotPasswordSchema } from "@/features/auth/types";
-import { authService } from "@/features/auth/services/auth.service";
+import { authService } from "@/lib/auth/server/auth.service";
 import { errorResponse } from "@/lib/errors/server/toClientError";
 import { after, NextResponse } from "next/server";
 

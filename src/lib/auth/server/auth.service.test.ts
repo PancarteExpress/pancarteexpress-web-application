@@ -14,11 +14,11 @@ const emailMock = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
-vi.mock("@/utils/bcrypt", () => ({
+vi.mock("@/lib/auth/server/password", () => ({
   hashPassword: vi.fn(async () => "new-hash"),
   bcryptCompare: vi.fn(async () => true),
 }));
-vi.mock("@/features/auth/services/email", () => emailMock);
+vi.mock("@/lib/auth/server/authEmails", () => emailMock);
 
 const { authService } = await import("./auth.service");
 const { AppError } = await import("@/lib/errors/appError");
@@ -93,7 +93,7 @@ describe("authService — erreurs métier (AppError)", () => {
   afterEach(() => vi.restoreAllMocks());
 
   it("updatePassword : mot de passe actuel faux → currentPasswordIncorrect", async () => {
-    const { bcryptCompare } = await import("@/utils/bcrypt");
+    const { bcryptCompare } = await import("@/lib/auth/server/password");
     vi.mocked(bcryptCompare).mockResolvedValueOnce(false);
     prismaMock.user.findUnique.mockResolvedValue({ id: "u1", password: "old-hash" });
 

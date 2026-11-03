@@ -2,7 +2,7 @@ import { randomInt } from "node:crypto";
 import { Prisma, type TokenType, type VerificationToken } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/errors/appError";
-import { hashPassword, bcryptCompare } from "@/utils/bcrypt";
+import { hashPassword, bcryptCompare } from "@/lib/auth/server/password";
 import { publicUserSelect } from "@/lib/users/publicUser";
 
 import {
@@ -10,9 +10,9 @@ import {
   sendPasswordResetEmail,
   sendVerificationEmail,
   type EmailLocale,
-} from "@/features/auth/services/email";
+} from "@/lib/auth/server/authEmails";
 
-import type { RegisterInput, UpdateProfileInput, UpdatePasswordInput, ForgotPasswordInput } from "../types";
+import type { RegisterInput, UpdateProfileInput, UpdatePasswordInput, ForgotPasswordInput } from "@/features/auth/types";
 
 
 

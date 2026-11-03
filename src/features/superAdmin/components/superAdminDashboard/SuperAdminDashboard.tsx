@@ -13,7 +13,7 @@ import { IoConstructSharp } from "react-icons/io5";
 import type { AdminGroupRow } from "@/lib/groups/server/groups.service";
 import { GroupsTable } from "../groupsTable/GroupsTable";
 import { normalize } from "@/shared/utils/normalize";
-import { AdminClientServices } from "@/lib/services/services.service";
+import type { AdminClientServices } from "@/lib/services/server/services.service";
 import { ServicesTable } from "../servicesTable/ServicesTable";
 
 interface AdminDashboardProps {

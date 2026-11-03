@@ -29,8 +29,8 @@ async function flushAfter() {
 
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
-vi.mock("@/utils/bcrypt", () => ({ hashPassword: vi.fn(), bcryptCompare: vi.fn() }));
-vi.mock("@/features/auth/services/email", () => emailMock);
+vi.mock("@/lib/auth/server/password", () => ({ hashPassword: vi.fn(), bcryptCompare: vi.fn() }));
+vi.mock("@/lib/auth/server/authEmails", () => emailMock);
 
 const { POST: forgotPassword } = await import("./forgot-password/route");
 const { POST: verifyResetCode } = await import("./verify-reset-code/route");

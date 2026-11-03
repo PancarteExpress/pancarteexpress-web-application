@@ -2,7 +2,7 @@
 // Usage : SUPERADMIN_EMAIL et SUPERADMIN_PASSWORD dans l'environnement, puis `npx prisma db seed`
 // Exécuté par Node directement (types retirés nativement, Node >= 23.6), d'où l'import en .ts
 import { PrismaClient } from "@prisma/client";
-import { hashPassword } from "../src/utils/bcrypt.ts";
+import { hashPassword } from "../src/lib/auth/server/password.ts";
 
 function requireEnv(name: string): string {
   const value = process.env[name]?.trim();

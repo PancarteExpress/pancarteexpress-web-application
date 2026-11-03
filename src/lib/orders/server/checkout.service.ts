@@ -11,7 +11,7 @@ import { CheckoutConflictError, PaymentProviderError, ProductUnavailableError, S
 import { getServiceAccess } from '@/lib/users/server/serviceAccess.service';
 
 import { after } from 'next/server';
-import { sendReceipts } from '@/features/checkout/emailSender/sendReceipts';
+import { sendReceipts } from '@/lib/orders/server/receipts.email';
 
 export interface CheckoutUser {
   id: string;

@@ -28,9 +28,11 @@ npx prisma migrate dev --name <nom>   # nouvelle migration (dev uniquement)
 ## Architecture
 
 - `src/app/[locale]/` — routes par groupes : `(public)`, `(auth)`, `(protected)`, `(superAdmin)` ; `src/app/api/` — route handlers (auth, checkout, cron, webhooks…)
-- `src/features/<feature>/{components,hooks,services,store,types}` (+ `schemas`, `constants`, `utils`, `emailSender` au besoin)
+- `src/features/<feature>/{components,hooks,services,store,types}` (+ `schemas`, `constants`, `utils`, `emailSender` au besoin) ; `services/` = appels API côté client
 - `src/shared/` — composants, hooks, constantes et utilitaires transverses
-- `src/lib/` — logique serveur et métier (auth guards, pricing, orders, groups, users, stripe, email) ; les sous-dossiers `server/` sont serveur uniquement
+- `src/lib/` — logique serveur et métier (auth guards, pricing, orders, groups, users, stripe, email) ; les sous-dossiers `server/` sont serveur uniquement (`import "server-only"`), sauf les Server Actions `*.actions.ts` (`"use server"`) appelables depuis le client
+- Code serveur (Prisma, bcrypt, envoi d'emails) dans `src/lib/<domaine>/server/`, jamais dans `src/features` ; `src/lib` ne doit pas importer depuis `src/features` (restes à traiter : `features/auth/types`, `features/superAdmin/constants/accountType`, voir `docs/audits/structure-2026-11.md`)
+- `src/lib/auth/server/password.ts` : ni `server-only` ni alias `@/` (importé en relatif par `prisma/seed.ts` sous Node brut)
 - `src/middleware.ts` — routage i18n uniquement (préfixe de locale obligatoire) ; **aucune protection d'auth** : elle repose entièrement sur les guards
 - Alias : `@/*` → `src/*`, `@/messages/*` → `messages/*`
 

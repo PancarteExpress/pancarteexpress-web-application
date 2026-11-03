@@ -1,4 +1,4 @@
-import type { AdminClientServices } from "@/lib/services/services.service";
+import type { AdminClientServices } from "@/lib/services/server/services.service";
 import styles from "./ServicesTable.module.css";
 import { SERVICE_STATUS_LABELS, SERVICE_TYPE_LABELS } from "@/lib/constants/labels";
 

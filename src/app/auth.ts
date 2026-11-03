@@ -1,12 +1,12 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
-import { bcryptCompare } from "@/utils/bcrypt";
+import { bcryptCompare } from "@/lib/auth/server/password";
 import Google from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
 import { cookies } from "next/headers";
-import { sendAccountCreatedEmails, type EmailLocale } from "@/features/auth/services/email";
+import { sendAccountCreatedEmails, type EmailLocale } from "@/lib/auth/server/authEmails";
 import { authIntentSchema, signupGroupStatusSchema } from "@/features/auth/types";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
