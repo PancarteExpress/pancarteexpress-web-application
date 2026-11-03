@@ -1,22 +1,11 @@
 'use server';
 
-import nodemailer from 'nodemailer';
+import { sendEmail, INTERNAL_EMAIL } from '@/lib/email/sendEmail';
 import { contactSchema, type ContactFormData } from '../schemas/contact.schema';
 
 export type SendContactResult =
   | { success: true }
   | { success: false; error: string };
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: process.env.SMTP_SECURE === 'true', // false sur 2525, la connexion passe en TLS via STARTTLS
-  requireTLS: true, // refuse d'envoyer le mot de passe si le chiffrement échoue
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
 
 // Retire les retours à la ligne des valeurs injectées dans les en-têtes du courriel
 const enLigne = (value: string) => value.replace(/[\r\n]+/g, ' ').trim();
@@ -30,10 +19,9 @@ export async function sendContact(data: ContactFormData): Promise<SendContactRes
   const { firstName, lastName, phoneNumber, extension, email, company, reason } = parsed.data;
 
   try {
-    // Seul destinataire : l'équipe (pancarteexpress@gmail.com) ; le visiteur n'est qu'en replyTo
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM,
-      to: process.env.CONTACT_TO,
+    // Seul destinataire : l'équipe (INTERNAL_EMAIL) ; le visiteur n'est qu'en replyTo
+    await sendEmail({
+      to: INTERNAL_EMAIL,
       replyTo: enLigne(email),
       subject: `[Demande de contact] ${enLigne(firstName)} ${enLigne(lastName)}`,
       text: [

@@ -1,19 +1,8 @@
 import 'server-only';
-import nodemailer from 'nodemailer';
 import type { Prisma, RequestType, ServiceType } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { formatCents } from '@/lib/pricing/money';
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: process.env.SMTP_SECURE === 'true',
-  requireTLS: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+import { sendEmail, INTERNAL_EMAIL } from '@/lib/email/sendEmail';
 
 /* ── Données de la commande ───────────────────────────────────── */
 
@@ -141,9 +130,8 @@ export async function sendReceipts(orderId: string): Promise<void> {
 
   // Courriel interne : détail complet pour traiter la commande
   try {
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM,
-      to: process.env.CONTACT_TO,
+    await sendEmail({
+      to: INTERNAL_EMAIL,
       replyTo: order.email, // répondre écrit directement au client
       subject: `[Commande ${order.orderNumber}] ${order.firstName} ${order.lastName}`,
       text: joinSections(
@@ -166,10 +154,9 @@ export async function sendReceipts(orderId: string): Promise<void> {
 
   // Confirmation au client : envoyée même si le courriel interne a échoué
   try {
-    await transporter.sendMail({
-      from: process.env.SMTP_FROM,
+    await sendEmail({
       to: order.email,
-      replyTo: process.env.CONTACT_TO, // si le client répond, ça arrive à l'interne
+      replyTo: INTERNAL_EMAIL, // si le client répond, ça arrive à l'interne
       subject: `Confirmation de votre commande n° ${order.orderNumber} | Pancarte Express`,
       text: joinSections(
         [

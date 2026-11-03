@@ -3,9 +3,7 @@ import type { ContactFormData } from '../schemas/contact.schema';
 
 const sendMail = vi.hoisted(() => vi.fn());
 
-vi.mock('nodemailer', () => ({
-  default: { createTransport: () => ({ sendMail }) },
-}));
+vi.mock('@/lib/email/sendEmail', () => ({ sendEmail: sendMail, INTERNAL_EMAIL: 'equipe@pancarte.test' }));
 
 const { sendContact } = await import('./sendContact');
 
@@ -20,8 +18,7 @@ const valide: ContactFormData = {
 describe('sendContact', () => {
   beforeEach(() => {
     sendMail.mockReset();
-    sendMail.mockResolvedValue({});
-    process.env.CONTACT_TO = 'equipe@pancarte.test';
+    sendMail.mockResolvedValue(undefined);
   });
 
   it("n'envoie qu'à l'équipe, le visiteur en replyTo", async () => {
@@ -52,5 +49,12 @@ describe('sendContact', () => {
 
     const { subject } = sendMail.mock.calls[0][0] as { subject: string };
     expect(subject).not.toMatch(/[\r\n]/);
+  });
+
+  it("renvoie une erreur si l'envoi échoue", async () => {
+    sendMail.mockRejectedValue(new Error('SMTP indisponible'));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await expect(sendContact(valide)).resolves.toEqual({ success: false, error: "L'envoi a échoué, réessayez plus tard" });
   });
 });
