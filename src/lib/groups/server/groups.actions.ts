@@ -3,7 +3,7 @@
 import { Prisma } from "@prisma/client";
 import { auth } from "@/app/auth";
 import { prisma } from "@/lib/prisma";
-import { addMembersSchema, createGroupSchema, groupNameSchema, memberIdSchema, billingModeSchema, userSearchQuerySchema } from "../groups.schema";
+import { addMembersSchema, groupNameSchema, memberIdSchema, billingModeSchema, userSearchQuerySchema } from "../groups.schema";
 import { getGroupDetails, type GroupDetails } from "./groups.service";
 
 const userSearchSelect = {
@@ -17,7 +17,6 @@ export type UserSearchResult = Prisma.UserGetPayload<{ select: typeof userSearch
 // Erreurs métier traduites côté client (namespace i18n "groups", clé errors.<GroupErrorKey>)
 export type GroupErrorKey = "nameTaken";
 type GroupFailure = { ok: false; error: string } | { ok: false; errorKey: GroupErrorKey };
-export type CreateGroupResult = { ok: true } | GroupFailure;
 export type ActionResult = { ok: true } | { ok: false; error: string };
 
 class GroupActionError extends Error {}
@@ -46,52 +45,6 @@ export async function searchUsersByEmailAction(query: unknown): Promise<UserSear
     take: 5,
   });
 }
-
-export async function createGroupAction(input: unknown): Promise<CreateGroupResult> {
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!userId) return { ok: false, error: "Non authentifié" };
-  if (session.user.role !== "groupAdmin") return { ok: false, error: "Action non autorisée" };
-
-  const parsed = createGroupSchema.safeParse(input);
-  if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Données invalides" };
-  }
-
-  const { name } = parsed.data;
-  const memberIds = [...new Set(parsed.data.memberIds)].filter((id) => id !== userId);
-
-  try {
-    await prisma.$transaction(async (tx) => {
-      const group = await tx.group.create({ data: { name } });
-
-      // Condition groupId: null dans le WHERE → protège contre double-submit / course
-      const admin = await tx.user.updateMany({
-        where: { id: userId, groupId: null },
-        data: { groupId: group.id, groupStatus: "JOINED", joinedAt: new Date() },
-      });
-      if (admin.count !== 1) throw new GroupActionError("Vous êtes déjà lié à une équipe");
-
-      if (memberIds.length > 0) {
-        const members = await tx.user.updateMany({
-          where: { id: { in: memberIds }, ...addableMemberWhere, role: "user" },
-          data: { groupId: group.id, groupStatus: "JOINED", joinedAt: new Date() },
-        });
-        if (members.count !== memberIds.length) {
-          throw new GroupActionError(MEMBER_UNAVAILABLE);
-        }
-      }
-    });
-    return { ok: true };
-  } catch (e) {
-    if (e instanceof GroupActionError) return { ok: false, error: e.message };
-    if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") {
-      return { ok: false, errorKey: "nameTaken" };
-    }
-    throw e;
-  }
-}
-
 
 export type GroupResult = { ok: true; group: GroupDetails } | { ok: false; error: string };
 export type RenameGroupResult = { ok: true; group: GroupDetails } | GroupFailure;
