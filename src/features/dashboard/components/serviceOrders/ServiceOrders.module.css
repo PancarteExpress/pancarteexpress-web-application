@@ -101,17 +101,6 @@
     cursor: pointer;
 }
 
-.mainContainer .orders .resume .status .billNotAvailable {
-    border: 3px solid #F8C43E;
-    background-color: #FFF0B3;
-}
-
-.mainContainer .orders .resume .status .billPayed {
-    border: 3px solid #00A06F;
-    background-color: #B8DED3;
-    color: #006E48;
-}
-
 .mainContainer .orders .resume .status .canceled {
     border: 3px solid #BD2B26;
     background-color: #FF9E94;
@@ -161,15 +150,3 @@
 .mainContainer .orders .details .services label .selectedServices {
     color: #0E4D9A;
 }
-
-.billAvailable {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 6px;
-  background: #0E4D9A;
-  color: #fff;
-  cursor: pointer;
-}
-.billAvailable:disabled { opacity: 0.6; cursor: wait; }
-
-.payError { margin: 4px 0 0; font-size: 13px; color: #DC2626; }
