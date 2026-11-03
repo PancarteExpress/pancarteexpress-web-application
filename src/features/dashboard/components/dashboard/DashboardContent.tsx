@@ -2,13 +2,13 @@
 
 import styles from "./DashboardContent.module.css"
 import { useState } from "react";
-import UpdateProfile from "../updateProfile/updateProfile";
+import UpdateProfile from "../updateProfile/UpdateProfile";
 
 import { useSession } from "next-auth/react";
 import type { TeamOrder, UserOrder } from '@/lib/orders/server/orders.service';
 import ServiceOrders from '../serviceOrders/ServiceOrders';
 import { CreateGroupDialog } from "../createGroupDialog/CreateGroupDialog";
-import UpdateGroup from "../updateGroup/updateGroup";
+import UpdateGroup from "../updateGroup/UpdateGroup";
 import { GroupDetails } from "@/lib/groups/server/groups.service";
 import { useRouter } from "next/navigation";
 

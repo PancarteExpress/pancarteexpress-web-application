@@ -6,7 +6,7 @@ import {
 } from '@/features/services/constants/installation';
 import { createEmptyPlacement, type PlacementFormValues } from '@/features/services/schemas/placement.schema';
 import { RadioGroup, TextField, toOptions, type ChoiceOption } from '@/features/services/components/fields';
-import styles from './placementPicker.module.css';
+import styles from './PlacementPicker.module.css';
 
 const LOCATION_OPTIONS = toOptions(LOCATIONS, LOCATION_LABELS);
 // Mur : échelles seulement

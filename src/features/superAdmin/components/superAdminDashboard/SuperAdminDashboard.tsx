@@ -2,7 +2,7 @@
 
 import type { AdminUserRow } from "@/lib/users/server/user.service";
 import { UsersTable } from "../usersTable/UsersTable";
-import styles from "./superAdminDashboard.module.css";
+import styles from "./SuperAdminDashboard.module.css";
 import { useMemo, useState } from "react";
 
 import { FaUser } from "react-icons/fa";

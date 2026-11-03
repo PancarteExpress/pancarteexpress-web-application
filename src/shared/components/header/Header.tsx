@@ -1,7 +1,7 @@
 "use client";
 
 // Utils
-import styles from './header.module.css';
+import styles from './Header.module.css';
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from 'react';
@@ -15,7 +15,7 @@ import { IoMenuOutline } from "react-icons/io5";
 import { IoCartOutline } from "react-icons/io5";
 import { FaPaperPlane } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
-import LanguageSwitcher from '../languageSwitcher/languageSwitcher';
+import LanguageSwitcher from '../languageSwitcher/LanguageSwitcher';
 import { LocalLink } from '../LocalLink';
 import { AuthNav } from '@/features/auth/components/authNav/AuthNav';
 import { useLocale, useTranslations } from 'next-intl';

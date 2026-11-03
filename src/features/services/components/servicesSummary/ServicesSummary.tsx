@@ -7,7 +7,7 @@ import type { Service } from '@/features/services/types/services';
 import { formatAddress } from '@/features/services/utils/formatAddress';
 import { ADDRESS_LABELS } from '@/features/services/constants/installation';
 
-import { InstallationSummary } from './installation/installationSummary';
+import { InstallationSummary } from './installation/InstallationSummary';
 import { RemovalSummary } from './removal/RemovalSummary';
 
 import styles from './servicesSummary.module.css';

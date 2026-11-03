@@ -1,5 +1,5 @@
-import Header from '@/shared/components/header/header';
-import Footer from '@/shared/components/footer/footer';
+import Header from '@/shared/components/header/Header';
+import Footer from '@/shared/components/footer/Footer';
 
 export default async function SiteLayout({ children, params }: {
   children: React.ReactNode;

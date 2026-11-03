@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 import { requireRolePage } from "@/lib/auth/guard";
-import Footer from "@/shared/components/footer/footer";
+import Footer from "@/shared/components/footer/Footer";
 
 interface ProtectedLayoutProps {
   children: ReactNode;

@@ -1,5 +1,5 @@
 import type { RemovalDetails } from '@/features/services/types/removal';
-import { describePlacement } from '../installation/installationSummary';
+import { describePlacement } from '../installation/InstallationSummary';
 import styles from '../servicesSummary.module.css';
 
 export function RemovalSummary({ details }: { details: RemovalDetails }) {
