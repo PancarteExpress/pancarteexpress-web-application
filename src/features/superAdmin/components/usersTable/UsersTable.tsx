@@ -4,7 +4,6 @@ import { ServiceBlockButton } from "./ServiceBlockButton";
 import { isBilledToGroupAdmin } from "@/lib/orders/billing";
 import styles from "./UsersTable.module.css";
 
-import { IoMdCloseCircle } from "react-icons/io";
 import { DeleteUserButton, type GroupMemberOption } from "./DeleteUserButton";
 import { AccountTypeSelect } from "./AccountTypeSelect";
 

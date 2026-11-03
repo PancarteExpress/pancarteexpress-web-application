@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from "react";
 import type { AdminUserRow } from "@/lib/users/server/user.service";
-import { GROUP_STATUS_LABELS, ROLE_LABELS } from "../../constants/labels";
+import { ROLE_LABELS } from "../../constants/labels";
 import styles from "./GroupsTable.module.css";
 import type { AdminGroupRow } from "@/lib/groups/server/groups.service";
 import { normalize } from "@/shared/utils/normalize";

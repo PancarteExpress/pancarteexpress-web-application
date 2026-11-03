@@ -1,4 +1,4 @@
-// src/features/auth/components/RegisterPackages.tsx
+// src/features/auth/components/registerPackages/RegisterPackages.tsx
 'use client';
 
 import { useRouter } from 'next/navigation';
@@ -13,7 +13,7 @@ interface RegisterPackagesProps {
   setStep: (step: "packages" | "register") => void;
 }
 
-export default function RegisterPackages({ locale, packageChoice, setPackageChoice, setStep }: RegisterPackagesProps) {
+export default function RegisterPackages({ locale, setPackageChoice, setStep }: RegisterPackagesProps) {
   const t = useTranslations('register');
   const router = useRouter();
   

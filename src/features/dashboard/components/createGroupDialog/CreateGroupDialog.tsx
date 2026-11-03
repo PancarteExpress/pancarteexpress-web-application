@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { MdGroups2 } from "react-icons/md";
 import { groupNameSchema, type GroupNameInput } from "@/lib/groups/groups.schema";
-import { renameGroupAction, type UserSearchResult } from "@/lib/groups/server/groups.actions";
+import { renameGroupAction } from "@/lib/groups/server/groups.actions";
 import styles from "./CreateGroupDialog.module.css";
 
 interface Props {

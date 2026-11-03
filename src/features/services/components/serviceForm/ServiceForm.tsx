@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
-import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
 import AddressManager from '@/features/services/components/addressManager/AddressManager';
 import { Notice, RadioGroup, type ChoiceOption } from '@/features/services/components/fields';
 
@@ -33,7 +32,6 @@ export default function ServiceForm() {
   const clearAddresses = useAddressStore((s) => s.clearAddresses);
   const removeService = useAddressStore((s) => s.removeServiceFromAddress);
 
-  const [searchAddress, setSearchAddress] = useState('');
   const [requestType, setRequestType] = useState<RequestType | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);

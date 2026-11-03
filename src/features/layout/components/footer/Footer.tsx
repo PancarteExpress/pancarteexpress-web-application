@@ -4,7 +4,7 @@
 import Link from "next/link";
 import styles from "./Footer.module.css";
 import Image from "next/image";
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 export default function Footer() {
 

@@ -34,7 +34,3 @@ export function useCart() {
 
   return { items, hasHydrated, ...actions, ...summary };
 }
-
-/** Pour le header : ne re-render que si le nombre change */
-export const useCartItemCount = (): number =>
-  useCartStore((s) => s.items.reduce((n, i) => n + (i.kind === 'product' ? i.quantity : 1), 0));

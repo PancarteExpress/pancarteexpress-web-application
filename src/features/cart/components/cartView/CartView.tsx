@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useCart } from '../../hooks/useCart';
 import type {
   ProductCartItem as ProductItem,
@@ -13,7 +13,6 @@ import CartSummary from '../cartSummary/CartSummary';
 import styles from './CartView.module.css';
 import { useAppLocale } from '@/shared/hooks/useAppLocale';
 
-import { getTranslations } from 'next-intl/server';
 
 export default function CartView() {
   const t = useTranslations('cart');

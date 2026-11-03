@@ -5,8 +5,7 @@ import styles from './RegisterView.module.css';
 import RegisterCredentials from '../registerCredentials/RegisterCredentials';
 import RegisterPackages from '../registerPackages/RegisterPackages';
 import { useTranslations } from 'next-intl';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 interface RegisterViewProps {
   locale: string;

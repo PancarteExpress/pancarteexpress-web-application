@@ -18,7 +18,7 @@ import { IoClose } from "react-icons/io5";
 import LanguageSwitcher from '@/shared/components/languageSwitcher/LanguageSwitcher';
 import { LocalLink } from '@/shared/components/LocalLink';
 import { AuthNav } from '@/features/auth/components/authNav/AuthNav';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useAppLocale } from '@/shared/hooks/useAppLocale';
 
 

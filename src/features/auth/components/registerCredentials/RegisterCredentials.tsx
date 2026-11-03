@@ -1,12 +1,9 @@
-// src/features/auth/components/RegisterCredentials.tsx
+// src/features/auth/components/registerCredentials/RegisterCredentials.tsx
 'use client';
 
 import styles from './RegisterCredentials.module.css';
 import Link from "next/link";
-import { GoogleLoginButton } from "../googleLoginButton/GoogleLoginButton";
 import { RegisterForm } from "../registerForm/RegisterForm";
-import { FaHouseChimney } from 'react-icons/fa6';
-import { useEffect } from 'react';
 import { MdGroups2 } from 'react-icons/md';
 import { IoPersonAdd } from 'react-icons/io5';
 import { useTranslations } from 'next-intl';

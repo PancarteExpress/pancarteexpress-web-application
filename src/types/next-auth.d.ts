@@ -1,5 +1,5 @@
 import type { DefaultSession } from 'next-auth';
-import type { Order, Group, Session as PrismaSession } from '@prisma/client';
+import type { Session as PrismaSession } from '@prisma/client';
 import 'next-auth/jwt';
 import type { UserRole } from "@prisma/client";
 

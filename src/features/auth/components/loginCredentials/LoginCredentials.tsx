@@ -1,4 +1,4 @@
-// src/features/auth/components/RegisterCredentials.tsx
+// src/features/auth/components/loginCredentials/LoginCredentials.tsx
 'use client';
 
 import styles from './LoginCredentials.module.css';

@@ -12,7 +12,7 @@ interface Props {
   onRemove: () => void;
 }
 
-export default function ServiceRequestCartItem({ item, locale, onRemove }: Props) {
+export default function ServiceRequestCartItem({ item, onRemove }: Props) {
   const t = useTranslations('cart');
   const [confirming, setConfirming] = useState(false);
 

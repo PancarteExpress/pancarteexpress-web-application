@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { useAuth } from "../../hooks/useAuth";
-import { useRouter } from "next/navigation";
 import styles from "./AuthNav.module.css"
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 
 interface LoginFormProps {
   locale: string;

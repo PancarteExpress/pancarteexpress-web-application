@@ -7,7 +7,7 @@ import { MdOutlinePhoneAndroid, MdMail, MdLocationPin } from 'react-icons/md';
 import { type ContactFormData, contactSchema } from '../schemas/contact.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { sendContact } from '../emailSender/sendContact';
 
 export default function Contact() {

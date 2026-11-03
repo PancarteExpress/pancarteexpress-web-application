@@ -5,7 +5,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema, type LoginInput } from "@/lib/auth/auth.schema";
 import { useAuth } from "../../hooks/useAuth";
-import { useRouter } from "next/navigation";
 
 import Link from "next/link";
 import { useAuthStore } from '../../store/authStore';
@@ -19,7 +18,6 @@ interface LoginFormProps {
 export function LoginForm({ locale }: LoginFormProps) {
   const t = useTranslations('login');
 
-  const router = useRouter();
   const { login } = useAuth();
 
   const error = useAuthStore((state) => state.error);

@@ -1,5 +1,4 @@
 import { Service } from "./services";
-export type ServiceTypeChoice = 'installation' | 'removal' | 'correction' | null;
 
 // Type "address"
 export interface StreetAddress {
@@ -31,12 +30,4 @@ export function createStreetAddress(data: Omit<StreetAddress, 'type'>): StreetAd
 
 export function createTerrainAddress(data: Omit<TerrainAddress, 'type'>): TerrainAddress {
   return { type: 'terrain', ...data };
-}
-
-export function createAddress(baseAddr: StreetAddress | TerrainAddress): Address {
-  return {
-    ...baseAddr,
-    id: crypto.randomUUID(),
-    services: [],
-  };
 }
