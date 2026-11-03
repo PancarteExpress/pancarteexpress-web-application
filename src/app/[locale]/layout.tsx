@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation';
 import { hasLocale } from 'next-intl';
 import { LOCALES } from '@/shared/constants/locales';
 
-import Header from '@/shared/components/header/Header';
+import Header from '@/features/layout/components/header/Header';
 
 export default async function LocaleLayout({
   children,

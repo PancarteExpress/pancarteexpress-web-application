@@ -1,4 +1,4 @@
-import Footer from '@/shared/components/footer/Footer';
+import Footer from '@/features/layout/components/footer/Footer';
 import styles from './layout.module.css';
 
 export default function AuthLayout({

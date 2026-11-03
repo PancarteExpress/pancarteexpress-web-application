@@ -1,5 +1,5 @@
 import HomeView from '@/features/home/components/HomeView';
-import Footer from '@/shared/components/footer/Footer';
+import Footer from '@/features/layout/components/footer/Footer';
 
 interface Props {
   params: Promise<{ locale: string }>;

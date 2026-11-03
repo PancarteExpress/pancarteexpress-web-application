@@ -1,5 +1,5 @@
 import { SessionProvider } from 'next-auth/react';
-import StorageOwnerSync from '@/shared/components/storageOwnerSync/StorageOwnerSync';
+import StorageOwnerSync from '@/features/layout/components/storageOwnerSync/StorageOwnerSync';
 import './globals.css';
 import type { Metadata } from 'next';
 

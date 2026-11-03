@@ -21,9 +21,9 @@ import {
 } from '../../services/checkoutApi';
 
 import styles from './CheckoutView.module.css';
-import { useCardPayment } from '@/shared/hooks/useCardPayment';
-import { CardFields } from '@/shared/components/cardFields/CardFields';
-import { stripePromise } from '@/shared/lib/stripeClient';
+import { useCardPayment } from '../../hooks/useCardPayment';
+import { CardFields } from '../cardFields/CardFields';
+import { stripePromise } from '../../services/stripeClient';
 
 const ERROR_MESSAGES: Record<CheckoutErrorCode, string> = {
   validationFailed: 'Certaines informations sont invalides. Vérifiez le formulaire.',

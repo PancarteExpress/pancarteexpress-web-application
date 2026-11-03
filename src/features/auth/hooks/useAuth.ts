@@ -2,7 +2,7 @@ import { useSession, signIn as nextAuthSignIn, signOut as nextAuthSignOut } from
 import { useAuthStore } from "../store/authStore";
 import { useCallback, useEffect } from "react";
 import type { LoginInput, RegisterInput } from "@/lib/auth/auth.schema";
-import type { UserRole } from "@/shared/types/user";
+import type { UserRole } from "@prisma/client";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { readErrorCode } from "@/lib/errors/appError";
