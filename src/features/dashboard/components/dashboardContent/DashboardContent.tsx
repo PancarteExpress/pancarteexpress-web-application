@@ -11,6 +11,7 @@ import { CreateGroupDialog } from "../createGroupDialog/CreateGroupDialog";
 import UpdateGroup from "../updateGroup/UpdateGroup";
 import type { GroupDetails } from "@/lib/groups/server/groups.service";
 import { useRouter } from "next/navigation";
+import { formatPersonName, getPersonInitials } from "@/shared/utils/personName";
 
 interface Props {
   orders: UserOrder[];
@@ -23,6 +24,8 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
   const { data: session, update } = useSession();
   
   const sessionUser = session?.user ;
+  const fullName = formatPersonName(sessionUser?.firstName, sessionUser?.lastName);
+  const initials = getPersonInitials(sessionUser?.firstName, sessionUser?.lastName);
   const needsGroup = sessionUser?.role === "groupAdmin" && !sessionUser.groupName;
   const memberCount = group?.users.filter((u) => u.role === "user").length ?? 0;
 
@@ -48,7 +51,7 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
       
       <div className={styles.welcome}>
         <div className={styles.welcomeAvatar}>
-          CFL
+          {initials}
         </div>
         <div>
           <p className={styles.welcomeTitle}>
@@ -68,7 +71,7 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
           <div>
             <p className={styles.qcardTitle}>Mon profil</p>
             <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
-              Cristian Fermin Lopez
+              {fullName}
             </p>
             <p className={styles.qcardDesc}>{sessionUser?.email}</p>
           </div>
@@ -94,7 +97,7 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
           <div>
             <p className={styles.qcardTitle}>Mon profil</p>
             <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
-              Cristian Fermin Lopez
+              {fullName}
             </p>
             <p className={styles.qcardDesc}>{sessionUser?.email}</p>
           </div>

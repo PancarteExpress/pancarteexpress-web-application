@@ -31,21 +31,21 @@ export default function Footer() {
                     <h5>{t('contactResidential')}</h5>
                     <a href="tel:4387223922">514-825-2709</a>
                     <br />
-                    <a href="mailto:ferminlopez_@hotmail.com">info@pancarteexpress.com</a>
+                    <a href="mailto:info@pancarteexpress.com">info@pancarteexpress.com</a>
                 </div>
 
                 <div className={styles.serviceCommercial}>
                     <h5>{t('contactCommercial')}</h5>
                     <a href="tel:4387223922">514-833-2709</a>
                     <br />
-                    <a href="mailto:ferminlopez_@hotmail.com">structureframd@gmail.com</a>
+                    <a href="mailto:structureframd@gmail.com">structureframd@gmail.com</a>
                 </div>
 
                 <div className={styles.serviceFacturation}>
                     <h5>{t('contactAccounting')}</h5>
                     <a href="tel:4387223922">450-543-0769</a>
                     <br />
-                    <a href="mailto:ferminlopez_@hotmail.com">stephany@pancarteexpress.com</a>
+                    <a href="mailto:stephany@pancarteexpress.com">stephany@pancarteexpress.com</a>
                 </div>
             </div>
 
