@@ -12,7 +12,7 @@ import AddressAutocomplete from '@/shared/components/addressAutocomplete/Address
 import type { ParsedAddress } from '@/shared/types/address';
 import { useCart } from '@/features/cart/hooks/useCart';
 import { formatCents } from '@/lib/pricing/money';
-import { checkoutSchema, type CheckoutInput } from '../../types';
+import { checkoutSchema, type CheckoutInput } from '../../schemas/checkout.schema';
 import {
   buildCheckoutPayload,
   submitCheckout,

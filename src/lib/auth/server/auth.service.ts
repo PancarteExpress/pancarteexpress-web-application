@@ -12,7 +12,7 @@ import {
   type EmailLocale,
 } from "@/lib/auth/server/authEmails";
 
-import type { RegisterInput, UpdateProfileInput, UpdatePasswordInput, ForgotPasswordInput } from "@/features/auth/types";
+import type { RegisterInput, UpdateProfileInput, UpdatePasswordInput, ForgotPasswordInput } from "@/lib/auth/auth.schema";
 
 
 

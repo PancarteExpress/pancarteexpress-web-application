@@ -4,8 +4,8 @@ import {
   checkoutResponseSchema,
   type checkoutPayloadSchema,
   type CheckoutResponse,
-} from '@/lib/validations/checkout';
-import type { CheckoutInput } from '../types';
+} from '@/lib/orders/checkout.schema';
+import type { CheckoutInput } from '../schemas/checkout.schema';
 
 /** Ce que le client envoie (avant les transformations Zod du serveur) */
 type CheckoutPayload = z.input<typeof checkoutPayloadSchema>;

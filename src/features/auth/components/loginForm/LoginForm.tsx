@@ -3,7 +3,7 @@
 import styles from './LoginForm.module.css';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { loginSchema, type LoginInput } from "../../types";
+import { loginSchema, type LoginInput } from "@/lib/auth/auth.schema";
 import { useAuth } from "../../hooks/useAuth";
 import { useRouter } from "next/navigation";
 

@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { resetPasswordSchema, type ResetPasswordInput } from "@/features/auth/types";
+import { resetPasswordSchema, type ResetPasswordInput } from "@/lib/auth/auth.schema";
 import { useState } from "react";
 import Link from "next/link";
 import { z } from "zod";

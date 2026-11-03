@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ContactFormData } from '../types';
+import type { ContactFormData } from '../schemas/contact.schema';
 
 const sendMail = vi.hoisted(() => vi.fn());
 

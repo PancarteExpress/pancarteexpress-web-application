@@ -5,7 +5,7 @@ import {
   registerSchema,
   storeGroupStatusSchema,
   updatePasswordSchema,
-} from "./index";
+} from "./auth.schema";
 
 describe("passwordSchema", () => {
   it("exige 8 à 72 caractères", () => {

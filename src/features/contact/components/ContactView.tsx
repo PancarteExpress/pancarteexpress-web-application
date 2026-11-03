@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import styles from './ContactView.module.css';
 import { FaPhoneAlt } from 'react-icons/fa';
 import { MdOutlinePhoneAndroid, MdMail, MdLocationPin } from 'react-icons/md';
-import { type ContactFormData, contactSchema } from '../types';
+import { type ContactFormData, contactSchema } from '../schemas/contact.schema';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useLocale, useTranslations } from 'next-intl';

@@ -1,5 +1,5 @@
 import { auth } from "@/app/auth";
-import { updatePasswordSchema } from "@/features/auth/types";
+import { updatePasswordSchema } from "@/lib/auth/auth.schema";
 import { authService } from "@/lib/auth/server/auth.service";
 import { AppError } from "@/lib/errors/appError";
 import { errorResponse } from "@/lib/errors/server/toClientError";

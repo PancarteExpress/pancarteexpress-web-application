@@ -1,7 +1,7 @@
 'use server';
 
 import nodemailer from 'nodemailer';
-import { contactSchema, type ContactFormData } from '../types';
+import { contactSchema, type ContactFormData } from '../schemas/contact.schema';
 
 export type SendContactResult =
   | { success: true }

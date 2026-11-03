@@ -6,7 +6,7 @@ import type {
   NewServiceRequestItem,
   ProductCartItem,
 } from '../types/cart';
-import { MAX_QUANTITY } from '@/lib/constants/cart';
+import { MAX_QUANTITY } from '@/lib/orders/constants';
 
 const STORAGE_KEY = 'pancarte-cart';
 const STORAGE_VERSION = 4;

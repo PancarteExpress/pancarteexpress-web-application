@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { registerSchema } from "@/features/auth/types";
+import { registerSchema } from "@/lib/auth/auth.schema";
 import { authService } from "@/lib/auth/server/auth.service";
 import { errorResponse } from "@/lib/errors/server/toClientError";
 

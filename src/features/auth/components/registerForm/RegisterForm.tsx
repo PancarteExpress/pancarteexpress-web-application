@@ -3,7 +3,7 @@
 import styles from './RegisterForm.module.css';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerSchema, type RegisterInput } from "../../types";
+import { registerSchema, type RegisterInput } from "@/lib/auth/auth.schema";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";

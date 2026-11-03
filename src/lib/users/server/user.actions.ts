@@ -7,7 +7,7 @@ import {
   getAccountType,
   isAccountType,
   type AccountType,
-} from "@/features/superAdmin/constants/accountType";
+} from "@/lib/users/accountType";
 
 export type ActionResult = { ok: true } | { ok: false; error: string };
 

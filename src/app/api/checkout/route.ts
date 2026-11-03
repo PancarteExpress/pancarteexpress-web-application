@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/app/auth';
-import { checkoutPayloadSchema } from '@/lib/validations/checkout';
+import { checkoutPayloadSchema } from '@/lib/orders/checkout.schema';
 import { createOrder, type CheckoutUser } from '@/lib/orders/server/checkout.service';
 import {
   CheckoutConflictError,

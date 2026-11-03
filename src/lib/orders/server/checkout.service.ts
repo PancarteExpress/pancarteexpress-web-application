@@ -6,7 +6,7 @@ import { Prisma, type OrderStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe/server';
 import { calculateTotals } from '@/lib/pricing/calculateTotals';
-import type { CheckoutItemPayload, CheckoutPayload, CheckoutResponse } from '@/lib/validations/checkout';
+import type { CheckoutItemPayload, CheckoutPayload, CheckoutResponse } from '@/lib/orders/checkout.schema';
 import { CheckoutConflictError, PaymentProviderError, ProductUnavailableError, ServiceBlockedError } from './errors';
 import { getServiceAccess } from '@/lib/users/server/serviceAccess.service';
 

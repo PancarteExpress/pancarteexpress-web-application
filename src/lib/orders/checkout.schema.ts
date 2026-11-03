@@ -1,6 +1,5 @@
 import { z } from 'zod';
-import { MAX_QUANTITY } from '@/lib/constants/cart';
-import { REQUEST_TYPES } from '@/lib/constants/services';
+import { MAX_QUANTITY, REQUEST_TYPES } from '@/lib/orders/constants';
 import { SERVICE_TYPES } from '@/lib/pricing/constants';
 
 // Limites anti-abus : un payload légitime n'en approche jamais

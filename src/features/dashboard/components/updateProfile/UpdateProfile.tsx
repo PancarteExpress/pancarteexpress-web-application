@@ -9,7 +9,7 @@ import {
   updatePasswordSchema,
   type UpdateProfileInput,
   type UpdatePasswordInput,
-} from "@/features/auth/types";
+} from "@/lib/auth/auth.schema";
 import { useSession } from "next-auth/react";
 import { User } from "next-auth";
 import { useTranslations } from "next-intl";

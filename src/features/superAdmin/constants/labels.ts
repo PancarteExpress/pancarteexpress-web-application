@@ -1,5 +1,5 @@
-import type { GroupStatus, UserRole } from "@prisma/client";
-import type { CurrentAccountType } from "./accountType";
+import type { GroupStatus, ServiceStatus, ServiceType, UserRole } from "@prisma/client";
+import type { CurrentAccountType } from "@/lib/users/accountType";
 
 export const ROLE_LABELS: Record<UserRole, string> = {
   user: "Courtier",
@@ -18,4 +18,17 @@ export const ACCOUNT_TYPE_LABELS: Record<CurrentAccountType, string> = {
   pending: "En attente",
   groupAdmin: "Admin de groupe",
   member: "Membre",
+};
+
+export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
+  installation: "Installation",
+  removal: "Retrait",
+  correction: "Correction",
+};
+
+export const SERVICE_STATUS_LABELS: Record<ServiceStatus, string> = {
+  TO_SCHEDULE: "À planifier",
+  SCHEDULED: "Planifié",
+  COMPLETED: "Complété",
+  CANCELLED: "Annulé",
 };

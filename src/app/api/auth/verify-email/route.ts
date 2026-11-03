@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authService } from "@/lib/auth/server/auth.service";
-import { verifyEmailSchema } from "@/features/auth/types";
+import { verifyEmailSchema } from "@/lib/auth/auth.schema";
 import { errorResponse } from "@/lib/errors/server/toClientError";
 
 export async function POST(request: NextRequest) {

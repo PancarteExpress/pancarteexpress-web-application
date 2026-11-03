@@ -7,7 +7,7 @@ import { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
 import { cookies } from "next/headers";
 import { sendAccountCreatedEmails, type EmailLocale } from "@/lib/auth/server/authEmails";
-import { authIntentSchema, signupGroupStatusSchema } from "@/features/auth/types";
+import { authIntentSchema, signupGroupStatusSchema } from "@/lib/auth/auth.schema";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [

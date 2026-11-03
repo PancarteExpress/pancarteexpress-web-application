@@ -1,6 +1,6 @@
 import type { AdminClientServices } from "@/lib/services/server/services.service";
 import styles from "./ServicesTable.module.css";
-import { SERVICE_STATUS_LABELS, SERVICE_TYPE_LABELS } from "@/lib/constants/labels";
+import { SERVICE_STATUS_LABELS, SERVICE_TYPE_LABELS } from "@/features/superAdmin/constants/labels";
 
 const dateFormatter = new Intl.DateTimeFormat("fr-CA", {
   dateStyle: "medium",

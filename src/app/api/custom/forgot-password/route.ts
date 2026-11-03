@@ -1,4 +1,4 @@
-import { forgotPasswordSchema } from "@/features/auth/types";
+import { forgotPasswordSchema } from "@/lib/auth/auth.schema";
 import { authService } from "@/lib/auth/server/auth.service";
 import { errorResponse } from "@/lib/errors/server/toClientError";
 import { after, NextResponse } from "next/server";

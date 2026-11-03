@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type KeyboardEvent } from 'react';
 import { useTranslations } from 'next-intl';
-import { MAX_QUANTITY } from '@/lib/constants/cart';
+import { MAX_QUANTITY } from '@/lib/orders/constants';
 import styles from './QuantityStepper.module.css';
 
 interface Props {

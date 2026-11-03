@@ -1,4 +1,4 @@
-import { REQUEST_TYPES } from "@/lib/constants/services";
+import { REQUEST_TYPES } from "@/lib/orders/constants";
 import type { InstallationDetails } from './installation';
 import type { RemovalDetails } from './removal';
 

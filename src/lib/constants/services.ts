@@ -1,1 +1,0 @@
-export const REQUEST_TYPES = ['residential', 'commercial'] as const;

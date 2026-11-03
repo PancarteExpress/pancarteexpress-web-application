@@ -1,7 +1,7 @@
 // src/app/api/auth/store-group-status/route.ts
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { storeGroupStatusSchema } from "@/features/auth/types";
+import { storeGroupStatusSchema } from "@/lib/auth/auth.schema";
 
 export async function POST(req: Request) {
   const body: unknown = await req.json().catch(() => null);

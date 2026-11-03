@@ -8,7 +8,7 @@ import {
   ACCOUNT_TYPES,
   getAccountType,
   isAccountType,
-} from "@/features/superAdmin/constants/accountType";
+} from "@/lib/users/accountType";
 import { ACCOUNT_TYPE_LABELS } from "@/features/superAdmin/constants/labels";
 import { updateAccountTypeAction } from "@/lib/users/server/user.actions";
 

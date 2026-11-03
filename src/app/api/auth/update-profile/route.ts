@@ -1,5 +1,5 @@
 import { auth } from "@/app/auth";
-import { updateProfileSchema } from "@/features/auth/types";
+import { updateProfileSchema } from "@/lib/auth/auth.schema";
 import { authService } from "@/lib/auth/server/auth.service";
 import { AppError } from "@/lib/errors/appError";
 import { errorResponse } from "@/lib/errors/server/toClientError";

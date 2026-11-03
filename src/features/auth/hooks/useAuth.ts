@@ -1,7 +1,7 @@
 import { useSession, signIn as nextAuthSignIn, signOut as nextAuthSignOut } from "next-auth/react";
 import { useAuthStore } from "../store/authStore";
 import { useCallback, useEffect } from "react";
-import type { LoginInput, RegisterInput } from "../types";
+import type { LoginInput, RegisterInput } from "@/lib/auth/auth.schema";
 import type { UserRole } from "@/shared/types/user";
 import { useParams } from "next/navigation";
 import { useTranslations } from "next-intl";
