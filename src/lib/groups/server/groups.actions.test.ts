@@ -3,7 +3,7 @@ import { Prisma } from "@prisma/client";
 
 const prismaMock = vi.hoisted(() => ({
   user: { findMany: vi.fn(), findUnique: vi.fn(), updateMany: vi.fn() },
-  group: { update: vi.fn() },
+  group: { update: vi.fn(), findUnique: vi.fn(), delete: vi.fn() },
   $transaction: vi.fn(),
 }));
 const authMock = vi.hoisted(() => vi.fn());
@@ -13,7 +13,7 @@ vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("@/app/auth", () => ({ auth: authMock }));
 vi.mock("./groups.service", () => ({ getGroupDetails: vi.fn(async () => ({ id: "g1" })) }));
 
-const { searchUsersByEmailAction, addGroupMembersAction, renameGroupAction } = await import("./groups.actions");
+const { searchUsersByEmailAction, addGroupMembersAction, renameGroupAction, deleteGroupAction } = await import("./groups.actions");
 
 describe("searchUsersByEmailAction", () => {
   beforeEach(() => {
@@ -101,5 +101,58 @@ describe("renameGroupAction", () => {
     );
 
     await expect(renameGroupAction({ name: "Équipe A" })).rejects.toBeInstanceOf(Prisma.PrismaClientKnownRequestError);
+  });
+});
+
+describe("deleteGroupAction", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    authMock.mockResolvedValue({ user: { id: "sa", role: "superAdmin" } });
+    prismaMock.$transaction.mockImplementation(async (fn: (tx: typeof prismaMock) => Promise<unknown>) => fn(prismaMock));
+    prismaMock.group.findUnique.mockResolvedValue({ id: "g1" });
+  });
+
+  it.each([null, { user: { id: "u1", role: "groupAdmin" } }, { user: { id: "u1", role: "user" } }])(
+    "refuse tout autre rôle que superAdmin sans toucher la base (%o)",
+    async (session) => {
+      authMock.mockResolvedValue(session);
+
+      await expect(deleteGroupAction("g1")).resolves.toEqual({ ok: false, error: "Non autorisé." });
+      expect(prismaMock.$transaction).not.toHaveBeenCalled();
+    },
+  );
+
+  it("passe les membres en forfait individuel puis supprime l'équipe", async () => {
+    await expect(deleteGroupAction("g1")).resolves.toEqual({ ok: true });
+
+    expect(prismaMock.user.updateMany).toHaveBeenCalledWith({
+      where: { groupId: "g1" },
+      data: { role: "user", groupStatus: "SOLO", groupId: null, joinedAt: null },
+    });
+    expect(prismaMock.group.delete).toHaveBeenCalledWith({ where: { id: "g1" } });
+  });
+
+  it("renvoie une erreur métier si l'équipe n'existe pas", async () => {
+    prismaMock.group.findUnique.mockResolvedValue(null);
+
+    await expect(deleteGroupAction("g1")).resolves.toEqual({ ok: false, error: "Équipe introuvable." });
+    expect(prismaMock.group.delete).not.toHaveBeenCalled();
+  });
+
+  it("traduit une contrainte de clé étrangère (P2003)", async () => {
+    prismaMock.group.delete.mockRejectedValue(
+      new Prisma.PrismaClientKnownRequestError("Foreign key constraint failed", { code: "P2003", clientVersion: "test" }),
+    );
+
+    await expect(deleteGroupAction("g1")).resolves.toEqual({
+      ok: false,
+      error: "Cette équipe a des données liées (commandes, etc.).",
+    });
+  });
+
+  it("relance les erreurs inattendues", async () => {
+    prismaMock.group.delete.mockRejectedValue(new Error("boom"));
+
+    await expect(deleteGroupAction("g1")).rejects.toThrow("boom");
   });
 });

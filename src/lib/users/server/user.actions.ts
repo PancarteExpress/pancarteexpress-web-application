@@ -1,28 +1,13 @@
 "use server";
 
 import { Prisma } from "@prisma/client";
-import { auth } from "@/app/auth";
 import { prisma } from "@/lib/prisma";
+import { ActionError, requireSuperAdminAction, toActionError, type ActionResult } from "@/lib/auth/actionGuard";
 import {
   getAccountType,
   isAccountType,
   type AccountType,
 } from "@/lib/users/accountType";
-
-export type ActionResult = { ok: true } | { ok: false; error: string };
-
-class ActionError extends Error {}
-
-async function requireSuperAdminAction() {
-  const session = await auth();
-  if (session?.user?.role !== "superAdmin") throw new ActionError("Non autorisé.");
-  return session;
-}
-
-function toActionError(e: unknown): ActionResult {
-  if (e instanceof ActionError) return { ok: false, error: e.message };
-  throw e;
-}
 
 export async function deleteUserAction(
   userId: string,

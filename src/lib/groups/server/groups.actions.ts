@@ -3,6 +3,7 @@
 import { Prisma } from "@prisma/client";
 import { auth } from "@/app/auth";
 import { prisma } from "@/lib/prisma";
+import { ActionError, requireSuperAdminAction, toActionError, type ActionResult } from "@/lib/auth/actionGuard";
 import { addMembersSchema, groupNameSchema, memberIdSchema, billingModeSchema, userSearchQuerySchema } from "../groups.schema";
 import { getGroupDetails, type GroupDetails } from "./groups.service";
 
@@ -17,10 +18,8 @@ export type UserSearchResult = Prisma.UserGetPayload<{ select: typeof userSearch
 // Erreurs métier traduites côté client (namespace i18n "groups", clé errors.<GroupErrorKey>)
 export type GroupErrorKey = "nameTaken";
 type GroupFailure = { ok: false; error: string } | { ok: false; errorKey: GroupErrorKey };
-export type ActionResult = { ok: true } | { ok: false; error: string };
 
 class GroupActionError extends Error {}
-class ActionError extends Error {}
 
 // Règle métier : un groupAdmin n'ajoute sans validation que les users en attente d'équipe (PENDING) et sans groupe
 const addableMemberWhere = { groupId: null, groupStatus: "PENDING" } satisfies Prisma.UserWhereInput;
@@ -130,12 +129,6 @@ export async function removeGroupMemberAction(memberId: string): Promise<GroupRe
   return { ok: true, group: await getGroupDetails(ctx.groupId) };
 }
 
-async function requireSuperAdminAction() {
-  const session = await auth();
-  if (session?.user?.role !== "superAdmin") throw new ActionError("Non autorisé.");
-  return session;
-}
-
 export async function deleteGroupAction(groupId: string): Promise<ActionResult> {
   try {
     await requireSuperAdminAction();
@@ -158,11 +151,10 @@ export async function deleteGroupAction(groupId: string): Promise<ActionResult> 
 
     return { ok: true };
   } catch (e) {
-    if (e instanceof ActionError) return { ok: false, error: e.message };
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2003") {
       return { ok: false, error: "Cette équipe a des données liées (commandes, etc.)." };
     }
-    throw e;
+    return toActionError(e);
   }
 }
 
