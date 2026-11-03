@@ -1,11 +1,7 @@
 import type { AdminClientServices } from "@/lib/services/server/services.service";
 import styles from "./ServicesTable.module.css";
 import { SERVICE_TYPE_LABELS } from "@/features/superAdmin/constants/labels";
-
-const dateFormatter = new Intl.DateTimeFormat("fr-CA", {
-  dateStyle: "medium",
-  timeZone: "America/Toronto",
-});
+import { formatDate } from "@/shared/utils/date";
 
 interface ServicesTableProps {
   clients: AdminClientServices[];
@@ -52,7 +48,7 @@ export function ServicesTable({ clients }: ServicesTableProps) {
                     <td className={styles.mono}>#{s.orderNumber}</td>
                     <td>{SERVICE_TYPE_LABELS[s.type]}</td>
                     <td title={s.address}>{s.address}</td>
-                    <td>{dateFormatter.format(s.orderedAt)}</td>
+                    <td>{formatDate(s.orderedAt)}</td>
                     {/*<td>{SERVICE_STATUS_LABELS[s.status]}</td>*/}
                   </tr>
                 ))}

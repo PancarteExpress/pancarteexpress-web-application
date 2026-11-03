@@ -1,6 +1,7 @@
 import "server-only";
 import type { Prisma, RequestType, ServiceStatus, ServiceType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { getDisplayName } from "@/shared/utils/displayName";
 
 const adminServiceSelect = {
   id: true,
@@ -86,7 +87,7 @@ export async function listServicesForAdmin(): Promise<AdminClientServices[]> {
 
     const client = clients.get(key) ?? {
       key,
-      name: [person.firstName, person.lastName].filter(Boolean).join(" ") || person.email,
+      name: getDisplayName(person),
       email: person.email,
       services: [],
     };

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import type { OrderOwner, UserOrder } from '@/lib/orders/server/orders.service';
 import { formatCents } from '@/lib/pricing/money';
+import { getDisplayName } from '@/shared/utils/displayName';
 
 import styles from './ServiceOrders.module.css';
 
@@ -52,7 +53,7 @@ export default function ServiceOrders({ orders, title = 'Demandes de service' }:
                   <label className={styles.orderNumber}>#{order.orderNumber}</label>
                   {order.user && (
                     <span className={styles.orderOwner}>
-                      {[order.user.firstName, order.user.lastName].filter(Boolean).join(' ') || order.user.email}
+                      {getDisplayName(order.user)}
                     </span>
                   )}
                 </div>

@@ -6,6 +6,7 @@ import { ROLE_LABELS } from "../../constants/labels";
 import styles from "./GroupsTable.module.css";
 import type { AdminGroupRow } from "@/lib/groups/server/groups.service";
 import { normalize } from "@/shared/utils/normalize";
+import { getDisplayName } from "@/shared/utils/displayName";
 import { DeleteGroupButton } from "./DeleteGroupButton";
 import type { BillingMode } from "@prisma/client";
 
@@ -13,9 +14,6 @@ const BILLING_MODE_LABELS: Record<BillingMode, string> = {
   INDIVIDUAL: "Chaque membre",
   GROUP: "L'administrateur",
 };
-
-const getDisplayName = (u: { firstName: string | null; lastName: string | null; email: string }) =>
-  [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email;
 
 interface GroupsTableProps {
   groups: AdminGroupRow[];

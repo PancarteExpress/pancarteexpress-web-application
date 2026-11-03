@@ -1,25 +1,13 @@
-import type { GroupStatus, UserRole } from "@prisma/client";
 import type { AdminUserRow } from "@/lib/users/server/user.service";
 import { ServiceBlockButton } from "./ServiceBlockButton";
 import { isBilledToGroupAdmin } from "@/lib/orders/billing";
 import styles from "./UsersTable.module.css";
+import { GROUP_STATUS_LABELS, ROLE_LABELS } from "../../constants/labels";
+import { getDisplayName, getFullName } from "@/shared/utils/displayName";
+import { formatDate } from "@/shared/utils/date";
 
 import { DeleteUserButton, type GroupMemberOption } from "./DeleteUserButton";
 import { AccountTypeSelect } from "./AccountTypeSelect";
-
-const ROLE_LABELS: Record<UserRole, string> = {
-  user: "Courtier",
-  groupAdmin: "Administateur de groupe",
-  superAdmin: "Super admin",
-};
-
-const GROUP_STATUS_LABELS: Record<GroupStatus, string> = {
-  SOLO: "Solo",
-  PENDING: "Doit rejoindre un groupe",
-  JOINED: "Membre d'un groupe",
-};
-
-const dateFormatter = new Intl.DateTimeFormat("fr-CA", { dateStyle: "medium", timeZone: "America/Toronto", });
 
 type BlockTone = "active" | "pending" | "blocked";
 
@@ -27,7 +15,7 @@ type BlockTone = "active" | "pending" | "blocked";
 function getBlockLabel(startsAt: Date | null, now: Date): { label: string; tone: BlockTone } {
   if (!startsAt) return { label: "Actif", tone: "active" };
   if (startsAt <= now) return { label: "Bloqué", tone: "blocked" };
-  return { label: `Bloqué le ${dateFormatter.format(startsAt)}`, tone: "pending" };
+  return { label: `Bloqué le ${formatDate(startsAt)}`, tone: "pending" };
 }
 
 const BLOCK_TONE_CLASS: Record<BlockTone, string> = {
@@ -40,8 +28,6 @@ interface UsersTableProps {
   users: AdminUserRow[];
   allUsers: AdminUserRow[];
 }
-
-const getDisplayName = (u: AdminUserRow) => [u.firstName, u.lastName].filter(Boolean).join(" ") || u.email;
 
 export function UsersTable({ users, allUsers }: UsersTableProps) {
   if (users.length === 0) {
@@ -89,7 +75,7 @@ export function UsersTable({ users, allUsers }: UsersTableProps) {
         </thead>
         <tbody>
           {users.map((user) => {
-            const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ") || "—";
+            const fullName = getFullName(user) || "—";
             const block = getBlockLabel(user.serviceBlockStartsAt, now);
             const isBlocked = user.serviceBlockStartsAt !== null;
 
@@ -118,7 +104,7 @@ export function UsersTable({ users, allUsers }: UsersTableProps) {
                 </td>
                 <td>{user.group?.name ?? "—"}</td>
                 <td>{GROUP_STATUS_LABELS[user.groupStatus]}</td>
-                <td>{dateFormatter.format(user.createdAt)}</td>
+                <td>{formatDate(user.createdAt)}</td>
                 <td>
                   <div className={styles.serviceBlock}>
                     <span className={BLOCK_TONE_CLASS[block.tone]}>{block.label}</span>

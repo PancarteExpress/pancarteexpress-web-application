@@ -2,8 +2,8 @@
 
 import type { BlockSource } from '@/lib/orders/billing';
 import styles from './ServiceBlock.module.css';
+import { formatDate } from '@/shared/utils/date';
 
-const dateFormatter = new Intl.DateTimeFormat('fr-CA', { dateStyle: 'long', timeZone: 'America/Toronto' });
 const days = (n: number) => `${n} jour${n > 1 ? 's' : ''}`;
 
 const MESSAGES: Record<BlockSource, (delay: string) => string> = {
@@ -48,7 +48,7 @@ export function ServiceBlockWarning({ startsAt, daysLeft, source }: ServiceBlock
     }
   };
 
-  const delay = `Dans ${days(daysLeft)}, le ${dateFormatter.format(new Date(startsAt))}`;
+  const delay = `Dans ${days(daysLeft)}, le ${formatDate(new Date(startsAt), 'long')}`;
 
   return (
     <dialog

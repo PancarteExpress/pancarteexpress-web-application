@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { createEmptyInstallationForm, createInstallationSchema, toInstallationFormValues, type InstallationFormValues, } from '../../schemas/installation.schema';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
 import type { InstallationDetails } from '../../types/installation';
+import { getFullName } from '@/shared/utils/displayName';
 import styles from './installationForm.module.css';
 import { MaterialsSelector } from './MaterialsSelector';
 
@@ -33,10 +34,7 @@ export function InstallationForm({ handle, initialValues }: InstallationFormProp
 
   const user = status === 'authenticated' ? session.user : undefined;
   // Les comptes stockent prénom et nom séparément ; `name` sert de repli
-  const accountName =
-    [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim() ||
-    user?.name?.trim() ||
-    null;
+  const accountName = getFullName(user) || user?.name?.trim() || null;
 
   return (
     <InstallationFormInner
