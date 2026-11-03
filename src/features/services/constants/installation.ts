@@ -1,5 +1,5 @@
-export const SERVICE_TYPES = ['installation', 'removal', 'correction', 'delivery', 'pickup'] as const;
-export type ServiceType = (typeof SERVICE_TYPES)[number];
+export const SERVICE_CHOICES = ['installation', 'removal', 'correction', 'delivery', 'pickup'] as const;
+export type ServiceType = (typeof SERVICE_CHOICES)[number];
 export const SERVICE_LABELS: Record<ServiceType, string> = {
   installation: 'Installation',
   removal: 'Retrait',

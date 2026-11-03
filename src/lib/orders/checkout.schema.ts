@@ -24,7 +24,7 @@ const postalCodeSchema = z
 
 /* ── Formulaire (coordonnées + livraison) ─────────────────────── */
 
-export const contactSchema = z.object({
+export const checkoutContactSchema = z.object({
   firstName: requiredText(100),
   lastName: requiredText(100),
   email: z.string().trim().toLowerCase().max(254).email({ message: 'invalidEmail' }),
@@ -44,7 +44,7 @@ export const fulfillmentSchema = z.discriminatedUnion('method', [
 ]);
 
 export const checkoutFormSchema = z.object({
-  contact: contactSchema,
+  contact: checkoutContactSchema,
   fulfillment: fulfillmentSchema.nullable(),
 });
 

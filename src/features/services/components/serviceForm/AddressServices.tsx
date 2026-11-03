@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { IMPLEMENTED_SERVICES, SERVICE_LABELS, SERVICE_TYPES, type ServiceType, } from '@/features/services/constants/installation';
+import { IMPLEMENTED_SERVICES, SERVICE_LABELS, SERVICE_CHOICES, type ServiceType, } from '@/features/services/constants/installation';
 import { CheckboxGroup, Notice, type ChoiceOption } from '@/features/services/components/fields';
 import { InstallationForm } from '@/features/services/components/installationForm/InstallationForm';
 import { RemovalForm } from '@/features/services/components/removalForm/RemovalForm';
@@ -20,7 +20,7 @@ type SavedIds = Partial<Record<ServiceType, string>>;
 
 const IMPLEMENTED: readonly ServiceType[] = IMPLEMENTED_SERVICES;
 
-const SERVICE_OPTIONS: ChoiceOption<ServiceType>[] = SERVICE_TYPES.map((type) => ({
+const SERVICE_OPTIONS: ChoiceOption<ServiceType>[] = SERVICE_CHOICES.map((type) => ({
   value: type,
   label: SERVICE_LABELS[type],
   disabled: !IMPLEMENTED.includes(type),
