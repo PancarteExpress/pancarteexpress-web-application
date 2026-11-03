@@ -1,4 +1,4 @@
-import LoginView from "@/features/auth/components/Login/LoginView/LoginView";
+import LoginView from "@/features/auth/components/loginView/LoginView";
 
 export default async function LoginPage({
   params,

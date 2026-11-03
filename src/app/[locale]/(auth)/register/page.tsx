@@ -1,4 +1,4 @@
-import RegisterView from "@/features/auth/components/Register/RegisterView/RegisterView";
+import RegisterView from "@/features/auth/components/registerView/RegisterView";
 
 export default async function RegisterPage({
   params,

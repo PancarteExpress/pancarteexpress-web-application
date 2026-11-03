@@ -1,5 +1,5 @@
 import { auth } from '@/app/auth';
-import { DashboardContent } from '@/features/dashboard/components/dashboard/DashboardContent';
+import { DashboardContent } from '@/features/dashboard/components/dashboardContent/DashboardContent';
 import { getGroupDetails } from '@/lib/groups/server/groups.service';
 import { getTeamOrders, getUserOrders } from '@/lib/orders/server/orders.service';
 import { redirect } from 'next/navigation';

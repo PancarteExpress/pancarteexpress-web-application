@@ -3,11 +3,11 @@
 
 import styles from './LoginCredentials.module.css';
 import Link from "next/link";
-import { GoogleLoginButton } from "../../googleLoginButton/GoogleLoginButton";
-import { LoginForm } from '../LoginForm/LoginForm';
+import { GoogleLoginButton } from "../googleLoginButton/GoogleLoginButton";
+import { LoginForm } from '../loginForm/LoginForm';
 import { FaHouseChimney } from 'react-icons/fa6';
 import { useTranslations } from 'next-intl';
-import { LoginErrorMessage } from '../../loginErrorMessage/LoginErrorMessage';
+import { LoginErrorMessage } from '../loginErrorMessage/LoginErrorMessage';
 
 interface LoginCredentialsProps {
   locale: string;

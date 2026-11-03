@@ -3,13 +3,13 @@
 import styles from './RegisterForm.module.css';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerSchema, type RegisterInput } from "../../../types";
-import { useAuth } from "../../../hooks/useAuth";
+import { registerSchema, type RegisterInput } from "../../types";
+import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "../../../store/authStore";
+import { useAuthStore } from "../../store/authStore";
 import { z } from "zod";
-import { GoogleLoginButton } from '../../googleLoginButton/GoogleLoginButton';
+import { GoogleLoginButton } from '../googleLoginButton/GoogleLoginButton';
 import { useTranslations } from 'next-intl';
 import { readErrorCode } from '@/lib/errors/appError';
 

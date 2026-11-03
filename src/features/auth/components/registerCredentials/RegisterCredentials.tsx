@@ -3,7 +3,7 @@
 
 import styles from './RegisterCredentials.module.css';
 import Link from "next/link";
-import { GoogleLoginButton } from "../../googleLoginButton/GoogleLoginButton";
+import { GoogleLoginButton } from "../googleLoginButton/GoogleLoginButton";
 import { RegisterForm } from "../registerForm/RegisterForm";
 import { FaHouseChimney } from 'react-icons/fa6';
 import { useEffect } from 'react';
