@@ -2,7 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { resetPasswordSchema, type ResetPasswordInput } from "@/lib/auth/auth.schema";
+import { forgotPasswordSchema, resetPasswordSchema, verifyCodeSchema, type ResetPasswordInput } from "@/lib/auth/auth.schema";
 import { useState } from "react";
 import Link from "next/link";
 import { z } from "zod";
@@ -16,13 +16,7 @@ interface ForgotPasswordFormProps {
   locale: string;
 }
 
-const emailSchema = z.object({
-  email: z.string().trim().toLowerCase().email("Invalid email"),
-});
-
-const verifyCodeSchema = z.object({
-  code: z.string().length(6, "Code must be 6 digits").regex(/^\d{6}$/, "Code must contain only digits"),
-});
+const emailSchema = forgotPasswordSchema.pick({ email: true });
 
 type EmailFormInput = z.infer<typeof emailSchema>;
 type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;

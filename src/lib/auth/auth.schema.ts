@@ -11,6 +11,9 @@ export const passwordSchema = z
   .min(8, "Password must be at least 8 characters")
   .max(72, "Password must be at most 72 characters");
 const phoneSchema = z.string().min(10, "Phone number required");
+// Code à 6 chiffres envoyé par courriel (inscription, réinitialisation du mot de passe)
+export const codeSchema = z.string().length(6, "Code must be 6 digits").regex(/^\d{6}$/, "Code must contain only digits");
+export const verifyCodeSchema = z.object({ code: codeSchema });
 
 export const localeSchema = z.enum(["fr", "en"]).optional();
 
@@ -44,7 +47,7 @@ export const registerSchema = z.object({
 
 export const verifyEmailSchema = z.object({
   email: emailSchema,
-  code: z.string().length(6, "Code must be 6 digits"),
+  code: codeSchema,
   firstName: firstNameSchema,
   lastName: lastNameSchema,
   password: passwordSchema,
@@ -85,13 +88,23 @@ export const forgotPasswordSchema = z.object({
   locale: localeSchema,
 });
 
-export const resetPasswordSchema = z.object({
+export const verifyResetCodeSchema = z.object({
+  email: emailSchema,
+  code: codeSchema,
+});
+
+const newPasswordFields = z.object({
   password: passwordSchema,
   confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
 });
+const passwordsMatch = (data: { password: string; confirmPassword: string }) => data.password === data.confirmPassword;
+const PASSWORDS_MISMATCH = { message: "Passwords don't match", path: ["confirmPassword"] };
+
+export const resetPasswordSchema = newPasswordFields.refine(passwordsMatch, PASSWORDS_MISMATCH);
+// API : le formulaire, plus le courriel et le code vérifiés à l'étape précédente
+export const resetPasswordRequestSchema = newPasswordFields
+  .extend({ email: emailSchema, code: codeSchema })
+  .refine(passwordsMatch, PASSWORDS_MISMATCH);
 
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  codeSchema,
   loginSchema,
   passwordSchema,
   registerSchema,
+  resetPasswordRequestSchema,
   storeGroupStatusSchema,
   updatePasswordSchema,
+  verifyEmailSchema,
+  verifyResetCodeSchema,
 } from "./auth.schema";
 
 describe("passwordSchema", () => {
@@ -45,5 +49,40 @@ describe("storeGroupStatusSchema", () => {
     expect(storeGroupStatusSchema.safeParse({ intent: "register", groupStatus: "JOINED" }).success).toBe(false);
     expect(storeGroupStatusSchema.safeParse({ intent: "register", groupStatus: "ADMIN" }).success).toBe(false);
     expect(storeGroupStatusSchema.safeParse({ intent: "hack", groupStatus: "SOLO" }).success).toBe(false);
+  });
+});
+
+describe("codeSchema", () => {
+  it.each(["123456", "000000"])("accepte %s", (code) => {
+    expect(codeSchema.safeParse(code).success).toBe(true);
+  });
+
+  it.each(["12345", "1234567", "12a456", " 12345", "١٢٣٤٥٦"])("refuse %s", (code) => {
+    expect(codeSchema.safeParse(code).success).toBe(false);
+  });
+
+  it("s'applique à la vérification d'inscription et de réinitialisation", () => {
+    expect(verifyResetCodeSchema.safeParse({ email: "a@b.co", code: "12a456" }).success).toBe(false);
+    expect(verifyEmailSchema.shape.code.safeParse("12a456").success).toBe(false);
+  });
+});
+
+describe("resetPasswordRequestSchema", () => {
+  const valid = { email: " Ana@Example.com ", code: "123456", password: "motdepasse", confirmPassword: "motdepasse" };
+
+  it("normalise le courriel et accepte une demande valide", () => {
+    const parsed = resetPasswordRequestSchema.parse(valid);
+    expect(parsed.email).toBe("ana@example.com");
+  });
+
+  it("refuse des mots de passe différents, sur confirmPassword", () => {
+    const result = resetPasswordRequestSchema.safeParse({ ...valid, confirmPassword: "autrechose" });
+    expect(result.success).toBe(false);
+    expect(result.error?.issues[0]?.path).toEqual(["confirmPassword"]);
+  });
+
+  it("applique les mêmes règles que le formulaire (longueur, code)", () => {
+    expect(resetPasswordRequestSchema.safeParse({ ...valid, password: "court", confirmPassword: "court" }).success).toBe(false);
+    expect(resetPasswordRequestSchema.safeParse({ ...valid, code: "12345" }).success).toBe(false);
   });
 });

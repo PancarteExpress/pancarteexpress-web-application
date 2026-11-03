@@ -3,7 +3,7 @@
 import styles from './RegisterForm.module.css';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerSchema, type RegisterInput } from "@/lib/auth/auth.schema";
+import { registerSchema, verifyCodeSchema, type RegisterInput } from "@/lib/auth/auth.schema";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -19,10 +19,6 @@ interface RegisterFormProps {
   setPackageChoice: (value: "group" | "solo" | 'none') => void;
   onStepChange?: (step: "register" | "verify") => void;
 }
-
-const verifyCodeSchema = z.object({
-  code: z.string().length(6, "Code must be 6 digits").regex(/^\d{6}$/, "Code must contain only digits"),
-});
 
 type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
 
