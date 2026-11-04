@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
+import { useAppLocale } from '@/shared/hooks/useAppLocale';
 import styles from './BigFormatView.module.css';
 
 type SectionKey =
@@ -38,6 +39,7 @@ const CARDS: CardConfig[] = [
 
 export default function BigFormat() {
   const t = useTranslations('bigFormat');
+  const locale = useAppLocale();
 
   return (
     <div className={styles.mainContainer}>
@@ -54,10 +56,10 @@ export default function BigFormat() {
 
       <div className={styles.redirections}>
         <div className={styles.buttons}>
-          <Link href={{ pathname: '/shop', query: { category: 'bigFormatStructure' } }} className={styles.link}>
+          <Link href={{ pathname: `/${locale}/shop`, query: { category: 'bigFormatStructure' } }} className={styles.link}>
             {t('shopRedirection')}
           </Link>
-          <Link href="/services" className={styles.link}>
+          <Link href={`/${locale}/services`} className={styles.link}>
             {t('servicesRedirection')}
           </Link>
         </div>

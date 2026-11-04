@@ -153,12 +153,6 @@
     text-decoration: none;
 }
 
-.mainContainer .grid .card .cardLink:focus-visible {
-    outline: 3px solid #0E4D9A;
-    outline-offset: -3px;
-    border-radius: 10px;
-}
-
 /* ─── Image ─── */
 
 .mainContainer .grid .card .imageContainer {

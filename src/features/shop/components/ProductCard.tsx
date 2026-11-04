@@ -6,7 +6,6 @@ import type { Locale } from '@/shared/constants/locales';
 import { useAppLocale } from '@/shared/hooks/useAppLocale';
 import AddToCartButton from './AddToCartButton';
 import styles from './Shop.module.css';
-import Link from 'next/link';
 
 interface Props {
   product: Product;
@@ -20,8 +19,7 @@ export default function ProductCard({ product, names }: Props) {
 
   return (
     <li className={styles.card}>
-      {/* Le lien et le bouton sont frères : un bouton à l'intérieur d'un lien est invalide en HTML */}
-      <Link href={`/shop/${product.slug}`} className={styles.cardLink}>
+      <div className={styles.cardLink}>
         <div className={styles.imageContainer}>
           <Image
             src={product.image}
@@ -35,7 +33,7 @@ export default function ProductCard({ product, names }: Props) {
           <h3>{name}</h3>
           <p>{formatCents(product.price, locale)}</p>
         </div>
-      </Link>
+      </div>
 
       <AddToCartButton
         item={{

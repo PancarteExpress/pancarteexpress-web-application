@@ -63,7 +63,7 @@ export default function Home() {
             <br />
             
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.8 }}>
-              <Link href="/services" className={styles.demandeButton}>
+              <Link href={`/${locale}/services`} className={styles.demandeButton}>
                 <FaPaperPlane className={styles.demandeButtonLogo}/> {t('heroButtonService')}
               </Link>
             </motion.div>
@@ -98,7 +98,7 @@ export default function Home() {
           </div>
 
           <div className={styles.buttonContainer}>
-            <Link href="/register" className={styles.becomeMemberButton}>
+            <Link href={`/${locale}/register`} className={styles.becomeMemberButton}>
               {t('memberButtonBecomeMember')}
             </Link>
           </div>
@@ -116,7 +116,7 @@ export default function Home() {
             {t('aboutParagraph2')}
           </p>
           <div className={styles.contactContainer}>
-            <Link href="/contact" className={styles.contactButton}>
+            <Link href={`/${locale}/contact`} className={styles.contactButton}>
               <FaPaperPlane className={styles.contactButtonLogo}/> {t('aboutContactButton')}
             </Link>
           </div>

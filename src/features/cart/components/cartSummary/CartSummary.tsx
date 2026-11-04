@@ -33,8 +33,6 @@ export default function CartSummary({ estimate, hasServices, locale }: Props) {
       <p className={styles.note}>{t('estimateNote')}</p>
       {hasServices && <p className={styles.note}>{t('servicesQuoteNote')}</p>}
 
-      {hasServices && <p className={styles.note}>{t('servicesQuoteNote')}</p>}
-
       <Link href={`/${locale}/cart/checkout`} className={styles.checkout}>
         {t('checkout')}
       </Link>
