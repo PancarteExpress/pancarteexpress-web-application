@@ -8,13 +8,7 @@ import StatusPage from '@/shared/components/statusPage/StatusPage';
 import styles from '@/shared/components/statusPage/StatusPage.module.css';
 
 // Remplace le layout racine : aucun fournisseur next-intl n'est disponible ici
-export default function GlobalError({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+export default function GlobalError({ error }: { error: Error & { digest?: string } }) {
   const locale = usePathname()?.split('/')[1] === 'en' ? 'en' : 'fr';
   const t = locale === 'en' ? en : fr;
 
@@ -26,8 +20,8 @@ export default function GlobalError({
     <html lang={locale}>
       <body className={styles.document}>
         <StatusPage title={t.errorTitle} message={t.errorMessage}>
-          <button type="button" onClick={reset} className={styles.primaryAction}>{t.retry}</button>
-          {/* Rechargement complet : le layout racine est en échec */}
+          {/* Rechargement complet : le layout racine est en échec, reset() ne redemanderait rien au serveur */}
+          <button type="button" onClick={() => window.location.reload()} className={styles.primaryAction}>{t.retry}</button>
           <a href={`/${locale}`} className={styles.action}>{t.home}</a>
         </StatusPage>
       </body>
