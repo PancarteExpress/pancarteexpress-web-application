@@ -83,6 +83,7 @@ Le site n'est pas encore en production : une seule base Neon, aucune donnée ré
 - Ajouter `prisma migrate deploy` au build Vercel de production uniquement (jamais `migrate dev` sur la base de prod)
 - Créer le superAdmin sur la base de prod : `SUPERADMIN_EMAIL` et `SUPERADMIN_PASSWORD` dans l'environnement, puis `npx prisma db seed` (`prisma/seed.ts`, idempotent, refuse un second superAdmin). La CLI Prisma ne lit pas `.env.local` : charger les variables dans le shell avant. Ne jamais l'exécuter sans demande explicite
 - Rate limiting (audit É4) : créer le compte Upstash et ajouter `UPSTASH_REDIS_REST_URL` et `UPSTASH_REDIS_REST_TOKEN` aux variables d'env, puis brancher `@upstash/ratelimit` sur login, inscription, codes, mot de passe, contact, checkout et recherche de membres
+- Pagination (audit performance D-G, `docs/audits/performance-2026-11.md`) : ajouter `take` et pagination, ou chargement par onglet, aux listes admin et à l'historique, aujourd'hui sans limite (`orders.service.ts`, `user.service.ts`, `groups.service.ts`, `services.service.ts`)
 
 ## Règles de travail
 
