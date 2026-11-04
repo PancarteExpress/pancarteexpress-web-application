@@ -55,7 +55,7 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
         </div>
         <div>
           <p className={styles.welcomeTitle}>
-            Bonjour, {sessionUser?.firstName} {sessionUser?.lastName} 👋 
+            Bonjour, {fullName} 👋 
           </p>
           <p className={styles.welcomeSub}>
             Bienvenue dans votre espace personnel. Gérez vos commandes, adresses et
