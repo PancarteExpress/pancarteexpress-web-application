@@ -1,11 +1,14 @@
+import '../globals.css';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages } from 'next-intl/server';
+import { SessionProvider } from 'next-auth/react';
 
 import { notFound } from 'next/navigation';
 import { hasLocale } from 'next-intl';
 import { LOCALES } from '@/shared/constants/locales';
 
 import Header from '@/features/layout/components/header/Header';
+import StorageOwnerSync from '@/features/layout/components/storageOwnerSync/StorageOwnerSync';
 
 export default async function LocaleLayout({
   children,
@@ -19,9 +22,16 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider messages={messages} locale={locale}>
-      <Header/>
-      {children}
-    </NextIntlClientProvider>
+    <html lang={locale} suppressHydrationWarning>
+      <body>
+        <SessionProvider>
+          <StorageOwnerSync />
+          <NextIntlClientProvider messages={messages} locale={locale}>
+            <Header/>
+            {children}
+          </NextIntlClientProvider>
+        </SessionProvider>
+      </body>
+    </html>
   );
 }

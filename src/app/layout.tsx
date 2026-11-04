@@ -1,6 +1,3 @@
-import { SessionProvider } from 'next-auth/react';
-import StorageOwnerSync from '@/features/layout/components/storageOwnerSync/StorageOwnerSync';
-import './globals.css';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -8,15 +5,7 @@ export const metadata: Metadata = {
   description: 'Platform de services immobiliers',
 };
 
+// <html> est dans [locale]/layout.tsx : c'est là que la locale est connue
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html suppressHydrationWarning>
-      <body>
-        <SessionProvider>
-          <StorageOwnerSync />
-          {children}
-        </SessionProvider>
-      </body>
-    </html>
-  );
+  return children;
 }
