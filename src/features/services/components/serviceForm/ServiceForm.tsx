@@ -3,19 +3,24 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useLocale } from 'next-intl';
-import AddressManager from '@/features/services/components/addressManager/AddressManager';
-import { Notice, RadioGroup, type ChoiceOption } from '@/features/services/components/fields';
+import dynamic from 'next/dynamic';
+import { inlineLoading } from '@/shared/components/deferredLoading/DeferredLoading';
+import { Notice } from '@/features/services/components/fields/Notice';
+import { RadioGroup } from '@/features/services/components/fields/RadioGroup';
+import type { ChoiceOption } from '@/features/services/components/fields/types';
 
 import { useAddressStore } from '@/features/services/store/addressStore';
 
 import type { RequestType } from '@/features/services/types/services';
 import { useCartStore } from '@/features/cart/store/cartStore';
-import { AddressServices } from './AddressServices';
 import styles from './ServiceForm.module.css';
 import { formatAddress } from '@/features/services/utils/formatAddress';
 import { ServicesSummary } from '../servicesSummary/ServicesSummary';
 
 import { ADDRESS_LABELS } from '@/features/services/constants/installation';
+
+const AddressManager = dynamic(() => import('@/features/services/components/addressManager/AddressManager'), { loading: inlineLoading });
+const AddressServices = dynamic(() => import('./AddressServices').then((m) => m.AddressServices), { loading: inlineLoading });
 
 const REQUEST_TYPE_OPTIONS: ChoiceOption<RequestType>[] = [
   { value: 'residential', label: 'Demande résidentielle' },
