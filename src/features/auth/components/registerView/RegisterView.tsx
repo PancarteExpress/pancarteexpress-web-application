@@ -2,7 +2,10 @@
 
 import styles from './RegisterView.module.css';
 
-import RegisterCredentials from '../registerCredentials/RegisterCredentials';
+import dynamic from 'next/dynamic';
+import { inlineLoading } from '@/shared/components/deferredLoading/DeferredLoading';
+
+const RegisterCredentials = dynamic(() => import('../registerCredentials/RegisterCredentials'), { loading: inlineLoading });
 import RegisterPackages from '../registerPackages/RegisterPackages';
 import { useTranslations } from 'next-intl';
 import { useState } from 'react';
