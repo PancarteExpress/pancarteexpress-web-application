@@ -283,7 +283,7 @@ Ajouter ces fichiers crée des états visibles : **décisions D-A et D-B, hors p
   - journal : `JWTSessionError`.
 - **Impact** : avec une base serverless comme Neon, un réveil lent ou un délai dépassé pendant un appel peut déconnecter un client, panier en cours compris dans le parcours. Fréquence réelle inconnue, à observer en production.
 - **Correction** : distinguer « compte absent » (`null`, session invalidée, à conserver) de « lecture impossible » (`try/catch`, conserver le jeton existant et journaliser).
-- **Compromis** : pendant une panne, le rôle affiché vient du dernier jeton. Les routes sensibles relisent déjà le rôle en base (`groups.actions.ts:57`, `serviceAccess.service.ts:13`).
+- **Compromis** : pendant une panne, le rôle vient du dernier jeton. **Nuance vérifiée le 2026-11-04, à la mise en œuvre :** seuls `getAdminContext` (`groups.actions.ts:57`) et `getServiceAccess` (`serviceAccess.service.ts:13`) relisent le rôle en base. `requireRolePage`, `requireSuperAdminAction`, `searchUsersByEmailAction` et la page dashboard lisent la session : leur seule relecture est ce callback. Si elle échoue, ils utilisent le rôle du dernier jeton. L'exposition est étroite (lecture du code, pas d'essai) : il faut que cette lecture échoue, que la requête suivante réussisse et que le rôle du jeton soit périmé. Durcissement des guards écarté par décision.
 - **Risque** : moyen, touche l'auth. **Décision D-C, avec test Vitest.**
 
 **R2. `src/features/home/components/HomeView.tsx:66,101,119` et `src/features/bigFormat/components/BigFormatView.tsx:60` : liens sans locale.**

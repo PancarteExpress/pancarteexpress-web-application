@@ -17,5 +17,9 @@
 
     "errorNoAccount": "Aucun compte n'est associé à ce compte Google.",
     "errorAccountExists": "Un compte existe déjà avec cette adresse. Connectez-vous avec votre mot de passe.",
+    "errorAccessDenied": "La connexion a été refusée. Réessayez ou utilisez votre adresse courriel et votre mot de passe.",
+    "errorInvalidCredentials": "Identifiants invalides.",
+    "errorGoogle": "La connexion avec Google n'a pas abouti. Veuillez réessayer.",
+    "errorGeneric": "Une erreur est survenue pendant la connexion. Réessayez dans un instant.",
     "becomeMember": "Devenir membre"
 }

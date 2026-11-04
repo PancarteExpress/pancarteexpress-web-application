@@ -55,7 +55,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   pages: {
     signIn: "/login",
-    error: "/error",
+    error: "/login", // Auth.js ajoute ?error=<code>, affiché par LoginErrorMessage
   },
   callbacks: {
     async signIn({ user, account }) {
@@ -91,7 +91,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         if (existingUser) {
-          if (existingUser.role === "superAdmin") return false;
+          if (existingUser.role === "superAdmin") return `/${locale}/login?error=AccessDenied`;
 
           if (!existingUser.provider) {
             // Liaison Google seulement si l'adresse du compte a été vérifiée

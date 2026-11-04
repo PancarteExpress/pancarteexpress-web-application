@@ -17,5 +17,9 @@
 
     "errorNoAccount": "No account is linked to this Google account.",
     "errorAccountExists": "An account already exists with this address. Log in with your password.",
+    "errorAccessDenied": "Sign-in was denied. Please try again or use your email address and password.",
+    "errorInvalidCredentials": "Invalid credentials.",
+    "errorGoogle": "Google sign-in didn't complete. Please try again.",
+    "errorGeneric": "Something went wrong during sign-in. Please try again in a moment.",
     "becomeMember": "Become a member"
 }
