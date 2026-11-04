@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { bcryptCompare } from "@/lib/auth/server/password";
+import { refreshSessionToken } from "@/lib/auth/server/sessionToken";
 import Google from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
@@ -141,29 +142,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
     
     async jwt({ token, user }) {
-      if (user?.id) token.id = user.id;
-      if (!token.id) return token;
-
-      const dbUser = await prisma.user.findUnique({
-        where: { id: token.id },
-        select: {
-          email: true,
-          firstName: true,
-          lastName: true,
-          phoneNumber: true,
-          companyName: true,
-          role: true,
-          groupStatus: true,
-          groupId: true,
-          group: { select: { name: true } },
-        },
-      });
-
-      // Compte supprimé : la session est invalidée
-      if (!dbUser) return null;
-
-      const { group, ...profile } = dbUser;
-      return { ...token, ...profile, groupName: group?.name ?? null };
+      return refreshSessionToken(token, user?.id);
     },
 
     async session({ session, token }: { session: Session; token: JWT }): Promise<Session> {
