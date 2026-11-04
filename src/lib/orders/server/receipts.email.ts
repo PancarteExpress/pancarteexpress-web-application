@@ -49,6 +49,7 @@ const SERVICE_LABELS: Record<ServiceType, string> = {
   installation: 'Installation',
   removal: 'Retrait',
   correction: 'Correction',
+  pickup: 'Ramassage',
 };
 
 const REQUEST_LABELS: Record<RequestType, string> = {

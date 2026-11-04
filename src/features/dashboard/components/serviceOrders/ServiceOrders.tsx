@@ -19,6 +19,7 @@ const SERVICE_LABELS: Record<OrderService['type'], string> = {
   installation: 'Installation',
   removal: 'Retrait',
   correction: 'Correction',
+  pickup: 'Ramassage',
 };
 
 // null = le SuperAdmin n'a pas encore fixé le prix

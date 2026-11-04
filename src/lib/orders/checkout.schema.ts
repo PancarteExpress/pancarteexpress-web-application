@@ -1,6 +1,9 @@
 import * as z from 'zod';
-import { MAX_QUANTITY, REQUEST_TYPES } from '@/lib/orders/constants';
+import { format } from 'date-fns';
+import { MAX_QUANTITY, REQUEST_TYPES, SERVICE_DELAYS } from '@/lib/orders/constants';
 import { SERVICE_TYPES } from '@/lib/pricing/constants';
+import { earliestSpecificDate, isBusinessDay, parseIso, todayInMontreal } from '@/features/services/utils/holidays';
+import { isValidIsoDate } from '@/features/services/utils/time';
 
 // Limites anti-abus : un payload légitime n'en approche jamais
 const MAX_CART_ITEMS = 50;
@@ -21,6 +24,19 @@ const postalCodeSchema = z
   .toUpperCase()
   .regex(/^[ABCEGHJ-NPRSTVXY]\d[ABCEGHJ-NPRSTV-Z] ?\d[ABCEGHJ-NPRSTV-Z]\d$/, { message: 'invalidPostalCode' })
   .transform((v) => `${v.replace(' ', '').slice(0, 3)} ${v.replace(' ', '').slice(3)}`);
+
+const scheduleSchema = z
+  .object({
+    delay: z.enum(SERVICE_DELAYS),
+    date: z.string().optional(),
+  })
+  .superRefine((s, ctx) => {
+    if (s.delay !== 'specificDate') return;
+    // Revalidé côté serveur : le client peut être modifié
+    const earliest = format(earliestSpecificDate(todayInMontreal()), 'yyyy-MM-dd');
+    const valid = s.date !== undefined && isValidIsoDate(s.date) && s.date >= earliest && isBusinessDay(parseIso(s.date));
+    if (!valid) ctx.addIssue({ code: 'custom', path: ['date'], message: 'invalidServiceDate' });
+  });
 
 /* ── Formulaire (coordonnées + livraison) ─────────────────────── */
 
@@ -91,6 +107,7 @@ const serviceAddressSchema = z.discriminatedUnion('type', [streetAddressSchema, 
 const serviceRequestItemSchema = z.object({
   kind: z.literal('serviceRequest'),
   requestType: z.enum(REQUEST_TYPES),
+  schedule: scheduleSchema,
   addresses: z.array(serviceAddressSchema).min(1).max(MAX_ADDRESSES_PER_REQUEST),
 });
 

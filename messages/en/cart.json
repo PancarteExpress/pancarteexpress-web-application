@@ -15,11 +15,10 @@
     "loading": "Loading cart",
     "emptyCart": "Your cart is empty.",
     
-    
     "products": "Products",
     "serviceRequests": "Service requests",
     "requestType": { "residential": "Residential", "commercial": "Large format" },
-    "serviceTypes": { "installation": "Installation", "removal": "Removal", "correction": "Correction" },
+    "serviceTypes": { "installation": "Installation", "removal": "Removal", "correction": "Correction", "pickup": "Pickup" },
     "terrain": "Land",
     "near": "near",
     "apartment": "apt.",

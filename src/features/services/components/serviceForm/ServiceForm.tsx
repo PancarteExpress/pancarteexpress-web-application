@@ -9,6 +9,11 @@ import { Notice } from '@/features/services/components/fields/Notice';
 import { RadioGroup } from '@/features/services/components/fields/RadioGroup';
 import type { ChoiceOption } from '@/features/services/components/fields/types';
 
+import { useRef } from 'react';
+import type { ServiceSchedule } from '@/features/services/types/schedule';
+import type { ServiceFormHandle } from './serviceFormHandle';
+import { ScheduleForm } from '../scheduleForm/ScheduleForm';
+
 import { useAddressStore } from '@/features/services/store/addressStore';
 
 import type { RequestType } from '@/features/services/types/services';
@@ -44,22 +49,30 @@ export default function ServiceForm() {
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId) ?? null;
   const addressesWithServices = addresses.filter((a) => a.services.length > 0);
 
+  const scheduleRef = useRef<ServiceFormHandle<ServiceSchedule>>(null);
+  // Incrémentée après chaque ajout au panier : le délai repart de « Standard 24 h »
+  const [scheduleKey, setScheduleKey] = useState(0);
+
   const handleRequestTypeChange = (type: RequestType) => {
     setRequestType(type);
     setAddedToCart(false);
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (requestType === null) {
       setError('Veuillez choisir le type de demande (résidentielle ou grand format)');
       return;
     }
+    const schedule = await scheduleRef.current?.submit();
+    if (!schedule) return; // erreurs affichées dans le formulaire du délai
+
     // Le store du panier fait une copie profonde : vider les adresses ne touche pas le panier
-    addServiceRequest({ requestType, addresses: addressesWithServices });
+    addServiceRequest({ requestType, addresses: addressesWithServices, schedule });
     clearAddresses();
     setRequestType(null);
     setError(null);
     setAddedToCart(true);
+    setScheduleKey((k) => k + 1);
   };
 
   return (
@@ -98,12 +111,15 @@ export default function ServiceForm() {
       </div>
 
       {addressesWithServices.length > 0 && (
-        <ServicesSummary
-          addresses={addressesWithServices}
-          onRemoveService={removeService}
-          onAddToCart={handleAddToCart}
-          error={error}
-        />
+        <>
+          <ScheduleForm key={scheduleKey} handle={scheduleRef} />
+          <ServicesSummary
+            addresses={addressesWithServices}
+            onRemoveService={removeService}
+            onAddToCart={handleAddToCart}
+            error={error}
+          />
+        </>
       )}
     </div>
   );

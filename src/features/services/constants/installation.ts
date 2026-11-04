@@ -7,7 +7,7 @@ export const SERVICE_LABELS: Record<ServiceType, string> = {
   delivery: 'Livraison de matériel',
   pickup: 'Ramassage de matériel',
 };
-export const IMPLEMENTED_SERVICES = ['installation', 'removal'] as const satisfies readonly ServiceType[];
+export const IMPLEMENTED_SERVICES = ['installation', 'removal', 'correction', 'pickup'] as const satisfies readonly ServiceType[];
 
 export const ADDRESS_LABELS = {
   terrain: 'Terrain',

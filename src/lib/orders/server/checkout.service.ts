@@ -147,6 +147,8 @@ async function buildProductLines(items: ProductItem[]) {
 
 const toServiceRequestCreate = (item: ServiceRequestItem): Prisma.ServiceRequestCreateWithoutOrderInput => ({
   requestType: item.requestType,
+  delay: item.schedule.delay,
+  requestedDate: item.schedule.delay === 'specificDate' && item.schedule.date ? new Date(`${item.schedule.date}T00:00:00Z`) : null,
   addresses: {
     create: item.addresses.map((address) => ({
       // MODIFIÉ : le client utilise encore 'address' ; la BD utilise 'civicAddress'

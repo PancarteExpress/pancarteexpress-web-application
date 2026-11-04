@@ -9,6 +9,8 @@ import { ADDRESS_LABELS } from '@/features/services/constants/installation';
 
 import { InstallationSummary } from './installation/InstallationSummary';
 import { RemovalSummary } from './removal/RemovalSummary';
+import { CorrectionSummary } from './correction/CorrectionSummary';
+import { PickupSummary } from './pickup/PickupSummary';
 
 import styles from './servicesSummary.module.css';
 
@@ -84,6 +86,8 @@ function ServiceItem({ service, onRemove }: { service: Service; onRemove: () => 
       <div id={detailsId} hidden={!expanded} className={styles.details}>
         {service.type === 'installation' && <InstallationSummary details={service} />}
         {service.type === 'removal' && <RemovalSummary details={service} />}
+        {service.type === 'correction' && <CorrectionSummary details={service} />}
+        {service.type === 'pickup' && <PickupSummary details={service} />}
       </div>
     </li>
   );

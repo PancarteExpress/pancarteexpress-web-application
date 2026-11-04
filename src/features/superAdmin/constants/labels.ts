@@ -24,6 +24,7 @@ export const SERVICE_TYPE_LABELS: Record<ServiceType, string> = {
   installation: "Installation",
   removal: "Retrait",
   correction: "Correction",
+  pickup: "Ramassage",
 };
 
 export const SERVICE_STATUS_LABELS: Record<ServiceStatus, string> = {

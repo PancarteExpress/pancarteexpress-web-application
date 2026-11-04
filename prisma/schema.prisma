@@ -184,6 +184,9 @@ model ServiceRequest {
 
   requestType RequestType
 
+  delay         ServiceDelay @default(standard24h)
+  requestedDate DateTime?    @db.Date
+
   addresses ServiceAddress[]
 
   @@index([orderId])
@@ -271,6 +274,7 @@ enum ServiceType {
   installation
   removal
   correction
+  pickup
 }
 
 enum ServiceStatus {
@@ -278,4 +282,11 @@ enum ServiceStatus {
   SCHEDULED
   COMPLETED
   CANCELLED
+}
+
+enum ServiceDelay {
+  standard24h
+  urgent12h
+  sameDay
+  specificDate
 }

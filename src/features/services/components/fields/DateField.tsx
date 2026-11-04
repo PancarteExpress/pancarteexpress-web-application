@@ -25,12 +25,14 @@ interface DateFieldProps {
   span?: number;
   /** Jours antérieurs désactivés (aujourd'hui par défaut) */
   minDate?: Date;
+  /** Jours supplémentaires à désactiver (ex. fins de semaine et jours fériés) */
+  isDisabled?: (date: Date) => boolean;
   error?: string;
   hint?: ReactNode;
   required?: boolean;
 }
 
-export function DateField({ label, value, onChange, span = 1, minDate, error, hint, required }: DateFieldProps) {
+export function DateField({ label, value, onChange, span = 1, minDate, isDisabled, error, hint, required }: DateFieldProps) {
   const { hintId, errorId, describedBy } = useFieldIds({ hint, error });
 
   const selected = value.map(toDate).filter((d): d is Date => d !== undefined);
@@ -38,7 +40,7 @@ export function DateField({ label, value, onChange, span = 1, minDate, error, hi
   const shared = {
     locale: frCA,
     defaultMonth: selected[0] ?? fromDate,
-    disabled: { before: fromDate },
+    disabled: isDisabled ? [{ before: fromDate }, isDisabled] : { before: fromDate },
   };
 
   return (

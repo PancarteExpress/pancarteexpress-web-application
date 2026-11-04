@@ -9,10 +9,16 @@ import type {
 import { MAX_QUANTITY } from '@/lib/orders/constants';
 
 const STORAGE_KEY = 'pancarte-cart';
-const STORAGE_VERSION = 4;
+const STORAGE_VERSION = 5;
 
 const clampQuantity = (q: number): number =>
   Number.isFinite(q) ? Math.min(MAX_QUANTITY, Math.max(1, Math.trunc(q))) : 1;
+
+// v5 : délai de réalisation ; les demandes plus anciennes passent en « Standard 24 h »
+const withDefaultSchedule = (items: CartItem[]): CartItem[] =>
+  items.map((item) =>
+    item.kind === 'serviceRequest' && !item.schedule ? { ...item, schedule: { delay: 'standard24h' } } : item,
+  );
 
 // Le localStorage est modifiable par l'utilisateur : on ne garde que les items plausibles
 const isCartItem = (value: unknown): value is CartItem => {
@@ -141,9 +147,9 @@ export const useCartStore = create<CartState>()(
         // v1 : conservé, considéré comme invité
         if (version === 1) return { items: stripLegacyInstallations(items), ownerId: null };
         // v2 : propriétaire conservé
-        if (version === 2 || version === 3) {
+        if (version >= 2 && version <= 4) {
           return {
-            items: stripLegacyInstallations(items),
+            items: withDefaultSchedule(version < 4 ? stripLegacyInstallations(items) : items),
             ownerId: typeof p?.ownerId === 'string' ? p.ownerId : null,
           };
         }
@@ -155,7 +161,7 @@ export const useCartStore = create<CartState>()(
         const p = persisted as Partial<PersistedCart> | undefined;
         return {
           ...current,
-          items: Array.isArray(p?.items) ? p.items.filter(isCartItem) : [],
+          items: Array.isArray(p?.items) ? withDefaultSchedule(p.items.filter(isCartItem)) : [],
           ownerId: typeof p?.ownerId === 'string' ? p.ownerId : null,
         };
       },

@@ -1,4 +1,5 @@
 import type { Address } from '@/features/services/types/address';
+import type { ServiceSchedule } from '@/features/services/types/schedule';
 import type { RequestType } from '@/features/services/types/services';
 
 interface CartItemBase {
@@ -20,6 +21,8 @@ export interface ServiceRequestCartItem extends CartItemBase {
   kind: 'serviceRequest';
   requestType: RequestType;
   addresses: Address[];
+  /** Délai de réalisation, commun à toutes les adresses et tous les services de la demande */
+  schedule: ServiceSchedule;
 }
 
 export type CartItem = ProductCartItem | ServiceRequestCartItem;

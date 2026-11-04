@@ -86,3 +86,12 @@ export function firstBusinessDayFrom(date: Date): Date {
   while (!isBusinessDay(d)) d = addDays(d, 1);
   return d;
 }
+
+/** Première date sélectionnable pour une « date précise » : le premier jour ouvrable après `today` */
+export function earliestSpecificDate(today: Date): Date {
+  return firstBusinessDayFrom(addDays(today, 1));
+}
+
+/** Date du jour à Montréal (yyyy-MM-dd), quel que soit le fuseau du serveur */
+export const todayInMontreal = (now: Date = new Date()): Date =>
+  parseIso(now.toLocaleDateString('en-CA', { timeZone: 'America/Toronto' }));

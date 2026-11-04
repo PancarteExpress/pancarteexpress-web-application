@@ -15,5 +15,7 @@
   "pickupInfo": "Nous vous enverrons un courriel lorsque votre article sera prêt à être ramassé.",
   "shippingAddress": "Adresse de livraison",
   "makePay": "Payer",
-  "submitOrder": "Envoyer la commande"
+  "submitOrder": "Envoyer la commande",
+
+  "invalidServiceDate": "La date demandée n'est pas disponible. Choisissez un jour ouvrable à partir du prochain jour ouvrable."
 }

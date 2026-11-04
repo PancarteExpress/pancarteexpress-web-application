@@ -34,7 +34,7 @@
     "products": "Produits",
     "serviceRequests": "Demandes de service",
     "requestType": { "residential": "Résidentielle", "commercial": "Grand format" },
-    "serviceTypes": { "installation": "Installation", "removal": "Retrait", "correction": "Correction" },
+    "serviceTypes": { "installation": "Installation", "removal": "Retrait", "correction": "Correction", "pickup": "Ramassage" },
     "terrain": "Terrain",
     "near": "près du",
     "apartment": "app.",

@@ -15,5 +15,7 @@
   "pickupInfo": "We'll email you when your item is ready for pickup.",
   "shippingAddress": "Shipping address",
   "makePay": "Pay",
-  "submitOrder": "Submit order"
+  "submitOrder": "Submit order",
+
+  "invalidServiceDate": "The requested date isn't available. Please choose a business day starting from the next business day."
 }
