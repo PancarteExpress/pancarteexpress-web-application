@@ -21,6 +21,7 @@ const LOADERS = {
   checkout: (locale) => import(`@/messages/${locale}/checkout.json`),
   groups: (locale) => import(`@/messages/${locale}/groups.json`),
   errors: (locale) => import(`@/messages/${locale}/errors.json`),
+  errorPages: (locale) => import(`@/messages/${locale}/errorPages.json`),
 
   footer: (locale) => import(`@/messages/${locale}/footer.json`),
 

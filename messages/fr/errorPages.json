@@ -1,0 +1,8 @@
+{
+    "errorTitle": "Une erreur est survenue",
+    "errorMessage": "Nous n'avons pas pu afficher cette page. Réessayez dans un instant.",
+    "retry": "Réessayer",
+    "home": "Retour à l'accueil",
+    "notFoundTitle": "Page introuvable",
+    "notFoundMessage": "Cette page n'existe pas ou a été déplacée."
+}

@@ -1,0 +1,8 @@
+{
+    "errorTitle": "Something went wrong",
+    "errorMessage": "We couldn't display this page. Please try again in a moment.",
+    "retry": "Try again",
+    "home": "Back to home",
+    "notFoundTitle": "Page not found",
+    "notFoundMessage": "This page doesn't exist or has been moved."
+}
