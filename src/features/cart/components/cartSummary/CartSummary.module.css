@@ -12,7 +12,7 @@
 
 .title {
   margin: 0;
-  font-family: var(--font-title, 'Montserrat', sans-serif);
+  font-family: var(--font-title), sans-serif;
   font-size: 1.125rem;
 }
 

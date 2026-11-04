@@ -29,7 +29,7 @@
 @media (max-width: 1000px) { .mainContainer .hero  {padding: 20px 0;} }
 
 .mainContainer .hero label {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-weight: 900;
     font-size: 1.5rem;
     letter-spacing: .06em;

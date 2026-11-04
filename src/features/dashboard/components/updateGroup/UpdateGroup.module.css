@@ -39,7 +39,7 @@
 }
 
 .mainContainer .header h2 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-size: 13px;
     font-weight: 700;
     color: #fff;
@@ -89,7 +89,7 @@
 }
 
 .mainContainer .section h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-size: 10px;
     font-weight: 700;
     color: #092E5B;
@@ -123,7 +123,7 @@
     color: #1A1A2E;
     background: #F8FAFD;
     outline: none;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-text), sans-serif;
 }
 
 .mainContainer .inputs input:focus {
@@ -164,7 +164,7 @@
     color: #fff;
     border-radius: 8px;
     padding: 9px 20px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-size: 11px;
     font-weight: 700;
     cursor: pointer;

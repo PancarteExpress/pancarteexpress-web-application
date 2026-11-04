@@ -105,7 +105,7 @@
 @media (max-width: 1000px) { .mainContainer .about { padding-top: 0; align-items: flex-start; } }
 
 .mainContainer .hero label {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-weight: 900;
     font-size: 1.5rem;
     letter-spacing: .06em;
@@ -174,7 +174,7 @@
 }
 
 .mainContainer .contactForm .formBody h2 {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-text), sans-serif;
     font-weight: 900;
     color: #5F7FA8;
     text-transform: uppercase;
@@ -200,7 +200,7 @@
 }
 
 .mainContainer .contactForm .formBody .row .field label {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-text), sans-serif;
     font-weight: 700;
     color: #5F7FA8;
     text-transform: capitalize;
@@ -212,7 +212,7 @@
     padding: 9px 12px;
     border: 1px solid #C5D8EF;
     border-radius: 10px;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-text), sans-serif;
     background: #F8FAFD;
     outline: none;
 }

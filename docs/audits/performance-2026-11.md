@@ -473,8 +473,8 @@ Tous les « attendu » en kB viennent des builds d'expérience, dans cet ordre c
 | **8** | D1 : `generateStaticParams` et `setRequestLocale` sur `/`, `/contact`, `/cart`, `/cart/checkout`, `/bigFormat`, `/residential`, `/register`, `/forgot-password`, sans `/login` | Marqueur `ƒ`→`●` sur ces routes, 0 kB. **Vérifier `s-maxage` au `curl -I`, le marqueur ne suffit pas.** `/services`, `/shop`, `/dashboard`, `/admin` restent `ƒ` | Moyen |
 | **9** | D4 : retirer les champs non affichés (`_count`, `provider`, adresse de livraison…), après avoir confirmé ce que les cartes du dashboard devront afficher | Aucun kB de JS. RSC de `/dashboard` et `/admin` réduit, non mesurable sans données | Faible |
 | **10** | I1 + I2 : retirer 4 `priority`, ajouter `minimumCacheTTL` | Aucun kB. Comparer le LCP de `/` avec Lighthouse | Faible |
-| **11** | P5 : animations de `HomeView` et `RegisterPackages` en CSS, retrait de `framer-motion` | `/` 196→154, `/register` environ 196→154 (substitut, CSS en plus). **Comparaison visuelle obligatoire, `fr` et `en`.** Repli : `LazyMotion`, `/` 182 kB | Moyen |
-| **12** | I5 : Poppins via `next/font`, limité à l'accueil | Aucun kB de JS. Plus de `fonts.googleapis.com` dans la CSS construite. Comparaison visuelle de `/` | Faible à moyen |
+| **11** | **ABANDONNÉE** (décision : `framer-motion` conservée). P5 : animations de `HomeView` et `RegisterPackages` en CSS, retrait de `framer-motion` | `/` 196→154, `/register` environ 196→154 (substitut, CSS en plus). **Comparaison visuelle obligatoire, `fr` et `en`.** Repli : `LazyMotion`, `/` 182 kB | Moyen |
+| **12** | **FAITE** (avec D-H) : Montserrat, Inter et Poppins via `next/font/google` dans `[locale]/layout.tsx`, variables `--font-title`, `--font-text`, `--font-home`, `@import` Google retiré. Initialement : I5 : Poppins via `next/font`, limité à l'accueil | Aucun kB de JS. Plus de `fonts.googleapis.com` dans la CSS construite. Comparaison visuelle de `/` | Faible à moyen |
 | **13** | C1, C2 (`devtools`), C3 : sélecteurs Zustand granulaires. **Validation requise pour `useAuth`** | Moins de 1 kB attendu | Faible |
 | *Option* | `Footer`, `LoginView`, `LoginCredentials` côté serveur, avec `setRequestLocale` dans `(public)/layout` et `(auth)/layout` | -1 kB, `/login` -2 kB, HTML +0,3 KiB gz. **Non recommandé** | Faible |
 | *Option* | P6 par page, providers imbriqués | `/fr/contact` jusqu'à 29,2 KiB bruts, 6,3 KiB gz (expérience distincte, avant les autres retraits) | Moyen |
@@ -509,7 +509,7 @@ Cet état cumulé a été démarré avec `next start` : toutes les pages répond
 | **D-E** | `lang` sur `<html>` (R4) | Déplacer `<html>` dans `[locale]/layout.tsx` | À faire, compatible avec la phase 8 |
 | **D-F** | `/login` statique | Message d'erreur affiché après hydratation (léger décalage) | À évaluer après la phase 8 |
 | **D-G** | Pagination admin et historique (D5) | `take` et pagination, ou chargement par onglet | Non urgent, base vide. À prévoir avant d'avoir du volume |
-| **D-H** | Polices `Montserrat` et `Inter` (I6) | Les charger avec `next/font` (apparence modifiée) ou les retirer des CSS | À décider : aujourd'hui l'affichage dépend du poste du visiteur |
+| **D-H** | **TRANCHÉE : les charger avec `next/font`** (phase 12). Polices `Montserrat` et `Inter` (I6) | Les charger avec `next/font` (apparence modifiée) ou les retirer des CSS | À décider : aujourd'hui l'affichage dépend du poste du visiteur |
 
 ### Points d'incertitude
 

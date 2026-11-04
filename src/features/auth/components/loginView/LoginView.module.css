@@ -26,6 +26,6 @@
 }
 
 .mainContainer .credentials .header label {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-text), sans-serif;
     color: #5F7FA8;
 }

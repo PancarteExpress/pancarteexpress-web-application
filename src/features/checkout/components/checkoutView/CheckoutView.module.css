@@ -29,7 +29,7 @@
 }
  
 .mainContainer .container .items h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-weight: 700;
     color: #092E5B;
     text-transform: uppercase;
@@ -170,7 +170,7 @@
 }
  
 .mainContainer .container .form .section h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-weight: 700;
     color: #092E5B;
     text-transform: uppercase;
@@ -186,7 +186,7 @@
 }
  
 .mainContainer .container .form .section .formGroup label {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-text), sans-serif;
     font-weight: 600;
     color: #5F7FA8;
     text-transform: uppercase;
@@ -197,7 +197,7 @@
     padding: 9px 12px;
     border: 1px solid #C5D8EF;
     border-radius: 10px;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-text), sans-serif;
     background: #F8FAFD;
     outline: none;
     resize: none;
@@ -217,7 +217,7 @@
     padding: 9px 12px;
     border: 1px solid #C5D8EF;
     border-radius: 10px;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-text), sans-serif;
     background: #F8FAFD;
     outline: none;
     resize: none;
@@ -226,7 +226,7 @@
 .mainContainer .container .form .section .error,
 .mainContainer .container .form .section .success,
 .mainContainer .container .form .section .loading {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-weight: 900;
     text-align: center;
     border-radius: 10px;
@@ -255,7 +255,7 @@
     background: #0E4D9A;
     color: white;
     border-radius: 10px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-weight: 700;
     text-align: center;
     cursor: pointer;
@@ -272,7 +272,7 @@
     background: #0E4D9A;
     color: white;
     border-radius: 10px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-weight: 700;
     text-align: center;
     cursor: pointer;

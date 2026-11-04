@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;900&display=swap');
 
 .homeHero {
   width: 100%;
@@ -29,7 +28,7 @@
 }
 
 .leftContent .heroText h3 {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-home), sans-serif;
   font-size: clamp(1.2rem, 26px, 2.5rem);
   
   font-weight: 600;
@@ -38,7 +37,7 @@
 }
 
 .leftContent .heroText h1 {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-home), sans-serif;
   font-size: clamp(2rem, 4vw, 4.5rem);
   font-weight: 900;
   margin: 0;
@@ -46,7 +45,7 @@
 }
 
 .leftContent .heroText h2 {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-home), sans-serif;
   font-size: clamp(1.5rem, 3vw, 3rem);
   color: #0E4D9A;
   font-weight: 700;
@@ -55,7 +54,7 @@
 }
 
 .leftContent .heroText .demandeButton {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-home), sans-serif;
   background-color: #0E4D9A;
   font-weight: 600;
   color: white;
@@ -186,7 +185,7 @@ min-width: 150px;
 }
 
 .membershipContainer .advantages .advantagesList h1 {
-  font-family: 	'Poppins', sans-serif;
+  font-family: var(--font-home), sans-serif;
   font-weight: 700;
   font-size: clamp(0.8rem, 2vw, 1rem);
   text-transform: uppercase;
@@ -211,7 +210,7 @@ min-width: 150px;
   display: flex;
   align-items: center;
 
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-text), sans-serif;
   font-weight: 500;
 }
 
@@ -231,7 +230,7 @@ min-width: 150px;
 }
 
 .membershipContainer .advantages .buttonContainer .becomeMemberButton {
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-home), sans-serif;
   font-weight: 700;
   background-color: #0E4D9A;
   color: white;
@@ -288,7 +287,7 @@ min-width: 150px;
   display: flex;
   justify-content: center;
 
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-title), sans-serif;
 }
 
 .aboutcontainer .about {
@@ -306,12 +305,12 @@ min-width: 150px;
 
 .aboutcontainer .about span{
   color: #0E7FDB;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-home), sans-serif;
   font-weight: 700;
 }
 
 .aboutcontainer .about h1 {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-text), sans-serif;
   font-weight: 400;
   font-size: clamp(20px, 4vw, 28px);
   color: white;
@@ -320,7 +319,7 @@ min-width: 150px;
 }
 
 .aboutcontainer .about p {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-text), sans-serif;
   font-weight: 400;
   font-size: clamp(14px, 2vw, 16px);
   color: #e0e0e0;
@@ -346,7 +345,7 @@ min-width: 150px;
   text-decoration: none;
   color: white;
   font-size: 1rem;
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-home), sans-serif;
   font-weight: 700;
 
   display: flex;
@@ -394,7 +393,7 @@ min-width: 150px;
 }
 
 .aboutcontainer .examples .exampleItem .texte .bold {
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-title), sans-serif;
   font-weight: 600;
 }
 
@@ -441,7 +440,7 @@ min-width: 150px;
   justify-content: center;
   align-items: center;
   
-  font-family: 'Poppins', sans-serif;
+  font-family: var(--font-home), sans-serif;
   font-weight: 700;
   font-size: clamp(24px, 5vw, 32px);
 }
@@ -504,7 +503,7 @@ min-width: 150px;
   flex: 7;
   padding: 20px 20px;
 
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-text), sans-serif;
   font-weight: 400;
   font-size: clamp(14px, 2vw, 16px);
   color: #333;
@@ -517,7 +516,7 @@ min-width: 150px;
   align-items: end;
   padding: 5px 20px;
 
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-title), sans-serif;
   font-weight: 700;
 }
 

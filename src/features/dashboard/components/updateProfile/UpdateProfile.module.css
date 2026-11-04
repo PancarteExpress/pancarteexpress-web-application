@@ -40,7 +40,7 @@
 }
 
 .mainContainer .header h2 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-size: 13px;
     font-weight: 700;
     color: #fff;
@@ -78,7 +78,7 @@
 /* ─── Sections ─── */
 
 .mainContainer .personalInfos h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-size: 10px;
     font-weight: 700;
     color: #092E5B;
@@ -111,7 +111,7 @@
 }
 
 .mainContainer .personalInfos .inputs label {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-text), sans-serif;
     font-size: 11px;
     font-weight: 600;
     color: #5F7FA8;
@@ -123,7 +123,7 @@
     padding: 9px 12px;
     border: 1px solid #C5D8EF;
     border-radius: 8px;
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-text), sans-serif;
     font-size: 13px;
     color: #1A1A2E;
     background: #F8FAFD;
@@ -198,7 +198,7 @@
     color: #fff;
     border-radius: 8px;
     padding: 9px 24px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-size: 11px;
     font-weight: 700;
     cursor: pointer;

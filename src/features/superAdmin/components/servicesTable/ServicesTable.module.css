@@ -4,7 +4,7 @@
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   overflow: hidden;
-  font-family: Inter, sans-serif;
+  font-family: var(--font-text), sans-serif;
 }
 
 .clientHead {
@@ -15,7 +15,7 @@
   background: #F8FAFC;
   border-bottom: 1px solid #e2e8f0;
 }
-.clientName  { margin: 0; font-family: Montserrat, sans-serif; font-weight: 600; color: #092E5B; }
+.clientName  { margin: 0; font-family: var(--font-title), sans-serif; font-weight: 600; color: #092E5B; }
 .clientEmail { font-size: 13px; color: #0E4D9A; }
 .clientCount { margin-left: auto; font-size: 13px; color: #64748b; }
 

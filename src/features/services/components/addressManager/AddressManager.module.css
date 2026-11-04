@@ -148,7 +148,7 @@
     color: #fff;
     border-radius: 10px;
     padding: 9px 18px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-size: 1rem;
     font-weight: 700;
     margin-right: 10px;
@@ -162,7 +162,7 @@
     color: #fff;
     border-radius: 10px;
     padding: 9px 18px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-size: 1rem;
     font-weight: 700;
     margin-top: 10px;
@@ -175,7 +175,7 @@
     color: #fff;
     border-radius: 10px;
     padding: 9px 18px;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-title), sans-serif;
     font-size: 1rem;
     font-weight: 700;
 }
