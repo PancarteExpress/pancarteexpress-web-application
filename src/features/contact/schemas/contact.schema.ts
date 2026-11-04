@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 
 const trop = 'Ce champ est trop long';
 const requis = (max: number) => z.string().trim().min(1, 'Ce champ est requis').max(max, trop);

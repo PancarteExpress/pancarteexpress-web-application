@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 import { MAX_QUANTITY, REQUEST_TYPES } from '@/lib/orders/constants';
 import { SERVICE_TYPES } from '@/lib/pricing/constants';
 

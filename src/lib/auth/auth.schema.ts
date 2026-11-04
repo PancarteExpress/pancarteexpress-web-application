@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 
 const firstNameSchema = z.string().min(2, "First name required");
 const lastNameSchema = z.string().min(2, "Last name required");

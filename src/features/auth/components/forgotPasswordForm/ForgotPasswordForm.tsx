@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { forgotPasswordSchema, resetPasswordSchema, verifyCodeSchema, type ResetPasswordInput } from "@/lib/auth/auth.schema";
 import { useState } from "react";
 import Link from "next/link";
-import { z } from "zod";
+import * as z from "zod";
 import { useTranslations } from "next-intl";
 import { readErrorCode } from "@/lib/errors/appError";
 

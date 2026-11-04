@@ -8,7 +8,7 @@ import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "../../store/authStore";
-import { z } from "zod";
+import * as z from "zod";
 import { GoogleLoginButton } from '../googleLoginButton/GoogleLoginButton';
 import { useTranslations } from 'next-intl';
 import { readErrorCode } from '@/lib/errors/appError';

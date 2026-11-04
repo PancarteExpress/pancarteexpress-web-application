@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 import { KEYBOX_CODE_MAX_DIGITS } from '../constants/installation';
 
 export const REQUIRED = 'Ce champ est requis';

@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 import {
   ACCESS_CHOICES, LADDERS, LOCATIONS, MOUNTINGS, TEXT_LIMITS, WINDOW_SIDES,
   type AccessChoice, type Ladder,
