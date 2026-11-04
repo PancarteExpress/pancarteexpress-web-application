@@ -2,13 +2,19 @@
 
 import styles from "./DashboardContent.module.css"
 import { useState } from "react";
-import UpdateProfile from "../updateProfile/UpdateProfile";
+import dynamic from "next/dynamic";
+import { modalLoading } from "@/shared/components/deferredLoading/DeferredLoading";
 
 import { useSession } from "next-auth/react";
 import type { TeamOrder, UserOrder } from '@/lib/orders/server/orders.service';
 import ServiceOrders from '../serviceOrders/ServiceOrders';
-import { CreateGroupDialog } from "../createGroupDialog/CreateGroupDialog";
-import UpdateGroup from "../updateGroup/UpdateGroup";
+
+const UpdateProfile = dynamic(() => import("../updateProfile/UpdateProfile"), { loading: modalLoading });
+const UpdateGroup = dynamic(() => import("../updateGroup/UpdateGroup"), { loading: modalLoading });
+const CreateGroupDialog = dynamic(
+  () => import("../createGroupDialog/CreateGroupDialog").then((m) => m.CreateGroupDialog),
+  { loading: modalLoading },
+);
 import type { GroupDetails } from "@/lib/groups/server/groups.service";
 import { useRouter } from "next/navigation";
 import { formatPersonName, getPersonInitials } from "@/shared/utils/personName";
