@@ -3,6 +3,7 @@ import {
   codeSchema,
   loginSchema,
   passwordSchema,
+  registerPlanSchema,
   registerSchema,
   resetPasswordRequestSchema,
   storeGroupStatusSchema,
@@ -84,5 +85,19 @@ describe("resetPasswordRequestSchema", () => {
   it("applique les mêmes règles que le formulaire (longueur, code)", () => {
     expect(resetPasswordRequestSchema.safeParse({ ...valid, password: "court", confirmPassword: "court" }).success).toBe(false);
     expect(resetPasswordRequestSchema.safeParse({ ...valid, code: "12345" }).success).toBe(false);
+  });
+});
+
+describe("registerPlanSchema", () => {
+  it("accepte solo et group", () => {
+    expect(registerPlanSchema.safeParse("solo").success).toBe(true);
+    expect(registerPlanSchema.safeParse("group").success).toBe(true);
+  });
+
+  it("refuse none, une valeur inconnue, un tableau ou l'absence de valeur", () => {
+    expect(registerPlanSchema.safeParse("none").success).toBe(false);
+    expect(registerPlanSchema.safeParse("PENDING").success).toBe(false);
+    expect(registerPlanSchema.safeParse(["solo", "group"]).success).toBe(false);
+    expect(registerPlanSchema.safeParse(undefined).success).toBe(false);
   });
 });

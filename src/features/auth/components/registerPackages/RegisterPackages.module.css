@@ -16,6 +16,8 @@
     display: flex;
     flex-direction: column;
     cursor: pointer;
+    text-decoration: none;
+    color: inherit;
 }
 
 .mainContainer .packages .package:hover {

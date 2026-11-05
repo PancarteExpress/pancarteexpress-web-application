@@ -3,10 +3,9 @@
 import styles from './RegisterForm.module.css';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerSchema, verifyCodeSchema, type RegisterInput } from "@/lib/auth/auth.schema";
+import { registerSchema, verifyCodeSchema, type RegisterInput, type RegisterPlan } from "@/lib/auth/auth.schema";
 import { useAuth } from "../../hooks/useAuth";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAuthStore } from "../../store/authStore";
 import * as z from "zod";
 import { GoogleLoginButton } from '../googleLoginButton/GoogleLoginButton';
@@ -15,20 +14,17 @@ import { readErrorCode } from '@/lib/errors/appError';
 
 interface RegisterFormProps {
   locale: string;
-  packageChoice: "group" | "solo" | 'none';
-  setPackageChoice: (value: "group" | "solo" | 'none') => void;
+  plan: RegisterPlan;
+  onPlanChange: (plan: RegisterPlan) => void;
   onStepChange?: (step: "register" | "verify") => void;
 }
 
 type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
 
-export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepChange }: RegisterFormProps) {
+export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: RegisterFormProps) {
   const t = useTranslations('register');
   const tErrors = useTranslations('errors');
-  const router = useRouter();
   const { register: registerUser, login } = useAuth();
-
-  const [groupStatus, setGroupStatus] = useState<"solo" | "group" | null>(null);
 
   const error = useAuthStore((state) => state.error);
   const isLoading = useAuthStore((state) => state.isLoading);
@@ -63,7 +59,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
           password: registeredData.password,
           phoneNumber: registeredData.phoneNumber,
           companyName: registeredData.companyName,
-          groupStatus: groupStatus === 'group' ? 'PENDING' : 'SOLO',
+          groupStatus: plan === 'group' ? 'PENDING' : 'SOLO',
           locale 
         }),
       });
@@ -88,21 +84,8 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
   };  
 
   useEffect(() => {
-    if (packageChoice === 'none') {
-      router.push(`/${locale}/services`);
-    } else if (packageChoice === 'solo' || packageChoice === 'group') {
-      setGroupStatus(packageChoice);
-    }
-  }, [packageChoice, locale, router]);
-
-  useEffect(() => {
-    onStepChange?.(step);  // ← Notifie le parent
+    onStepChange?.(step);  
   }, [step, onStepChange]);
-
-  // Si on redirige, ne pas afficher le formulaire
-  if (packageChoice === 'none' || groupStatus === null) {
-    return null;
-  }
 
   return (
     <div className={styles.mainContainer}>
@@ -114,13 +97,13 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
         <fieldset>
             <div className={styles.radioGroup}>
                 <label className={styles.radioLabel}>
-                    <input className={styles.radioInput} type="radio" id="solo" name="groupStatus" value="solo" checked={groupStatus === "solo"} onChange={() => { setGroupStatus('solo'); setPackageChoice('solo'); }} /> 
+                    <input className={styles.radioInput} type="radio" id="solo" name="groupStatus" value="solo" checked={plan === "solo"} onChange={() => onPlanChange('solo')} /> 
                     <span className={styles.radioButton} style={{ borderRadius: '10px 0 0 10px' }}>
                       {t('formBtnSolo')}
                     </span>
                 </label>
                 <label className={styles.radioLabel}>
-                    <input className={styles.radioInput} type="radio" id="group" name="groupStatus" value="group" checked={groupStatus === "group"} onChange={() => { setGroupStatus('group'); setPackageChoice('group'); }}/>
+                    <input className={styles.radioInput} type="radio" id="group" name="groupStatus" value="group" checked={plan === "group"} onChange={() => onPlanChange('group')}/>
                     <span className={styles.radioButton} style={{ borderRadius: '0 10px 10px 0' }}>
                       {t('formBtnGroup')}
                     </span>
@@ -129,7 +112,7 @@ export function RegisterForm({ locale, packageChoice, setPackageChoice, onStepCh
             </div>
         </fieldset>
 
-        <GoogleLoginButton locale={locale} intent="register" groupStatus={groupStatus} />
+        <GoogleLoginButton locale={locale} intent="register" groupStatus={plan} />
 
         <div className={styles.groupInputs}>
           <div className={styles.inputs}>

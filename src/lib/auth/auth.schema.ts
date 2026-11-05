@@ -21,6 +21,10 @@ export const authIntentSchema = z.enum(["login", "register"]);
 // JOINED exclu : seul l'ajout par un groupAdmin rattache à un groupe
 export const signupGroupStatusSchema = z.enum(["SOLO", "PENDING"]);
 
+// Forfait d'inscription passé dans l'URL (?plan=) de /register/account
+export const registerPlanSchema = z.enum(["solo", "group"]);
+export type RegisterPlan = z.infer<typeof registerPlanSchema>;
+
 export const storeGroupStatusSchema = z.object({
   intent: authIntentSchema,
   groupStatus: signupGroupStatusSchema,

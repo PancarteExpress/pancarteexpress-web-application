@@ -1,36 +1,24 @@
 // src/features/auth/components/registerPackages/RegisterPackages.tsx
 'use client';
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import styles from './RegisterPackages.module.css';
 import { motion } from "framer-motion";
 import { useTranslations } from 'next-intl';
 
 interface RegisterPackagesProps {
   locale: string;
-  packageChoice: "group" | "solo" | 'none';
-  setPackageChoice: (value: "group" | "solo" | 'none') => void;
-  setStep: (step: "packages" | "register") => void;
 }
 
-export default function RegisterPackages({ locale, setPackageChoice, setStep }: RegisterPackagesProps) {
+const MotionLink = motion.create(Link);
+
+export default function RegisterPackages({ locale }: RegisterPackagesProps) {
   const t = useTranslations('register');
-  const router = useRouter();
-  
-  const handleSelectPackage = (packageType: "solo" | "group" | 'none' ) => {
-    setPackageChoice(packageType);
-   
-    if (packageType === 'none') {
-      router.push(`/${locale}/services`);
-    } else {
-      setStep("register");
-    }
-  };
 
   return (
     <div className={styles.mainContainer}>
       <div className={styles.packages}>
-        <motion.div initial={{ opacity: 0, x: -100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} onClick={() => handleSelectPackage('none')}>
+        <MotionLink initial={{ opacity: 0, x: -100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} href={`/${locale}/services`}>
           <div className={styles.header}>
             <h2 className={styles.title}>{t('package1Title')}</h2>
             
@@ -56,12 +44,12 @@ export default function RegisterPackages({ locale, setPackageChoice, setStep }: 
             
           </ul>
 
-          <button className={styles.selectPackageButton}>
-            Sélectionner ce forfait
-          </button>
-        </motion.div>
+          <span className={styles.selectPackageButton}>
+            {t('selectPackage')}
+          </span>
+        </MotionLink>
         
-        <motion.div initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className={styles.package} onClick={() => handleSelectPackage("group")}>
+        <MotionLink initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className={styles.package} href={`/${locale}/register/account?plan=group`}>
           <div className={styles.header}>
             
             <h2 className={styles.title}>{t('package2Title')}</h2>
@@ -90,12 +78,12 @@ export default function RegisterPackages({ locale, setPackageChoice, setStep }: 
             <li>✓ {t('idealForGroup')}</li>
           </ul>
 
-          <button className={styles.selectPackageButton}>
-            Sélectionner ce forfait
-          </button>
-        </motion.div>
+          <span className={styles.selectPackageButton}>
+            {t('selectPackage')}
+          </span>
+        </MotionLink>
 
-        <motion.div initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} onClick={() => handleSelectPackage("solo")}>
+        <MotionLink initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} href={`/${locale}/register/account?plan=solo`}>
           <div className={styles.header}>
             <h2 className={styles.title}>{t('package3Title')}</h2>
             
@@ -122,10 +110,10 @@ export default function RegisterPackages({ locale, setPackageChoice, setStep }: 
             <li>✓ {t('idealForSolo')}</li>
           </ul>
 
-          <button className={styles.selectPackageButton}>
-            Sélectionner ce forfait
-          </button>
-        </motion.div>
+          <span className={styles.selectPackageButton}>
+            {t('selectPackage')}
+          </span>
+        </MotionLink>
       </div>
     </div>
   );
