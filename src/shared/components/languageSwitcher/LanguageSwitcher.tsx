@@ -1,18 +1,19 @@
 'use client';
 
 import { useLocale } from 'next-intl';
-import { usePathname, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { buildLocaleUrl } from '@/shared/utils/pathname';
 import styles from './LanguageSwitcher.module.css';
 
 export default function LanguageSwitcher() {
   const locale = useLocale();
   const router = useRouter();
-  const pathname = usePathname();
 
   const handleLanguageChange = () => {
     const newLocale = locale === 'fr' ? 'en' : 'fr';
-    const newPathname = pathname.replace(`/${locale}`, `/${newLocale}`);
-    router.push(newPathname);
+    // Lu au moment du clic : ?plan= peut avoir changé via history.replaceState, et le hash n'est pas exposé par les hooks
+    const { pathname, search, hash } = window.location;
+    router.push(buildLocaleUrl(pathname, search, hash, locale, newLocale));
   };
 
   return (
