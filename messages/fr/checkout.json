@@ -16,6 +16,6 @@
   "shippingAddress": "Adresse de livraison",
   "makePay": "Payer",
   "submitOrder": "Envoyer la commande",
-
-  "invalidServiceDate": "La date demandée n'est pas disponible. Choisissez un jour ouvrable à partir du prochain jour ouvrable."
+  "invalidServiceDate": "La date demandée n'est pas disponible. Choisissez un jour ouvrable à partir du prochain jour ouvrable.",
+  "invalidSchedule": "La demande de service est incomplète. Veuillez la refaire depuis le formulaire."
 }

@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { authService } from "@/lib/auth/server/auth.service";
 import { verifyEmailSchema } from "@/lib/auth/auth.schema";
+import { toPickupCreateInput } from "@/lib/auth/server/pickup";
 import { errorResponse } from "@/lib/errors/server/toClientError";
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // Validation
     const validatedData = verifyEmailSchema.parse(body);
+    const pickup = toPickupCreateInput(validatedData);
 
-    // Vérifier et créer l'user
     const user = await authService.verifyEmailAndCreateUser(
       validatedData.email,
       validatedData.code,
@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
       validatedData.phoneNumber,
       validatedData.companyName,
       validatedData.groupStatus,
-      validatedData.locale
+      validatedData.locale,
+      pickup
     );
 
     return NextResponse.json(

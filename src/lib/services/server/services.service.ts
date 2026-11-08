@@ -1,6 +1,7 @@
 import "server-only";
 import type { Prisma, RequestType, ServiceStatus, ServiceType } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { formatServiceDelay } from "@/lib/orders/serviceDelay";
 import { getDisplayName } from "@/shared/utils/displayName";
 
 const adminServiceSelect = {
@@ -21,6 +22,8 @@ const adminServiceSelect = {
       serviceRequest: {
         select: {
           requestType: true,
+          delay: true,
+          requestedDate: true,
           order: {
             select: {
               id: true,
@@ -49,6 +52,9 @@ export interface AdminServiceRow {
   orderId: string;
   scheduledFor: Date | null;
   address: string;
+  /** Délai demandé, déjà mis en forme (ex. « Urgence 12 h », « Le mardi 13 octobre 2026 ») */
+  delay: string;
+  requestedDate: Date | null;
   requestType: RequestType;
   orderNumber: number;
   orderedAt: Date;
@@ -81,7 +87,7 @@ export async function listServicesForAdmin(): Promise<AdminClientServices[]> {
   const clients = new Map<string, AdminClientServices>();
 
   for (const s of services) {
-    const { requestType, order } = s.serviceAddress.serviceRequest;
+    const { requestType, delay, requestedDate, order } = s.serviceAddress.serviceRequest;
     const person = order.user ?? order;
     const key = order.userId ?? `guest:${order.email.toLowerCase()}`;
 
@@ -100,6 +106,8 @@ export async function listServicesForAdmin(): Promise<AdminClientServices[]> {
       orderId: order.id,
       scheduledFor: s.scheduledFor,
       address: formatAddress(s.serviceAddress),
+      delay: formatServiceDelay(delay, requestedDate),
+      requestedDate,
       requestType,
       orderNumber: order.orderNumber,
       orderedAt: order.createdAt,

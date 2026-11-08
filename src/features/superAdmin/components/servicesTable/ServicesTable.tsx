@@ -39,7 +39,7 @@ export function ServicesTable({ clients }: ServicesTableProps) {
                   <th scope="col">Type</th>
                   <th scope="col">Adresse</th>
                   <th scope="col">Demandé le</th>
-                  {/*<th scope="col">Statut</th>*/}
+                  <th scope="col">Délai</th>
                 </tr>
               </thead>
               <tbody>
@@ -49,7 +49,7 @@ export function ServicesTable({ clients }: ServicesTableProps) {
                     <td>{SERVICE_TYPE_LABELS[s.type]}</td>
                     <td title={s.address}>{s.address}</td>
                     <td>{formatDate(s.orderedAt)}</td>
-                    {/*<td>{SERVICE_STATUS_LABELS[s.status]}</td>*/}
+                    <td>{s.delay}</td>
                   </tr>
                 ))}
               </tbody>

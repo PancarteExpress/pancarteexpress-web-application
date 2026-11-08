@@ -5,7 +5,7 @@ import styles from "./UsersTable.module.css";
 import { GROUP_STATUS_LABELS, ROLE_LABELS } from "../../constants/labels";
 import { getDisplayName, getFullName } from "@/shared/utils/displayName";
 import { formatDate } from "@/shared/utils/date";
-
+import type { GroupStatus } from "@prisma/client";
 import { DeleteUserButton, type GroupMemberOption } from "./DeleteUserButton";
 import { AccountTypeSelect } from "./AccountTypeSelect";
 
@@ -27,13 +27,17 @@ const BLOCK_TONE_CLASS: Record<BlockTone, string> = {
 interface UsersTableProps {
   users: AdminUserRow[];
   allUsers: AdminUserRow[];
+  groupStatusFilter?: GroupStatus;
 }
 
-export function UsersTable({ users, allUsers }: UsersTableProps) {
+export function UsersTable({ users, allUsers, groupStatusFilter }: UsersTableProps) {
   if (users.length === 0) {
     return <p className={styles.empty}>Aucun utilisateur inscrit.</p>;
   }
 
+  const visibleUsers = groupStatusFilter
+    ? users.filter((u) => u.groupStatus === groupStatusFilter)
+    : users;
   const now = new Date();
 
   const membersByGroup = new Map<string, GroupMemberOption[]>();
@@ -46,6 +50,10 @@ export function UsersTable({ users, allUsers }: UsersTableProps) {
 
   return (
     <div className={styles.wrapper}>
+      
+      {visibleUsers.length === 0 ? (
+        <p className={styles.empty}>Aucun utilisateur pour ce statut.</p>
+      ) : (
       <table className={styles.table}>
         <colgroup>
           <col className={styles.colName} />
@@ -74,7 +82,7 @@ export function UsersTable({ users, allUsers }: UsersTableProps) {
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => {
+          {visibleUsers.map((user) => {
             const fullName = getFullName(user) || "—";
             const block = getBlockLabel(user.serviceBlockStartsAt, now);
             const isBlocked = user.serviceBlockStartsAt !== null;
@@ -134,6 +142,7 @@ export function UsersTable({ users, allUsers }: UsersTableProps) {
           })}
         </tbody>
       </table>
+      )}
     </div>
   );
 }

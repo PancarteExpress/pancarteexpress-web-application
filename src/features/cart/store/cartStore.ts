@@ -17,7 +17,9 @@ const clampQuantity = (q: number): number =>
 // v5 : délai de réalisation ; les demandes plus anciennes passent en « Standard 24 h »
 const withDefaultSchedule = (items: CartItem[]): CartItem[] =>
   items.map((item) =>
-    item.kind === 'serviceRequest' && !item.schedule ? { ...item, schedule: { delay: 'standard24h' } } : item,
+    item.kind === 'serviceRequest' && item.schedule === undefined
+      ? { ...item, schedule: item.requestType === 'residential' ? { delay: 'standard24h' } : null }
+      : item,
   );
 
 // Le localStorage est modifiable par l'utilisateur : on ne garde que les items plausibles

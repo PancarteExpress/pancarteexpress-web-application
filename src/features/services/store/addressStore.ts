@@ -1,7 +1,8 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Address, StreetAddress, TerrainAddress } from '../types/address';
-import { Service } from '../types/services';
+import type { RequestType, Service } from '../types/services';
+import { requestTypeOf } from '../utils/serviceRequestType';
 /** Service sans id : le store l'attribue (ou conserve celui du service existant) */
 type ServiceInput = Service extends infer S ? (S extends unknown ? Omit<S, 'id'> : never) : never;
 
@@ -19,6 +20,7 @@ interface AddressStore {
   removeServiceFromAddress: (addressId: string, serviceId: string) => void;
   getAddresses: () => Address[];
   clearAddresses: () => void;
+  clearServicesOf: (requestType: RequestType) => void;
   setSelectedAddressId: (id: string | null) => void;
   
   saveService: (addressId: string, service: ServiceInput) => void;
@@ -89,6 +91,16 @@ export const useAddressStore = create<AddressStore>()(
 
       clearAddresses: () => {
         set({ addresses: [], selectedAddressId: null });
+      },
+
+      clearServicesOf: (requestType) => {
+        set((state) => ({
+          addresses: state.addresses.map((a) => ({
+            ...a,
+            services: a.services.filter((s) => requestTypeOf(s) !== requestType),
+          })),
+          selectedAddressId: null,
+        }));
       },
 
       setSelectedAddressId: (id) => set({ selectedAddressId: id }),

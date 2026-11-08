@@ -2,7 +2,7 @@
 
 import styles from "./UpdateProfile.module.css";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   updateProfileSchema,
@@ -11,11 +11,12 @@ import {
   type UpdatePasswordInput,
 } from "@/lib/auth/auth.schema";
 import { useSession } from "next-auth/react";
-import { User } from "next-auth";
+import type { User } from "next-auth";
 import { useTranslations } from "next-intl";
 import { readErrorCode, type AppErrorCode } from "@/lib/errors/appError";
+import AddressAutocomplete from "@/shared/components/addressAutocomplete/AddressAutocomplete";
 
-// Erreurs serveur rattachées à un champ ; les autres codes s'affichent en message global du formulaire
+// Erreurs serveur rattachées à un champ ; les autres s'affichent en message global
 const PROFILE_ERROR_FIELDS: Partial<Record<AppErrorCode, keyof UpdateProfileInput>> = {
   emailChangeNotAllowed: "email",
 };
@@ -24,7 +25,7 @@ const PASSWORD_ERROR_FIELDS: Partial<Record<AppErrorCode, keyof UpdatePasswordIn
 };
 
 interface UpdateProfileProps {
-  sessionUser?: User; // ou type complet
+  sessionUser?: User;
   onClose: () => void;
 }
 
@@ -37,7 +38,6 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
-
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
@@ -45,13 +45,14 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
     };
   }, []);
 
-  // Profile form
   const {
     register: registerProfile,
     handleSubmit: handleSubmitProfile,
     formState: { errors: profileErrors },
     reset: resetProfile,
     setError: setProfileFieldError,
+    control: controlProfile,
+    setValue: setProfileFieldValue,
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
@@ -60,24 +61,44 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       email: "",
       phoneNumber: "",
       companyName: "",
+      pickupAddress: "",
+      pickupCity: "",
+      pickupPostalCode: "",
       groupStatus: "SOLO",
     },
   });
 
+  // Données de session : une seule source de reset
   useEffect(() => {
-    if (sessionUser) {
-      resetProfile({
-        firstName: sessionUser.firstName || "",
-        lastName: sessionUser.lastName || "",
-        email: sessionUser.email || "",
-        phoneNumber: sessionUser.phoneNumber || "",
-        companyName: sessionUser.companyName || "",
-        groupStatus: sessionUser.groupStatus || "SOLO",
-      });
-    }
+    if (!sessionUser) return;
+    resetProfile((prev) => ({
+      ...prev,
+      firstName: sessionUser.firstName || "",
+      lastName: sessionUser.lastName || "",
+      email: sessionUser.email || "",
+      phoneNumber: sessionUser.phoneNumber || "",
+      companyName: sessionUser.companyName || "",
+      groupStatus: sessionUser.groupStatus || "SOLO",
+    }));
   }, [sessionUser, resetProfile]);
 
-  // Password form
+  // Adresse de ramassage enregistrée
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/auth/pickup")
+      .then((res) => res.json())
+      .then((body: { pickup: { address: string | null; city: string | null; postalCode: string | null } | null }) => {
+        if (cancelled) return;
+        setProfileFieldValue("pickupAddress", body.pickup?.address ?? "");
+        setProfileFieldValue("pickupCity", body.pickup?.city ?? "");
+        setProfileFieldValue("pickupPostalCode", body.pickup?.postalCode ?? "");
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [setProfileFieldValue]);
+
   const {
     register: registerPassword,
     handleSubmit: handleSubmitPassword,
@@ -155,9 +176,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       <div className={styles.mainContainer}>
         <div className={styles.header}>
           <h2>Update Profile</h2>
-          <button onClick={onClose}>
-            Fermer
-          </button>
+          <button onClick={onClose}>Fermer</button>
         </div>
 
         {/* Profile Form */}
@@ -165,45 +184,28 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
           <h3 className="text-xl font-semibold mb-4">Profile Information</h3>
 
           {profileSuccess && (
-            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
-              {profileSuccess}
-            </div>
+            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">{profileSuccess}</div>
           )}
 
           {profileError && (
-            <p role="alert" className={styles.formError}>
-              {profileError}
-            </p>
+            <p role="alert" className={styles.formError}>{profileError}</p>
           )}
 
           <form onSubmit={handleSubmitProfile(onSubmitProfile)} className="space-y-4">
-
             <div className={styles.formGroup}>
               <div className={styles.inputs}>
                 <label className="block text-sm font-medium">First Name</label>
-                <input
-                  {...registerProfile("firstName")}
-                  type="text"
-                  className="w-full px-3 py-2 border rounded"
-                />
+                <input {...registerProfile("firstName")} type="text" className="w-full px-3 py-2 border rounded" />
                 {profileErrors.firstName && (
-                  <span className="text-red-500 text-sm">
-                    {profileErrors.firstName.message}
-                  </span>
+                  <span className="text-red-500 text-sm">{profileErrors.firstName.message}</span>
                 )}
               </div>
 
               <div className={styles.inputs}>
                 <label className="block text-sm font-medium">Last Name</label>
-                <input
-                  {...registerProfile("lastName")}
-                  type="text"
-                  className="w-full px-3 py-2 border rounded"
-                />
+                <input {...registerProfile("lastName")} type="text" className="w-full px-3 py-2 border rounded" />
                 {profileErrors.lastName && (
-                  <span className="text-red-500 text-sm">
-                    {profileErrors.lastName.message}
-                  </span>
+                  <span className="text-red-500 text-sm">{profileErrors.lastName.message}</span>
                 )}
               </div>
             </div>
@@ -211,55 +213,65 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
             <div className={styles.formGroup}>
               <div className={styles.inputs}>
                 <label className="block text-sm font-medium">Email</label>
-                <input
-                  {...registerProfile("email")}
-                  type="email"
-                  readOnly
-                  className="w-full px-3 py-2 border rounded"
-                />
+                <input {...registerProfile("email")} type="email" readOnly className="w-full px-3 py-2 border rounded" />
                 {profileErrors.email && (
-                  <span className="text-red-500 text-sm">
-                    {profileErrors.email.message}
-                  </span>
+                  <span className="text-red-500 text-sm">{profileErrors.email.message}</span>
+                )}
+              </div>
+
+              <div className={styles.inputs}>
+                <label className="block text-sm font-medium">Phone Number</label>
+                <input {...registerProfile("phoneNumber")} type="tel" className="w-full px-3 py-2 border rounded" />
+                {profileErrors.phoneNumber && (
+                  <span className="text-red-500 text-sm">{profileErrors.phoneNumber.message}</span>
                 )}
               </div>
             </div>
-            
+
             <div className={styles.formGroup}>
               <div className={styles.inputs}>
-                <label className="block text-sm font-medium">Phone Number</label>
-                <input
-                  {...registerProfile("phoneNumber")}
-                  type="tel"
-                  className="w-full px-3 py-2 border rounded"
+                <label htmlFor="pickupAddress" className="block text-sm font-medium">Adresse de ramassage</label>
+                <Controller
+                  control={controlProfile}
+                  name="pickupAddress"
+                  render={({ field }) => (
+                    <AddressAutocomplete
+                      id="pickupAddress"
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      onBlur={field.onBlur}
+                      inputRef={field.ref}
+                      onSelect={(addr) => {
+                        setProfileFieldValue(
+                          "pickupAddress",
+                          addr ? `${addr.streetNumber} ${addr.streetName}` : "",
+                          { shouldValidate: true }
+                        );
+                        setProfileFieldValue("pickupCity", addr?.city ?? "");
+                        setProfileFieldValue("pickupPostalCode", addr?.postalCode ?? "");
+                      }}
+                    />
+                  )}
                 />
-                {profileErrors.phoneNumber && (
-                  <span className="text-red-500 text-sm">
-                    {profileErrors.phoneNumber.message}
-                  </span>
+                {profileErrors.pickupAddress && (
+                  <span className="text-red-500 text-sm">{profileErrors.pickupAddress.message}</span>
                 )}
               </div>
 
               <div className={styles.inputs}>
                 <label className="block text-sm font-medium">Company Name</label>
-                <input
-                  {...registerProfile("companyName")}
-                  type="text"
-                  className="w-full px-3 py-2 border rounded"
-                />
+                <input {...registerProfile("companyName")} type="text" className="w-full px-3 py-2 border rounded" />
                 {profileErrors.companyName && (
-                  <span className="text-red-500 text-sm">
-                    {profileErrors.companyName.message}
-                  </span>
+                  <span className="text-red-500 text-sm">{profileErrors.companyName.message}</span>
                 )}
               </div>
             </div>
 
             <div className={styles.accountStatus}>
               {sessionUser?.role === "groupAdmin" ? <span className={styles.role}>Administrateur</span> : <span className={styles.role}>User</span>}
-              {sessionUser?.groupStatus === "SOLO" &&<span className={styles.solo}>solo</span>}
-              {sessionUser?.groupStatus === "PENDING" &&<span className={styles.pending}>En attente de rejoindre un groupe</span>}
-              {sessionUser?.groupStatus === "JOINED" &&<span className={styles.joined}>{sessionUser?.groupName}</span>}
+              {sessionUser?.groupStatus === "SOLO" && <span className={styles.solo}>solo</span>}
+              {sessionUser?.groupStatus === "PENDING" && <span className={styles.pending}>En attente de rejoindre un groupe</span>}
+              {sessionUser?.groupStatus === "JOINED" && <span className={styles.joined}>{sessionUser?.groupName}</span>}
             </div>
 
             <div className={styles.btnSave}>
@@ -268,37 +280,24 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
               </button>
             </div>
           </form>
-        
+
           <h3 className="text-xl font-semibold mb-4">Change Password</h3>
 
           {passwordSuccess && (
-            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">
-              {passwordSuccess}
-            </div>
+            <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">{passwordSuccess}</div>
           )}
 
           {passwordError && (
-            <p role="alert" className={styles.formError}>
-              {passwordError}
-            </p>
+            <p role="alert" className={styles.formError}>{passwordError}</p>
           )}
 
           <form onSubmit={handleSubmitPassword(onSubmitPassword)} className="space-y-4">
             <div className={styles.formGroup}>
               <div className={styles.inputs}>
-                <label className="block text-sm font-medium">
-                  Current Password
-                </label>
-                <input
-                  {...registerPassword("currentPassword")}
-                  type="password"
-                  autoComplete="current-password"
-                  className="w-full px-3 py-2 border rounded"
-                />
+                <label className="block text-sm font-medium">Current Password</label>
+                <input {...registerPassword("currentPassword")} type="password" autoComplete="current-password" className="w-full px-3 py-2 border rounded" />
                 {passwordErrors.currentPassword && (
-                  <span className="text-red-500 text-sm">
-                    {passwordErrors.currentPassword.message}
-                  </span>
+                  <span className="text-red-500 text-sm">{passwordErrors.currentPassword.message}</span>
                 )}
               </div>
             </div>
@@ -306,36 +305,21 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
             <div className={styles.formGroup}>
               <div className={styles.inputs}>
                 <label className="block text-sm font-medium">New Password</label>
-                <input
-                  {...registerPassword("newPassword")}
-                  type="password"
-                  autoComplete="new-password"
-                  className="w-full px-3 py-2 border rounded"
-                />
+                <input {...registerPassword("newPassword")} type="password" autoComplete="new-password" className="w-full px-3 py-2 border rounded" />
                 {passwordErrors.newPassword && (
-                  <span className="text-red-500 text-sm">
-                    {passwordErrors.newPassword.message}
-                  </span>
+                  <span className="text-red-500 text-sm">{passwordErrors.newPassword.message}</span>
                 )}
               </div>
 
               <div className={styles.inputs}>
-                <label className="block text-sm font-medium">
-                  Confirm Password
-                </label>
-                <input
-                  {...registerPassword("confirmPassword")}
-                    type="password"
-                    autoComplete="new-password"
-                    className="w-full px-3 py-2 border rounded"
-                />
+                <label className="block text-sm font-medium">Confirm Password</label>
+                <input {...registerPassword("confirmPassword")} type="password" autoComplete="new-password" className="w-full px-3 py-2 border rounded" />
                 {passwordErrors.confirmPassword && (
-                  <span className="text-red-500 text-sm">
-                    {passwordErrors.confirmPassword.message}
-                  </span>
+                  <span className="text-red-500 text-sm">{passwordErrors.confirmPassword.message}</span>
                 )}
               </div>
             </div>
+
             <div className={styles.btnSave}>
               <button type="submit" disabled={isLoading}>
                 {isLoading ? "Saving..." : "Update Password"}

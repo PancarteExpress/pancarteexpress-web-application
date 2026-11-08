@@ -12,6 +12,7 @@ import { getServiceAccess } from '@/lib/users/server/serviceAccess.service';
 
 import { after } from 'next/server';
 import { sendReceipts } from '@/lib/orders/server/receipts.email';
+import { syncOrderToOptimoRoute } from '@/lib/optimoroute/server/syncOrder';
 
 export interface CheckoutUser {
   id: string;
@@ -110,6 +111,7 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
     // Commande définitive dès maintenant (connecté ou services seulement)
     const orderId = order.id;
     after(() => sendReceipts(orderId));
+    if (serviceItems.length > 0) after(() => syncOrderToOptimoRoute(orderId));
     return { mode: 'submitted', orderNumber: order.orderNumber, total: order.total };
   }
 
@@ -147,8 +149,9 @@ async function buildProductLines(items: ProductItem[]) {
 
 const toServiceRequestCreate = (item: ServiceRequestItem): Prisma.ServiceRequestCreateWithoutOrderInput => ({
   requestType: item.requestType,
-  delay: item.schedule.delay,
-  requestedDate: item.schedule.delay === 'specificDate' && item.schedule.date ? new Date(`${item.schedule.date}T00:00:00Z`) : null,
+  // Grand format : aucun délai
+  delay: item.schedule?.delay ?? null,
+  requestedDate: item.schedule?.delay === 'specificDate' && item.schedule.date ? new Date(`${item.schedule.date}T00:00:00Z`) : null,
   addresses: {
     create: item.addresses.map((address) => ({
       // MODIFIÉ : le client utilise encore 'address' ; la BD utilise 'civicAddress'

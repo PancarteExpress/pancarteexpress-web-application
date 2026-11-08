@@ -114,25 +114,32 @@ export function GroupsTable({ groups, users, search }: GroupsTableProps) {
                 </tr>
 
                 {isOpen && (
-                  <tr id={panelId} className={styles.panelRow}>
-                    <td colSpan={4}>
-                      {members.length === 0 ? (
-                        <p className={styles.empty}>Aucun membre.</p>
-                      ) : (
-                        <ul className={styles.memberList}>
-                          {members.map((m) => (
-                            <li key={m.id} className={styles.member}>
-                              <span className={styles.memberName}>{getDisplayName(m)}</span>
-                              <a href={`mailto:${m.email}`} className={styles.memberEmail}>
-                                {m.email}
-                              </a>
-                              <span className={styles.memberRole}>{ROLE_LABELS[m.role]}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </td>
-                  </tr>
+                <>
+
+                <tr id={panelId} className={styles.panelRow}>
+                  <th>Liste des membres de l equipe</th>
+                </tr>
+
+                <tr id={panelId} className={styles.panelRow}>
+                  <td colSpan={5} className={styles.panelCell}>
+                    {members.length === 0 ? (
+                      <p className={styles.empty}>Aucun membre.</p>
+                    ) : (
+                      <ul className={styles.memberList}>
+                        {members.map((m) => (
+                          <li key={m.id} className={styles.member}>
+                            <span className={styles.memberName}>{getDisplayName(m)}</span>
+                            <a href={`mailto:${m.email}`} className={styles.memberEmail}>
+                              {m.email}
+                            </a>
+                            <span className={styles.memberRole}>{ROLE_LABELS[m.role]}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </td>
+                </tr>
+                </>
                 )}
               </Fragment>
             );

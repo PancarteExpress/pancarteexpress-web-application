@@ -1,15 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { OrderOwner, UserOrder } from '@/lib/orders/server/orders.service';
 import { formatCents } from '@/lib/pricing/money';
 import { getDisplayName } from '@/shared/utils/displayName';
+import { formatServiceDelay } from '@/lib/orders/serviceDelay';
 
 import styles from './ServiceOrders.module.css';
 
 interface Props {
   orders: (UserOrder & { user?: OrderOwner | null })[];
   title?: string;
+  productsVisible?: boolean;
+  toolbar?: ReactNode;
 }
 
 type ServiceAddressRow = UserOrder['serviceRequests'][number]['addresses'][number];
@@ -20,12 +23,15 @@ const SERVICE_LABELS: Record<OrderService['type'], string> = {
   removal: 'Retrait',
   correction: 'Correction',
   pickup: 'Ramassage',
+  largeInstallation: 'Installation grand format',
+  largeStoragePickup: 'Ramassage pour entreposage (grand format)',
+  largeRetrieval: 'Récupération grand format',
 };
 
 // null = le SuperAdmin n'a pas encore fixé le prix
 const formatServicePrice = (price: OrderService['price']): string => price === null ? 'sur soumission' : formatCents(price, 'fr');
 
-export default function ServiceOrders({ orders, title = 'Demandes de service' }: Props) {
+export default function ServiceOrders({ orders, title = 'Demandes de service', productsVisible = true, toolbar }: Props) {
   const [openOrderId, setOpenOrderId] = useState<string | null>(null);
   const toggleOrder = (id: string) => setOpenOrderId((prev) => (prev === id ? null : id));
 
@@ -38,6 +44,8 @@ export default function ServiceOrders({ orders, title = 'Demandes de service' }:
           <span>Commande</span>
         </div>
       </div>
+
+      {toolbar}
 
       {orders.length === 0 ? (
         <div className={styles.noOrders}>
@@ -68,7 +76,7 @@ export default function ServiceOrders({ orders, title = 'Demandes de service' }:
 
               {openOrderId === order.id && (
                 <div className={styles.details}>
-                  {order.products.length !== 0 && (
+                  {order.products.length !== 0 && productsVisible && (
                     <div className={styles.products}>
                       <h3>Produits :</h3>
                       {order.products.map((product) => (
@@ -82,6 +90,11 @@ export default function ServiceOrders({ orders, title = 'Demandes de service' }:
                   {addresses.length !== 0 && (
                     <div className={styles.services}>
                       <h3>Services :</h3>
+                      {order.serviceRequests.map((r) => (
+                        <p key={r.id} className={styles.delay}>
+                          Délai : {formatServiceDelay(r.delay, r.requestedDate)}
+                        </p>
+                      ))}
                       {addresses.map((address) => (
                         <label key={address.id}>
                           <span className={styles.addressKind}>

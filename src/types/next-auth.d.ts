@@ -20,6 +20,7 @@ declare module "next-auth" {
     emailVerified?: Date | null;
     sessions?: PrismaSession[];
     groupName?: string | null;
+    needsPickupInfo?: boolean;
   }
 
   interface Session {
@@ -44,5 +45,6 @@ declare module "next-auth/jwt" {
     emailVerified?: Date | null;
     sessions?: PrismaSession[];
     groupName: string | null;
+    needsPickupInfo?: boolean;
   }
 }

@@ -23,6 +23,7 @@ export async function refreshSessionToken(token: JWT, signedInUserId?: string): 
         role: true,
         groupStatus: true,
         groupId: true,
+        needsPickupInfo: true,
         group: { select: { name: true } },
       },
     });

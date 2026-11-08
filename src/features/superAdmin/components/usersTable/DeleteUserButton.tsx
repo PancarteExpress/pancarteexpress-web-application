@@ -65,7 +65,7 @@ export function DeleteUserButton({
   return (
     <>
       <button
-      style={{all: 'unset', cursor: 'pointer'}}
+        style={{all: 'unset', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',}}
         type="button"
         className={className}
         onClick={handleClick}

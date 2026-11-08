@@ -1,3 +1,4 @@
+import { isValidReceptionDate } from "@/shared/utils/quebecDates";
 import * as z from "zod";
 
 const firstNameSchema = z.string().min(2, "First name required");
@@ -30,24 +31,69 @@ export const storeGroupStatusSchema = z.object({
   groupStatus: signupGroupStatusSchema,
 });
 
-export const registerSchema = z.object({
-  firstName: firstNameSchema,
-  lastName: lastNameSchema,
-  email: emailSchema,
-  password: passwordSchema,
-  confirmPassword: z.string(),
-  phoneNumber: phoneSchema,
-  companyName: z.string().optional(),
-  locale: localeSchema,
-})
-.refine((data) => data.password === data.confirmPassword, {
-  message: "Les mots de passe ne correspondent pas",
-  path: ["confirmPassword"],
-})
-.refine((data) => data.firstName && data.lastName && data.email && data.password && data.phoneNumber, {
-  message: "Veuillez remplir tous les champs requis",
-  path: ["root"],
+export const pickupFieldsSchema = z.object({
+  pickupMode: z.enum(["address", "warehouse"]),
+  pickupAddress: z.string().optional(),
+  pickupCity: z.string().optional(),
+  pickupPostalCode: z.string().optional(),
+  receptionDate: z.string().optional(),
+  pickupNotes: z.string().optional(),
 });
+
+export type PickupFieldsInput = z.infer<typeof pickupFieldsSchema>;
+
+export function applyPickupRules(data: PickupFieldsInput, ctx: z.RefinementCtx) {
+  if (data.pickupMode === "address") {
+    if (!data.pickupAddress?.trim()) {
+      ctx.addIssue({ code: "custom", path: ["pickupAddress"], message: "Adresse requise" });
+    }
+    if (!data.pickupCity?.trim()) {
+      ctx.addIssue({ code: "custom", path: ["pickupCity"], message: "Ville requise" });
+    }
+    if (!data.pickupPostalCode?.trim()) {
+      ctx.addIssue({ code: "custom", path: ["pickupPostalCode"], message: "Code postal requis" });
+    }
+  }
+
+  if (data.pickupMode === "warehouse") {
+    if (!data.receptionDate) {
+      ctx.addIssue({ code: "custom", path: ["receptionDate"], message: "Date requise" });
+    } else if (!isValidReceptionDate(data.receptionDate)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["receptionDate"],
+        message: "Choisissez un jour ouvrable, à partir d'aujourd'hui",
+      });
+    }
+  }
+}
+
+// Utilisé par la page de complétion (Google)
+export const pickupSchema = pickupFieldsSchema.superRefine(applyPickupRules);
+
+export const registerSchema = z
+  .object({
+    firstName: firstNameSchema,
+    lastName: lastNameSchema,
+    email: emailSchema,
+    password: passwordSchema,
+    confirmPassword: z.string(),
+    phoneNumber: phoneSchema,
+    companyName: z.string().optional(),
+    locale: localeSchema,
+    ...pickupFieldsSchema.shape
+  })
+  .superRefine((data, ctx) => {
+    if (data.password !== data.confirmPassword) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["confirmPassword"],
+        message: "Les mots de passe ne correspondent pas",
+      });
+    }
+
+    applyPickupRules(data, ctx);
+  });
 
 export const verifyEmailSchema = z.object({
   email: emailSchema,
@@ -56,10 +102,11 @@ export const verifyEmailSchema = z.object({
   lastName: lastNameSchema,
   password: passwordSchema,
   phoneNumber: phoneSchema,
-  companyName: z.string().optional(),  
+  companyName: z.string().optional(),
   groupStatus: signupGroupStatusSchema,
   locale: localeSchema,
-});
+}).extend(pickupFieldsSchema.shape)
+  .superRefine(applyPickupRules);
 
 export const loginSchema = z.object({
   email: emailSchema,
@@ -76,6 +123,9 @@ export const updateProfileSchema = z.object({
   phoneNumber: phoneSchema.optional(),
   companyName: z.string().optional(),
   groupStatus: z.enum(["SOLO", "PENDING", "JOINED"]).optional(),
+  pickupAddress: z.string().optional(),
+  pickupCity: z.string().optional(),
+  pickupPostalCode: z.string().optional(),
 });
 
 export const updatePasswordSchema = z.object({

@@ -4,6 +4,10 @@ import { MAX_QUANTITY, REQUEST_TYPES, SERVICE_DELAYS } from '@/lib/orders/consta
 import { SERVICE_TYPES } from '@/lib/pricing/constants';
 import { earliestSpecificDate, isBusinessDay, parseIso, todayInMontreal } from '@/features/services/utils/holidays';
 import { isValidIsoDate } from '@/features/services/utils/time';
+import { LARGE_FORMAT_SERVICES } from '@/features/services/constants/largeFormat';
+
+const LARGE_FORMAT_SET: ReadonlySet<string> = new Set(LARGE_FORMAT_SERVICES);
+const isLargeFormatService = (type: string) => LARGE_FORMAT_SET.has(type);
 
 // Limites anti-abus : un payload légitime n'en approche jamais
 const MAX_CART_ITEMS = 50;
@@ -104,12 +108,23 @@ const terrainAddressSchema = z.object({
 
 const serviceAddressSchema = z.discriminatedUnion('type', [streetAddressSchema, terrainAddressSchema]);
 
-const serviceRequestItemSchema = z.object({
-  kind: z.literal('serviceRequest'),
-  requestType: z.enum(REQUEST_TYPES),
-  schedule: scheduleSchema,
-  addresses: z.array(serviceAddressSchema).min(1).max(MAX_ADDRESSES_PER_REQUEST),
-});
+const serviceRequestItemSchema = z
+  .object({
+    kind: z.literal('serviceRequest'),
+    requestType: z.enum(REQUEST_TYPES),
+    /** Résidentiel : obligatoire ; grand format : null (pas de délai) */
+    schedule: scheduleSchema.nullable(),
+    addresses: z.array(serviceAddressSchema).min(1).max(MAX_ADDRESSES_PER_REQUEST),
+  })
+  .superRefine((item, ctx) => {
+    const residential = item.requestType === 'residential';
+    if (residential !== (item.schedule !== null)) {
+      ctx.addIssue({ code: 'custom', path: ['schedule'], message: 'invalidSchedule' });
+    }
+    // Chaque service doit appartenir au type de la demande (pas de service résidentiel dans une demande grand format)
+    const mismatch = item.addresses.some((a) => a.services.some((s) => isLargeFormatService(s.type) === residential));
+    if (mismatch) ctx.addIssue({ code: 'custom', path: ['addresses'], message: 'invalidSchedule' });
+  });
 
 const checkoutItemSchema = z.discriminatedUnion('kind', [productItemSchema, serviceRequestItemSchema]);
 

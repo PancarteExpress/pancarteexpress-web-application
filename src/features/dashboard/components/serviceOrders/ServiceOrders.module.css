@@ -50,103 +50,389 @@
     font-weight: 700;
 }
 
-.mainContainer .orders {
-    
+.delay {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-text);
+  font-weight: 600;
 }
+
+/* ─── Carte commande ─── */
+
+.mainContainer .orders {
+    background: #fff;
+    border: 1px solid #D8E8F8;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 12px;
+}
+
+/* ─── En-tête ─── */
 
 .mainContainer .orders .resume {
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
 }
 
 .mainContainer .orders .resume .orderNumber {
-    flex: 70%;
-    padding: 10px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+    
 }
 
-.mainContainer .orders .resume .orderNumber label {
-    font-weight: 700;
-    font-size: 1.2rem;
+/* Le label interne a aussi la classe orderNumber : on annule les styles du conteneur */
+.mainContainer .orders .resume .orderNumber .orderNumber {
+    flex: none;
+    padding: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2rem !important;
+    font-weight: 900;
+    color: #092E5B;
 }
 
-.mainContainer .orders .resume .orderNumber .orderDetails {
-    font-weight: 700;
-    font-size: 1.2rem;
-    padding: 10px;
+/* Badge du membre (visible seulement quand order.user existe) */
+.mainContainer .orders .resume .orderNumber .orderOwner {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #F4F6F9;
+    border: 1px solid #D8E8F8;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #092E5B;
 }
+
+.mainContainer .orders .resume .orderNumber .orderOwner::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #0E4D9A;
+}
+
+/* ─── Bouton Détails / Fermer ─── */
 
 .mainContainer .orders .resume .status {
-    flex: 30%;
-
+    flex: none;
     display: flex;
-    justify-content: space-between;
-    gap: 10px;
-
-    padding: 10px;
-}
-
-.mainContainer .orders .resume .status button,
-.mainContainer .orders .resume .status label {
-    
-    border-radius: 10px;
-    width: 50%;
-    text-align: center;
-    padding: 3px;
-    font-size: 0.8rem;
-    font-weight: 700;
+    align-items: center;
+    padding: 0;
 }
 
 .mainContainer .orders .resume .status button {
-    border: 3px solid #0E4D9A;
-    background-color: #D8E8F8;
+    all: unset;
     cursor: pointer;
+    background: #E8F1FB;
+    color: #0E4D9A;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 1rem !important;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background .15s;
+}
+
+.mainContainer .orders .resume .status button:hover {
+    background: #D8E8F8;
 }
 
 .mainContainer .orders .resume .status .canceled {
-    border: 3px solid #BD2B26;
-    background-color: #FF9E94;
-    color: #BD2B26;
+    background: #FDECEA;
+    color: #C62828;
+    border-radius: 20px;
+    padding: 3px 9px;
+    font-size: 10px;
+    font-weight: 700;
 }
 
+/* ─── Détails ─── */
+
 .mainContainer .orders .details {
-    border: 3px solid #4F7FB8;
-    border-radius: 10px;
-    padding: 10px;
-    margin: 10px;
+    border: none;
+    border-top: 1px solid #EEF4FB;
+    border-radius: 0;
+    margin: 0;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
 .mainContainer .orders .details .products,
 .mainContainer .orders .details .services {
     display: flex;
-    flex-direction: column;
-
-    font-weight: 700;
-
-    margin: 10px 0;
+    margin: 0;
+    font-weight: 600;
 }
 
 .mainContainer .orders .details .products h3,
 .mainContainer .orders .details .services h3 {
-    color: #0E4D9A;
-    
+    font-size: 0.8rem !important;
+    font-weight: 700;
+    color: #5F7FA8;
+    text-transform: uppercase;
+    letter-spacing: .05em;
 }
 
-.mainContainer .orders .details .products label,
+/* Produits : pastilles en ligne */
+.mainContainer .orders .details .products {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.mainContainer .orders .details .products h3 {
+    flex: 0 0 100%;
+}
+
+.mainContainer .orders .details .products label {
+    margin: 0;
+    background: #F4F6F9;
+    border: 1px solid #D8E8F8;
+    border-radius: 5px;
+    padding: 2px 8px;
+    font-size: 1rem !important;
+    font-weight: 600;
+    color: #1A1A2E;
+}
+
+/* Services : une ligne par adresse */
+.mainContainer .orders .details .services {
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mainContainer .orders .details .services .delay {
+    font-size: 0.875rem !important;
+    font-weight: 600;
+    color: #5F7FA8;
+}
+
 .mainContainer .orders .details .services label {
-    
-    margin: 15px 10px;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.1rem !important;
+    font-weight: 500;
+    color: #1A1A2E;
 }
 
 .mainContainer .orders .details .services label .addressKind {
-    border: 3px solid #B8DED3;
-    border-radius: 10px;
-    padding: 3px;
-    margin-right: 10px;
+    border: none;
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin: 0;
+    background: #E8F5E9;
+    color: #1B5E20;
+    font-size: 0.75rem !important;
+    font-weight: 700;
 }
 
 .mainContainer .orders .details .services label .addressDetails {
-    margin-right: 10px;
+    margin: 0;
 }
 
 .mainContainer .orders .details .services label .selectedServices {
     color: #0E4D9A;
+    font-size: 11px;
+    font-weight: 600;
+}/* ─── Carte commande ─── */
+
+.mainContainer .orders {
+    background: #fff;
+    border: 1px solid #D8E8F8;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 12px;
+}
+
+/* ─── En-tête ─── */
+
+.mainContainer .orders .resume {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+}
+
+.mainContainer .orders .resume .orderNumber {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0;
+}
+
+/* Le label interne a aussi la classe orderNumber : on annule les styles du conteneur */
+.mainContainer .orders .resume .orderNumber .orderNumber {
+    flex: none;
+    padding: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 900;
+    color: #092E5B;
+}
+
+/* Badge du membre (visible seulement quand order.user existe) */
+.mainContainer .orders .resume .orderNumber .orderOwner {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #F4F6F9;
+    border: 1px solid #D8E8F8;
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #092E5B;
+}
+
+.mainContainer .orders .resume .orderNumber .orderOwner::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #0E4D9A;
+}
+
+/* ─── Bouton Détails / Fermer ─── */
+
+.mainContainer .orders .resume .status {
+    flex: none;
+    display: flex;
+    align-items: center;
+    padding: 0;
+}
+
+.mainContainer .orders .resume .status button {
+    all: unset;
+    cursor: pointer;
+    background: #E8F1FB;
+    color: #0E4D9A;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: background .15s;
+}
+
+.mainContainer .orders .resume .status button:hover {
+    background: #D8E8F8;
+}
+
+.mainContainer .orders .resume .status .canceled {
+    background: #FDECEA;
+    color: #C62828;
+    border-radius: 20px;
+    padding: 3px 9px;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+/* ─── Détails ─── */
+
+.mainContainer .orders .details {
+    border: none;
+    border-top: 1px solid #EEF4FB;
+    border-radius: 0;
+    margin: 0;
+    padding: 12px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.mainContainer .orders .details .products,
+.mainContainer .orders .details .services {
+    display: flex;
+    margin: 0;
+    font-weight: 600;
+}
+
+.mainContainer .orders .details .products h3,
+.mainContainer .orders .details .services h3 {
+    font-size: 10px;
+    font-weight: 700;
+    color: #5F7FA8;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+/* Produits : pastilles en ligne */
+.mainContainer .orders .details .products {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.mainContainer .orders .details .products h3 {
+    flex: 0 0 100%;
+}
+
+.mainContainer .orders .details .products label {
+    margin: 0;
+    background: #F4F6F9;
+    border: 1px solid #D8E8F8;
+    border-radius: 5px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #1A1A2E;
+}
+
+/* Services : une ligne par adresse */
+.mainContainer .orders .details .services {
+    flex-direction: column;
+    gap: 6px;
+}
+
+.mainContainer .orders .details .services .delay {
+    font-size: 11px;
+    font-weight: 600;
+    color: #5F7FA8;
+}
+
+.mainContainer .orders .details .services label {
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1A1A2E;
+}
+
+.mainContainer .orders .details .services label .addressKind {
+    border: none;
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin: 0;
+    background: #E8F5E9;
+    color: #1B5E20;
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.mainContainer .orders .details .services label .addressDetails {
+    margin: 0;
+}
+
+.mainContainer .orders .details .services label .selectedServices {
+    color: #0E4D9A;
+    font-size: 0.875rem !important;
+    font-weight: 600;
 }

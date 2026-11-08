@@ -1,13 +1,14 @@
 "use client";
 
 import styles from "./DashboardContent.module.css"
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { modalLoading } from "@/shared/components/deferredLoading/DeferredLoading";
 
 import { useSession } from "next-auth/react";
 import type { TeamOrder, UserOrder } from '@/lib/orders/server/orders.service';
 import ServiceOrders from '../serviceOrders/ServiceOrders';
+import { MemberFilter } from '../memberFilter/MemberFilter';
 
 const UpdateProfile = dynamic(() => import("../updateProfile/UpdateProfile"), { loading: modalLoading });
 const UpdateGroup = dynamic(() => import("../updateGroup/UpdateGroup"), { loading: modalLoading });
@@ -39,6 +40,18 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
 
   const [updateGroupOpen, setUpdateGroupOpen] = useState<boolean>(false);
   const canManageGroup = sessionUser?.role === "groupAdmin" && group !== null;
+
+  const teamMembers = useMemo(
+    () => group?.users.filter((u) => u.role === "user" && u.groupStatus === "JOINED") ?? [],
+    [group],
+  );
+  const [memberFilter, setMemberFilter] = useState<string>("");
+  // Si le membre sélectionné a été retiré du groupe, on revient à « Tous »
+  const activeMemberId = teamMembers.some((m) => m.id === memberFilter) ? memberFilter : "";
+  const filteredTeamOrders = useMemo(
+    () => (activeMemberId ? teamOrders.filter((o) => o.user?.id === activeMemberId) : teamOrders),
+    [teamOrders, activeMemberId],
+  );
 
   return (
     <div className={styles.mainContainer}>
@@ -141,7 +154,16 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
       <ServiceOrders orders={orders} title={canManageGroup ? "Mes demandes de service" : "Demandes de service"} />
 
       {canManageGroup && (
-        <ServiceOrders orders={teamOrders} title="Demandes de service de l'équipe" />
+        <ServiceOrders
+          orders={filteredTeamOrders}
+          title="Demandes de service de l'équipe"
+          productsVisible={false}
+          toolbar={
+            teamMembers.length > 0 && (
+              <MemberFilter members={teamMembers} value={activeMemberId} onChange={setMemberFilter} />
+            )
+          }
+        />
       )}
 
       {updateProfileOpen && (

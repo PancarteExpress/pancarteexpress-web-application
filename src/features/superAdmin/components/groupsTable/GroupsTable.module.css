@@ -68,6 +68,8 @@
 }
 
 .panelRow td {
+  
+
   padding: 0 14px 14px;
   background: #F8FAFC;
   white-space: normal; /* annule le nowrap des cellules */

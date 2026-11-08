@@ -12,6 +12,8 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
     redirect(`/${locale}/login`);
   }
 
+  if (session.user.needsPickupInfo) redirect(`/${locale}/complete-profile`);
+
   const { id: userId, role, groupId } = session.user;
 
   const [orders, group, teamOrders] = await Promise.all([

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 import { stripe } from '@/lib/stripe/server';
 import { after } from 'next/server';
 import { sendReceipts } from '@/lib/orders/server/receipts.email';
+import { syncOrderToOptimoRoute } from '@/lib/optimoroute/server/syncOrder';
 
 export async function handlePaymentSucceeded(intent: Stripe.PaymentIntent): Promise<void> {
   const orderId = intent.metadata.orderId;
@@ -49,6 +50,7 @@ export async function handlePaymentSucceeded(intent: Stripe.PaymentIntent): Prom
 
   const paidOrderId = order.id;
   after(() => sendReceipts(paidOrderId));
+  after(() => syncOrderToOptimoRoute(paidOrderId));
 }
 
 export function handlePaymentFailed(intent: Stripe.PaymentIntent): void {

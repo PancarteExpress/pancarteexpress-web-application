@@ -1,7 +1,8 @@
 'use client';
 
 import { useId, useState } from 'react';
-import { SERVICE_LABELS } from '@/features/services/constants/installation';
+import { ALL_SERVICE_LABELS, isLargeFormatService } from '@/features/services/utils/serviceRequestType';
+import { LargeFormatSummary } from './largeFormat/LargeFormatSummary';
 import type { Address } from '@/features/services/types/address';
 import type { Service } from '@/features/services/types/services';
 import { formatAddress } from '@/features/services/utils/formatAddress';
@@ -63,13 +64,13 @@ function ServiceItem({ service, onRemove }: { service: Service; onRemove: () => 
 
   const handleRemove = () => {
     // Même règle que décocher un service enregistré
-    if (window.confirm(`Supprimer le service « ${SERVICE_LABELS[service.type]} » ?`)) onRemove();
+    if (window.confirm(`Supprimer le service « ${ALL_SERVICE_LABELS[service.type]} » ?`)) onRemove();
   };
 
   return (
     <li className={styles.service}>
       <div className={styles.serviceRow}>
-        <span className={styles.serviceName} data-type={service.type}>{SERVICE_LABELS[service.type]}</span>
+        <span className={styles.serviceName} data-type={service.type}>{ALL_SERVICE_LABELS[service.type]}</span>
         <div className={styles.actions}>
           <button
             type="button"
@@ -88,6 +89,7 @@ function ServiceItem({ service, onRemove }: { service: Service; onRemove: () => 
         {service.type === 'removal' && <RemovalSummary details={service} />}
         {service.type === 'correction' && <CorrectionSummary details={service} />}
         {service.type === 'pickup' && <PickupSummary details={service} />}
+        {isLargeFormatService(service) && <LargeFormatSummary service={service} />}
       </div>
     </li>
   );

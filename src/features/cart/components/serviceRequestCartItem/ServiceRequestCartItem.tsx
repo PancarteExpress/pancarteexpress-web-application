@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { formatAddress } from '@/features/services/utils/formatAddress';
 import type { ServiceRequestCartItem as ServiceRequestCartItemType } from '../../types/cart';
+import { formatServiceDate, isoToUtcDate } from '@/lib/orders/serviceDelay';
 import styles from './ServiceRequestCartItem.module.css';
 
 interface Props {
@@ -12,12 +13,20 @@ interface Props {
   onRemove: () => void;
 }
 
-export default function ServiceRequestCartItem({ item, onRemove }: Props) {
+export default function ServiceRequestCartItem({ item, locale, onRemove }: Props) {
   const t = useTranslations('cart');
   const [confirming, setConfirming] = useState(false);
 
   const addresses = item.addresses.filter((a) => a.services.length > 0);
   const labels = { terrain: t('terrain'), near: t('near'), apartment: t('apartment') };
+
+  const { schedule } = item;
+  // Grand format : aucun délai
+  const delayText =
+    schedule === null ? t('delay.none')
+    : schedule.delay === 'specificDate'
+      ? t('delay.specificDate', { date: formatServiceDate(isoToUtcDate(schedule.date), locale === 'en' ? 'en-CA' : 'fr-CA') })
+      : t(`delay.${schedule.delay}`);
 
   return (
     <article className={styles.card}>
@@ -25,6 +34,8 @@ export default function ServiceRequestCartItem({ item, onRemove }: Props) {
         <span className={styles.badge}>{t(`requestType.${item.requestType}`)}</span>
         <span className={styles.total}>{t('priceOnQuote')}</span>
       </header>
+
+      <p className={styles.delay}>{delayText}</p>
 
       <ul className={styles.addresses}>
         {addresses.map((address) => (

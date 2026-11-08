@@ -13,8 +13,7 @@ import {
 } from "@/lib/auth/server/authEmails";
 
 import type { RegisterInput, UpdateProfileInput, UpdatePasswordInput, ForgotPasswordInput } from "@/lib/auth/auth.schema";
-
-
+import { PickupCreateData } from "./pickup";
 
 const CODE_TTL_MS = 15 * 60 * 1000;
 const MAX_CODE_ATTEMPTS = 5;
@@ -115,6 +114,7 @@ export const authService = {
     companyName: string | undefined,
     groupStatus: "SOLO" | "PENDING",
     locale: EmailLocale = "fr",
+    pickup?: PickupCreateData
   ) {
     await assertValidCode(email, code, "EMAIL_VERIFICATION");
 
@@ -131,6 +131,7 @@ export const authService = {
           password: hashedPassword,
           emailVerified: new Date(),
           groupStatus,
+          pickupInfo: pickup ? { create: pickup } : undefined,
         },
         select: publicUserSelect,
       }),

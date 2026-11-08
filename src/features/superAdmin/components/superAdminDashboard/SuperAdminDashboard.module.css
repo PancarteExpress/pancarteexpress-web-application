@@ -19,6 +19,9 @@
   
 }
 
+.tableActions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.filterSelect { font-family: var(--font-text); }
+
 @media (max-width: 1000px) { .container .sidebar .sidebarHead {padding-top: 20px;} }
 
 .container .sidebar .sidebarHead .sidebarTitle {

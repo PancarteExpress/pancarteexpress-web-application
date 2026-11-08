@@ -13,6 +13,7 @@ import type { ParsedAddress } from '@/shared/types/address';
 import { useCart } from '@/features/cart/hooks/useCart';
 import { formatCents } from '@/lib/pricing/money';
 import { checkoutSchema, type CheckoutInput } from '../../schemas/checkout.schema';
+import { formatServiceDate, isoToUtcDate } from '@/lib/orders/serviceDelay';
 import {
   buildCheckoutPayload,
   submitCheckout,
@@ -188,7 +189,16 @@ function CheckoutForm() {
               ) : (
                 <div key={item.id} className={styles.item}>
                   <span>{tCart(`requestType.${item.requestType}`)}</span>
-                  <span />
+                  <span>
+                    {item.schedule === null
+                      ? tCart('delay.none')
+                      : item.schedule.delay === 'specificDate'
+                        ? tCart('delay.specificDate', {
+                            date: formatServiceDate(isoToUtcDate(item.schedule.date), locale === 'en' ? 'en-CA' : 'fr-CA'),
+                          })
+                        : tCart(`delay.${item.schedule.delay}`)}
+                  </span>
+                  
                   <span>{tCart('priceOnQuote')}</span>
                 </div>
               ),

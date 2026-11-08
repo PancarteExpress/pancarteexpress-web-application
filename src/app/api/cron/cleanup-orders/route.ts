@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import { cleanupAbandonedOrders } from '@/lib/orders/server/cleanup.service';
+import { retryFailedOptimoSyncs } from '@/lib/optimoroute/server/syncOrder';
 
 function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
@@ -20,8 +21,13 @@ export async function GET(request: Request) {
 
   try {
     const result = await cleanupAbandonedOrders();
-    console.info('[cleanup] Terminé', result);
-    return NextResponse.json(result);
+    // Indépendant du nettoyage : un échec OptimoRoute ne doit pas faire échouer le cron
+    const optimoRetried = await retryFailedOptimoSyncs().catch((error: unknown) => {
+      console.error('[cron] Réessai OptimoRoute en échec', error);
+      return 0;
+    });
+    console.info('[cleanup] Terminé', { ...result, optimoRetried });
+    return NextResponse.json({ ...result, optimoRetried });
   } catch (error) {
     console.error('[cleanup] Échec', error);
     return NextResponse.json({ error: 'cleanupFailed' }, { status: 500 });

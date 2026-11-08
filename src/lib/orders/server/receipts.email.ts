@@ -4,6 +4,10 @@ import { prisma } from '@/lib/prisma';
 import { formatCents } from '@/lib/pricing/money';
 import { sendEmail, INTERNAL_EMAIL } from '@/lib/email/sendEmail';
 import { CONTACT } from '@/shared/constants/contact';
+import { formatServiceDelay } from '@/lib/orders/serviceDelay';
+import { LARGE_FORMAT_SERVICES } from '@/features/services/constants/largeFormat';
+import { parseLargeFormatService } from '@/features/services/schemas/largeFormatDomain.schema';
+import { describeLargeFormatService } from '@/features/services/utils/largeFormatText';
 
 /* ── Données de la commande ───────────────────────────────────── */
 
@@ -26,6 +30,8 @@ const receiptSelect = {
   serviceRequests: {
     select: {
       requestType: true,
+      delay: true,
+      requestedDate: true,
       addresses: {
         select: {
           kind: true,
@@ -35,7 +41,7 @@ const receiptSelect = {
           description: true,
           nearbyAddress: true,
           city: true,
-          services: { select: { type: true } },
+          services: { select: { type: true, details: true } },
         },
       },
     },
@@ -50,6 +56,9 @@ const SERVICE_LABELS: Record<ServiceType, string> = {
   removal: 'Retrait',
   correction: 'Correction',
   pickup: 'Ramassage',
+  largeInstallation: 'Installation grand format',
+  largeStoragePickup: 'Ramassage pour entreposage (grand format)',
+  largeRetrieval: 'Récupération grand format',
 };
 
 const REQUEST_LABELS: Record<RequestType, string> = {
@@ -90,17 +99,31 @@ function productLines(order: Receipt): string[] {
   ];
 }
 
+const LARGE_FORMAT_SET: ReadonlySet<string> = new Set(LARGE_FORMAT_SERVICES);
+
+/**
+ * Détails d'un service grand format. Ces demandes ne passent pas par OptimoRoute :
+ * le courriel est la seule trace détaillée pour l'équipe.
+ */
+function largeFormatDetailLines(service: { type: ServiceType; details: Prisma.JsonValue }): string[] {
+  if (!LARGE_FORMAT_SET.has(service.type)) return [];
+  const parsed = parseLargeFormatService(service.type, service.details);
+  if (!parsed) return [`    ${SERVICE_LABELS[service.type]} : détails illisibles (voir la base de données)`];
+  return [`    ${SERVICE_LABELS[service.type]} :`, ...describeLargeFormatService(parsed).map((line) => `      ${line}`)];
+}
+
 function serviceLines(order: Receipt): string[] {
   if (order.serviceRequests.length === 0) return [];
   return [
     'Services (prix sur soumission) :',
-    ...order.serviceRequests.flatMap((request) =>
-      request.addresses.map(
-        (address) =>
-          `- [${REQUEST_LABELS[request.requestType]}] ${formatAddress(address)} : ` +
+    ...order.serviceRequests.flatMap((request) => [
+      `Délai : ${formatServiceDelay(request.delay, request.requestedDate)}`,
+      ...request.addresses.flatMap((address) => [
+        `- [${REQUEST_LABELS[request.requestType]}] ${formatAddress(address)} : ` +
           address.services.map((s) => SERVICE_LABELS[s.type]).join(', '),
-      ),
-    ),
+        ...address.services.flatMap(largeFormatDetailLines),
+      ]),
+    ]),
   ];
 }
 

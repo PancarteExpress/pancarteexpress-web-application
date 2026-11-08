@@ -1,0 +1,13 @@
+.filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0;
+  font-family: var(--font-text);
+  font-size: 14px;
+}
+
+.filter select {
+  padding: 6px 8px;
+  max-width: 100%;
+}

@@ -37,15 +37,16 @@
   text-align: center;
 }
 
-.wrapper .table .colName         { width: 13%; }
-.wrapper .table .colMail         { width: 18%; }
-.wrapper .table .colPhoneNumber  { width: 7%; }
-.wrapper .table .colCompany      { width: 12%; }
-.wrapper .table .colRole         { width: 9%; }
-.wrapper .table .colGroup        { width: 11%; }
-.wrapper .table .colStatus       { width: 8%; }
-.wrapper .table .colRegisterDate { width: 5%; }
-.wrapper .table .colDeleteUser   { width: 5%; }
+.wrapper .table .colName         { width: 10%; }
+.wrapper .table .colMail         { width: 10%; }
+.wrapper .table .colPhoneNumber  { width: 10%; }
+.wrapper .table .colCompany      { width: 10%; }
+.wrapper .table .colRole         { width: 10%; }
+.wrapper .table .colGroup        { width: 10%; }
+.wrapper .table .colStatus       { width: 10%; }
+.wrapper .table .colRegisterDate { width: 10%; }
+.wrapper .table .colServiceBlock { width: 10%; }
+.wrapper .table .colDeleteUser   { width: 10%; }
 
 .wrapper .table tbody tr:hover {
   background: #f9fbfd;
@@ -144,3 +145,6 @@
   font-size: 11px;
   color: #5b6475;
 }
+
+.toolbar { display: flex; justify-content: flex-end; margin-bottom: 0.75rem; }
+.filter { display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-text); }

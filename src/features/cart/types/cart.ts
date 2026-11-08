@@ -22,7 +22,7 @@ export interface ServiceRequestCartItem extends CartItemBase {
   requestType: RequestType;
   addresses: Address[];
   /** Délai de réalisation, commun à toutes les adresses et tous les services de la demande */
-  schedule: ServiceSchedule;
+  schedule: ServiceSchedule | null;
 }
 
 export type CartItem = ProductCartItem | ServiceRequestCartItem;

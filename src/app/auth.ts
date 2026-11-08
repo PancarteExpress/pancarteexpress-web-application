@@ -122,6 +122,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               provider: account.provider,
               providerAccountId: account.providerAccountId,
               groupStatus,
+              needsPickupInfo: true,
             },
           });
 
@@ -157,6 +158,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.groupStatus = token.groupStatus;
         session.user.groupId = token.groupId;
         session.user.groupName = token.groupName;
+        session.user.needsPickupInfo = token.needsPickupInfo;
       }
       return session;
     },

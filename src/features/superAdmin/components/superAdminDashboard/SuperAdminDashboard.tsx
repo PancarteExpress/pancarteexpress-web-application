@@ -9,7 +9,11 @@ import { FaUser } from "react-icons/fa";
 import { FaUserGroup } from "react-icons/fa6";
 import { GiSandsOfTime } from "react-icons/gi";
 import { IoConstructSharp } from "react-icons/io5";
-
+import type { GroupStatus } from "@prisma/client";
+import { FilterSelect } from "./FilterSelect";
+import {
+  ADMIN_LIST_ROLES, GROUP_STATUSES, GROUP_STATUS_LABELS, ROLE_LABELS, type AdminListRole,
+} from "../../constants/labels";
 import type { AdminGroupRow } from "@/lib/groups/server/groups.service";
 import { GroupsTable } from "../groupsTable/GroupsTable";
 import { normalize } from "@/shared/utils/normalize";
@@ -28,16 +32,21 @@ export function AdminDashboard({ users, groups, services }: AdminDashboardProps)
     const pendingCount = users.filter((u) => u.groupStatus === "PENDING").length;
 
     const [search, setSearch] = useState("");
+    const [groupStatus, setGroupStatus] = useState<GroupStatus | null>(null);
     const [groupSearch, setGroupSearch] = useState("");
+    const [role, setRole] = useState<AdminListRole | null>(null);
   
     const filteredUsers = useMemo(() => {
         const query = normalize(search.trim());
-        if (!query) return users;
+        if (!query && !groupStatus && !role) return users;
 
-        return users.filter((u) => { const haystack = normalize( `${u.firstName ?? ""} ${u.lastName ?? ""} ${u.email}` );
-            return haystack.includes(query);
+        return users.filter((u) => {
+            if (groupStatus && u.groupStatus !== groupStatus) return false;
+            if (role && u.role !== role) return false;
+            if (!query) return true;
+            return normalize(`${u.firstName ?? ""} ${u.lastName ?? ""} ${u.email}`).includes(query);
         });
-    }, [users, search]);
+    }, [users, search, groupStatus, role]);
 
   return (
     <>
@@ -105,6 +114,25 @@ export function AdminDashboard({ users, groups, services }: AdminDashboardProps)
         <div className={styles.tableCard}>
             <div className={styles.tableHead}>
                 <span className={styles.tableTitle}>Liste des utilisateurs</span>
+                <div className={styles.tableActions}>
+                        <FilterSelect
+                        value={role}
+                        options={ADMIN_LIST_ROLES}
+                        labels={ROLE_LABELS}
+                        allLabel="Tous les rôles"
+                        ariaLabel="Filtrer par rôle"
+                        onChange={setRole}
+                        className={styles.filterSelect}
+                    />
+                    <FilterSelect
+                        value={groupStatus}
+                        options={GROUP_STATUSES}
+                        labels={GROUP_STATUS_LABELS}
+                        allLabel="Tous les statuts"
+                        ariaLabel="Filtrer par statut de groupe"
+                        onChange={setGroupStatus}
+                        className={styles.filterSelect}
+                    />
                 <input
                     className={styles.searchInput}
                     type="search"
@@ -112,6 +140,7 @@ export function AdminDashboard({ users, groups, services }: AdminDashboardProps)
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                 />
+                </div>
             </div>
             
             {filteredUsers.length === 0 ? 

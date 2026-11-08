@@ -24,8 +24,11 @@ import { ServicesSummary } from '../servicesSummary/ServicesSummary';
 
 import { ADDRESS_LABELS } from '@/features/services/constants/installation';
 
+import { addressesWithServicesOf } from '@/features/services/utils/serviceRequestType';
+
 const AddressManager = dynamic(() => import('@/features/services/components/addressManager/AddressManager'), { loading: inlineLoading });
 const AddressServices = dynamic(() => import('./AddressServices').then((m) => m.AddressServices), { loading: inlineLoading });
+const LargeAddressServices = dynamic(() => import('./LargeAddressServices').then((m) => m.LargeAddressServices), { loading: inlineLoading });
 
 const REQUEST_TYPE_OPTIONS: ChoiceOption<RequestType>[] = [
   { value: 'residential', label: 'Demande résidentielle' },
@@ -39,7 +42,7 @@ export default function ServiceForm() {
   // Sélecteurs ciblés : ce composant ne se redessine que si ces valeurs changent
   const addresses = useAddressStore((s) => s.addresses);
   const selectedAddressId = useAddressStore((s) => s.selectedAddressId);
-  const clearAddresses = useAddressStore((s) => s.clearAddresses);
+  const clearServicesOf = useAddressStore((s) => s.clearServicesOf);
   const removeService = useAddressStore((s) => s.removeServiceFromAddress);
 
   const [requestType, setRequestType] = useState<RequestType | null>(null);
@@ -47,7 +50,7 @@ export default function ServiceForm() {
   const [addedToCart, setAddedToCart] = useState(false);
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId) ?? null;
-  const addressesWithServices = addresses.filter((a) => a.services.length > 0);
+  const addressesWithServices = requestType ? addressesWithServicesOf(addresses, requestType) : [];
 
   const scheduleRef = useRef<ServiceFormHandle<ServiceSchedule>>(null);
   // Incrémentée après chaque ajout au panier : le délai repart de « Standard 24 h »
@@ -63,12 +66,15 @@ export default function ServiceForm() {
       setError('Veuillez choisir le type de demande (résidentielle ou grand format)');
       return;
     }
-    const schedule = await scheduleRef.current?.submit();
-    if (!schedule) return; // erreurs affichées dans le formulaire du délai
+    let schedule = null;
+    if (requestType === 'residential') {
+      schedule = await scheduleRef.current?.submit();
+      if (!schedule) return; // erreurs affichées dans le formulaire du délai
+    }
 
     // Le store du panier fait une copie profonde : vider les adresses ne touche pas le panier
     addServiceRequest({ requestType, addresses: addressesWithServices, schedule });
-    clearAddresses();
+    clearServicesOf(requestType);
     setRequestType(null);
     setError(null);
     setAddedToCart(true);
@@ -86,9 +92,7 @@ export default function ServiceForm() {
           columns={2}
         />
 
-        {requestType === 'commercial' && <Notice>Les demandes grand format seront bientôt disponibles.</Notice>}
-
-        {requestType === 'residential' && (
+        {requestType !== null && (
         <>
         <AddressManager />
         {selectedAddress && (<>
@@ -97,8 +101,10 @@ export default function ServiceForm() {
             <p>{formatAddress(selectedAddress, ADDRESS_LABELS)}</p>
           </div>
 
-          <AddressServices key={selectedAddress.id} address={selectedAddress} />
-        </>)}
+          {requestType === 'residential'
+            ? <AddressServices key={selectedAddress.id} address={selectedAddress} />
+            : <LargeAddressServices key={selectedAddress.id} address={selectedAddress} />}
+         </>)}
         </>
         )}
 
@@ -112,7 +118,7 @@ export default function ServiceForm() {
 
       {addressesWithServices.length > 0 && (
         <>
-          <ScheduleForm key={scheduleKey} handle={scheduleRef} />
+          {requestType === 'residential' && <ScheduleForm key={scheduleKey} handle={scheduleRef} />}
           <ServicesSummary
             addresses={addressesWithServices}
             onRemoveService={removeService}

@@ -16,6 +16,6 @@
   "shippingAddress": "Shipping address",
   "makePay": "Pay",
   "submitOrder": "Submit order",
-
-  "invalidServiceDate": "The requested date isn't available. Please choose a business day starting from the next business day."
+  "invalidServiceDate": "The requested date isn't available. Please choose a business day starting from the next business day.",
+  "invalidSchedule": "The service request is incomplete. Please submit it again from the form."
 }

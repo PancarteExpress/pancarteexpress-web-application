@@ -1,7 +1,7 @@
 "use client";
 
 import styles from './RegisterForm.module.css';
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, verifyCodeSchema, type RegisterInput, type RegisterPlan } from "@/lib/auth/auth.schema";
 import { useAuth } from "../../hooks/useAuth";
@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
 import * as z from "zod";
 import { GoogleLoginButton } from '../googleLoginButton/GoogleLoginButton';
+import { PickupFields } from "../pickupFields/PickupFields";
 import { useTranslations } from 'next-intl';
 import { readErrorCode } from '@/lib/errors/appError';
 
@@ -33,8 +34,14 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
   const [step, setStep] = useState<"register" | "verify">("register");
   const [registeredData, setRegisteredData] = useState<RegisterInput | null>(null);
 
-  const { register, handleSubmit, formState: { errors } } = useForm<RegisterInput>({ resolver: zodResolver(registerSchema)});
-  const { register: registerCode, handleSubmit: handleCodeSubmit, formState: { errors: codeErrors } } = useForm<VerifyCodeInput>({ resolver: zodResolver(verifyCodeSchema), });
+  const form = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { pickupMode: "address" },
+  });
+  const { register, handleSubmit, formState: { errors } } = form;
+
+  const { register: registerCode, handleSubmit: handleCodeSubmit, formState: { errors: codeErrors } } =
+    useForm<VerifyCodeInput>({ resolver: zodResolver(verifyCodeSchema) });
 
   const onSubmit = async (data: RegisterInput) => {
     const result = await registerUser(data);
@@ -60,7 +67,13 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
           phoneNumber: registeredData.phoneNumber,
           companyName: registeredData.companyName,
           groupStatus: plan === 'group' ? 'PENDING' : 'SOLO',
-          locale 
+          locale,
+          pickupMode: registeredData.pickupMode,
+          pickupAddress: registeredData.pickupAddress,
+          pickupCity: registeredData.pickupCity,
+          pickupPostalCode: registeredData.pickupPostalCode,
+          receptionDate: registeredData.receptionDate,
+          pickupNotes: registeredData.pickupNotes,
         }),
       });
 
@@ -81,164 +94,128 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
     } catch {
       useAuthStore.setState({ error: tErrors('serverError') });
     }
-  };  
+  };
 
   useEffect(() => {
-    onStepChange?.(step);  
+    onStepChange?.(step);
   }, [step, onStepChange]);
 
   return (
     <div className={styles.mainContainer}>
-      <form onSubmit={step === "register" ? handleSubmit(onSubmit) : handleCodeSubmit(onVerifyCode)} className="space-y-4 max-w-md">
-        
-        {/* Step 1: Registration */}
-        {step === "register" && (<>
+      <FormProvider {...form}>
+        <form
+          onSubmit={step === "register" ? handleSubmit(onSubmit) : handleCodeSubmit(onVerifyCode)}
+          className="space-y-4 max-w-md"
+        >
+          {step === "register" && (<>
 
-        <fieldset>
+          <fieldset>
             <div className={styles.radioGroup}>
-                <label className={styles.radioLabel}>
-                    <input className={styles.radioInput} type="radio" id="solo" name="groupStatus" value="solo" checked={plan === "solo"} onChange={() => onPlanChange('solo')} /> 
-                    <span className={styles.radioButton} style={{ borderRadius: '10px 0 0 10px' }}>
-                      {t('formBtnSolo')}
-                    </span>
-                </label>
-                <label className={styles.radioLabel}>
-                    <input className={styles.radioInput} type="radio" id="group" name="groupStatus" value="group" checked={plan === "group"} onChange={() => onPlanChange('group')}/>
-                    <span className={styles.radioButton} style={{ borderRadius: '0 10px 10px 0' }}>
-                      {t('formBtnGroup')}
-                    </span>
-                    
-                </label>
+              <label className={styles.radioLabel}>
+                <input className={styles.radioInput} type="radio" id="solo" name="groupStatus" value="solo" checked={plan === "solo"} onChange={() => onPlanChange('solo')} />
+                <span className={styles.radioButton} style={{ borderRadius: '10px 0 0 10px' }}>
+                  {t('formBtnSolo')}
+                </span>
+              </label>
+              <label className={styles.radioLabel}>
+                <input className={styles.radioInput} type="radio" id="group" name="groupStatus" value="group" checked={plan === "group"} onChange={() => onPlanChange('group')} />
+                <span className={styles.radioButton} style={{ borderRadius: '0 10px 10px 0' }}>
+                  {t('formBtnGroup')}
+                </span>
+              </label>
             </div>
-        </fieldset>
+          </fieldset>
 
-        <GoogleLoginButton locale={locale} intent="register" groupStatus={plan} />
+          <GoogleLoginButton locale={locale} intent="register" groupStatus={plan} />
 
-        <div className={styles.groupInputs}>
-          <div className={styles.inputs}>
-            <label htmlFor="registerFirstName" className="block text-sm font-medium">{t('formFirstName')} <span className={styles.req}>*</span></label>
-            <input
-              id="registerFirstName"
-              {...register("firstName")}
-              type="text"
-              className="w-full px-3 py-2 border rounded"
-            />
+          <div className={styles.groupInputs}>
+            <div className={styles.inputs}>
+              <label htmlFor="registerFirstName" className="block text-sm font-medium">{t('formFirstName')} <span className={styles.req}>*</span></label>
+              <input id="registerFirstName" {...register("firstName")} type="text" className="w-full px-3 py-2 border rounded" />
+            </div>
+
+            <div className={styles.inputs}>
+              <label htmlFor="registerLastName" className="block text-sm font-medium">{t('formLastName')} <span className={styles.req}>*</span></label>
+              <input id="registerLastName" {...register("lastName")} type="text" className="w-full px-3 py-2 border rounded" />
+            </div>
+          </div>
+
+          <div className={styles.groupInputs}>
+            <div className={styles.inputs}>
+              <label htmlFor="registerPhoneNumber" className="block text-sm font-medium">{t('formPhoneNumber')} <span className={styles.req}>*</span></label>
+              <input id="registerPhoneNumber" {...register("phoneNumber")} type="text" className="w-full px-3 py-2 border rounded" />
+            </div>
+
+            <div className={styles.inputs}>
+              <label htmlFor="registerCompanyName" className="block text-sm font-medium">{t('formCompanyName')}</label>
+              <input id="registerCompanyName" {...register("companyName")} type="text" className="w-full px-3 py-2 border rounded" />
+            </div>
           </div>
 
           <div className={styles.inputs}>
-            <label htmlFor="registerLastName" className="block text-sm font-medium">{t('formLastName')} <span className={styles.req}>*</span></label>
-            <input
-              id="registerLastName"
-              {...register("lastName")}
-              type="text"
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-        </div>
-        
-        <div className={styles.groupInputs}>
-          <div className={styles.inputs}>
-            <label htmlFor="registerPhoneNumber" className="block text-sm font-medium">{t('formPhoneNumber')} <span className={styles.req}>*</span></label>
-            <input
-              id="registerPhoneNumber"
-              {...register("phoneNumber")}
-              type="text"
-              className="w-full px-3 py-2 border rounded"
-            />
+            <label htmlFor="registerEmail" className="block text-sm font-medium mb-1">{t('formEmail')} <span className={styles.req}>*</span></label>
+            <input id="registerEmail" type="email" {...register("email")} className="w-full px-3 py-2 border rounded" disabled={isLoading} />
           </div>
 
-          <div className={styles.inputs}>
-            <label htmlFor="registerCompanyName" className="block text-sm font-medium">{t('formCompanyName')}</label>
-            <input
-              id="registerCompanyName"
-              {...register("companyName")}
-              type="text"
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-        </div>
+          <div className={styles.groupInputs}>
+            <div className={styles.inputs}>
+              <label htmlFor="registerPassword" className="block text-sm font-medium mb-1">{t('formPassword')} <span className={styles.req}>*</span></label>
+              <input id="registerPassword" type="password" autoComplete="new-password" {...register("password")} className="w-full px-3 py-2 border rounded" disabled={isLoading} />
+            </div>
 
-        <div className={styles.inputs}>
-          <label htmlFor="registerEmail" className="block text-sm font-medium mb-1">{t('formEmail')} <span className={styles.req}>*</span></label>
-          <input
-            id="registerEmail"
-            type="email"
-            {...register("email")}
-            className="w-full px-3 py-2 border rounded"
-            disabled={isLoading}
-          />
-        </div>
+            <div className={styles.inputs}>
+              <label htmlFor="registerConfirmPassword" className="block text-sm font-medium mb-1">{t('formConfirmPassword')} <span className={styles.req}>*</span></label>
+              <input id="registerConfirmPassword" type="password" autoComplete="new-password" {...register("confirmPassword")} className="w-full px-3 py-2 border rounded" disabled={isLoading} />
+            </div>
+          </div>
 
-        <div className={styles.groupInputs}>
-          <div className={styles.inputs}>
-            <label htmlFor="registerPassword" className="block text-sm font-medium mb-1">{t('formPassword')} <span className={styles.req}>*</span></label>
-            <input
-              id="registerPassword"
-              type="password"
-              autoComplete="new-password"
-              {...register("password")}
-              className="w-full px-3 py-2 border rounded"
-              disabled={isLoading}
-            />
-          </div>
-          
-          <div className={styles.inputs}>
-            <label htmlFor="registerConfirmPassword" className="block text-sm font-medium mb-1">{t('formConfirmPassword')} <span className={styles.req}>*</span></label>
-            <input
-              id="registerConfirmPassword"
-              type="password"
-              autoComplete="new-password"
-              {...register("confirmPassword")}
-              className="w-full px-3 py-2 border rounded"
-              disabled={isLoading}
-            />
-          </div>
-        </div>
-        </>)}
+          <PickupFields />
 
-        {/* Step 2: Verify Code */}
-        {step === "verify" && (
-        <div>
-          <p style={{ textAlign: 'center', color: "#0E4D9A" }}>
-            {t.rich('verificationCodeSent', {
-              email: registeredData?.email ?? '',
-              bold: (chunks) => <span style={{ fontWeight: 700 }}>{chunks}</span>,
-            })}
-          </p>
-          <div className={styles.inputs}>
-            <label htmlFor="verifyCode" className="block text-sm font-medium">{t('verificationCode')}</label>
-            <input
-              id="verifyCode"
-              type="text"
-              maxLength={6}
-              placeholder="000000"
-              {...registerCode("code")}
-              className="w-full px-3 py-2 border rounded text-center text-2xl tracking-widest"
-              disabled={isLoading}
-            />
-          </div>
-        </div>
-        )}
+          </>)}
 
-        {(errors.root || codeErrors.code || errors.confirmPassword || error) &&
-        <div className={styles.error}>
-          {errors.root?.message || codeErrors.code?.message || errors.confirmPassword?.message || error }
-        </div>}
-        
-        {success ? (
-          <div className={styles.success}>
-            {t('accountCreatedSuccessfully')}
+          {step === "verify" && (
+          <div>
+            <p style={{ textAlign: 'center', color: "#0E4D9A" }}>
+              {t.rich('verificationCodeSent', {
+                email: registeredData?.email ?? '',
+                bold: (chunks) => <span style={{ fontWeight: 700 }}>{chunks}</span>,
+              })}
+            </p>
+            <div className={styles.inputs}>
+              <label htmlFor="verifyCode" className="block text-sm font-medium">{t('verificationCode')}</label>
+              <input
+                id="verifyCode"
+                type="text"
+                maxLength={6}
+                placeholder="000000"
+                {...registerCode("code")}
+                className="w-full px-3 py-2 border rounded text-center text-2xl tracking-widest"
+                disabled={isLoading}
+              />
+            </div>
           </div>
-        ) : (isLoading || step === "verify") && (
-          <div className={styles.loading}>
-            {isLoading ? t('tryingToCreateAccount') : t('lastStepToCreateAccount')}
-          </div>
-        )}
+          )}
 
-        <button type="submit" disabled={isLoading} className={styles.btnConnection}>
-          {step === "register" ? t('register') : t('confirmVerificationCode')}          
-        </button>
-      </form>
+          {(errors.root || errors.confirmPassword || errors.pickupAddress || errors.pickupCity || errors.receptionDate || codeErrors.code || error) &&
+          <div className={styles.error}>
+            {errors.root?.message || errors.confirmPassword?.message || errors.pickupAddress?.message || errors.pickupCity?.message || errors.receptionDate?.message || codeErrors.code?.message || error}
+          </div>}
+
+          {success ? (
+            <div className={styles.success}>
+              {t('accountCreatedSuccessfully')}
+            </div>
+          ) : (isLoading || step === "verify") && (
+            <div className={styles.loading}>
+              {isLoading ? t('tryingToCreateAccount') : t('lastStepToCreateAccount')}
+            </div>
+          )}
+
+          <button type="submit" disabled={isLoading} className={styles.btnConnection}>
+            {step === "register" ? t('register') : t('confirmVerificationCode')}
+          </button>
+        </form>
+      </FormProvider>
     </div>
   );
 }

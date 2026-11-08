@@ -26,6 +26,9 @@ export default function CartView() {
 
   const products = items.filter((i): i is ProductItem => i.kind === 'product');
   const serviceRequests = items.filter((i): i is ServiceItem => i.kind === 'serviceRequest');
+  // Résidentiel et grand format dans le même panier : les délais ne concernent que le résidentiel
+  const hasMixedRequestTypes =
+    serviceRequests.some((r) => r.requestType === 'residential') && serviceRequests.some((r) => r.requestType === 'commercial');
 
   return (<>
 
@@ -69,6 +72,8 @@ export default function CartView() {
             ))}
           </ul>
           }
+
+          {hasMixedRequestTypes && <p role="note" className={styles.mixedNotice}>{t('delay.mixedNotice')}</p>}
 
           {serviceRequests.length > 0 && 
           <ul className={styles.items}>

@@ -21,6 +21,8 @@ model User {
   lastName    String?
   phoneNumber String?
   companyName String?
+  needsPickupInfo Boolean    @default(false)
+  pickupInfo  PickupInfo?
 
   emailVerified DateTime?
   password      String? // null si OAuth
@@ -63,6 +65,20 @@ model VerificationToken {
   @@index([email, type])
 }
 
+model PickupInfo {
+  id            String     @id @default(cuid())
+  userId        String     @unique
+  mode          PickupMode
+  address       String?
+  city          String?
+  postalCode    String?
+  receptionDate DateTime?  @db.Date
+  notes         String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 model Session {
   id           String   @id @default(cuid())
   sessionToken String   @unique
@@ -99,6 +115,11 @@ enum GroupStatus {
 enum TokenType {
   EMAIL_VERIFICATION
   PASSWORD_RESET
+}
+
+enum PickupMode {
+  ADDRESS
+  WAREHOUSE
 }
 
 enum BillingMode {
@@ -184,7 +205,8 @@ model ServiceRequest {
 
   requestType RequestType
 
-  delay         ServiceDelay @default(standard24h)
+  /// null pour le grand format (pas de délai)
+  delay         ServiceDelay?
   requestedDate DateTime?    @db.Date
 
   addresses ServiceAddress[]
@@ -213,8 +235,14 @@ model ServiceAddress {
 
   services Service[]
 
+  optimoSyncStatus OptimoSyncStatus @default(PENDING)
+  optimoRouteId    String?
+  optimoSyncError  String?
+  optimoSyncedAt   DateTime?
+
   @@index([serviceRequestId])
   @@index([city])
+  @@index([optimoSyncStatus])
 }
 
 model Service {
@@ -275,6 +303,9 @@ enum ServiceType {
   removal
   correction
   pickup
+  largeInstallation
+  largeStoragePickup
+  largeRetrieval
 }
 
 enum ServiceStatus {
@@ -289,4 +320,10 @@ enum ServiceDelay {
   urgent12h
   sameDay
   specificDate
+}
+
+enum OptimoSyncStatus {
+  PENDING
+  SYNCED
+  FAILED
 }
