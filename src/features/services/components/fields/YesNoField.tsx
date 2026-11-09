@@ -1,14 +1,12 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { RadioGroup, type RadioGroupProps } from './RadioGroup';
-import type { ChoiceOption } from './types';
+import { toOptions } from './types';
 
 type YesNo = 'yes' | 'no';
 
-const YES_NO_OPTIONS = [
-  { value: 'yes', label: 'Oui' },
-  { value: 'no', label: 'Non' },
-] as const satisfies readonly ChoiceOption<YesNo>[];
+const YES_NO = ['yes', 'no'] as const satisfies readonly YesNo[];
 
 type YesNoFieldProps = Omit<RadioGroupProps<YesNo>, 'options' | 'value' | 'onChange' | 'columns'> & {
   value: boolean | null;
@@ -16,11 +14,12 @@ type YesNoFieldProps = Omit<RadioGroupProps<YesNo>, 'options' | 'value' | 'onCha
 };
 
 export function YesNoField({ value, onChange, ...rest }: YesNoFieldProps) {
+  const t = useTranslations('services.fields');
   return (
     <RadioGroup
       {...rest}
       columns={2}
-      options={YES_NO_OPTIONS}
+      options={toOptions(YES_NO, (v) => t(v))}
       value={value === null ? null : value ? 'yes' : 'no'}
       onChange={(choice) => onChange(choice === 'yes')}
     />

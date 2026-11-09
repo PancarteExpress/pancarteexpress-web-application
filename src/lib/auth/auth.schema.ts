@@ -1,19 +1,21 @@
 import { isValidReceptionDate } from "@/shared/utils/quebecDates";
 import * as z from "zod";
 
-const firstNameSchema = z.string().min(2, "First name required");
-const lastNameSchema = z.string().min(2, "Last name required");
-const emailSchema = z.string().trim().toLowerCase().email("Adresse courriel requise");
+// Messages : clés i18n du namespace errors.validation, traduites à l'affichage
+
+const firstNameSchema = z.string().min(2, "firstNameRequired");
+const lastNameSchema = z.string().min(2, "lastNameRequired");
+const emailSchema = z.string().trim().toLowerCase().email("emailRequired");
 // Création et changement de mot de passe seulement : le login garde min(1)
 // pour ne pas bloquer les comptes existants au mot de passe plus court.
 // max(72) : bcrypt ignore tout ce qui dépasse 72 octets.
 export const passwordSchema = z
   .string()
-  .min(8, "Password must be at least 8 characters")
-  .max(72, "Password must be at most 72 characters");
-const phoneSchema = z.string().min(10, "Phone number required");
+  .min(8, "passwordTooShort")
+  .max(72, "passwordTooLong");
+const phoneSchema = z.string().min(10, "phoneRequired");
 // Code à 6 chiffres envoyé par courriel (inscription, réinitialisation du mot de passe)
-export const codeSchema = z.string().length(6, "Code must be 6 digits").regex(/^\d{6}$/, "Code must contain only digits");
+export const codeSchema = z.string().length(6, "codeLength").regex(/^\d{6}$/, "codeDigits");
 export const verifyCodeSchema = z.object({ code: codeSchema });
 
 export const localeSchema = z.enum(["fr", "en"]).optional();
@@ -45,24 +47,24 @@ export type PickupFieldsInput = z.infer<typeof pickupFieldsSchema>;
 export function applyPickupRules(data: PickupFieldsInput, ctx: z.RefinementCtx) {
   if (data.pickupMode === "address") {
     if (!data.pickupAddress?.trim()) {
-      ctx.addIssue({ code: "custom", path: ["pickupAddress"], message: "Adresse requise" });
+      ctx.addIssue({ code: "custom", path: ["pickupAddress"], message: "addressRequired" });
     }
     if (!data.pickupCity?.trim()) {
-      ctx.addIssue({ code: "custom", path: ["pickupCity"], message: "Ville requise" });
+      ctx.addIssue({ code: "custom", path: ["pickupCity"], message: "cityRequired" });
     }
     if (!data.pickupPostalCode?.trim()) {
-      ctx.addIssue({ code: "custom", path: ["pickupPostalCode"], message: "Code postal requis" });
+      ctx.addIssue({ code: "custom", path: ["pickupPostalCode"], message: "postalCodeRequired" });
     }
   }
 
   if (data.pickupMode === "warehouse") {
     if (!data.receptionDate) {
-      ctx.addIssue({ code: "custom", path: ["receptionDate"], message: "Date requise" });
+      ctx.addIssue({ code: "custom", path: ["receptionDate"], message: "dateRequired" });
     } else if (!isValidReceptionDate(data.receptionDate)) {
       ctx.addIssue({
         code: "custom",
         path: ["receptionDate"],
-        message: "Choisissez un jour ouvrable, à partir d'aujourd'hui",
+        message: "businessDayFromToday",
       });
     }
   }
@@ -88,7 +90,7 @@ export const registerSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["confirmPassword"],
-        message: "Les mots de passe ne correspondent pas",
+        message: "passwordsMismatch",
       });
     }
 
@@ -108,11 +110,13 @@ export const verifyEmailSchema = z.object({
 }).extend(pickupFieldsSchema.shape)
   .superRefine(applyPickupRules);
 
+const loginIdentifierSchema = z.string().trim().toLowerCase().min(1, "credentialsRequired");
+
 export const loginSchema = z.object({
-  email: emailSchema,
-  password: z.string().min(1, "Mot de passe requis"),
-}).refine((data) => data.email && data.password, {
-  message: "Veuillez saisir vos identifiants",
+  identifier: loginIdentifierSchema,
+  password: z.string().min(1, "passwordRequired"),
+}).refine((data) => data.identifier && data.password, {
+  message: "credentialsRequired",
   path: ["root"],
 });
 
@@ -129,11 +133,11 @@ export const updateProfileSchema = z.object({
 });
 
 export const updatePasswordSchema = z.object({
-  currentPassword: z.string().min(1, "Current password required"),
+  currentPassword: z.string().min(1, "currentPasswordRequired"),
   newPassword: passwordSchema,
   confirmPassword: z.string(),
 }).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords don't match",
+  message: "passwordsMismatch",
   path: ["confirmPassword"],
 });
 
@@ -152,7 +156,7 @@ const newPasswordFields = z.object({
   confirmPassword: z.string(),
 });
 const passwordsMatch = (data: { password: string; confirmPassword: string }) => data.password === data.confirmPassword;
-const PASSWORDS_MISMATCH = { message: "Passwords don't match", path: ["confirmPassword"] };
+const PASSWORDS_MISMATCH = { message: "passwordsMismatch", path: ["confirmPassword"] };
 
 export const resetPasswordSchema = newPasswordFields.refine(passwordsMatch, PASSWORDS_MISMATCH);
 // API : le formulaire, plus le courriel et le code vérifiés à l'étape précédente

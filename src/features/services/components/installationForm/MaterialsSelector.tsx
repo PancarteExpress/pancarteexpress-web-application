@@ -1,8 +1,9 @@
 'use client';
 
 import { Controller } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
-  FRAME_BUNDLED_MATERIALS, IMPLEMENTED_MATERIALS, MATERIAL_LABELS, MATERIALS,
+  FRAME_BUNDLED_MATERIALS, IMPLEMENTED_MATERIALS, MATERIALS,
   type ImplementedMaterial, type Material,
 } from '../../constants/installation';
 import {
@@ -19,6 +20,7 @@ const isImplemented = (m: Material): m is ImplementedMaterial => IMPLEMENTED.inc
 export function MaterialsSelector() {
   const { control, getValues } = useInstallationFormContext();
   const update = useFormUpdater();
+  const t = useTranslations('services');
 
   return (
     <Controller
@@ -30,7 +32,7 @@ export function MaterialsSelector() {
 
         const options = MATERIALS.map((m): ChoiceOption<Material> => ({
           value: m,
-          label: MATERIAL_LABELS[m],
+          label: t(`materials.${m}`),
           locked: hasFrames && BUNDLED.includes(m),
           disabled: !isImplemented(m),
         }));
@@ -81,13 +83,13 @@ export function MaterialsSelector() {
             <CheckboxGroup
               {...bindField(props)}
               onChange={handleChange}
-              legend="Qu'avez-vous besoin d'installer ?"
+              legend={t('installation.materialsLegend')}
               options={options}
               required
             />
             {hasFrames && (
               <Notice variant="warning">
-                Les installations de pancartes incluent l&apos;installation du kit (ancrage et poteau).
+                {t('installation.kitIncluded')}
               </Notice>
             )}
           </>

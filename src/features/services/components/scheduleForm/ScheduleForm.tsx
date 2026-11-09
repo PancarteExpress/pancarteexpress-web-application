@@ -3,7 +3,9 @@
 import { useId, useImperativeHandle, useState, type Ref } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { SCHEDULE_NOTES, SERVICE_DELAY_LABELS, SERVICE_DELAYS } from '@/features/services/constants/schedule';
+import { useTranslations } from 'next-intl';
+import { SERVICE_DELAYS } from '@/features/services/constants/schedule';
+import { CONTACT } from '@/shared/constants/contact';
 import {
   createEmptyScheduleForm, createScheduleSchema, toScheduleFormValues, type ScheduleFormValues,
 } from '@/features/services/schemas/schedule.schema';
@@ -15,7 +17,6 @@ import { toOptions } from '@/features/services/components/fields/types';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
 import styles from '../installationForm/installationForm.module.css';
 
-const DELAY_OPTIONS = toOptions(SERVICE_DELAYS, SERVICE_DELAY_LABELS);
 const isNonBusinessDay = (date: Date) => !isBusinessDay(date);
 
 interface ScheduleFormProps {
@@ -25,6 +26,7 @@ interface ScheduleFormProps {
 
 export function ScheduleForm({ handle, initialValues }: ScheduleFormProps) {
   const headingId = useId();
+  const t = useTranslations('services.schedule');
   const [schema] = useState(() => createScheduleSchema());
   const [earliest] = useState(() => earliestSpecificDate(new Date()));
   const [defaultValues] = useState(() =>
@@ -48,16 +50,16 @@ export function ScheduleForm({ handle, initialValues }: ScheduleFormProps) {
   return (
     <form noValidate className={styles.form} onSubmit={(e) => e.preventDefault()}>
       <section aria-labelledby={headingId} className={styles.section}>
-        <h3 id={headingId} className={styles.sectionTitle}>Veuillez préciser le délai désiré</h3>
+        <h3 id={headingId} className={styles.sectionTitle}>{t('title')}</h3>
 
         <Controller
           control={control}
           name="delay"
           render={({ field, fieldState }) => (
             <RadioGroup
-              legend="Délai désiré"
+              legend={t('legend')}
               hideLegend
-              options={DELAY_OPTIONS}
+              options={toOptions(SERVICE_DELAYS, (d) => t(`delays.${d}`))}
               value={field.value}
               onChange={(next) => {
                 field.onChange(next);
@@ -67,7 +69,7 @@ export function ScheduleForm({ handle, initialValues }: ScheduleFormProps) {
               onBlur={field.onBlur}
               inputRef={field.ref}
               columns={1}
-              hint={SCHEDULE_NOTES.join(' ')}
+              hint={t('notes', { phone: CONTACT.mainPhone })}
               error={fieldState.error?.message}
               required
             />
@@ -80,12 +82,12 @@ export function ScheduleForm({ handle, initialValues }: ScheduleFormProps) {
             name="date"
             render={({ field, fieldState }) => (
               <DateField
-                label="Veuillez préciser la date"
+                label={t('dateLabel')}
                 value={field.value ? [field.value] : []}
                 onChange={(dates) => field.onChange(dates[0] ?? null)}
                 minDate={earliest}
                 isDisabled={isNonBusinessDay}
-                hint="Les fins de semaine et les jours fériés ne sont pas disponibles."
+                hint={t('dateHint')}
                 error={fieldState.error?.message}
                 required
               />

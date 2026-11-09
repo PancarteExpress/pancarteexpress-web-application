@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
 import type { OrderOwner, UserOrder } from '@/lib/orders/server/orders.service';
 import { formatCents } from '@/lib/pricing/money';
 import { getDisplayName } from '@/shared/utils/displayName';
-import { formatServiceDelay } from '@/lib/orders/serviceDelay';
+import { formatServiceDate } from '@/lib/orders/serviceDelay';
+import { useAppLocale } from '@/shared/hooks/useAppLocale';
 
 import styles from './ServiceOrders.module.css';
 
@@ -17,31 +19,34 @@ interface Props {
 
 type ServiceAddressRow = UserOrder['serviceRequests'][number]['addresses'][number];
 type OrderService = ServiceAddressRow['services'][number];
+type ServiceRequestRow = UserOrder['serviceRequests'][number];
 
-const SERVICE_LABELS: Record<OrderService['type'], string> = {
-  installation: 'Installation',
-  removal: 'Retrait',
-  correction: 'Correction',
-  pickup: 'Ramassage',
-  largeInstallation: 'Installation grand format',
-  largeStoragePickup: 'Ramassage pour entreposage (grand format)',
-  largeRetrieval: 'Récupération grand format',
-};
+export default function ServiceOrders({ orders, title, productsVisible = true, toolbar }: Props) {
+  const t = useTranslations('dashboard.serviceOrders');
+  const tDashboard = useTranslations('dashboard');
+  const locale = useAppLocale();
 
-// null = le SuperAdmin n'a pas encore fixé le prix
-const formatServicePrice = (price: OrderService['price']): string => price === null ? 'sur soumission' : formatCents(price, 'fr');
+  // null = le SuperAdmin n'a pas encore fixé le prix
+  const formatServicePrice = (price: OrderService['price']): string => price === null ? t('onQuote') : formatCents(price, locale);
 
-export default function ServiceOrders({ orders, title = 'Demandes de service', productsVisible = true, toolbar }: Props) {
+  // null = grand format, sans délai
+  const formatDelay = ({ delay, requestedDate }: ServiceRequestRow): string => {
+    if (delay === null) return t('delays.none');
+    return delay === 'specificDate' && requestedDate
+      ? t('delays.specificDate', { date: formatServiceDate(requestedDate, `${locale}-CA`) })
+      : t(`delays.${delay}`);
+  };
+
   const [openOrderId, setOpenOrderId] = useState<string | null>(null);
   const toggleOrder = (id: string) => setOpenOrderId((prev) => (prev === id ? null : id));
 
   return (
     <div className={styles.mainContainer}>
-      <h3 className={styles.title}>{title}</h3>
+      <h3 className={styles.title}>{title ?? tDashboard('serviceRequests')}</h3>
 
       <div className={styles.header}>
         <div>
-          <span>Commande</span>
+          <span>{t('order')}</span>
         </div>
       </div>
 
@@ -49,7 +54,7 @@ export default function ServiceOrders({ orders, title = 'Demandes de service', p
 
       {orders.length === 0 ? (
         <div className={styles.noOrders}>
-          <p>Aucune demande de service</p>
+          <p>{t('noOrders')}</p>
         </div>
       ) : (
         orders.map((order) => {
@@ -69,7 +74,7 @@ export default function ServiceOrders({ orders, title = 'Demandes de service', p
 
                 <div className={styles.status}>
                   <button type="button" onClick={() => toggleOrder(order.id)} aria-expanded={openOrderId === order.id}>
-                    {openOrderId === order.id ? 'Fermer' : 'Détails'}
+                    {openOrderId === order.id ? t('close') : t('details')}
                   </button>
                 </div>
               </div>
@@ -78,7 +83,7 @@ export default function ServiceOrders({ orders, title = 'Demandes de service', p
                 <div className={styles.details}>
                   {order.products.length !== 0 && productsVisible && (
                     <div className={styles.products}>
-                      <h3>Produits :</h3>
+                      <h3>{t('products')}</h3>
                       {order.products.map((product) => (
                         <label key={product.id}>
                           {product.productName} ×{product.quantity}
@@ -89,29 +94,29 @@ export default function ServiceOrders({ orders, title = 'Demandes de service', p
 
                   {addresses.length !== 0 && (
                     <div className={styles.services}>
-                      <h3>Services :</h3>
+                      <h3>{t('services')}</h3>
                       {order.serviceRequests.map((r) => (
                         <p key={r.id} className={styles.delay}>
-                          Délai : {formatServiceDelay(r.delay, r.requestedDate)}
+                          {t('delay', { delay: formatDelay(r) })}
                         </p>
                       ))}
                       {addresses.map((address) => (
                         <label key={address.id}>
                           <span className={styles.addressKind}>
-                            {address.kind === 'civicAddress' && 'Résidence'}
-                            {address.kind === 'terrain' && 'Terrain'}
+                            {address.kind === 'civicAddress' && t('residence')}
+                            {address.kind === 'terrain' && t('terrain')}
                           </span>
 
                           <span className={styles.addressDetails}>
                             {address.kind === 'civicAddress' &&
-                              `${address.streetNumber} ${address.streetName}${address.apartment ? `, app. ${address.apartment}` : ''}, ${address.city}`}
+                              `${address.streetNumber} ${address.streetName}${address.apartment ? t('apartment', { apartment: address.apartment }) : ''}, ${address.city}`}
                             {address.kind === 'terrain' &&
-                              `${address.city}${address.nearbyAddress ? `, près de ${address.nearbyAddress}` : ''}`}
+                              `${address.city}${address.nearbyAddress ? t('near', { address: address.nearbyAddress }) : ''}`}
                           </span>
 
                           <span className={styles.selectedServices}>
                             - {address.services
-                              .map((s) => `${SERVICE_LABELS[s.type]} (${s.status === 'CANCELLED' ? 'annulé' : formatServicePrice(s.price)})`)
+                              .map((s) => `${t(`serviceTypes.${s.type}`)} (${s.status === 'CANCELLED' ? t('cancelled') : formatServicePrice(s.price)})`)
                               .join(', ')}
                           </span>
                         </label>

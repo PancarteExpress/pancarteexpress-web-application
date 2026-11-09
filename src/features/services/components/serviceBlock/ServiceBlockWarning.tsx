@@ -1,18 +1,10 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { BlockSource } from '@/lib/orders/billing';
 import styles from './ServiceBlock.module.css';
 import { formatDate } from '@/shared/utils/date';
-
-const days = (n: number) => `${n} jour${n > 1 ? 's' : ''}`;
-
-const MESSAGES: Record<BlockSource, (delay: string) => string> = {
-  self: (d) => `${d}, vous ne pourrez plus faire de demandes de service tant que vos factures ne seront pas réglées.`,
-  groupAdmin: (d) =>
-    `${d}, votre équipe ne pourra plus faire de demandes de service : des factures que votre administrateur de groupe doit régler sont en attente. Communiquez avec lui.`,
-  member: (d) =>
-    `${d}, vous ne pourrez plus faire de demandes de service : un membre de votre équipe a des factures impayées. Relancez-le.`,
-};
+import { useAppLocale } from '@/shared/hooks/useAppLocale';
 
 // Une clé par blocage : un nouveau blocage réaffiche l'avertissement
 const storageKey = (startsAt: string) => `serviceBlockWarning:${startsAt}`;
@@ -33,6 +25,8 @@ interface ServiceBlockWarningProps {
 
 export function ServiceBlockWarning({ startsAt, daysLeft, source }: ServiceBlockWarningProps) {
   const key = storageKey(startsAt);
+  const t = useTranslations('services.serviceBlock');
+  const locale = useAppLocale();
 
   // Ouverture au montage, sans useEffect ; une seule fois par session de navigation
   const openIfNeeded = (node: HTMLDialogElement | null) => {
@@ -48,7 +42,7 @@ export function ServiceBlockWarning({ startsAt, daysLeft, source }: ServiceBlock
     }
   };
 
-  const delay = `Dans ${days(daysLeft)}, le ${formatDate(new Date(startsAt), 'long')}`;
+  const delay = t('delay', { days: daysLeft, date: formatDate(new Date(startsAt), 'long', locale) });
 
   return (
     <dialog
@@ -59,12 +53,12 @@ export function ServiceBlockWarning({ startsAt, daysLeft, source }: ServiceBlock
     >
       <form method="dialog">
         <h2 id="service-block-warning-title" className={styles.dialogTitle}>
-          <span aria-hidden="true">⚠️</span> Avertissement de paiement
+          <span aria-hidden="true">⚠️</span> {t('warningTitle')}
         </h2>
-        <p className={styles.dialogText}>{MESSAGES[source](delay)}</p>
+        <p className={styles.dialogText}>{t(`warning.${source}`, { delay })}</p>
         <div className={styles.dialogActions}>
           <button type="submit" className={styles.btnPrimary} autoFocus>
-            OK
+            {t('ok')}
           </button>
         </div>
       </form>

@@ -2,6 +2,7 @@
 
 import { useId, type ReactNode } from 'react';
 import { Controller, useFieldArray } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { KEYBOX_CODE_MAX_DIGITS } from '@/features/services/constants/installation';
 import {
   MAX_REMOVAL_DIRECTIONALS, MAX_REMOVAL_FLAGS, MAX_REMOVAL_KEYBOXES, REMOVAL_TEXT_LIMITS,
@@ -25,20 +26,21 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 export function RemovalKeyboxSection() {
   const { control } = useRemovalFormContext();
+  const t = useTranslations('services');
 
   return (
-    <Section title="Détails du retrait de boîtes à clés">
+    <Section title={t('removal.keyboxTitle')}>
       <Controller
         control={control}
         name="keybox.quantity"
         render={({ field, fieldState }) => (
           <QuantityField
-            label="Combien de boîtes à clés voulez-vous retirer ?"
+            label={t('removal.keyboxQuantity')}
             value={field.value}
             onChange={field.onChange}
             min={1}
             max={MAX_REMOVAL_KEYBOXES}
-            hint={`Max ${MAX_REMOVAL_KEYBOXES}`}
+            hint={t('common.max', { max: MAX_REMOVAL_KEYBOXES })}
             error={fieldState.error?.message}
           />
         )}
@@ -51,10 +53,10 @@ export function RemovalKeyboxSection() {
             {...bindRemovalField(props)}
             // Chiffres seulement, longueur maximale imposée à la saisie
             onChange={(value) => props.field.onChange(value.replace(/\D/g, '').slice(0, KEYBOX_CODE_MAX_DIGITS))}
-            label="Veuillez indiquer le code des boîtes à clés"
-            placeholder="Entrez le code ici…"
+            label={t('removal.keyboxCode')}
+            placeholder={t('installation.codePlaceholder')}
             inputMode="numeric"
-            hint={`${KEYBOX_CODE_MAX_DIGITS} chiffres maximum.`}
+            hint={t('installation.codeHint', { max: KEYBOX_CODE_MAX_DIGITS })}
             required
           />
         )}
@@ -65,7 +67,7 @@ export function RemovalKeyboxSection() {
         render={(props) => (
           <TextField
             {...bindRemovalField(props)}
-            label="Veuillez indiquer l'emplacement de la boîte à clés"
+            label={t('installation.keyboxPlacement')}
             maxLength={REMOVAL_TEXT_LIMITS.keyboxPlacement}
             multiline
             rows={2}
@@ -80,20 +82,21 @@ export function RemovalKeyboxSection() {
 
 export function RemovalFlagsSection() {
   const { control } = useRemovalFormContext();
+  const t = useTranslations('services');
 
   return (
-    <Section title="Détails du retrait des drapeaux">
+    <Section title={t('removal.flagsTitle')}>
       <Controller
         control={control}
         name="flags.quantity"
         render={({ field, fieldState }) => (
           <QuantityField
-            label="Combien de drapeaux voulez-vous retirer ?"
+            label={t('removal.flagsQuantity')}
             value={field.value}
             onChange={field.onChange}
             min={1}
             max={MAX_REMOVAL_FLAGS}
-            hint={`Max ${MAX_REMOVAL_FLAGS}`}
+            hint={t('common.max', { max: MAX_REMOVAL_FLAGS })}
             error={fieldState.error?.message}
           />
         )}
@@ -104,7 +107,7 @@ export function RemovalFlagsSection() {
         render={(props) => (
           <TextField
             {...bindRemovalField(props)}
-            label="Veuillez indiquer l'emplacement des drapeaux"
+            label={t('removal.flagsPlacement')}
             maxLength={REMOVAL_TEXT_LIMITS.flagsPlacement}
             multiline
             rows={2}
@@ -120,6 +123,7 @@ export function RemovalFlagsSection() {
 export function RemovalDirectionalsSection() {
   const { control } = useRemovalFormContext();
   const { fields, append, remove } = useFieldArray({ control, name: 'directionals.units' });
+  const t = useTranslations('services');
 
   const handleQuantityChange = (next: number) => {
     const current = fields.length;
@@ -131,14 +135,14 @@ export function RemovalDirectionalsSection() {
   };
 
   return (
-    <Section title="Détails du retrait des directionnelles">
+    <Section title={t('removal.directionalsTitle')}>
       <QuantityField
-        label="Combien de directionnelles voulez-vous retirer ?"
+        label={t('removal.directionalsQuantity')}
         value={fields.length}
         onChange={handleQuantityChange}
         min={1}
         max={MAX_REMOVAL_DIRECTIONALS}
-        hint={`Max ${MAX_REMOVAL_DIRECTIONALS}`}
+        hint={t('common.max', { max: MAX_REMOVAL_DIRECTIONALS })}
       />
       {fields.map((field, index) => (
         <Controller
@@ -148,8 +152,8 @@ export function RemovalDirectionalsSection() {
           render={(props) => (
             <TextField
               {...bindRemovalField(props)}
-              label={`Veuillez indiquer l'emplacement de la directionnelle #${index + 1}`}
-              placeholder="Ex. : Newman et Léger"
+              label={t('installation.directionalPlacement', { number: index + 1 })}
+              placeholder={t('installation.placementExample')}
               maxLength={REMOVAL_TEXT_LIMITS.directionalPlacement}
               multiline
               rows={2}
@@ -165,16 +169,17 @@ export function RemovalDirectionalsSection() {
 
 export function RemovalOtherSection() {
   const { control } = useRemovalFormContext();
+  const t = useTranslations('services.removal');
 
   return (
-    <Section title="Détails du retrait spécial">
+    <Section title={t('otherTitle')}>
       <Controller
         control={control}
         name="otherDetails"
         render={(props) => (
           <TextField
             {...bindRemovalField(props)}
-            label="Veuillez indiquer les détails"
+            label={t('otherDetails')}
             maxLength={REMOVAL_TEXT_LIMITS.otherDetails}
             multiline
             rows={3}

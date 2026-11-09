@@ -1,8 +1,10 @@
 import * as z from 'zod';
 import { KEYBOX_CODE_MAX_DIGITS } from '../constants/installation';
+import { issueMessage } from '@/shared/utils/issueMessage';
 
-export const REQUIRED = 'Ce champ est requis';
-export const tooLong = (max: number) => `Maximum ${max} caractères`;
+// Messages d'erreur : clés i18n du namespace services.errors, traduites à l'affichage
+export const REQUIRED = 'required';
+export const tooLong = (max: number) => issueMessage('tooLong', { max });
 export const text = (max: number) => z.string().trim().max(max, tooLong(max));
 
 export type Path = (string | number)[];
@@ -18,4 +20,4 @@ export function defined<T>(value: T | null): T {
 
 /** Code de boîte à clés : chiffres seulement, longueur maximale partagée */
 export const keyboxCode = () =>
-  z.string().trim().regex(KEYBOX_CODE_REGEX, `Code de ${KEYBOX_CODE_MAX_DIGITS} chiffres maximum`);
+  z.string().trim().regex(KEYBOX_CODE_REGEX, issueMessage('keyboxCodeFormat', { max: KEYBOX_CODE_MAX_DIGITS }));

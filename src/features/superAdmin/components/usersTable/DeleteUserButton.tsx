@@ -3,6 +3,7 @@
 import type { FormEvent } from "react";
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { IoMdCloseCircle } from "react-icons/io";
 import { deleteUserAction } from "@/lib/users/server/user.actions";
 import styles from "./DeleteUserButton.module.css";
@@ -28,6 +29,7 @@ export function DeleteUserButton({
   className,
 }: DeleteUserButtonProps) {
   const router = useRouter();
+  const t = useTranslations("superAdmin.deleteUser");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = `delete-user-title-${userId}`;
   const [newAdminId, setNewAdminId] = useState("");
@@ -53,7 +55,7 @@ export function DeleteUserButton({
       dialogRef.current?.showModal();
       return;
     }
-    if (!window.confirm(`Supprimer ${userName} ? Cette action est irréversible.`)) return;
+    if (!window.confirm(t("confirm", { name: userName }))) return;
     runDelete();
   };
 
@@ -70,7 +72,7 @@ export function DeleteUserButton({
         className={className}
         onClick={handleClick}
         disabled={isPending}
-        aria-label={`Supprimer ${userName}`}
+        aria-label={t("ariaLabel", { name: userName })}
       >
         <IoMdCloseCircle size={20} style={{ color: isPending ? "#999" : "red" }} />
       </button>
@@ -78,13 +80,13 @@ export function DeleteUserButton({
       {needsSuccessor && (
         <dialog ref={dialogRef} className={styles.dialog} aria-labelledby={titleId}>
           <form onSubmit={handleSubmit}>
-            <h2 id={titleId} className={styles.title}>Supprimer {userName}</h2>
+            <h2 id={titleId} className={styles.title}>{t("title", { name: userName })}</h2>
             <p className={styles.text}>
-              {userName} est administrateur de son groupe. Choisissez qui le remplace.
+              {t("successorText", { name: userName })}
             </p>
 
             <fieldset className={styles.members} disabled={isPending}>
-              <legend className={styles.legend}>Nouvel administrateur</legend>
+              <legend className={styles.legend}>{t("newAdmin")}</legend>
               {groupMembers.map((member) => (
                 <label key={member.id} className={styles.member}>
                   <input
@@ -106,14 +108,14 @@ export function DeleteUserButton({
                 onClick={() => dialogRef.current?.close()}
                 disabled={isPending}
               >
-                Annuler
+                {t("cancel")}
               </button>
               <button
                 type="submit"
                 className={styles.btnDanger}
                 disabled={!newAdminId || isPending}
               >
-                {isPending ? "Suppression…" : "Supprimer et transférer"}
+                {isPending ? t("deleting") : t("deleteAndTransfer")}
               </button>
             </div>
           </form>

@@ -16,7 +16,7 @@ export default function Footer() {
             <div className={styles.whitespace}></div>
 
             <div className={styles.details}>
-                <Image src="/footer/Logo-footer.png" alt="Logo Pancarte Express" className={styles.logo} width={297} height={81} style={{ width: '100%', height: 'auto' }} />
+                <Image src="/footer/Logo-footer.png" alt={t('logoAlt')} className={styles.logo} width={297} height={81} style={{ width: '100%', height: 'auto' }} />
                 <p>
                     {t('availability')}
                     <br />
@@ -52,8 +52,8 @@ export default function Footer() {
 
             <div className={styles.partners}>
                 <h3>{t('partners')}</h3>
-                <Link href="https://superimpression.com/fr_CA/" target="_blank" rel="noopener noreferrer"><Image src="/footer/1-partenaire.png" alt="Logo Pancarte Express" className={styles.logo} width={229} height={65} /></Link>
-                <Link href="https://www.toutpourlecourtier.com/" target="_blank" rel="noopener noreferrer"><Image src="/footer/2-partenaire.png" alt="Logo Pancarte Express" className={styles.logo} width={138} height={58} /></Link>
+                <Link href="https://superimpression.com/fr_CA/" target="_blank" rel="noopener noreferrer"><Image src="/footer/1-partenaire.png" alt={t('logoAlt')} className={styles.logo} width={229} height={65} /></Link>
+                <Link href="https://www.toutpourlecourtier.com/" target="_blank" rel="noopener noreferrer"><Image src="/footer/2-partenaire.png" alt={t('logoAlt')} className={styles.logo} width={138} height={58} /></Link>
             </div>
             <div className={styles.whitespace}></div>
         </div>

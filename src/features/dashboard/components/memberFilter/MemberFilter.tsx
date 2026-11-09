@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import type { GroupMember } from '@/lib/groups/server/groups.service';
 import { getDisplayName } from '@/shared/utils/displayName';
 import styles from './MemberFilter.module.css';
@@ -12,11 +13,12 @@ interface Props {
 }
 
 export function MemberFilter({ members, value, onChange }: Props) {
+  const t = useTranslations('dashboard.memberFilter');
   return (
     <label className={styles.filter}>
-      <span>Membre</span>
+      <span>{t('member')}</span>
       <select value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">Tous les membres</option>
+        <option value="">{t('allMembers')}</option>
         {members.map((m) => {
           const name = getDisplayName(m);
           return (

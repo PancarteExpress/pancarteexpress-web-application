@@ -2,21 +2,21 @@
 
 import { useId } from 'react';
 import { Controller } from 'react-hook-form';
-import { MAX_DIRECTIONALS, SIGN_MENTION_LABELS, SIGN_MENTIONS, TEXT_LIMITS } from '@/features/services/constants/installation';
+import { useTranslations } from 'next-intl';
+import { MAX_DIRECTIONALS, SIGN_MENTIONS, TEXT_LIMITS } from '@/features/services/constants/installation';
 import { RadioGroup, toOptions } from '@/features/services/components/fields';
 import { bindField, useInstallationFormContext } from '../formContext';
 import { PlacedUnitsFields } from '../PlacedUnitsFields';
 import styles from '../installationForm.module.css';
 
-const MENTION_OPTIONS = toOptions(SIGN_MENTIONS, SIGN_MENTION_LABELS);
-
 export function DirectionalsSection() {
   const headingId = useId();
   const { control } = useInstallationFormContext();
+  const t = useTranslations('services');
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.sectionTitle}>Détails des directionnelles</h3>
+      <h3 id={headingId} className={styles.sectionTitle}>{t('installation.directionalsTitle')}</h3>
 
       <Controller
         control={control}
@@ -24,8 +24,8 @@ export function DirectionalsSection() {
         render={(props) => (
           <RadioGroup
             {...bindField(props)}
-            legend="Veuillez choisir la mention de la directionnelle"
-            options={MENTION_OPTIONS}
+            legend={t('installation.directionalMentionLegend')}
+            options={toOptions(SIGN_MENTIONS, (m) => t(`mentions.${m}`))}
             required
           />
         )}
@@ -33,9 +33,9 @@ export function DirectionalsSection() {
 
       <PlacedUnitsFields
         name="directionals.units"
-        quantityLabel="Combien de directionnelles avez-vous besoin ?"
-        unitLabel={(i) => `Veuillez indiquer l'emplacement de la directionnelle #${i + 1}`}
-        placeholder="Ex. : Newman et Léger"
+        quantityLabel={t('installation.directionalsQuantity')}
+        unitLabel={(i) => t('installation.directionalPlacement', { number: i + 1 })}
+        placeholder={t('installation.placementExample')}
         max={MAX_DIRECTIONALS}
         maxLength={TEXT_LIMITS.directionalPlacement}
       />

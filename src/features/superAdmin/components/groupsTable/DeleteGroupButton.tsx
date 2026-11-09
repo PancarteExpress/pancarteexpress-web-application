@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { deleteGroupAction } from "@/lib/groups/server/groups.actions";
 
 interface DeleteGroupButtonProps {
@@ -13,13 +14,14 @@ interface DeleteGroupButtonProps {
 
 export function DeleteGroupButton({ groupId, groupName, memberCount, className }: DeleteGroupButtonProps) {
   const router = useRouter();
+  const t = useTranslations("superAdmin.deleteGroup");
   const [isPending, startTransition] = useTransition();
 
   const handleClick = () => {
     const message =
       memberCount > 0
-        ? `Supprimer « ${groupName} » ? Les ${memberCount} membre${memberCount > 1 ? "s" : ""}, administrateur compris, passeront en forfait individuel.`
-        : `Supprimer « ${groupName} » ?`;
+        ? t("confirmWithMembers", { name: groupName, count: memberCount })
+        : t("confirm", { name: groupName });
     if (!window.confirm(message)) return;
 
     startTransition(async () => {
@@ -38,9 +40,9 @@ export function DeleteGroupButton({ groupId, groupName, memberCount, className }
       className={className}
       onClick={handleClick}
       disabled={isPending}
-      aria-label={`Supprimer l'équipe ${groupName}`}
+      aria-label={t("ariaLabel", { name: groupName })}
     >
-      {isPending ? "Suppression…" : "Supprimer l'equipe"}
+      {isPending ? t("deleting") : t("delete")}
     </button>
   );
 }

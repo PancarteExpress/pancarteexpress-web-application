@@ -12,6 +12,7 @@ import { GoogleLoginButton } from '../googleLoginButton/GoogleLoginButton';
 import { PickupFields } from "../pickupFields/PickupFields";
 import { useTranslations } from 'next-intl';
 import { readErrorCode } from '@/lib/errors/appError';
+import { useIssueMessage } from '@/shared/hooks/useIssueMessage';
 
 interface RegisterFormProps {
   locale: string;
@@ -25,6 +26,7 @@ type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
 export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: RegisterFormProps) {
   const t = useTranslations('register');
   const tErrors = useTranslations('errors');
+  const tv = useIssueMessage('errors.validation');
   const { register: registerUser, login } = useAuth();
 
   const error = useAuthStore((state) => state.error);
@@ -83,7 +85,7 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
       }
 
       await login({
-        email: registeredData.email,
+        identifier: registeredData.email,
         password: registeredData.password,
       });
 
@@ -198,7 +200,7 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
 
           {(errors.root || errors.confirmPassword || errors.pickupAddress || errors.pickupCity || errors.receptionDate || codeErrors.code || error) &&
           <div className={styles.error}>
-            {errors.root?.message || errors.confirmPassword?.message || errors.pickupAddress?.message || errors.pickupCity?.message || errors.receptionDate?.message || codeErrors.code?.message || error}
+            {tv(errors.root?.message || errors.confirmPassword?.message || errors.pickupAddress?.message || errors.pickupCity?.message || errors.receptionDate?.message || codeErrors.code?.message) || error}
           </div>}
 
           {success ? (

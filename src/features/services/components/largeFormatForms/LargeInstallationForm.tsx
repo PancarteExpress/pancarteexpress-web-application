@@ -3,9 +3,9 @@
 import { useId, useState, type Ref } from 'react';
 import { Controller, useForm, useWatch, type FieldPath, type PathValue } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import {
-  ACQUISITION_LABELS, ACQUISITIONS, EASEL_STYLES, LARGE_TEXT_LIMITS, STRUCTURE_LABELS, STRUCTURE_STYLE_LABELS,
-  STRUCTURES, WOOD_FRAMD_STYLES, type Structure,
+  ACQUISITIONS, EASEL_STYLES, LARGE_TEXT_LIMITS, STRUCTURES, WOOD_FRAMD_STYLES, type Structure,
 } from '@/features/services/constants/largeFormat';
 import {
   createEmptyLargeInstallationForm, largeInstallationSchema, toLargeInstallationFormValues,
@@ -24,11 +24,6 @@ import styles from './largeFormatForms.module.css';
 
 type Values = LargeInstallationFormValues;
 
-const STRUCTURE_OPTIONS = toOptions(STRUCTURES, STRUCTURE_LABELS);
-const ACQUISITION_OPTIONS = toOptions(ACQUISITIONS, ACQUISITION_LABELS);
-const WOOD_FRAMD_STYLE_OPTIONS = toOptions(WOOD_FRAMD_STYLES, STRUCTURE_STYLE_LABELS);
-const EASEL_STYLE_OPTIONS = toOptions(EASEL_STYLES, STRUCTURE_STYLE_LABELS);
-
 interface LargeInstallationFormProps {
   handle: Ref<ServiceFormHandle<LargeInstallationDetails>>;
   initialValues?: LargeInstallationDetails;
@@ -36,6 +31,8 @@ interface LargeInstallationFormProps {
 
 export function LargeInstallationForm({ handle, initialValues }: LargeInstallationFormProps) {
   const headingId = useId();
+  const t = useTranslations('services.largeFormat');
+  const acquisitionOptions = toOptions(ACQUISITIONS, (a) => t(`acquisitions.${a}`));
   const [defaultValues] = useState(() =>
     initialValues ? toLargeInstallationFormValues(initialValues) : createEmptyLargeInstallationForm(),
   );
@@ -96,15 +93,15 @@ export function LargeInstallationForm({ handle, initialValues }: LargeInstallati
   return (
     <form noValidate className={formStyles.form} onSubmit={(e) => e.preventDefault()}>
       <section aria-labelledby={headingId} className={formStyles.section}>
-        <h3 id={headingId} className={formStyles.sectionTitle}>Détails de l&apos;installation</h3>
+        <h3 id={headingId} className={formStyles.sectionTitle}>{t('installationTitle')}</h3>
 
         <Controller
           control={control}
           name="dimensions"
           render={({ field, fieldState }) => (
             <TextField
-              label="Dimensions de la ou des pancartes"
-              placeholder="Veuillez indiquer les dimensions voulues…"
+              label={t('dimensions')}
+              placeholder={t('dimensionsPlaceholder')}
               value={field.value}
               onChange={field.onChange}
               onBlur={field.onBlur}
@@ -119,7 +116,7 @@ export function LargeInstallationForm({ handle, initialValues }: LargeInstallati
         />
 
         <LargePlacementPicker
-          legend="Veuillez indiquer l'emplacement de l'installation"
+          legend={t('placementLegend')}
           location={location}
           access={access}
           onLocationChange={handleLocationChange}
@@ -130,8 +127,8 @@ export function LargeInstallationForm({ handle, initialValues }: LargeInstallati
         {location === 'ground' && (
           <div className={styles.subOptions}>
             <CheckboxGroup
-              legend="Veuillez indiquer le type de structure dont vous avez besoin"
-              options={STRUCTURE_OPTIONS}
+              legend={t('structuresLegend')}
+              options={toOptions(STRUCTURES, (s) => t(`structures.${s}`))}
               value={structures}
               onChange={handleStructuresChange}
               columns={2}
@@ -145,8 +142,8 @@ export function LargeInstallationForm({ handle, initialValues }: LargeInstallati
                 name="aluminumAcquisition"
                 render={({ field, fieldState }) => (
                   <RadioGroup
-                    legend="Souhaitez-vous louer la structure en aluminium FRAMD ?"
-                    options={ACQUISITION_OPTIONS}
+                    legend={t('rentAluminum')}
+                    options={acquisitionOptions}
                     value={field.value}
                     onChange={field.onChange}
                     columns={2}
@@ -163,8 +160,8 @@ export function LargeInstallationForm({ handle, initialValues }: LargeInstallati
                 name="signageAcquisition"
                 render={({ field, fieldState }) => (
                   <RadioGroup
-                    legend="Souhaitez-vous louer la structure signalétique FRAMD ?"
-                    options={ACQUISITION_OPTIONS}
+                    legend={t('rentSignage')}
+                    options={acquisitionOptions}
                     value={field.value}
                     onChange={field.onChange}
                     columns={2}
@@ -182,8 +179,8 @@ export function LargeInstallationForm({ handle, initialValues }: LargeInstallati
                   name="woodFramdStyle"
                   render={({ field, fieldState }) => (
                     <RadioGroup
-                      legend="Quel style de structure en bois FRAMD souhaitez-vous ?"
-                      options={WOOD_FRAMD_STYLE_OPTIONS}
+                      legend={t('woodFramdStyle')}
+                      options={toOptions(WOOD_FRAMD_STYLES, (s) => t(`styles.${s}`))}
                       value={field.value}
                       onChange={field.onChange}
                       columns={2}
@@ -197,7 +194,7 @@ export function LargeInstallationForm({ handle, initialValues }: LargeInstallati
                   name="woodFramdPaint"
                   render={({ field, fieldState }) => (
                     <YesNoField
-                      legend="Souhaitez-vous peindre la structure en bois FRAMD ?"
+                      legend={t('woodFramdPaint')}
                       value={field.value}
                       onChange={(paint) => {
                         field.onChange(paint);
@@ -214,7 +211,7 @@ export function LargeInstallationForm({ handle, initialValues }: LargeInstallati
                     name="woodFramdColor"
                     render={({ field, fieldState }) => (
                       <TextField
-                        label="De quelle couleur ? (structure en bois FRAMD)"
+                        label={t('woodFramdColor')}
                         value={field.value}
                         onChange={field.onChange}
                         onBlur={field.onBlur}
@@ -236,8 +233,8 @@ export function LargeInstallationForm({ handle, initialValues }: LargeInstallati
                   name="easelStyle"
                   render={({ field, fieldState }) => (
                     <RadioGroup
-                      legend="Quel style de structure en bois « Chevalet » souhaitez-vous ?"
-                      options={EASEL_STYLE_OPTIONS}
+                      legend={t('easelStyle')}
+                      options={toOptions(EASEL_STYLES, (s) => t(`styles.${s}`))}
                       value={field.value}
                       onChange={field.onChange}
                       columns={2}
@@ -251,7 +248,7 @@ export function LargeInstallationForm({ handle, initialValues }: LargeInstallati
                   name="easelPaint"
                   render={({ field, fieldState }) => (
                     <YesNoField
-                      legend="Souhaitez-vous peindre la structure en bois « Chevalet » ?"
+                      legend={t('easelPaint')}
                       value={field.value}
                       onChange={(paint) => {
                         field.onChange(paint);
@@ -268,7 +265,7 @@ export function LargeInstallationForm({ handle, initialValues }: LargeInstallati
                     name="easelColor"
                     render={({ field, fieldState }) => (
                       <TextField
-                        label="De quelle couleur ? (structure en bois « Chevalet »)"
+                        label={t('easelColor')}
                         value={field.value}
                         onChange={field.onChange}
                         onBlur={field.onBlur}

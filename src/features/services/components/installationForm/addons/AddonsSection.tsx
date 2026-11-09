@@ -2,16 +2,16 @@
 
 import { useId } from 'react';
 import { useFormState, useWatch } from 'react-hook-form';
-import { ADDON_LABELS, ADDONS, MAX_ADDONS, type Addon } from '@/features/services/constants/installation';
+import { useTranslations } from 'next-intl';
+import { ADDONS, MAX_ADDONS, type Addon } from '@/features/services/constants/installation';
 import { createAddonEntry } from '@/features/services/schemas/installation.schema';
 import { CheckboxGroup, toOptions } from '@/features/services/components/fields';
 import { useFormUpdater, useInstallationFormContext } from '../formContext';
 import styles from '../installationForm.module.css';
 
-const ADDON_OPTIONS = toOptions(ADDONS, ADDON_LABELS);
-
 export function AddonsSection() {
   const headingId = useId();
+  const t = useTranslations('services');
   const { control, getValues } = useInstallationFormContext();
   const update = useFormUpdater();
   
@@ -29,16 +29,16 @@ export function AddonsSection() {
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.sectionTitle}>Détails des ajouts</h3>
+      <h3 id={headingId} className={styles.sectionTitle}>{t('installation.addonsTitle')}</h3>
 
       <CheckboxGroup
-        legend="Veuillez choisir les ajouts nécessaires"
-        options={ADDON_OPTIONS}
+        legend={t('installation.addonsLegend')}
+        options={toOptions(ADDONS, (a) => t(`addons.${a}`))}
         value={addons.map((a) => a.addon)}
         onChange={handleChange}
         max={MAX_ADDONS}
         columns={4}
-        hint={`Maximum ${MAX_ADDONS} ajouts`}
+        hint={t('installation.addonsMax', { max: MAX_ADDONS })}
         error={errors.addons?.root?.message ?? errors.addons?.message}
         required
       />

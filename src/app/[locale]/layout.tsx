@@ -1,7 +1,8 @@
 import '../globals.css';
+import type { Metadata } from 'next';
 import { Montserrat, Inter, Poppins } from 'next/font/google';
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages } from 'next-intl/server';
+import { getMessages, getTranslations } from 'next-intl/server';
 import { SessionProvider } from 'next-auth/react';
 
 import { notFound } from 'next/navigation';
@@ -19,6 +20,12 @@ const poppins = Poppins({
   display: 'swap',
   variable: '--font-home',
 });
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'metadata' });
+  return { description: t('description') };
+}
 
 export default async function LocaleLayout({
   children,

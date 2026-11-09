@@ -1,15 +1,16 @@
-import { PICKUP_MATERIAL_LABELS } from '@/features/services/constants/pickup';
+import { useTranslations } from 'next-intl';
 import type { PickupDetails } from '@/features/services/types/pickup';
 import styles from '../servicesSummary.module.css';
 
 export function PickupSummary({ details }: { details: PickupDetails }) {
+  const t = useTranslations('services');
   return (
     <div className={styles.installation}>
       <dl className={styles.list}>
-        <dt>À ramasser</dt>
-        <dd>{details.materials.map((m) => PICKUP_MATERIAL_LABELS[m]).join(', ')}</dd>
-        <dt>Nouveaux modèles</dt>
-        <dd>{details.newModels ? 'Oui' : 'Non'}</dd>
+        <dt>{t('summary.toPickup')}</dt>
+        <dd>{details.materials.map((m) => t(`pickup.materials.${m}`)).join(', ')}</dd>
+        <dt>{t('summary.newModels')}</dt>
+        <dd>{details.newModels ? t('common.yes') : t('common.no')}</dd>
       </dl>
       {details.details && <p className={styles.prose}>{details.details}</p>}
     </div>

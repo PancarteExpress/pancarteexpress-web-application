@@ -16,12 +16,12 @@ export const isPickupDetailsRequired = (v: { materials: readonly PickupMaterial[
 export const pickupSchema = pickupFormSchema
   .superRefine((v, ctx) => {
     const report: Report = (path, message) => ctx.addIssue({ code: 'custom', path, message });
-    if (v.materials.length === 0) report(['materials'], 'Sélectionnez au moins un élément à ramasser');
+    if (v.materials.length === 0) report(['materials'], 'selectPickupItem');
     if (v.newModels === null) report(['newModels'], REQUIRED);
     if (isPickupDetailsRequired(v) && !v.details) {
       report(['details'], v.materials.includes('other')
-        ? 'Décrivez le matériel à ramasser'
-        : 'Décrivez les nouveaux modèles');
+        ? 'describePickupMaterial'
+        : 'describeNewModels');
     }
   })
   .transform((v): PickupDetails => ({

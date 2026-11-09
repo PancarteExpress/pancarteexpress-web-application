@@ -12,6 +12,7 @@ import {
   createDefaultPlacement, fromPlacement, placementFormSchema, toPlacement, validatePlacement,
 } from './placement.schema';
 import { REQUIRED, defined, keyboxCode, text, type Path, type Report } from './shared';
+import { issueMessage } from '@/shared/utils/issueMessage';
 
 const ADDON_WITH_MODEL_SET: ReadonlySet<string> = new Set(ADDONS_WITH_MODEL);
 const hasModel = (addon: Addon): addon is AddonWithModel => ADDON_WITH_MODEL_SET.has(addon);
@@ -128,23 +129,23 @@ type PlacedUnitOutput = { uid: string; placement: string };
 
 function validateFrameUnit(u: FrameUnitOutput, path: Path, session: SessionContext, report: Report) {
   if (session.isMember) {
-    if (u.model === null) report([...path, 'model'], 'Choisissez un modèle');
+    if (u.model === null) report([...path, 'model'], 'chooseModel');
     else if (u.model === 'custom' && !u.modelDescription) {
-      report([...path, 'modelDescription'], 'Décrivez le modèle');
+      report([...path, 'modelDescription'], 'describeModel');
     }
   }
 
   if (session.accountName !== null) {
     if (u.useAccountName === null) report([...path, 'useAccountName'], REQUIRED);
     else if (!u.useAccountName && !u.displayName) {
-      report([...path, 'displayName'], 'Indiquez le(s) nom(s) à afficher');
+      report([...path, 'displayName'], 'displayNameRequired');
     }
   }
 }
 
 function validateKitUnit(k: KitUnitOutput, path: Path, report: Report) {
-  if (k.model === null) report([...path, 'model'], 'Choisissez un modèle de kit');
-  else if (k.model === 'custom' && !k.description) report([...path, 'description'], 'Décrivez votre poteau');
+  if (k.model === null) report([...path, 'model'], 'chooseKitModel');
+  else if (k.model === 'custom' && !k.description) report([...path, 'description'], 'describePole');
 }
 
 function validateTargets(t: TargetsOutput, path: Path, validFrameUids: Set<string>, report: Report) {
@@ -152,25 +153,25 @@ function validateTargets(t: TargetsOutput, path: Path, validFrameUids: Set<strin
   const hasInvalidTarget =
     new Set(t.frameUids).size !== assigned || t.frameUids.some((uid) => !validFrameUids.has(uid));
 
-  if (hasInvalidTarget) report([...path, 'frameUids'], 'Affectation de pancarte invalide');
+  if (hasInvalidTarget) report([...path, 'frameUids'], 'invalidFrameAssignment');
   else if (assigned > t.quantity) {
-    report([...path, 'frameUids'], `${assigned} pancarte(s) sélectionnée(s) pour ${t.quantity} unité(s)`);
+    report([...path, 'frameUids'], issueMessage('tooManyFrames', { assigned, quantity: t.quantity }));
   } else if (!t.onSite && assigned < t.quantity) {
     report(
       [...path, 'frameUids'],
-      `Affectez ${t.quantity - assigned} unité(s) restante(s) ou choisissez « Pancarte sur place »`,
+      issueMessage('assignRemaining', { count: t.quantity - assigned }),
     );
   } else if (t.onSite && assigned === t.quantity) {
-    report([...path, 'onSite'], 'Aucune unité restante pour une pancarte sur place');
+    report([...path, 'onSite'], 'noUnitLeftOnSite');
   }
 }
 
 function validateAddon(a: AddonEntryOutput, path: Path, validFrameUids: Set<string>, report: Report) {
-  if (a.addon === 'other' && !a.mention) report([...path, 'mention'], 'Indiquez la mention à afficher');
+  if (a.addon === 'other' && !a.mention) report([...path, 'mention'], 'mentionRequired');
   if (hasModel(a.addon)) {
-    if (a.model === null) report([...path, 'model'], 'Choisissez un modèle');
+    if (a.model === null) report([...path, 'model'], 'chooseModel');
     else if (a.model === 'custom' && !a.modelDescription) {
-      report([...path, 'modelDescription'], 'Décrivez le modèle');
+      report([...path, 'modelDescription'], 'describeModel');
     }
   }
   validateTargets(a, path, validFrameUids, report);
@@ -185,17 +186,17 @@ function validateOpenHouse(o: OpenHouseOutput, path: Path, validFrameUids: Set<s
 
   const expected = o.twoDates ? 2 : 1;
   if (o.dates.length !== expected || !o.dates.every(isValidIsoDate)) {
-    report([...path, 'dates'], o.twoDates ? 'Choisissez deux dates' : 'Choisissez la date de la visite libre');
+    report([...path, 'dates'], o.twoDates ? 'chooseTwoDates' : 'chooseOpenHouseDate');
   } else if (o.twoDates) {
     const [first, second] = [...o.dates].sort();
-    if (!isNextDay(first, second)) report([...path, 'dates'], 'Les deux dates doivent être consécutives');
+    if (!isNextDay(first, second)) report([...path, 'dates'], 'consecutiveDates');
   }
 
   const startValid = isValidTime(o.startTime);
-  if (!startValid) report([...path, 'startTime'], 'Heure de début invalide');
-  if (!isValidTime(o.endTime)) report([...path, 'endTime'], 'Heure de fin invalide');
+  if (!startValid) report([...path, 'startTime'], 'invalidStartTime');
+  if (!isValidTime(o.endTime)) report([...path, 'endTime'], 'invalidEndTime');
   else if (startValid && toMinutes(o.endTime) <= toMinutes(o.startTime)) {
-    report([...path, 'endTime'], "L'heure de fin doit être après l'heure de début");
+    report([...path, 'endTime'], 'endAfterStart');
   }
 
   if (o.removeNextMonday === null) report([...path, 'removeNextMonday'], REQUIRED);
@@ -286,7 +287,7 @@ export function createInstallationSchema(session: SessionContext) {
       const hasFrames = has('frames');
       const validFrameUids = new Set(hasFrames ? v.frames.units.map((u) => u.uid) : []);
 
-      if (v.materials.length === 0) report(['materials'], 'Sélectionnez au moins un élément à installer');
+      if (v.materials.length === 0) report(['materials'], 'selectInstallItem');
       else validatePlacement(v.placement, ['placement'], report);
 
       if (hasFrames) {
@@ -296,42 +297,42 @@ export function createInstallationSchema(session: SessionContext) {
             report(['frames', 'pickupAddress'], "Indiquez l'adresse de ramassage");
           }
         }
-        if (v.frames.units.length === 0) report(['frames', 'units'], 'Indiquez au moins une pancarte');
+        if (v.frames.units.length === 0) report(['frames', 'units'], 'framesRequired');
         v.frames.units.forEach((u, i) => validateFrameUnit(u, ['frames', 'units', i], session, report));
       }
 
       // Kit seul : avec des pancartes, il est inclus et n'a aucun détail à valider
       if (has('kit') && !hasFrames) {
-        if (v.kits.units.length === 0) report(['kits', 'units'], 'Indiquez au moins un kit');
+        if (v.kits.units.length === 0) report(['kits', 'units'], 'kitsRequired');
         v.kits.units.forEach((k, i) => validateKitUnit(k, ['kits', 'units', i], report));
       }
 
       if (has('addons')) {
-        if (v.addons.length === 0) report(['addons'], 'Sélectionnez au moins un ajout');
+        if (v.addons.length === 0) report(['addons'], 'selectAddon');
         const keys = v.addons.map((a) => a.addon);
-        if (new Set(keys).size !== keys.length) report(['addons'], 'Un ajout est sélectionné en double');
+        if (new Set(keys).size !== keys.length) report(['addons'], 'duplicateAddon');
         v.addons.forEach((a, i) => validateAddon(a, ['addons', i], validFrameUids, report));
       }
 
       if (has('openHouse')) validateOpenHouse(v.openHouse, ['openHouse'], validFrameUids, report);
 
-      if (has('keybox') && !v.keybox.code) report(['keybox', 'code'], 'Indiquez le code de la boîte à clés');
+      if (has('keybox') && !v.keybox.code) report(['keybox', 'code'], 'keyboxCodeRequired');
 
       if (has('flags')) {
-        if (v.flags.mention === null) report(['flags', 'mention'], 'Choisissez la mention du drapeau');
+        if (v.flags.mention === null) report(['flags', 'mention'], 'chooseFlagMention');
         else if (v.flags.mention === 'other' && !v.flags.customMention) {
-          report(['flags', 'customMention'], 'Indiquez la mention du drapeau');
+          report(['flags', 'customMention'], 'flagMentionRequired');
         }
       }
 
       if (has('directional')) {
         if (v.directionals.mention === null) {
-          report(['directionals', 'mention'], 'Choisissez la mention de la directionnelle');
+          report(['directionals', 'mention'], 'chooseDirectionalMention');
         }
-        validatePlacedUnits(v.directionals.units, ['directionals', 'units'], 'Indiquez au moins une directionnelle', report);
+        validatePlacedUnits(v.directionals.units, ['directionals', 'units'], 'directionalsRequired', report);
       }
 
-      if (has('other') && !v.otherNeeds) report(['otherNeeds'], 'Décrivez votre besoin');
+      if (has('other') && !v.otherNeeds) report(['otherNeeds'], 'describeNeed');
     })
     .transform((v: FormOutput): InstallationDetails => {
       const has = (m: ImplementedMaterial) => v.materials.includes(m);

@@ -85,7 +85,7 @@ export default function Contact() {
               <div className={styles.infos}>
                 <label className={styles.contactLabel}>{t('heroLabel4')}</label>
                 <label className={styles.contactValue}>
-                  2160 Rue Léger, Lasalle, QC H8N 2L8
+                  {CONTACT.address}
                 </label>
               </div>
             </div>
@@ -102,11 +102,11 @@ export default function Contact() {
           <div className={styles.row}>
             <div className={styles.field}>
               <label htmlFor="firstName">{t('formFirstname')} <span className={styles.req}>*</span></label>
-              <input id="firstName" type="text" placeholder="Jean" {...register('firstName')} />
+              <input id="firstName" type="text" placeholder={t('firstnamePlaceholder')} {...register('firstName')} />
             </div>
             <div className={styles.field}>
               <label htmlFor="lastName">{t('formLastname')} <span className={styles.req}>*</span></label>
-              <input id="lastName" type="text" placeholder="Tremblay" {...register('lastName')}/>
+              <input id="lastName" type="text" placeholder={t('lastnamePlaceholder')} {...register('lastName')}/>
             </div>
           </div>
 

@@ -1,14 +1,15 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
-import { bcryptCompare } from "@/lib/auth/server/password";
+import { hashPassword } from "@/lib/auth/server/password";
+import { isLegacyHash, verifyPassword } from "@/lib/auth/server/legacyPassword";
 import { refreshSessionToken } from "@/lib/auth/server/sessionToken";
 import Google from "next-auth/providers/google";
 import { JWT } from "next-auth/jwt";
 import type { Session } from "next-auth";
 import { cookies } from "next/headers";
-import { sendAccountCreatedEmails, type EmailLocale } from "@/lib/auth/server/authEmails";
-import { authIntentSchema, signupGroupStatusSchema } from "@/lib/auth/auth.schema";
+import type { EmailLocale } from "@/lib/auth/server/authEmails";
+import { authIntentSchema, loginSchema, signupGroupStatusSchema } from "@/lib/auth/auth.schema";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -19,28 +20,34 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       name: "Credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
+        identifier: { label: "Identifier", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials.email || !credentials.password) {
-          return null;
-        }
+        const parsed = loginSchema.safeParse(credentials);
+        if (!parsed.success) return null;
+        const { identifier, password } = parsed.data;
 
-        const email = (credentials.email as string).trim().toLowerCase();
-
+        // « @ » : courriel ; sinon nom d'utilisateur repris de WordPress
         const user = await prisma.user.findUnique({
-          where: { email },
+          where: identifier.includes("@") ? { email: identifier } : { username: identifier },
         });
+        if (!user?.password) return null;
 
-        if (!user || !user.password) return null;
+        if (!(await verifyPassword(password, user.password))) return null;
 
-        const isPasswordValid = await bcryptCompare(
-          credentials.password as string,
-          user.password
-        );
-
-        if (!isPasswordValid) return null;
+        // Premier login d'un compte migré : on remplace le hash WordPress par du bcrypt.
+        // Un échec ici ne bloque pas la connexion ; on réessaiera au prochain login.
+        if (isLegacyHash(user.password)) {
+          try {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { password: await hashPassword(password) },
+            });
+          } catch (e) {
+            console.error("[auth] re-hash du mot de passe WordPress échoué", e);
+          }
+        }
 
         // Retourne tous les champs requis par l'interface User
         return {
@@ -122,6 +129,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               provider: account.provider,
               providerAccountId: account.providerAccountId,
               groupStatus,
+              locale, 
               needsPickupInfo: true,
             },
           });
@@ -130,12 +138,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           user.firstName = firstName;
           user.lastName = lastName;
 
-          await sendAccountCreatedEmails({
-            name: fullName || email,
-            email,
-            provider: "google",
-            locale,
-          });
+          // Bienvenue et notification interne partent après la question de ramassage (/api/auth/complete-pickup)
         }
       }
 

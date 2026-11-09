@@ -1,6 +1,4 @@
 import { LARGE_FORMAT_SERVICES } from '../constants/largeFormat';
-import { SERVICE_LABELS } from '../constants/installation';
-import { LARGE_FORMAT_SERVICE_LABELS } from '../constants/largeFormat';
 import type { Address } from '../types/address';
 import type { LargeFormatService, RequestType, Service } from '../types/services';
 
@@ -20,9 +18,3 @@ export function addressesWithServicesOf(addresses: readonly Address[], requestTy
     .map((a) => ({ ...a, services: a.services.filter((s) => requestTypeOf(s) === requestType) }))
     .filter((a) => a.services.length > 0);
 }
-
-/** Libellé de n'importe quel service, résidentiel ou grand format */
-export const ALL_SERVICE_LABELS: Record<Service['type'], string> = {
-  ...SERVICE_LABELS,
-  ...LARGE_FORMAT_SERVICE_LABELS,
-};

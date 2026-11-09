@@ -1,0 +1,135 @@
+{
+  "sidebarTitle": "Super Admin",
+  "nav": {
+    "users": "Users",
+    "teams": "Teams",
+    "services": "Service requests"
+  },
+  "users": {
+    "title": "Users",
+    "subtitle": "Manage all users of the platform.",
+    "pendingStat": "{count, plural, one {User waiting to join a team} other {Users waiting to join a team}}",
+    "totalStat": "{count, plural, one {user in total} other {users in total}}",
+    "activeTeamsStat": "{count, plural, one {Active team} other {Active teams}}",
+    "listTitle": "User list",
+    "allRoles": "All roles",
+    "filterByRole": "Filter by role",
+    "allStatuses": "All statuses",
+    "filterByGroupStatus": "Filter by group status",
+    "searchPlaceholder": "Search by name or email…",
+    "noResults": "No results."
+  },
+  "teams": {
+    "title": "Teams",
+    "subtitle": "Manage all teams of the platform.",
+    "listTitle": "Team list",
+    "searchPlaceholder": "Search for a team or a member…",
+    "noResults": "No results."
+  },
+  "servicesSection": {
+    "title": "Service requests",
+    "subtitle": "List of all service requests"
+  },
+  "roles": {
+    "user": "Broker",
+    "groupAdmin": "Group administrator",
+    "superAdmin": "Super admin"
+  },
+  "groupStatuses": {
+    "SOLO": "Solo",
+    "PENDING": "Must join a group",
+    "JOINED": "Group member"
+  },
+  "accountTypes": {
+    "solo": "Solo",
+    "pending": "Pending",
+    "groupAdmin": "Group admin",
+    "member": "Member"
+  },
+  "serviceTypes": {
+    "installation": "Installation",
+    "removal": "Removal",
+    "correction": "Correction",
+    "pickup": "Pickup",
+    "largeInstallation": "Large-format installation",
+    "largeStoragePickup": "Pickup for storage (large format)",
+    "largeRetrieval": "Large-format retrieval"
+  },
+  "groupsTable": {
+    "empty": "No teams.",
+    "noResults": "No results.",
+    "name": "Name",
+    "admin": "Administrator",
+    "members": "Members",
+    "billedTo": "Billed to",
+    "actions": "Actions",
+    "unnamed": "Unnamed",
+    "hide": "Hide",
+    "showMembers": "View members",
+    "membersListTitle": "Team member list",
+    "noMembers": "No members.",
+    "billingModes": {
+      "INDIVIDUAL": "Each member",
+      "GROUP": "The administrator"
+    }
+  },
+  "deleteGroup": {
+    "confirmWithMembers": "Delete “{name}”? {count, plural, one {The # member, including the administrator, will be moved} other {The # members, including the administrator, will be moved}} to the individual plan.",
+    "confirm": "Delete “{name}”?",
+    "ariaLabel": "Delete the team {name}",
+    "deleting": "Deleting…",
+    "delete": "Delete team"
+  },
+  "servicesTable": {
+    "empty": "No service requests.",
+    "serviceCount": "{count, plural, one {# service} other {# services}}",
+    "orderNumber": "Order #",
+    "type": "Type",
+    "address": "Address",
+    "requestedOn": "Requested on",
+    "delay": "Turnaround"
+  },
+  "accountTypeSelect": {
+    "confirmGroupAdmin": "Create a new group with {name} as administrator?",
+    "confirmChange": "Change {name} to “{type}”?",
+    "ariaLabel": "Account type of {name}"
+  },
+  "deleteUser": {
+    "confirm": "Delete {name}? This action cannot be undone. A goodbye email will be sent.",
+    "ariaLabel": "Delete {name}",
+    "title": "Delete {name}",
+    "successorText": "{name} is the administrator of their group. Choose who will replace them.",
+    "newAdmin": "New administrator",
+    "cancel": "Cancel",
+    "deleting": "Deleting…",
+    "deleteAndTransfer": "Delete and transfer"
+  },
+  "groupStatusFilter": {
+    "label": "Group status",
+    "all": "All"
+  },
+  "serviceBlock": {
+    "confirmUnblock": "Unblock {name}? Service requests will be possible again immediately and an email will confirm it.",
+    "confirmBlock": "Block {name}? A warning email will be sent and their service requests will be refused in {days} days.",
+    "unblock": "Unblock",
+    "block": "Block"
+  },
+  "usersTable": {
+    "empty": "No registered users.",
+    "emptyForStatus": "No users with this status.",
+    "name": "Name",
+    "email": "Email",
+    "phone": "Phone",
+    "company": "Company",
+    "role": "Role",
+    "group": "Group",
+    "status": "Status",
+    "registeredOn": "Registered on",
+    "serviceRequests": "Service requests",
+    "delete": "Delete",
+    "blockActive": "Active",
+    "blocked": "Blocked",
+    "blockedOn": "Blocked on {date}",
+    "billedToGroupAdmin": "Billed to the group admin"
+  }
+}

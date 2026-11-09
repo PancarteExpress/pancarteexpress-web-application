@@ -1,7 +1,8 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { IMPLEMENTED_SERVICES, SERVICE_LABELS, SERVICE_CHOICES, type ServiceType, } from '@/features/services/constants/installation';
+import { useTranslations } from 'next-intl';
+import { IMPLEMENTED_SERVICES, SERVICE_CHOICES, type ServiceType, } from '@/features/services/constants/installation';
 import { CheckboxGroup, Notice, type ChoiceOption } from '@/features/services/components/fields';
 
 import { useAddressStore } from '@/features/services/store/addressStore';
@@ -31,14 +32,14 @@ type SavedIds = Partial<Record<ServiceType, string>>;
 
 const IMPLEMENTED: readonly ServiceType[] = IMPLEMENTED_SERVICES;
 
-const SERVICE_OPTIONS: ChoiceOption<ServiceType>[] = SERVICE_CHOICES.map((type) => ({
-  value: type,
-  label: SERVICE_LABELS[type],
-  disabled: !IMPLEMENTED.includes(type),
-}));
-
 /** Monté avec key={address.id} : l'état local repart de zéro à chaque changement d'adresse. */
 export function AddressServices({ address }: { address: Address }) {
+  const t = useTranslations('services');
+  const serviceOptions: ChoiceOption<ServiceType>[] = SERVICE_CHOICES.map((type) => ({
+    value: type,
+    label: t(`serviceTypes.${type}`),
+    disabled: !IMPLEMENTED.includes(type),
+  }));
   const saveService = useAddressStore((s) => s.saveService);
   const removeService = useAddressStore((s) => s.removeServiceFromAddress);
 
@@ -74,7 +75,7 @@ export function AddressServices({ address }: { address: Address }) {
     });
 
     for (const { type } of removing) {
-      if (!window.confirm(`Supprimer le service « ${SERVICE_LABELS[type]} » enregistré pour cette adresse ?`)) return;
+      if (!window.confirm(t('serviceForm.confirmRemoveService', { service: t(`serviceTypes.${type}`) }))) return;
     }
     removing.forEach(({ id }) => removeService(address.id, id));
     setSelected(next);
@@ -110,11 +111,11 @@ export function AddressServices({ address }: { address: Address }) {
   return (
     <>
       <CheckboxGroup
-        legend="Quels sont les services dont vous avez besoin pour l'adresse sélectionnée ?"
-        options={SERVICE_OPTIONS}
+        legend={t('serviceForm.servicesLegend')}
+        options={serviceOptions}
         value={selected}
         onChange={handleServicesChange}
-        hint="Les autres services seront offerts prochainement."
+        hint={t('serviceForm.otherServicesSoon')}
       />
 
       {selected.includes('installation') && (
@@ -135,13 +136,13 @@ export function AddressServices({ address }: { address: Address }) {
 
       {selected.length > 0 && (
         <button type="button" className={styles.submit} onClick={handleSaveAll} disabled={saving}>
-          {saving ? 'Enregistrement…' : 'Enregistrer les services'}
+          {saving ? t('serviceForm.saving') : t('serviceForm.saveServices')}
         </button>
       )}
 
       {justSaved && (
         <div role="status">
-          <Notice>Services enregistrés.</Notice>
+          <Notice>{t('serviceForm.servicesSaved')}</Notice>
         </div>
       )}
     </>

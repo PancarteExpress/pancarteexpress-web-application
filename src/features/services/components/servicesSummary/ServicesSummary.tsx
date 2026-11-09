@@ -1,12 +1,12 @@
 'use client';
 
 import { useId, useState } from 'react';
-import { ALL_SERVICE_LABELS, isLargeFormatService } from '@/features/services/utils/serviceRequestType';
+import { useTranslations } from 'next-intl';
+import { isLargeFormatService } from '@/features/services/utils/serviceRequestType';
 import { LargeFormatSummary } from './largeFormat/LargeFormatSummary';
 import type { Address } from '@/features/services/types/address';
 import type { Service } from '@/features/services/types/services';
 import { formatAddress } from '@/features/services/utils/formatAddress';
-import { ADDRESS_LABELS } from '@/features/services/constants/installation';
 
 import { InstallationSummary } from './installation/InstallationSummary';
 import { RemovalSummary } from './removal/RemovalSummary';
@@ -25,16 +25,18 @@ interface ServicesSummaryProps {
 
 export function ServicesSummary({ addresses, onRemoveService, onAddToCart, error }: ServicesSummaryProps) {
   const headingId = useId();
+  const t = useTranslations('services');
+  const addressLabels = { terrain: t('address.terrain'), near: t('address.near'), apartment: t('address.apartment') };
 
   return (
     <section aria-labelledby={headingId} className={styles.summary}>
-      <h2 id={headingId} className={styles.title}>Résumé de la demande</h2>
+      <h2 id={headingId} className={styles.title}>{t('summary.title')}</h2>
 
       {addresses.map((address) => (
         <article key={address.id} className={styles.address}>
           <header className={styles.header}>
-            <h3 className={styles.addressName}>{formatAddress(address, ADDRESS_LABELS)}</h3>
-            <span className={styles.badge}>{address.type === 'address' ? 'Adresse' : 'Terrain'}</span>
+            <h3 className={styles.addressName}>{formatAddress(address, addressLabels)}</h3>
+            <span className={styles.badge}>{address.type === 'address' ? t('address.kindAddress') : t('address.kindTerrain')}</span>
           </header>
 
           <ul className={styles.services}>
@@ -52,7 +54,7 @@ export function ServicesSummary({ addresses, onRemoveService, onAddToCart, error
       {error && <p role="alert" className={styles.error}>{error}</p>}
 
       <button type="button" className={styles.addToCart} onClick={onAddToCart}>
-        Ajouter au panier
+        {t('summary.addToCart')}
       </button>
     </section>
   );
@@ -61,16 +63,18 @@ export function ServicesSummary({ addresses, onRemoveService, onAddToCart, error
 function ServiceItem({ service, onRemove }: { service: Service; onRemove: () => void }) {
   const detailsId = useId();
   const [expanded, setExpanded] = useState(false);
+  const t = useTranslations('services');
+  const label = t(`serviceTypes.${service.type}`);
 
   const handleRemove = () => {
     // Même règle que décocher un service enregistré
-    if (window.confirm(`Supprimer le service « ${ALL_SERVICE_LABELS[service.type]} » ?`)) onRemove();
+    if (window.confirm(t('summary.confirmRemove', { service: label }))) onRemove();
   };
 
   return (
     <li className={styles.service}>
       <div className={styles.serviceRow}>
-        <span className={styles.serviceName} data-type={service.type}>{ALL_SERVICE_LABELS[service.type]}</span>
+        <span className={styles.serviceName} data-type={service.type}>{label}</span>
         <div className={styles.actions}>
           <button
             type="button"
@@ -78,9 +82,9 @@ function ServiceItem({ service, onRemove }: { service: Service; onRemove: () => 
             aria-controls={detailsId}
             onClick={() => setExpanded((v) => !v)}
           >
-            {expanded ? 'Moins de détails' : 'Plus de détails'}
+            {expanded ? t('summary.lessDetails') : t('summary.moreDetails')}
           </button>
-          <button type="button" onClick={handleRemove}>Supprimer</button>
+          <button type="button" onClick={handleRemove}>{t('summary.remove')}</button>
         </div>
       </div>
 

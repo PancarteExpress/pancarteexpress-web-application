@@ -15,7 +15,7 @@ export function AuthNav({ locale }: LoginFormProps) {
   const { isAuthenticated, user, logout, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div className="text-sm text-gray-500">Chargement...</div>;
+    return <div className="text-sm text-gray-500">{t('loading')}</div>;
   }
 
   if (isAuthenticated && user) {

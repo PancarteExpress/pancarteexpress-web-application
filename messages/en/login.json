@@ -21,5 +21,24 @@
     "errorInvalidCredentials": "Invalid credentials.",
     "errorGoogle": "Google sign-in didn't complete. Please try again.",
     "errorGeneric": "Something went wrong during sign-in. Please try again in a moment.",
-    "becomeMember": "Become a member"
+    "becomeMember": "Become a member",
+    "forgotPassword": {
+        "emailPrompt": "Please enter the email address associated with your account",
+        "email": "Email",
+        "codeSent": "Code sent to your email",
+        "resetSuccess": "Password reset successfully! Redirecting to login…",
+        "sending": "Sending…",
+        "sendCode": "Send Code",
+        "backToLogin": "Back to login",
+        "enterCode": "Enter the 6-digit code sent to <bold>{email}</bold>",
+        "code": "Code",
+        "verifying": "Verifying…",
+        "verifyCode": "Verify Code",
+        "backToSendCode": "Back to send code",
+        "newPasswordPrompt": "Please enter your new password",
+        "newPassword": "New Password",
+        "confirmPassword": "Confirm Password",
+        "resetting": "Resetting…",
+        "resetPassword": "Reset Password"
+    }
 }

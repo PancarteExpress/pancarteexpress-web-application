@@ -1,5 +1,8 @@
 import { LADDER_LABELS } from './installation';
 
+// Les *_LABELS ci-dessous servent au texte français du courriel interne (utils/largeFormatText) ;
+// l'interface les traduit via i18n (namespace services.largeFormat).
+
 /* ---------- Services ---------- */
 
 export const LARGE_FORMAT_SERVICES = ['largeInstallation', 'largeStoragePickup', 'largeRetrieval'] as const;

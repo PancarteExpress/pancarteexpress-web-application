@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import styles from './AddressManager.module.css';
 import { createStreetAddress, createTerrainAddress, StreetAddress, TerrainAddress } from '../../types/address';
 import { useAddresses } from '../../hooks/useAddresses';
@@ -8,6 +9,7 @@ import { ParsedAddress } from '@/shared/types/address';
 import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
 
 export default function AddressManager() {
+  const t = useTranslations('services.addressManager');
 
   const { addresses, selectedAddressId, setSelectedAddressId, addAddress, removeAddress, updateAddress } = useAddresses();
 
@@ -85,11 +87,11 @@ export default function AddressManager() {
     if (typeAddress === "streetAddress") {
 
       if (!parsedAddress) {
-        alert('Veuillez sélectionner une adresse dans la liste');
+        alert(t('selectFromList'));
         return;
       }
       if (!parsedAddress.streetNumber || !parsedAddress.postalCode) {
-        alert('Adresse incomplète : numéro civique ou code postal manquant');
+        alert(t('incompleteAddress'));
         return;
       }
       
@@ -104,12 +106,12 @@ export default function AddressManager() {
     
     if (typeAddress === "terrainAddress") {
       if (!terrainDescription.trim()) {
-        alert('Veuillez entrer une description du terrain');
+        alert(t('terrainDescriptionRequired'));
         return;
       }
 
       if (!terrainCity.trim()) {
-        alert('Veuillez entrer une ville');
+        alert(t('cityRequired'));
         return;
       }
 
@@ -135,10 +137,10 @@ export default function AddressManager() {
   return (
     <>
     <fieldset style={{ border: 'none' }}>
-        <legend>Voici la liste des emplacements enregitres</legend>
+        <legend>{t('savedListLegend')}</legend>
         <div>
             {addresses.length === 0 ? (
-                <p>Aucune adresse enregistrée</p>
+                <p>{t('noAddress')}</p>
               ) : (
                 addresses.map((addr) => (
                   <label key={addr.id} className={styles.addressLabel}>
@@ -151,44 +153,44 @@ export default function AddressManager() {
                       disabled={editingAddressId !== null && editingAddressId !== addr.id}
                       onChange={() => setSelectedAddressId(addr.id)} />
                         
-                        {addr.type === 'address' && `Addresse : ${addr.streetNumber} ${addr.streetName} ${addr.apartment ? `#${addr.apartment}` : ''}`}
-                        {addr.type === 'terrain' && `Terrain  : ${addr.description} - ${addr.city} ${addr.nearbyAddress ? `( ${addr.nearbyAddress} )` : ''}`}
+                        {addr.type === 'address' && t('addressLine', { address: `${addr.streetNumber} ${addr.streetName} ${addr.apartment ? `#${addr.apartment}` : ''}` })}
+                        {addr.type === 'terrain' && t('terrainLine', { details: `${addr.description} - ${addr.city} ${addr.nearbyAddress ? `( ${addr.nearbyAddress} )` : ''}` })}
 
                     </div>
 
                     <div className={styles.addressBtn}>
-                      <button type="button" className={styles.editButton} onClick={() => handleEdit(addr.id)}>Modifier</button>
-                      <button type="button" className={styles.deleteButton} onClick={() => removeAddress(addr.id)}>Supprimer</button>
+                      <button type="button" className={styles.editButton} onClick={() => handleEdit(addr.id)}>{t('edit')}</button>
+                      <button type="button" className={styles.deleteButton} onClick={() => removeAddress(addr.id)}>{t('delete')}</button>
                     </div>
                   </label>
                 ))
               )}
         </div>
         <button type='button' className={styles.addAddressButton} onClick={handleAddNewAddress}>
-          Ajouter une adresse
+          {t('addAddress')}
         </button>
     </fieldset>
 
     {addNewAddress &&
     <fieldset style={{ border: 'none' }}>
-      <legend>Veuillez indiquer le type demplacement</legend>
+      <legend>{t('typeLegend')}</legend>
       <div className={styles.userChoice}>
           <label className={typeAddress === 'streetAddress' ? styles.checked : ''}>
               <input type="radio" id="residential" name="typeAddress" value="streetAddress" checked={typeAddress === "streetAddress"} onChange={() => setTypeAddress("streetAddress")} /> 
-              Adresse
+              {t('typeAddress')}
           </label>
           <label className={typeAddress === 'terrainAddress' ? styles.checked : ''}>
               <input type="radio" id="commercial" name="typeAddress" value="terrainAddress" checked={typeAddress === "terrainAddress"} onChange={() => setTypeAddress("terrainAddress")}/>
-              Terrain (sans adresse)
+              {t('typeTerrain')}
           </label>
       </div>
 
       {typeAddress === 'streetAddress' &&<>
       <div className={styles.addAddress}>
-        <label>Veuillez inscrire ladresse</label>
+        <label>{t('enterAddress')}</label>
         <div className={styles.addressDetails}>
           <div>
-              <label htmlFor="civicAddress">Adresse complète <span style={{color: 'red'}}>*</span></label>
+              <label htmlFor="civicAddress">{t('fullAddress')} <span style={{color: 'red'}}>*</span></label>
               <AddressAutocomplete
                 value={address}
                 onChange={setAddress}
@@ -197,7 +199,7 @@ export default function AddressManager() {
           </div>
           
           <div>
-              <label htmlFor="appartmentAddress">Appartement</label>
+              <label htmlFor="appartmentAddress">{t('apartment')}</label>
               <input
                   id="appartmentNumber"
                   type="number"
@@ -218,23 +220,23 @@ export default function AddressManager() {
       
       {typeAddress === 'terrainAddress' &&<>
       <div className={styles.addTerrain}>
-        <label>Veuillez nous donner des details sur lemplacement du terrain</label>
+        <label>{t('terrainDetails')}</label>
 
         <div className={styles.terrainDetails}>
           <div>
-              <label htmlFor="terrainDescription">Description de lemplacement du terrain <span style={{color: 'red'}}>*</span></label>
+              <label htmlFor="terrainDescription">{t('terrainDescription')} <span style={{color: 'red'}}>*</span></label>
               <textarea id="terrainDescription" value={terrainDescription} onChange={(e) => setTerrainDescription(e.target.value)}/>
           </div>
       
           <div>
-              <label htmlFor="terrainCity">Ville <span style={{color: 'red'}}>*</span></label>
+              <label htmlFor="terrainCity">{t('city')} <span style={{color: 'red'}}>*</span></label>
               <input id="terrainCity" type="text" value={terrainCity} onChange={(e) => setTerrainCity(e.target.value)}/>
           </div>
 
           <div className={styles.inputs}>
               <div>
                   <label htmlFor="terrainAddress">
-                    Adresse complète <span className={styles.info}>Vous pouvez ajouter une adresse avoisinante pour faciliter la localisation du terrain</span>
+                    {t('fullAddress')} <span className={styles.info}>{t('nearbyAddressHint')}</span>
                   </label>
                   <AddressAutocomplete id="terrainAddress" value={terrainAddress} onChange={setTerrainAddress}/>
               </div>
@@ -242,8 +244,8 @@ export default function AddressManager() {
         </div>
       </div>
       </>}
-      {typeAddress && <button type="button" className={styles.btnSave} onClick={handleSave}>Enregistrer</button>}
-      <button type="button" className={styles.btnCancel} onClick={handleCancel}>Annuler</button>
+      {typeAddress && <button type="button" className={styles.btnSave} onClick={handleSave}>{t('save')}</button>}
+      <button type="button" className={styles.btnCancel} onClick={handleCancel}>{t('cancel')}</button>
     </fieldset>
     }
     </>

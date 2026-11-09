@@ -2,6 +2,8 @@
 
 import { useId } from 'react';
 import { Controller, useFieldArray } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
+import { useIssueMessage } from '@/shared/hooks/useIssueMessage';
 import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
 import { MAX_FRAMES } from '@/features/services/constants/installation';
 import { createFrameUnit } from '@/features/services/schemas/installation.schema';
@@ -20,6 +22,7 @@ export function FramesSection({ isMember, accountName }: FramesSectionProps) {
   const { control, getValues } = useInstallationFormContext();
   const update = useFormUpdater();
   const { fields, append, remove } = useFieldArray({ control, name: 'frames.units' });
+  const t = useTranslations('services');
 
   const handleQuantityChange = (next: number) => {
     const current = fields.length;
@@ -46,17 +49,17 @@ export function FramesSection({ isMember, accountName }: FramesSectionProps) {
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.sectionTitle}>Détails des pancartes</h3>
+      <h3 id={headingId} className={styles.sectionTitle}>{t('installation.framesTitle')}</h3>
 
       {!isMember && <PickupFields />}
 
       <QuantityField
-        label="Combien de pancartes voulez-vous ?"
+        label={t('installation.framesQuantity')}
         value={fields.length}
         onChange={handleQuantityChange}
         min={1}
         max={MAX_FRAMES}
-        hint={`Max ${MAX_FRAMES}`}
+        hint={t('common.max', { max: MAX_FRAMES })}
       />
 
       {/* Temporaire : remplacé par FrameUnitFields à l'étape 3c */}
@@ -69,6 +72,8 @@ export function FramesSection({ isMember, accountName }: FramesSectionProps) {
 
 function PickupFields() {
   const addressId = useId();
+  const t = useTranslations('services');
+  const translateError = useIssueMessage('services.errors');
   const { control } = useInstallationFormContext();
   const update = useFormUpdater();
 
@@ -84,7 +89,7 @@ function PickupFields() {
               props.field.onChange(value);
               if (!value) update('frames.pickupAddress', '');
             }}
-            legend="Devons-nous aller chercher le matériel à installer (pancartes, ancrages, poteaux) à une autre adresse ?"
+            legend={t('installation.pickupLegend')}
             required
           />
 
@@ -96,9 +101,9 @@ function PickupFields() {
                 const errorId = `${addressId}-error`;
                 return (
                 <div className={styles.pickup}>
-                  <Notice>Un montant supplémentaire basé sur la distance du déplacement sera appliqué.</Notice>
+                  <Notice>{t('installation.pickupFee')}</Notice>
                   <label htmlFor={addressId} className={styles.label}>
-                    Adresse de ramassage <span aria-hidden="true" className={styles.required}>*</span>
+                    {t('installation.pickupAddress')} <span aria-hidden="true" className={styles.required}>*</span>
                   </label>
                   <AddressAutocomplete 
                     id={addressId} 
@@ -109,7 +114,7 @@ function PickupFields() {
                     aria-invalid={Boolean(fieldState.error) || undefined}
                     aria-describedby={fieldState.error ? errorId : undefined}
                   />
-                  {fieldState.error && <p id={errorId} className={styles.error}>{fieldState.error.message}</p>}
+                  {fieldState.error && <p id={errorId} className={styles.error}>{translateError(fieldState.error.message)}</p>}
                 </div>
                 );
               }}

@@ -1,95 +1,95 @@
-import { format, parse } from 'date-fns';
-import { frCA } from 'date-fns/locale';
-import {
-  ADDON_LABELS, FRAME_MODEL_LABELS, KIT_MODEL_LABELS, FLAG_MENTION_LABELS, SIGN_MENTION_LABELS,
-} from '@/features/services/constants/installation';
+import { useFormatter, useTranslations } from 'next-intl';
 import type {
   AddonAssignment, FrameDisplayName, FrameModel, InstallationDetails, KitModel, UnitTargets,
 } from '@/features/services/types/installation';
-import { describePlacement } from '@/features/services/utils/placement';
+import { describePlacement, type ServicesTranslator } from '@/features/services/utils/placement';
 import { removalDayAfter } from '@/features/services/utils/time';
+import { formatIsoDay } from '@/features/services/utils/formatDay';
+import { useAppLocale } from '@/shared/hooks/useAppLocale';
 import styles from '../servicesSummary.module.css';
 
-/* ---------- Formatage (fonctions pures) ---------- */
+/* ---------- Formatage (fonctions pures, t = useTranslations('services')) ---------- */
 
-function describeKitModel(model: KitModel): string {
-  const label = KIT_MODEL_LABELS[model.type];
-  return model.type === 'custom' ? `${label} : ${model.description}` : label;
+function describeKitModel(model: KitModel, t: ServicesTranslator): string {
+  const label = t(`kitModels.${model.type}`);
+  return model.type === 'custom' ? t('summary.labelWithDescription', { label, description: model.description }) : label;
 }
 
-function describeModel(model: FrameModel): string {
-  const label = FRAME_MODEL_LABELS[model.type];
-  return model.type === 'custom' ? `${label} : ${model.description}` : label;
+function describeModel(model: FrameModel, t: ServicesTranslator): string {
+  const label = t(`frameModels.${model.type}`);
+  return model.type === 'custom' ? t('summary.labelWithDescription', { label, description: model.description }) : label;
 }
 
 function describeDisplayName(name: FrameDisplayName): string {
   return name.type === 'account' ? name.name : name.names;
 }
 
-function describeAddon(a: AddonAssignment): string {
+function describeAddon(a: AddonAssignment, t: ServicesTranslator): string {
   switch (a.addon) {
     case 'other':
-      return `${ADDON_LABELS.other} : « ${a.mention} »`;
+      return t('summary.labelWithDetail', { label: t('addons.other'), detail: a.mention });
     case 'customNoMention':
-      return a.details ? `${ADDON_LABELS.customNoMention} : « ${a.details} »` : ADDON_LABELS.customNoMention;
+      return a.details
+        ? t('summary.labelWithDetail', { label: t('addons.customNoMention'), detail: a.details })
+        : t('addons.customNoMention');
     default:
       return 'model' in a && a.model
-        ? `${ADDON_LABELS[a.addon]} — ${describeModel(a.model)}`
-        : ADDON_LABELS[a.addon];
+        ? t('summary.labelWithModel', { label: t(`addons.${a.addon}`), model: describeModel(a.model, t) })
+        : t(`addons.${a.addon}`);
   }
 }
 
-function describeTargets(a: UnitTargets, frameNumbers: Map<string, number>): string {
-  const targets = a.frameUids.map((uid) => `Pancarte ${frameNumbers.get(uid) ?? '?'}`);
+function describeTargets(a: UnitTargets, frameNumbers: Map<string, number>, t: ServicesTranslator): string {
+  const targets = a.frameUids.map((uid) => t('summary.frame', { number: frameNumbers.get(uid) ?? '?' }));
   if (a.onSiteCount > 0) {
-    targets.push(a.onSiteCount > 1 ? `Sur place ×${a.onSiteCount}` : 'Sur place');
+    targets.push(a.onSiteCount > 1 ? t('summary.onSiteCount', { count: a.onSiteCount }) : t('summary.onSite'));
   }
   return targets.join(', ');
 }
 
-/** '2026-10-24' → 'samedi 24 octobre 2026' */
-function formatDate(iso: string): string {
-  return format(parse(iso, 'yyyy-MM-dd', new Date()), 'EEEE d MMMM yyyy', { locale: frCA });
-}
-
-/** '13:30' → '13 h 30' */
-function formatTime(time: string): string {
+/** '13:30' → '13 h 30' (fr) / '13:30' (en) */
+function formatTime(time: string, t: ServicesTranslator): string {
   const [hours, minutes] = time.split(':');
-  return `${hours} h ${minutes}`;
+  return t('summary.time', { hours, minutes });
 }
 
 /* ---------- Composant ---------- */
 
 export function InstallationSummary({ details }: { details: InstallationDetails }) {
   const { placement, frames, kits, addons, openHouse, keybox, flags, directionals, otherNeeds } = details;
+  const t = useTranslations('services');
+  const formatter = useFormatter();
+  const locale = useAppLocale();
+  /** '2026-10-24' → 'samedi 24 octobre 2026' */
+  const formatDate = (iso: string) => formatIsoDay(iso, locale);
   // uid → numéro affiché (Pancarte 1, 2, 3)
   const frameNumbers = new Map(frames?.units.map((u, i) => [u.uid, i + 1]) ?? []);
 
   return (
     <div className={styles.installation}>
       <dl className={styles.list}>
-        <dt>Emplacement</dt>
-        <dd>{describePlacement(placement)}</dd>
+        <dt>{t('summary.placement')}</dt>
+        <dd>{describePlacement(placement, t)}</dd>
       </dl>
       {frames && (
         <section>
-          <h4 className={styles.subtitle}>Pancartes ({frames.units.length})</h4>
-          <p className={styles.muted}>Kit (ancrage et poteau) inclus</p>
+          <h4 className={styles.subtitle}>{t('summary.frames', { count: frames.units.length })}</h4>
+          <p className={styles.muted}>{t('summary.kitIncluded')}</p>
 
           {frames.units.map((unit, i) => (
             <dl key={unit.uid} className={styles.unit}>
-              <dt className={styles.unitTitle}>Pancarte {i + 1}</dt>
+              <dt className={styles.unitTitle}>{t('summary.frame', { number: i + 1 })}</dt>
               <dd>
                 <dl className={styles.list}>
                   {unit.model && (
                     <>
-                      <dt>Modèle</dt>
-                      <dd>{describeModel(unit.model)}</dd>
+                      <dt>{t('summary.model')}</dt>
+                      <dd>{describeModel(unit.model, t)}</dd>
                     </>
                   )}
                   {unit.displayName && (
                     <>
-                      <dt>Nom affiché</dt>
+                      <dt>{t('summary.displayName')}</dt>
                       <dd>{describeDisplayName(unit.displayName)}</dd>
                     </>
                   )}
@@ -102,12 +102,12 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
 
       {kits && (
         <section>
-          <h4 className={styles.subtitle}>Kits ({kits.units.length})</h4>
+          <h4 className={styles.subtitle}>{t('summary.kits', { count: kits.units.length })}</h4>
           <dl className={styles.list}>
             {kits.units.map((kit, i) => (
               <div key={kit.uid} className={styles.row}>
-                <dt>Kit {i + 1}</dt>
-                <dd>{describeKitModel(kit.model)}</dd>
+                <dt>{t('summary.kit', { number: i + 1 })}</dt>
+                <dd>{describeKitModel(kit.model, t)}</dd>
               </div>
             ))}
           </dl>
@@ -116,12 +116,12 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
 
       {addons && (
         <section>
-          <h4 className={styles.subtitle}>Ajouts</h4>
+          <h4 className={styles.subtitle}>{t('summary.addons')}</h4>
           <dl className={styles.list}>
             {addons.map((a) => (
               <div key={a.addon} className={styles.row}>
-                <dt>{describeAddon(a)} ×{a.quantity}</dt>
-                <dd>{describeTargets(a, frameNumbers)}</dd>
+                <dt>{describeAddon(a, t)} ×{a.quantity}</dt>
+                <dd>{describeTargets(a, frameNumbers, t)}</dd>
               </div>
             ))}
           </dl>
@@ -130,23 +130,23 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
 
       {openHouse && (
         <section>
-          <h4 className={styles.subtitle}>Visite libre</h4>
+          <h4 className={styles.subtitle}>{t('summary.openHouse')}</h4>
           <dl className={styles.list}>
-            <dt>{openHouse.dates.length > 1 ? 'Dates' : 'Date'}</dt>
-            <dd>{openHouse.dates.map(formatDate).join(' et ')}</dd>
+            <dt>{t('summary.dates', { count: openHouse.dates.length })}</dt>
+            <dd>{formatter.list(openHouse.dates.map(formatDate))}</dd>
 
-            <dt>Heures</dt>
-            <dd>{formatTime(openHouse.startTime)} à {formatTime(openHouse.endTime)}</dd>
+            <dt>{t('summary.hours')}</dt>
+            <dd>{t('summary.timeRange', { start: formatTime(openHouse.startTime, t), end: formatTime(openHouse.endTime, t) })}</dd>
 
-            <dt>Affichettes ×{openHouse.quantity}</dt>
-            <dd>{describeTargets(openHouse, frameNumbers)}</dd>
+            <dt>{t('summary.signs', { count: openHouse.quantity })}</dt>
+            <dd>{describeTargets(openHouse, frameNumbers, t)}</dd>
 
             {openHouse.directionals.length > 0 && (
               <>
-                <dt>Directionnelles ({openHouse.directionals.length})</dt>
+                <dt>{t('summary.directionals', { count: openHouse.directionals.length })}</dt>
                 <dd>
                   <ol className={styles.inlineList}>
-                    {openHouse.directionals.map((d) => <li key={d.uid}>{d.placement || 'Non précisé'}</li>)}
+                    {openHouse.directionals.map((d) => <li key={d.uid}>{d.placement || t('common.notSpecified')}</li>)}
                   </ol>
                 </dd>
               </>
@@ -154,16 +154,16 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
 
             {openHouse.flagCount > 0 && (
               <>
-                <dt>Drapeaux</dt>
+                <dt>{t('summary.flags')}</dt>
                 <dd>{openHouse.flagCount}</dd>
               </>
             )}
 
-            <dt>Retrait le lundi suivant</dt>
+            <dt>{t('summary.removeNextMonday')}</dt>
             <dd>
               {openHouse.removeNextMonday
-                ? `Oui (${formatDate(removalDayAfter(openHouse.dates) ?? openHouse.dates[0])})`
-                : 'Non'}
+                ? t('summary.yesWithDate', { date: formatDate(removalDayAfter(openHouse.dates) ?? openHouse.dates[0]) })
+                : t('common.no')}
             </dd>
           </dl>
         </section>
@@ -171,27 +171,27 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
 
       {keybox && (
         <section>
-          <h4 className={styles.subtitle}>Boîte à clés</h4>
+          <h4 className={styles.subtitle}>{t('summary.keybox')}</h4>
           <dl className={styles.list}>
-            <dt>Code</dt>
+            <dt>{t('summary.code')}</dt>
             <dd>{keybox.code}</dd>
-            <dt>Emplacement</dt>
-            <dd>{keybox.placement || 'Non précisé'}</dd>
+            <dt>{t('summary.placement')}</dt>
+            <dd>{keybox.placement || t('common.notSpecified')}</dd>
           </dl>
         </section>
       )}
 
       {flags && (
         <section>
-          <h4 className={styles.subtitle}>Drapeaux</h4>
+          <h4 className={styles.subtitle}>{t('summary.flags')}</h4>
           <dl className={styles.list}>
-            <dt>Mention</dt>
+            <dt>{t('summary.mention')}</dt>
             <dd>
               {flags.mention === 'other'
-                ? `${FLAG_MENTION_LABELS.other} : « ${flags.customMention} »`
-                : FLAG_MENTION_LABELS[flags.mention]}
+                ? t('summary.labelWithDetail', { label: t('mentions.other'), detail: flags.customMention })
+                : t(`mentions.${flags.mention}`)}
             </dd>
-            <dt>Quantité</dt>
+            <dt>{t('summary.quantity')}</dt>
             <dd>{flags.quantity}</dd>
           </dl>
         </section>
@@ -199,14 +199,14 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
 
       {directionals && (
         <section>
-          <h4 className={styles.subtitle}>Directionnelles ({directionals.units.length})</h4>
+          <h4 className={styles.subtitle}>{t('summary.directionals', { count: directionals.units.length })}</h4>
           <dl className={styles.list}>
-            <dt>Mention</dt>
-            <dd>{SIGN_MENTION_LABELS[directionals.mention]}</dd>
+            <dt>{t('summary.mention')}</dt>
+            <dd>{t(`mentions.${directionals.mention}`)}</dd>
             {directionals.units.map((u, i) => (
               <div key={u.uid} className={styles.row}>
-                <dt>Directionnelle {i + 1}</dt>
-                <dd>{u.placement || 'Non précisé'}</dd>
+                <dt>{t('summary.directional', { number: i + 1 })}</dt>
+                <dd>{u.placement || t('common.notSpecified')}</dd>
               </div>
             ))}
           </dl>
@@ -215,7 +215,7 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
 
       {otherNeeds && (
         <section>
-          <h4 className={styles.subtitle}>Autres besoins</h4>
+          <h4 className={styles.subtitle}>{t('summary.otherNeeds')}</h4>
           <p className={styles.prose}>{otherNeeds}</p>
         </section>
       )}

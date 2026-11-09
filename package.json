@@ -9,7 +9,8 @@
     "lint": "eslint",
     "postinstall": "prisma generate",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "email": "email dev --dir src/lib/email/templates --port 3001"
   },
   "prisma": {
     "seed": "node prisma/seed.ts"
@@ -18,6 +19,8 @@
     "@auth/prisma-adapter": "^2.11.3",
     "@hookform/resolvers": "^5.9.1",
     "@prisma/client": "^6.19.3",
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.2.0",
     "@stripe/react-stripe-js": "^6.12.0",
     "@stripe/stripe-js": "^9.17.0",
     "bcryptjs": "^3.0.3",
@@ -45,9 +48,12 @@
     "@types/nodemailer": "^8.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "csv-parse": "^7.0.3",
     "eslint": "^9",
     "eslint-config-next": "15.5.25",
     "prisma": "^6.19.3",
+    "react-email": "^6.11.8",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.0.3"
   }

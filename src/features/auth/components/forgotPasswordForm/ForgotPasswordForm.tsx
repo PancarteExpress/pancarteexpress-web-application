@@ -8,6 +8,7 @@ import Link from "next/link";
 import * as z from "zod";
 import { useTranslations } from "next-intl";
 import { readErrorCode } from "@/lib/errors/appError";
+import { useIssueMessage } from "@/shared/hooks/useIssueMessage";
 
 import styles from './ForgotPasswordForm.module.css';
 import { FaUnlockKeyhole } from "react-icons/fa6";
@@ -23,6 +24,8 @@ type VerifyCodeInput = z.infer<typeof verifyCodeSchema>;
 
 export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
   const tErrors = useTranslations("errors");
+  const t = useTranslations("login.forgotPassword");
+  const tv = useIssueMessage("errors.validation");
   const [step, setStep] = useState<"email" | "code" | "reset">("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
@@ -63,7 +66,7 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
 
       setEmail(data.email);
       setStep("code");
-      setSuccess("Code sent to your email");
+      setSuccess(t("codeSent"));
     } catch {
       setError(tErrors("serverError"));
     } finally {
@@ -113,7 +116,7 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
         return;
       }
 
-      setSuccess("Password reset successfully! Redirecting to login...");
+      setSuccess(t("resetSuccess"));
       setTimeout(() => window.location.href = `/${locale}/login`, 2000);
     } catch {
       setError(tErrors("serverError"));
@@ -130,12 +133,12 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
         {step === "email" && (<>
         <div className={styles.header}>
           <FaUnlockKeyhole size={30} style={{color: "#0E4D9A"}}/>
-          <label>Veuillez entrer ladresse e-mail associée à votre compte</label>
+          <label>{t("emailPrompt")}</label>
         </div>
         
         <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)}>
           <div className={styles.inputs}>
-            <label className="block text-sm font-medium">Email</label>
+            <label className="block text-sm font-medium">{t("email")}</label>
             <input
               {...emailForm.register("email")}
               type="email"
@@ -144,16 +147,16 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
 
           {(emailForm.formState.errors.email || error) &&
           <div className={styles.error}>
-            {error || emailForm.formState.errors.email?.message}
+            {error || tv(emailForm.formState.errors.email?.message)}
           </div>}
 
           <button type="submit" disabled={isLoading} className={styles.bouton}>
-            {isLoading ? "Sending..." : "Send Code"}
+            {isLoading ? t("sending") : t("sendCode")}
           </button>
 
           <div style={{ marginTop: '20px', textAlign: 'center' }}>
             <Link href={`/${locale}/login`} style={{ textDecoration: 'none', color: '#0E4D9A', fontWeight: '700' }}>
-              Back to login
+              {t("backToLogin")}
             </Link>
           </div>
         </form>
@@ -164,13 +167,18 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
         {step === "code" && (<>
         <div className={styles.header}>
           <FaUnlockKeyhole size={30} style={{color: "#0E4D9A"}}/>
-          <label>Enter the 6-digit code sent to <span style={{ fontWeight: '700' }}>{email}</span></label>
+          <label>
+            {t.rich("enterCode", {
+              email,
+              bold: (chunks) => <span style={{ fontWeight: '700' }}>{chunks}</span>,
+            })}
+          </label>
         </div>
         
         <form onSubmit={codeForm.handleSubmit(handleCodeSubmit)} >
 
           <div className={styles.inputs}>
-            <label className="block text-sm font-medium">Code</label>
+            <label className="block text-sm font-medium">{t("code")}</label>
             <input
               {...codeForm.register("code")}
               type="text"
@@ -182,18 +190,18 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
 
           {(codeForm.formState.errors.code || error) &&
           <div className={styles.error}>
-            {error || codeForm.formState.errors.code?.message}
+            {error || tv(codeForm.formState.errors.code?.message)}
           </div>}
 
           {success && <div className={styles.codeSent}>{success}</div>}
 
           <button type="submit" disabled={isLoading} className={styles.bouton}>
-            {isLoading ? "Verifying..." : "Verify Code"}
+            {isLoading ? t("verifying") : t("verifyCode")}
           </button>
 
           <div style={{ marginTop: '20px', textAlign: 'center' }}>
             <button type="button" onClick={() => setStep("email")} style={{ all: 'unset', textDecoration: 'none', color: '#0E4D9A', fontWeight: '700', cursor: 'pointer' }}>
-              Back to send code
+              {t("backToSendCode")}
             </button>
           </div>
         </form>
@@ -204,12 +212,12 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
         {step === "reset" && (<>
         <div className={styles.header}>
           <FaUnlockKeyhole size={30} style={{color: "#0E4D9A"}}/>
-          <label>Veuillez entrer votre nouveau mot de passe</label>
+          <label>{t("newPasswordPrompt")}</label>
         </div>
 
         <form onSubmit={resetForm.handleSubmit(handleResetSubmit)} className="space-y-4">
           <div className={styles.inputs}>
-            <label className="block text-sm font-medium">New Password</label>
+            <label className="block text-sm font-medium">{t("newPassword")}</label>
             <input
               {...resetForm.register("password")}
               type="password"
@@ -219,7 +227,7 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
           </div>
 
           <div className={styles.inputs}>
-            <label className="block text-sm font-medium">Confirm Password</label>
+            <label className="block text-sm font-medium">{t("confirmPassword")}</label>
             <input
               {...resetForm.register("confirmPassword")}
               type="password"
@@ -230,13 +238,13 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
 
           {(resetForm.formState.errors.password ||resetForm.formState.errors.confirmPassword || error) &&
           <div className={styles.error}>
-            {resetForm.formState.errors.password?.message || resetForm.formState.errors.confirmPassword?.message || error}
+            {tv(resetForm.formState.errors.password?.message) || tv(resetForm.formState.errors.confirmPassword?.message) || error}
           </div>}
 
           {success && <div className={styles.codeSent}>{success}</div>}
 
            <button type="submit" disabled={isLoading} className={styles.bouton}>
-            {isLoading ? "Resetting..." : "Reset Password"}
+            {isLoading ? t("resetting") : t("resetPassword")}
           </button>
         </form>
         </>

@@ -2,6 +2,7 @@
 
 import { useId, useState } from 'react';
 import { Controller, useFieldArray, useWatch } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { OPEN_HOUSE, TEXT_LIMITS, TIME_MINUTE_STEP } from '@/features/services/constants/installation';
 import { createDirectional } from '@/features/services/schemas/installation.schema';
 import { addMinutesClamped, removalDayAfter, toMinutes } from '@/features/services/utils/time';
@@ -11,7 +12,8 @@ import { DateField, QuantityField, TextField, TimeField, YesNoField } from '@/fe
 import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
 import styles from '../installationForm.module.css';
 import { addDays, format, parse } from 'date-fns';
-import { frCA } from 'date-fns/locale';
+import { useAppLocale } from '@/shared/hooks/useAppLocale';
+import { formatIsoDay } from '@/features/services/utils/formatDay';
 
 const defaultEnd = (start: string) => addMinutesClamped(start, OPEN_HOUSE.defaultDurationMinutes);
 
@@ -19,17 +21,21 @@ export function OpenHouseSection() {
   const headingId = useId();
   const { control, getValues } = useInstallationFormContext();
   const update = useFormUpdater();
+  const t = useTranslations('services');
+  const locale = useAppLocale();
 
   const openHouse = useWatch({ control, name: 'openHouse' });
   const removalDay = removalDayAfter(openHouse.dates);
-  const formatDay = (iso: string) => format(parseIso(iso), 'EEEE d MMMM', { locale: frCA });
+  const formatDay = (iso: string) => formatIsoDay(iso, locale, false);
   const removalHint = (() => {
     if (!removalDay) return undefined;
-    if (getDay(parseIso(removalDay)) === 1) return `Retrait prévu le ${formatDay(removalDay)}.`;
+    if (getDay(parseIso(removalDay)) === 1) return t('installation.removalPlanned', { date: formatDay(removalDay) });
     // Lundi férié : on précise lequel
     const last = [...openHouse.dates].sort().at(-1);
     const monday = last ? format(nextMonday(parseIso(last)), 'yyyy-MM-dd') : null;
-    return `Retrait prévu le ${formatDay(removalDay)}${monday ? ` (${formatDay(monday)} férié)` : ''}.`;
+    return monday
+      ? t('installation.removalPlannedHoliday', { date: formatDay(removalDay), monday: formatDay(monday) })
+      : t('installation.removalPlanned', { date: formatDay(removalDay) });
   })();
 
   const { fields, append, remove } = useFieldArray({ control, name: 'openHouse.directionals' });
@@ -54,15 +60,15 @@ export function OpenHouseSection() {
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.sectionTitle}>Détails de la visite libre</h3>
+      <h3 id={headingId} className={styles.sectionTitle}>{t('installation.openHouseTitle')}</h3>
 
       <QuantityField
-        label="Combien de directionnelles visite libre avez-vous besoin ?"
+        label={t('installation.openHouseDirectionalsQuantity')}
         value={fields.length}
         onChange={handleDirectionalsChange}
         min={0}
         max={OPEN_HOUSE.maxDirectionals}
-        hint={`Max ${OPEN_HOUSE.maxDirectionals}`}
+        hint={t('common.max', { max: OPEN_HOUSE.maxDirectionals })}
       />
       
       {fields.map((field, index) => (
@@ -73,9 +79,9 @@ export function OpenHouseSection() {
           render={(props) => (
             <TextField
               {...bindField(props)}
-              label={`Veuillez indiquer l'emplacement de la directionnelle #${index + 1}`}
+              label={t('installation.directionalPlacement', { number: index + 1 })}
               maxLength={TEXT_LIMITS.directionalPlacement}
-              placeholder="Ex. : Newman et Léger"
+              placeholder={t('installation.placementExample')}
               multiline
               rows={1}
             />
@@ -88,12 +94,12 @@ export function OpenHouseSection() {
         name="openHouse.flagCount"
         render={({ field, fieldState }) => (
           <QuantityField
-            label="Combien de drapeaux visite libre avez-vous besoin ?"
+            label={t('installation.openHouseFlagsQuantity')}
             value={field.value}
             onChange={field.onChange}
             min={0}
             max={OPEN_HOUSE.maxFlags}
-            hint={`Max ${OPEN_HOUSE.maxFlags}`}
+            hint={t('common.max', { max: OPEN_HOUSE.maxFlags })}
             error={fieldState.error?.message}
           />
         )}
@@ -116,7 +122,7 @@ export function OpenHouseSection() {
               }
           }}
         >
-          {openHouse.twoDates ? 'Une seule date' : 'Choisir deux dates'}
+          {openHouse.twoDates ? t('installation.oneDate') : t('installation.twoDates')}
         </button>
 
         <Controller
@@ -124,11 +130,11 @@ export function OpenHouseSection() {
           name="openHouse.dates"
           render={({ field, fieldState }) => (
             <DateField
-              label={openHouse.twoDates ? 'Dates de la visite libre' : 'Date de la visite libre'}
+              label={openHouse.twoDates ? t('installation.openHouseDates') : t('installation.openHouseDate')}
               value={field.value}
               onChange={field.onChange}
               span={openHouse.twoDates ? OPEN_HOUSE.maxDates : 1}
-              hint={openHouse.twoDates ? 'Cliquez sur le premier jour : le lendemain est ajouté automatiquement. Les mêmes heures s\'appliquent aux deux jours.' : undefined}
+              hint={openHouse.twoDates ? t('installation.twoDatesHint') : undefined}
               error={fieldState.error?.message}
               required
             />
@@ -144,7 +150,7 @@ export function OpenHouseSection() {
             <TimeField
               {...bindField(props)}
               onChange={handleStartChange}
-              label="Heure de début"
+              label={t('installation.startTime')}
               minuteStep={TIME_MINUTE_STEP}
               required
             />
@@ -161,7 +167,7 @@ export function OpenHouseSection() {
                 setEndEdited(true);
               }}
               after={openHouse.startTime}
-              label="Heure de fin"
+              label={t('installation.endTime')}
               minuteStep={TIME_MINUTE_STEP}
               required
             />
@@ -175,7 +181,7 @@ export function OpenHouseSection() {
         render={(props) => (
           <YesNoField
             {...bindField(props)}
-            legend="Devons-nous retirer le matériel de la visite libre le lundi qui suit ?"
+            legend={t('installation.removeNextMonday')}
             hint={removalHint}
             required
           />

@@ -4,12 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from "next-intl";
+import { isAppErrorCode } from "@/lib/errors/appError";
 import { pickupSchema, type PickupFieldsInput } from "@/lib/auth/auth.schema";
 import { PickupFields } from "../pickupFields/PickupFields";
 import styles from "@/features/auth/components/registerForm/RegisterForm.module.css";
 
 export default function CompleteProfileForm({ locale }: { locale: string }) {
   const router = useRouter();
+  const t = useTranslations("register.completeProfile");
+  const tErrors = useTranslations("errors");
   const [serverError, setServerError] = useState<string | null>(null);
 
   const form = useForm<PickupFieldsInput>({
@@ -27,7 +31,9 @@ export default function CompleteProfileForm({ locale }: { locale: string }) {
 
     if (!res.ok) {
       const body = await res.json().catch(() => null);
-      setServerError(body?.error ?? "Une erreur est survenue");
+      const error: unknown = body?.error;
+      // Code d'erreur connu : traduit ; sinon le texte du serveur, à défaut l'erreur générique
+      setServerError(isAppErrorCode(error) ? tErrors(error) : typeof error === "string" ? error : tErrors("serverError"));
       return;
     }
 
@@ -37,14 +43,14 @@ export default function CompleteProfileForm({ locale }: { locale: string }) {
 
   return (
     <div className={styles.mainContainer}>
-      <h2>Complétez votre profil</h2>
-      <p>Indiquez comment récupérer votre matériel avant de continuer.</p>
+      <h2>{t("title")}</h2>
+      <p>{t("subtitle")}</p>
       <FormProvider {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <PickupFields />
           {serverError && <div className={styles.error}>{serverError}</div>}
           <button type="submit" disabled={form.formState.isSubmitting} className={styles.btnConnection}>
-            Enregistrer
+            {t("save")}
           </button>
         </form>
       </FormProvider>

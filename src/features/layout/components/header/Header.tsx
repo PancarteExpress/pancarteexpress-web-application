@@ -51,7 +51,7 @@ export default function Header() {
 
             <div className={styles.bottomHeader}>
                 <div className={styles.container}>
-                    <Image src="/header/Logo_PancarteExpress.svg" className={styles.logo} loading="eager" alt="Logo Pancarte Express" width={300} height={100} />
+                    <Image src="/header/Logo_PancarteExpress.svg" className={styles.logo} loading="eager" alt={t('logoAlt')} width={300} height={100} />
 
                     <div className={styles.infos}>
                         <div className={styles.schedule}>
@@ -59,14 +59,14 @@ export default function Header() {
                                 <h1>{t('fastServiceTitle')}</h1>
                                 <h5>{t('fastServiceSub')}</h5>
                             </div>
-                            <Image src="/header/icon-horaire.png" alt="icon horaire" className={styles.icon} width={40} height={40} />
+                            <Image src="/header/icon-horaire.png" alt={t('scheduleIconAlt')} className={styles.icon} width={40} height={40} />
                         </div>
                         <div className={styles.area}>
                             <div>
                                 <h1>{t('zoneTitle')}</h1>
                                 <h5>{t('zoneSub')}</h5>
                             </div>
-                            <Image src="/header/icon-maps.png" alt="icon maps" className={styles.icon} width={30} height={35} />
+                            <Image src="/header/icon-maps.png" alt={t('mapIconAlt')} className={styles.icon} width={30} height={35} />
                         </div>
                     </div>
 

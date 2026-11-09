@@ -1,8 +1,9 @@
 'use client';
 
 import { Controller } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
-  EXCLUSIVE_REMOVAL_MATERIALS, IMPLEMENTED_REMOVAL_MATERIALS, REMOVAL_MATERIAL_LABELS, REMOVAL_MATERIALS,
+  EXCLUSIVE_REMOVAL_MATERIALS, IMPLEMENTED_REMOVAL_MATERIALS, REMOVAL_MATERIALS,
   type ImplementedRemovalMaterial, type RemovalMaterial,
 } from '@/features/services/constants/removal';
 import { createRemovalDirectional, createRemovalUnit } from '@/features/services/schemas/removal.schema';
@@ -19,6 +20,7 @@ const partnersOf = (m: RemovalMaterial): RemovalMaterial[] =>
 export function RemovalMaterialsSelector() {
   const { control } = useRemovalFormContext();
   const update = useRemovalUpdater();
+  const t = useTranslations('services.removal');
 
   return (
     <Controller
@@ -29,7 +31,7 @@ export function RemovalMaterialsSelector() {
 
         const options = REMOVAL_MATERIALS.map((m): ChoiceOption<RemovalMaterial> => ({
           value: m,
-          label: REMOVAL_MATERIAL_LABELS[m],
+          label: t(`materials.${m}`),
           // Non implémenté, ou exclu par un matériel déjà coché (ex. Pancarte ↔ Ajouts)
           disabled: !isImplemented(m) || partnersOf(m).some((p) => selected.includes(p)),
         }));
@@ -54,14 +56,14 @@ export function RemovalMaterialsSelector() {
 
         return (
           <CheckboxGroup
-            legend="Qu'avez-vous besoin de retirer ?"
+            legend={t('materialsLegend')}
             options={options}
             value={field.value}
             onChange={handleChange}
             onBlur={field.onBlur}
             inputRef={field.ref}
             error={fieldState.error?.message}
-            hint="Les autres éléments seront offerts prochainement."
+            hint={t('otherItemsSoon')}
             required
           />
         );

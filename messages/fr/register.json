@@ -72,5 +72,25 @@
     "accountCreatedSuccessfully": "Votre compte a été créé avec succès !",
 
     "alreadyMember": "Déjà membre ?",
-    "connect": "Se connecter"
+    "connect": "Se connecter",
+    "pickup": {
+        "legend": "Devons-nous ramasser votre matériel ?",
+        "atAddress": "Oui, à une adresse particulière",
+        "atWarehouse": "Non, le matériel sera déposé à l'entrepôt",
+        "addressLabel": "Adresse complète de l'endroit où ramasser le matériel",
+        "receptionDate": "Quand recevrons-nous le matériel ?",
+        "dateHint": "Les fins de semaine et les jours fériés ne sont pas disponibles.",
+        "notes": "Autres détails ?"
+    },
+    "completeProfile": {
+        "title": "Complétez votre profil",
+        "subtitle": "Indiquez comment récupérer votre matériel avant de continuer.",
+        "save": "Enregistrer"
+    },
+    "pickupEdit": {
+        "loadError": "Impossible de charger le ramassage.",
+        "updated": "Ramassage mis à jour",
+        "loading": "Chargement…",
+        "save": "Enregistrer le ramassage"
+    }
 }

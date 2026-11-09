@@ -3,7 +3,8 @@
 import { useId, useImperativeHandle, useState, type Ref } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CORRECTION_KIND_LABELS, CORRECTION_KINDS, CORRECTION_TEXT_LIMITS } from '@/features/services/constants/correction';
+import { useTranslations } from 'next-intl';
+import { CORRECTION_KINDS, CORRECTION_TEXT_LIMITS } from '@/features/services/constants/correction';
 import {
   correctionSchema, createEmptyCorrectionForm, toCorrectionFormValues, type CorrectionFormValues,
 } from '@/features/services/schemas/correction.schema';
@@ -14,8 +15,6 @@ import { toOptions } from '@/features/services/components/fields/types';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
 import styles from '../installationForm/installationForm.module.css';
 
-const KIND_OPTIONS = toOptions(CORRECTION_KINDS, CORRECTION_KIND_LABELS);
-
 interface CorrectionFormProps {
   handle: Ref<ServiceFormHandle<CorrectionDetails>>;
   initialValues?: CorrectionDetails;
@@ -23,6 +22,7 @@ interface CorrectionFormProps {
 
 export function CorrectionForm({ handle, initialValues }: CorrectionFormProps) {
   const headingId = useId();
+  const t = useTranslations('services.correction');
   // Calculé une seule fois : useForm ne lit defaultValues qu'au montage
   const [defaultValues] = useState(() =>
     initialValues ? toCorrectionFormValues(initialValues) : createEmptyCorrectionForm(),
@@ -44,7 +44,7 @@ export function CorrectionForm({ handle, initialValues }: CorrectionFormProps) {
   return (
     <form noValidate className={styles.form} onSubmit={(e) => e.preventDefault()}>
       <section aria-labelledby={headingId} className={styles.section}>
-        <h3 id={headingId} className={styles.sectionTitle}>Détails de la correction</h3>
+        <h3 id={headingId} className={styles.sectionTitle}>{t('title')}</h3>
 
         <Controller
           control={control}
@@ -52,8 +52,8 @@ export function CorrectionForm({ handle, initialValues }: CorrectionFormProps) {
           render={({ field, fieldState }) => (
             <>
               <RadioGroup
-                legend="Quel type de correction avez-vous besoin ?"
-                options={KIND_OPTIONS}
+                legend={t('kindLegend')}
+                options={toOptions(CORRECTION_KINDS, (k) => t(`kinds.${k}`))}
                 value={field.value}
                 onChange={(kind) => {
                   field.onChange(kind);
@@ -75,7 +75,7 @@ export function CorrectionForm({ handle, initialValues }: CorrectionFormProps) {
                   name="explanation"
                   render={({ field: f, fieldState: fs }) => (
                     <TextField
-                      label="Veuillez expliquer la correction à apporter"
+                      label={t('explanation')}
                       value={f.value}
                       onChange={f.onChange}
                       onBlur={f.onBlur}

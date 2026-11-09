@@ -1,7 +1,7 @@
 import * as z from 'zod';
 import {
   EXCLUSIVE_REMOVAL_MATERIALS, IMPLEMENTED_REMOVAL_MATERIALS, MAX_REMOVAL_ADDONS, MAX_REMOVAL_DIRECTIONALS,
-  MAX_REMOVAL_FLAGS, MAX_REMOVAL_FRAMES, MAX_REMOVAL_KEYBOXES, REMOVAL_MATERIAL_LABELS, REMOVAL_TEXT_LIMITS,
+  MAX_REMOVAL_FLAGS, MAX_REMOVAL_FRAMES, MAX_REMOVAL_KEYBOXES, REMOVAL_TEXT_LIMITS,
   type ImplementedRemovalMaterial, type RemovalMaterial,
 } from '../constants/removal';
 import type { RemovalDetails, RemovalUnit } from '../types/removal';
@@ -9,6 +9,7 @@ import {
   createDefaultPlacement, fromPlacement, placementFormSchema, toPlacement, validatePlacement,
 } from './placement.schema';
 import { keyboxCode, text, type Path, type Report } from './shared';
+import { issueMessage } from '@/shared/utils/issueMessage';
 
 /* ---------- Forme du formulaire ---------- */
 
@@ -64,21 +65,21 @@ export const removalSchema = removalFormSchema
     const selected: readonly RemovalMaterial[] = v.materials;
     const has = (m: ImplementedRemovalMaterial) => v.materials.includes(m);
 
-    if (v.materials.length === 0) report(['materials'], 'Sélectionnez au moins un élément à retirer');
+    if (v.materials.length === 0) report(['materials'], 'selectRemovalItem');
 
     for (const [a, b] of EXCLUSIVE_REMOVAL_MATERIALS) {
       if (selected.includes(a) && selected.includes(b)) {
-        report(['materials'], `« ${REMOVAL_MATERIAL_LABELS[a]} » et « ${REMOVAL_MATERIAL_LABELS[b]} » ne peuvent pas être retirés ensemble`);
+        report(['materials'], issueMessage('incompatibleRemoval', { a, b }));
       }
     }
 
-    if (has('frames')) validateUnits(v.frames.units, ['frames', 'units'], 'Indiquez au moins une pancarte', report);
-    if (has('addons')) validateUnits(v.addons.units, ['addons', 'units'], 'Indiquez au moins un ajout', report);
-    if (has('keybox') && !v.keybox.code) report(['keybox', 'code'], 'Indiquez le code des boîtes à clés');
+    if (has('frames')) validateUnits(v.frames.units, ['frames', 'units'], 'framesRequired', report);
+    if (has('addons')) validateUnits(v.addons.units, ['addons', 'units'], 'addonsUnitsRequired', report);
+    if (has('keybox') && !v.keybox.code) report(['keybox', 'code'], 'removalKeyboxCodeRequired');
     if (has('directional') && v.directionals.units.length === 0) {
-      report(['directionals', 'units'], 'Indiquez au moins une directionnelle');
+      report(['directionals', 'units'], 'directionalsRequired');
     }
-    if (has('other') && !v.otherDetails) report(['otherDetails'], 'Indiquez les détails du retrait');
+    if (has('other') && !v.otherDetails) report(['otherDetails'], 'removalDetailsRequired');
   })
   .transform((v: FormOutput): RemovalDetails => ({
     frames: v.materials.includes('frames') ? { units: v.frames.units.map(toUnit) } : null,

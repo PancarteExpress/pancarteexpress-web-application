@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ChangeEvent } from 'react';
+import { useTranslations } from 'next-intl';
 
 import styles from "./AddressAutocomplete.module.css";
 import { loadGoogleMaps } from "@/shared/utils/googleMapsLoader";
@@ -69,11 +70,12 @@ export default function AddressAutocomplete({
   onSelect,
   onBlur,
   inputRef,
-  placeholder = 'Commencez à taper votre adresse',
+  placeholder,
   disabled,
   'aria-describedby': describedBy,
   ...aria
 }: Props) {
+  const t = useTranslations('common.addressAutocomplete');
   const listboxId = useId();
   const errorId = useId();
   const hasSelectionRef = useRef(false);
@@ -82,8 +84,9 @@ export default function AddressAutocomplete({
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const [ready, setReady] = useState(false);
-  const [loadError, setLoadError] = useState<string | null>(null);
-  const [selectionError, setSelectionError] = useState<string | null>(null);
+  // Clés i18n (common.addressAutocomplete), traduites au rendu
+  const [loadError, setLoadError] = useState<'unavailable' | null>(null);
+  const [selectionError, setSelectionError] = useState<'incomplete' | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [activeIndex, setActiveIndex] = useState(-1);
 
@@ -104,7 +107,7 @@ export default function AddressAutocomplete({
         if (!cancelled) setReady(true);
       })
       .catch(() => {
-        if (!cancelled) setLoadError("L'autocomplétion est indisponible. Vérifiez votre adresse manuellement.");
+        if (!cancelled) setLoadError('unavailable');
       });
 
     return () => {
@@ -181,7 +184,7 @@ export default function AddressAutocomplete({
     if (!hasRequiredComponents(place)) {
       hasSelectionRef.current = false;
       onSelectRef.current?.(null);
-      setSelectionError('Adresse incomplète : sélectionnez une adresse avec numéro civique, rue et code postal.');
+      setSelectionError('incomplete');
       return;
     }
     setSelectionError(null);
@@ -256,7 +259,7 @@ export default function AddressAutocomplete({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         onBlur={handleBlur}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t('placeholder')}
         disabled={disabled}
         autoComplete="off"
         role="combobox"
@@ -290,7 +293,7 @@ export default function AddressAutocomplete({
         </ul>
       )}
 
-      {internalError && <p id={errorId} className={styles.loadError}>{internalError}</p>}
+      {internalError && <p id={errorId} className={styles.loadError}>{t(internalError)}</p>}
     </div>
   );
 }

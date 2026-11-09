@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useIssueMessage } from '@/shared/hooks/useIssueMessage';
 import styles from './fields.module.css';
 import type { Columns, ElementRef } from './types';
 
@@ -17,6 +18,7 @@ interface ShellProps {
 }
 
 export function ChoiceGroupShell({ legend, hideLegend, required, hint, hintId, error, errorId, describedBy, columns, role, children, }: ShellProps) {
+  const translateError = useIssueMessage('services.errors');
   return (
     <fieldset className={styles.group} role={role} aria-required={role && required ? true : undefined} aria-describedby={describedBy}>
       <legend className={hideLegend ? styles.visuallyHidden : styles.legend}>
@@ -25,7 +27,7 @@ export function ChoiceGroupShell({ legend, hideLegend, required, hint, hintId, e
       </legend>
       {hint && <p id={hintId} className={styles.hint}>{hint}</p>}
       <div className={styles.grid} data-columns={columns}>{children}</div>
-      {error && <p id={errorId} className={styles.error}>{error}</p>}
+      {error && <p id={errorId} className={styles.error}>{translateError(error)}</p>}
     </fieldset>
   );
 }

@@ -1,9 +1,15 @@
 'use server';
 
 import * as z from 'zod';
+import { after } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { addDays, isBilledToGroupAdmin, SERVICE_BLOCK_GRACE_DAYS } from '@/lib/orders/billing';
 import { ActionError, requireSuperAdminAction, toActionError, type ActionResult } from '@/lib/auth/actionGuard';
+import {
+  sendServiceBlockWarningEmail,
+  sendServiceUnblockedEmail,
+  type ServiceBlockRecipient,
+} from './serviceBlock.emails';
 
 const inputSchema = z.object({ userId: z.string().min(1).max(64), block: z.boolean() });
 
@@ -19,6 +25,9 @@ export async function setServiceBlockAction(userId: string, block: boolean): Pro
     const target = await prisma.user.findUnique({
       where: { id: parsed.data.userId },
       select: {
+        email: true,
+        firstName: true,
+        locale: true,
         role: true,
         groupStatus: true,
         serviceBlockStartsAt: true,
@@ -37,12 +46,31 @@ export async function setServiceBlockAction(userId: string, block: boolean): Pro
       }
     }
 
+    // Déjà débloqué : pas de courriel « compte en règle » en double
+    if (!parsed.data.block && !target.serviceBlockStartsAt) return { ok: true };
+
+    const startsAt = parsed.data.block ? addDays(new Date(), SERVICE_BLOCK_GRACE_DAYS) : null;
+
     // Le déblocage reste toujours permis (ex. membre bloqué avant un changement de mode)
     await prisma.user.update({
       where: { id: parsed.data.userId },
-      data: {
-        serviceBlockStartsAt: parsed.data.block ? addDays(new Date(), SERVICE_BLOCK_GRACE_DAYS) : null,
-      },
+      // Nouveau cycle : le courriel de blocage effectif devra repartir
+      data: { serviceBlockStartsAt: startsAt, serviceBlockNoticeSentAt: null },
+    });
+
+    const recipient: ServiceBlockRecipient = {
+      email: target.email,
+      firstName: target.firstName,
+      blocksTeam: target.role === 'groupAdmin' && target.group?.billingMode === 'GROUP',
+    };
+    // Après la réponse : le superAdmin n'attend pas le SMTP ; un échec est journalisé
+    after(async () => {
+      try {
+        if (startsAt) await sendServiceBlockWarningEmail(recipient, startsAt, target.locale);
+        else await sendServiceUnblockedEmail(recipient, target.locale);
+      } catch (err) {
+        console.error('[service-block] Échec du courriel :', parsed.data.userId, err);
+      }
     });
     return { ok: true };
   } catch (e) {

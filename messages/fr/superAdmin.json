@@ -1,0 +1,135 @@
+{
+  "sidebarTitle": "Super Admin",
+  "nav": {
+    "users": "Utilisateurs",
+    "teams": "Équipes",
+    "services": "Demandes de services"
+  },
+  "users": {
+    "title": "Utilisateurs",
+    "subtitle": "Gérez tous les utilisateurs de la plateforme.",
+    "pendingStat": "{count, plural, one {Utilisateur en attente de rejoindre une équipe} other {Utilisateurs en attente de rejoindre une équipe}}",
+    "totalStat": "{count, plural, one {utilisateur total} other {utilisateurs total}}",
+    "activeTeamsStat": "{count, plural, one {Équipe active} other {Équipes actives}}",
+    "listTitle": "Liste des utilisateurs",
+    "allRoles": "Tous les rôles",
+    "filterByRole": "Filtrer par rôle",
+    "allStatuses": "Tous les statuts",
+    "filterByGroupStatus": "Filtrer par statut de groupe",
+    "searchPlaceholder": "Rechercher par nom ou courriel…",
+    "noResults": "Aucun résultat."
+  },
+  "teams": {
+    "title": "Équipes",
+    "subtitle": "Gérez toutes les équipes de la plateforme.",
+    "listTitle": "Liste des équipes",
+    "searchPlaceholder": "Rechercher une équipe ou un membre…",
+    "noResults": "Aucun résultat."
+  },
+  "servicesSection": {
+    "title": "Demandes de service",
+    "subtitle": "Liste de toutes les demandes de services"
+  },
+  "roles": {
+    "user": "Courtier",
+    "groupAdmin": "Administrateur de groupe",
+    "superAdmin": "Super admin"
+  },
+  "groupStatuses": {
+    "SOLO": "Solo",
+    "PENDING": "Doit rejoindre un groupe",
+    "JOINED": "Membre d'un groupe"
+  },
+  "accountTypes": {
+    "solo": "Solo",
+    "pending": "En attente",
+    "groupAdmin": "Admin de groupe",
+    "member": "Membre"
+  },
+  "serviceTypes": {
+    "installation": "Installation",
+    "removal": "Retrait",
+    "correction": "Correction",
+    "pickup": "Ramassage",
+    "largeInstallation": "Installation grand format",
+    "largeStoragePickup": "Ramassage pour entreposage (grand format)",
+    "largeRetrieval": "Récupération grand format"
+  },
+  "groupsTable": {
+    "empty": "Aucune équipe.",
+    "noResults": "Aucun résultat.",
+    "name": "Nom",
+    "admin": "Administrateur",
+    "members": "Membres",
+    "billedTo": "Facturé à",
+    "actions": "Actions",
+    "unnamed": "Sans nom",
+    "hide": "Masquer",
+    "showMembers": "Voir les membres",
+    "membersListTitle": "Liste des membres de l'équipe",
+    "noMembers": "Aucun membre.",
+    "billingModes": {
+      "INDIVIDUAL": "Chaque membre",
+      "GROUP": "L'administrateur"
+    }
+  },
+  "deleteGroup": {
+    "confirmWithMembers": "Supprimer « {name} » ? {count, plural, one {Le # membre, administrateur compris, passera} other {Les # membres, administrateur compris, passeront}} en forfait individuel.",
+    "confirm": "Supprimer « {name} » ?",
+    "ariaLabel": "Supprimer l'équipe {name}",
+    "deleting": "Suppression…",
+    "delete": "Supprimer l'équipe"
+  },
+  "servicesTable": {
+    "empty": "Aucune demande de service.",
+    "serviceCount": "{count, plural, one {# service} other {# services}}",
+    "orderNumber": "# Commande",
+    "type": "Type",
+    "address": "Adresse",
+    "requestedOn": "Demandé le",
+    "delay": "Délai"
+  },
+  "accountTypeSelect": {
+    "confirmGroupAdmin": "Créer un nouveau groupe avec {name} comme administrateur ?",
+    "confirmChange": "Passer {name} en « {type} » ?",
+    "ariaLabel": "Type de compte de {name}"
+  },
+  "deleteUser": {
+    "confirm": "Supprimer {name} ? Cette action est irréversible. Un courriel d'au revoir lui sera envoyé.",
+    "ariaLabel": "Supprimer {name}",
+    "title": "Supprimer {name}",
+    "successorText": "{name} est administrateur de son groupe. Choisissez qui le remplace.",
+    "newAdmin": "Nouvel administrateur",
+    "cancel": "Annuler",
+    "deleting": "Suppression…",
+    "deleteAndTransfer": "Supprimer et transférer"
+  },
+  "groupStatusFilter": {
+    "label": "Statut de groupe",
+    "all": "Tous"
+  },
+  "serviceBlock": {
+    "confirmUnblock": "Débloquer {name} ? Les demandes de service seront de nouveau possibles immédiatement et un courriel le confirmera.",
+    "confirmBlock": "Bloquer {name} ? Un courriel d'avertissement lui sera envoyé et ses demandes de service seront refusées dans {days} jours.",
+    "unblock": "Débloquer",
+    "block": "Bloquer"
+  },
+  "usersTable": {
+    "empty": "Aucun utilisateur inscrit.",
+    "emptyForStatus": "Aucun utilisateur pour ce statut.",
+    "name": "Nom",
+    "email": "Courriel",
+    "phone": "Téléphone",
+    "company": "Entreprise",
+    "role": "Rôle",
+    "group": "Groupe",
+    "status": "Statut",
+    "registeredOn": "Inscrit le",
+    "serviceRequests": "Demandes de service",
+    "delete": "Supprimer",
+    "blockActive": "Actif",
+    "blocked": "Bloqué",
+    "blockedOn": "Bloqué le {date}",
+    "billedToGroupAdmin": "Facturé à l'admin du groupe"
+  }
+}

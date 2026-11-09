@@ -1,5 +1,7 @@
 import * as z from 'zod';
 
+// Messages : clés i18n du namespace checkout.errors, traduites à l'affichage
+
 const shippingAddressSchema = z.object({
   street: z.string(),
   city: z.string(),
@@ -9,10 +11,10 @@ const shippingAddressSchema = z.object({
 
 export const checkoutSchema = z
     .object({
-        firstName: z.string().trim().min(1, 'Le prénom est requis'),
-        lastName: z.string().trim().min(1, 'Le nom est requis'),
-        email: z.string().trim().toLowerCase().email("Courriel invalide"),
-        phone: z.string().trim().refine((v) => v === '' || /^[\d\s()+.-]{10,20}$/.test(v), 'Numéro de téléphone invalide'),
+        firstName: z.string().trim().min(1, 'firstNameRequired'),
+        lastName: z.string().trim().min(1, 'lastNameRequired'),
+        email: z.string().trim().toLowerCase().email('emailInvalid'),
+        phone: z.string().trim().refine((v) => v === '' || /^[\d\s()+.-]{10,20}$/.test(v), 'phoneInvalid'),
         deliveryMode: z.enum(['pickup', 'delivery']),
         shippingAddress: shippingAddressSchema.nullable(),
     })
@@ -24,7 +26,7 @@ export const checkoutSchema = z
         ctx.addIssue({
             code: 'custom',
             path: ['shippingAddress'],
-            message: 'Veuillez sélectionner une adresse de livraison dans la liste',
+            message: 'shippingAddressRequired',
         });
         return;
         }
@@ -34,7 +36,7 @@ export const checkoutSchema = z
         ctx.addIssue({
             code: 'custom',
             path: ['shippingAddress'],
-            message: 'Adresse incomplète : code postal manquant',
+            message: 'postalCodeMissing',
         });
         }
     });

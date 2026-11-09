@@ -7,10 +7,17 @@ const prismaMock = vi.hoisted(() => ({
   $transaction: vi.fn(),
 }));
 const authMock = vi.hoisted(() => vi.fn());
+const sendAccountDeletedEmail = vi.hoisted(() => vi.fn());
+const notifyAccountTypeChanges = vi.hoisted(() => vi.fn());
+// after() exécute le rappel tout de suite : pas de contexte de requête Next en test
+const afterMock = vi.hoisted(() => vi.fn((callback: () => unknown) => callback()));
 
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("@/app/auth", () => ({ auth: authMock }));
+vi.mock("next/server", () => ({ after: afterMock }));
+vi.mock("@/lib/users/server/accountDeleted.email", () => ({ sendAccountDeletedEmail }));
+vi.mock("@/lib/users/server/accountType.emails", () => ({ notifyAccountTypeChanges }));
 
 const { deleteUserAction, updateAccountTypeAction } = await import("./user.actions");
 
@@ -61,6 +68,22 @@ describe("deleteUserAction", () => {
 
     await expect(deleteUserAction("u2")).resolves.toEqual({ ok: true });
     expect(prismaMock.user.delete).toHaveBeenCalledWith({ where: { id: "u2" } });
+  });
+
+  it("envoie le courriel d'au revoir après la suppression", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ role: "user", groupId: null, locale: "fr", email: "ana@example.com", firstName: "Ana" });
+
+    await deleteUserAction("u2");
+
+    expect(sendAccountDeletedEmail).toHaveBeenCalledWith("ana@example.com", "Ana", "fr");
+  });
+
+  it("n'envoie rien si la suppression échoue", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ role: "superAdmin", groupId: null });
+
+    await deleteUserAction("u2");
+
+    expect(sendAccountDeletedEmail).not.toHaveBeenCalled();
   });
 
   it("traduit une contrainte de clé étrangère (P2003)", async () => {
@@ -117,5 +140,43 @@ describe("updateAccountTypeAction", () => {
       where: { id: "u2" },
       data: { role: "user", groupStatus: "SOLO", groupId: null, joinedAt: null },
     });
+  });
+
+  it("détache de son équipe un membre passé En attente, pour qu'il puisse être ajouté de nouveau", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      role: "user",
+      groupStatus: "JOINED",
+      group: { id: "g1", name: "Équipe A", _count: { users: 3 } },
+    });
+
+    await expect(updateAccountTypeAction("u2", "pending")).resolves.toEqual({ ok: true });
+    expect(prismaMock.user.update).toHaveBeenCalledWith({
+      where: { id: "u2" },
+      data: { role: "user", groupStatus: "PENDING", groupId: null, joinedAt: null },
+    });
+  });
+
+  it("prévient le client de son nouveau type de compte", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({
+      email: "ana@example.com",
+      firstName: "Ana",
+      role: "user",
+      groupStatus: "JOINED",
+      group: { id: "g1", name: "Équipe A", _count: { users: 3 } },
+    });
+
+    await updateAccountTypeAction("u2", "solo");
+
+    expect(notifyAccountTypeChanges).toHaveBeenCalledWith([
+      expect.objectContaining({ email: "ana@example.com", to: "solo", groupName: "Équipe A", groupDeleted: false }),
+    ]);
+  });
+
+  it("n'envoie rien si le type ne change pas", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ role: "user", groupStatus: "SOLO", group: null });
+
+    await updateAccountTypeAction("u2", "solo");
+
+    expect(notifyAccountTypeChanges).not.toHaveBeenCalled();
   });
 });

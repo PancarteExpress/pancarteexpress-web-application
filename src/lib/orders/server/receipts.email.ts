@@ -1,18 +1,24 @@
 import 'server-only';
-import type { Prisma, RequestType, ServiceType } from '@prisma/client';
+import type { OrderStatus, Prisma, RequestType, ServiceType } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { formatCents } from '@/lib/pricing/money';
 import { sendEmail, INTERNAL_EMAIL } from '@/lib/email/sendEmail';
+import { renderTextEmail } from '@/lib/email/renderTextEmail';
 import { CONTACT } from '@/shared/constants/contact';
 import { formatServiceDelay } from '@/lib/orders/serviceDelay';
 import { LARGE_FORMAT_SERVICES } from '@/features/services/constants/largeFormat';
 import { parseLargeFormatService } from '@/features/services/schemas/largeFormatDomain.schema';
 import { describeLargeFormatService } from '@/features/services/utils/largeFormatText';
+import { buildClientReceipt } from './clientReceipt';
 
 /* ── Données de la commande ───────────────────────────────────── */
 
 const receiptSelect = {
   orderNumber: true,
+  locale: true,
+  userId: true,
+  internalReceiptSentAt: true,
+  clientReceiptSentAt: true,
   firstName: true,
   lastName: true,
   email: true,
@@ -26,7 +32,7 @@ const receiptSelect = {
   tps: true,
   tvq: true,
   total: true,
-  products: { select: { productName: true, quantity: true, unitPrice: true } },
+  products: { select: { productSlug: true, productName: true, quantity: true, unitPrice: true } },
   serviceRequests: {
     select: {
       requestType: true,
@@ -48,8 +54,8 @@ const receiptSelect = {
   },
 } satisfies Prisma.OrderSelect;
 
-type Receipt = Prisma.OrderGetPayload<{ select: typeof receiptSelect }>;
-type ReceiptAddress = Receipt['serviceRequests'][number]['addresses'][number];
+export type Receipt = Prisma.OrderGetPayload<{ select: typeof receiptSelect }>;
+export type ReceiptAddress = Receipt['serviceRequests'][number]['addresses'][number];
 
 const SERVICE_LABELS: Record<ServiceType, string> = {
   installation: 'Installation',
@@ -66,7 +72,7 @@ const REQUEST_LABELS: Record<RequestType, string> = {
   commercial: 'Grand format',
 };
 
-/* ── Mise en forme du texte ───────────────────────────────────── */
+/* ── Mise en forme du reçu interne (français) ────────────────── */
 
 const fmt = (cents: number) => formatCents(cents, 'fr');
 
@@ -83,7 +89,7 @@ function deliveryLines(order: Receipt): string[] {
   if (order.products.length === 0) return [];
   return order.deliveryMode === 'DELIVERY'
     ? [`Livraison : ${order.deliveryStreet}, ${order.deliveryCity} ${order.deliveryPostalCode ?? ''}`.trim()]
-    : ['Ramassage : 2160 rue Léger'];
+    : [`Ramassage : ${CONTACT.address}`];
 }
 
 function productLines(order: Receipt): string[] {
@@ -95,7 +101,8 @@ function productLines(order: Receipt): string[] {
     `Sous-total : ${fmt(order.subtotal)}`,
     `TPS : ${fmt(order.tps)}`,
     `TVQ : ${fmt(order.tvq)}`,
-    `Total : ${fmt(order.total)}`,
+    // Commande mixte : le total payé ne couvre que les produits
+    `Total${order.serviceRequests.length > 0 ? ' (produits seulement)' : ''} : ${fmt(order.total)}`,
   ];
 }
 
@@ -127,6 +134,16 @@ function serviceLines(order: Receipt): string[] {
   ];
 }
 
+/** Rappel à l'équipe que les services ne sont jamais payés en ligne : leur prix suit sur soumission */
+function servicePricingNote(order: Receipt): string[] {
+  if (order.serviceRequests.length === 0) return [];
+  return [
+    order.products.length > 0
+      ? 'À facturer : le montant payé couvre uniquement les produits. Les services sont à facturer sur soumission.'
+      : 'À facturer : aucun paiement en ligne. Les services sont à facturer sur soumission.',
+  ];
+}
+
 /** Assemble des sections, en sautant les sections vides */
 const joinSections = (...sections: string[][]): string =>
   sections.filter((s) => s.length > 0).map((s) => s.join('\n')).join('\n\n');
@@ -152,49 +169,102 @@ export async function sendReceipts(orderId: string): Promise<void> {
 
   const paymentLine = order.paidAt ? 'Paiement : reçu' : 'Paiement : non payé en ligne';
 
+  const internalSections = [
+    [
+      `Commande n° ${order.orderNumber}`,
+      paymentLine,
+      '',
+      `Client : ${order.firstName} ${order.lastName}`,
+      `Courriel : ${order.email}`,
+      `Téléphone : ${order.phone ?? '—'}`,
+    ],
+    deliveryLines(order),
+    productLines(order),
+    serviceLines(order),
+    servicePricingNote(order),
+  ].filter((section) => section.length > 0);
+
   // Courriel interne : détail complet pour traiter la commande
-  try {
-    await sendEmail({
-      to: INTERNAL_EMAIL,
-      replyTo: order.email, // répondre écrit directement au client
-      subject: `[Commande ${order.orderNumber}] ${order.firstName} ${order.lastName}`,
-      text: joinSections(
-        [
-          `Commande n° ${order.orderNumber}`,
-          paymentLine,
-          '',
-          `Client : ${order.firstName} ${order.lastName}`,
-          `Courriel : ${order.email}`,
-          `Téléphone : ${order.phone ?? '—'}`,
-        ],
-        deliveryLines(order),
-        productLines(order),
-        serviceLines(order),
-      ),
-    });
-  } catch (err) {
-    console.error('[receipts] Échec du courriel interne :', order.orderNumber, err);
+  if (!order.internalReceiptSentAt) {
+    try {
+      await sendEmail({
+        to: INTERNAL_EMAIL,
+        replyTo: order.email, // répondre écrit directement au client
+        subject: `[Commande ${order.orderNumber}] ${order.firstName} ${order.lastName}`,
+        text: joinSections(...internalSections),
+        html: await renderTextEmail({ title: `Commande n° ${order.orderNumber}`, sections: internalSections, locale: 'fr' }),
+      });
+      await markSent(orderId, 'internal');
+    } catch (err) {
+      console.error('[receipts] Échec du courriel interne (relancé par le cron) :', order.orderNumber, err);
+    }
   }
 
-  // Confirmation au client : envoyée même si le courriel interne a échoué
+  // Client connecté : sa commande est dans son tableau de bord, pas de confirmation par courriel.
+  // Marquée comme traitée : le cron ne la relance pas, même si le compte est supprimé ensuite.
+  if (order.userId && !order.clientReceiptSentAt) {
+    await markSent(orderId, 'client');
+    return;
+  }
+
+  // Confirmation au client invité : envoyée même si le courriel interne a échoué (la commande est enregistrée)
+  if (!order.clientReceiptSentAt) {
+    try {
+      // Dans la langue du checkout (Order.locale)
+      const receipt = buildClientReceipt(order);
+      await sendEmail({
+        to: order.email,
+        replyTo: INTERNAL_EMAIL, // si le client répond, ça arrive à l'interne
+        subject: receipt.subject,
+        // Le pied de page du gabarit HTML contient déjà les coordonnées
+        text: joinSections(...receipt.sections, ['Pancarte Express', `${CONTACT.mainPhone} · ${CONTACT.infoEmail}`]),
+        html: await renderTextEmail({ title: receipt.title, sections: receipt.sections, locale: order.locale }),
+      });
+      await markSent(orderId, 'client');
+    } catch (err) {
+      console.error('[receipts] Échec de la confirmation client (relancée par le cron) :', order.orderNumber, err);
+    }
+  }
+}
+
+/** Enregistre l'envoi réussi d'un courriel ; un échec ici n'expose qu'à un doublon au prochain cron */
+async function markSent(orderId: string, which: 'internal' | 'client'): Promise<void> {
+  const now = new Date();
   try {
-    await sendEmail({
-      to: order.email,
-      replyTo: INTERNAL_EMAIL, // si le client répond, ça arrive à l'interne
-      subject: `Confirmation de votre commande n° ${order.orderNumber} | Pancarte Express`,
-      text: joinSections(
-        [
-          `Bonjour ${order.firstName},`,
-          '',
-          `Merci pour votre commande n° ${order.orderNumber}. En voici le récapitulatif.`,
-        ],
-        deliveryLines(order),
-        productLines(order),
-        serviceLines(order),
-        ['Pancarte Express', `${CONTACT.mainPhone} · ${CONTACT.infoEmail}`],
-      ),
+    await prisma.order.update({
+      where: { id: orderId },
+      data: which === 'internal' ? { internalReceiptSentAt: now } : { clientReceiptSentAt: now },
     });
   } catch (err) {
-    console.error('[receipts] Échec de la confirmation client :', order.orderNumber, err);
+    console.error('[receipts] Envoi non enregistré (doublon possible au prochain cron) :', orderId, which, err);
   }
+}
+
+const RETRY_STATUSES: OrderStatus[] = ['PENDING', 'PAID', 'COMPLETED'];
+const RETRY_BATCH = 50;
+const HOUR = 60 * 60_000;
+
+/**
+ * Relance (cron quotidien) des courriels de commande qui n'ont pas pu partir.
+ * Seuls les courriels sans date d'envoi sont renvoyés : aucun doublon.
+ */
+export async function retryUnsentReceipts(): Promise<number> {
+  const now = Date.now();
+  const orders = await prisma.order.findMany({
+    where: {
+      status: { in: RETRY_STATUSES },
+      OR: [{ internalReceiptSentAt: null }, { clientReceiptSentAt: null }],
+      // Laisse le temps à after() de finir (updatedAt change aussi au paiement)
+      updatedAt: { lt: new Date(now - HOUR) },
+      // Au-delà d'une semaine, une confirmation n'a plus de sens
+      createdAt: { gt: new Date(now - 7 * 24 * HOUR) },
+    },
+    select: { id: true },
+    orderBy: { createdAt: 'asc' },
+    take: RETRY_BATCH,
+  });
+
+  // Une commande à la fois : ménage le SMTP
+  for (const { id } of orders) await sendReceipts(id);
+  return orders.length;
 }

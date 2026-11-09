@@ -2,16 +2,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Prisma } from "@prisma/client";
 
 const prismaMock = vi.hoisted(() => ({
-  user: { findMany: vi.fn(), findUnique: vi.fn(), updateMany: vi.fn() },
+  user: { findMany: vi.fn(async (): Promise<unknown[]> => []), findUnique: vi.fn(), updateMany: vi.fn() },
   group: { update: vi.fn(), findUnique: vi.fn(), delete: vi.fn() },
   $transaction: vi.fn(),
 }));
 const authMock = vi.hoisted(() => vi.fn());
+const notifyAccountTypeChanges = vi.hoisted(() => vi.fn());
+// after() exécute le rappel tout de suite : pas de contexte de requête Next en test
+const afterMock = vi.hoisted(() => vi.fn((callback: () => unknown) => callback()));
 
 vi.mock("server-only", () => ({}));
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("@/app/auth", () => ({ auth: authMock }));
 vi.mock("./groups.service", () => ({ getGroupDetails: vi.fn(async () => ({ id: "g1" })) }));
+vi.mock("next/server", () => ({ after: afterMock }));
+vi.mock("@/lib/users/server/accountType.emails", () => ({ notifyAccountTypeChanges }));
 
 const { searchUsersByEmailAction, addGroupMembersAction, renameGroupAction, deleteGroupAction } = await import("./groups.actions");
 
@@ -68,6 +73,18 @@ describe("addGroupMembersAction", () => {
     expect(call.where).toEqual({ id: { in: ["m1"] }, groupId: null, groupStatus: "PENDING", role: "user" });
     expect(call.data).toMatchObject({ groupId: "g1", groupStatus: "JOINED" });
     expect(call.data.joinedAt).toBeInstanceOf(Date);
+  });
+
+  it("prévient chaque nouveau membre", async () => {
+    prismaMock.user.updateMany.mockResolvedValue({ count: 1 });
+    prismaMock.user.findMany.mockResolvedValue([{ email: "ana@example.com", firstName: "Ana" }]);
+    prismaMock.group.findUnique.mockResolvedValue({ name: "Équipe A", billingMode: "GROUP" });
+
+    await addGroupMembersAction({ memberIds: ["m1"] });
+
+    expect(notifyAccountTypeChanges).toHaveBeenCalledWith([
+      expect.objectContaining({ email: "ana@example.com", to: "member", groupName: "Équipe A", billingMode: "GROUP" }),
+    ]);
   });
 
   it("refuse si un user n'est pas éligible (SOLO ou déjà en groupe)", async () => {
@@ -130,6 +147,17 @@ describe("deleteGroupAction", () => {
       data: { role: "user", groupStatus: "SOLO", groupId: null, joinedAt: null },
     });
     expect(prismaMock.group.delete).toHaveBeenCalledWith({ where: { id: "g1" } });
+  });
+
+  it("prévient chaque membre du passage en forfait individuel", async () => {
+    prismaMock.group.findUnique.mockResolvedValue({ id: "g1", name: "Équipe A" });
+    prismaMock.user.findMany.mockResolvedValue([{ email: "ana@example.com", firstName: "Ana" }]);
+
+    await deleteGroupAction("g1");
+
+    expect(notifyAccountTypeChanges).toHaveBeenCalledWith([
+      expect.objectContaining({ email: "ana@example.com", to: "solo", groupName: "Équipe A", groupDeleted: true }),
+    ]);
   });
 
   it("renvoie une erreur métier si l'équipe n'existe pas", async () => {

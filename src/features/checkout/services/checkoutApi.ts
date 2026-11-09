@@ -16,11 +16,13 @@ export function buildCheckoutPayload(
   form: CheckoutInput,
   items: readonly CartItem[],
   idempotencyKey: string,
+  locale: 'fr' | 'en',
 ): CheckoutPayload {
   const hasProducts = items.some((i) => i.kind === 'product');
 
   return {
     idempotencyKey,
+    locale,
     contact: {
       firstName: form.firstName,
       lastName: form.lastName,

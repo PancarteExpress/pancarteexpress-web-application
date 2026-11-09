@@ -2,12 +2,12 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import dynamic from 'next/dynamic';
 import { inlineLoading } from '@/shared/components/deferredLoading/DeferredLoading';
 import { Notice } from '@/features/services/components/fields/Notice';
 import { RadioGroup } from '@/features/services/components/fields/RadioGroup';
-import type { ChoiceOption } from '@/features/services/components/fields/types';
+import { toOptions } from '@/features/services/components/fields/types';
 
 import { useRef } from 'react';
 import type { ServiceSchedule } from '@/features/services/types/schedule';
@@ -16,13 +16,12 @@ import { ScheduleForm } from '../scheduleForm/ScheduleForm';
 
 import { useAddressStore } from '@/features/services/store/addressStore';
 
+import { REQUEST_TYPES } from '@/lib/orders/constants';
 import type { RequestType } from '@/features/services/types/services';
 import { useCartStore } from '@/features/cart/store/cartStore';
 import styles from './ServiceForm.module.css';
 import { formatAddress } from '@/features/services/utils/formatAddress';
 import { ServicesSummary } from '../servicesSummary/ServicesSummary';
-
-import { ADDRESS_LABELS } from '@/features/services/constants/installation';
 
 import { addressesWithServicesOf } from '@/features/services/utils/serviceRequestType';
 
@@ -30,13 +29,9 @@ const AddressManager = dynamic(() => import('@/features/services/components/addr
 const AddressServices = dynamic(() => import('./AddressServices').then((m) => m.AddressServices), { loading: inlineLoading });
 const LargeAddressServices = dynamic(() => import('./LargeAddressServices').then((m) => m.LargeAddressServices), { loading: inlineLoading });
 
-const REQUEST_TYPE_OPTIONS: ChoiceOption<RequestType>[] = [
-  { value: 'residential', label: 'Demande résidentielle' },
-  { value: 'commercial', label: 'Grand format' },
-];
-
 export default function ServiceForm() {
   const locale = useLocale();
+  const t = useTranslations('services');
   const addServiceRequest = useCartStore((s) => s.addServiceRequest);
 
   // Sélecteurs ciblés : ce composant ne se redessine que si ces valeurs changent
@@ -63,7 +58,7 @@ export default function ServiceForm() {
 
   const handleAddToCart = async () => {
     if (requestType === null) {
-      setError('Veuillez choisir le type de demande (résidentielle ou grand format)');
+      setError(t('serviceForm.requestTypeRequired'));
       return;
     }
     let schedule = null;
@@ -85,8 +80,8 @@ export default function ServiceForm() {
     <div className={styles.mainContainer}>
       <div className={styles.serviceForm}>
         <RadioGroup
-          legend="Faire une nouvelle demande de service"
-          options={REQUEST_TYPE_OPTIONS}
+          legend={t('serviceForm.requestTypeLegend')}
+          options={toOptions(REQUEST_TYPES, (type) => t(`requestTypes.${type}`))}
           value={requestType}
           onChange={handleRequestTypeChange}
           columns={2}
@@ -97,8 +92,8 @@ export default function ServiceForm() {
         <AddressManager />
         {selectedAddress && (<>
           <div className={styles.selectedAddress}>
-            <label>Cette demande de service concerne l&apos;adresse suivante :</label>
-            <p>{formatAddress(selectedAddress, ADDRESS_LABELS)}</p>
+            <label>{t('serviceForm.selectedAddress')}</label>
+            <p>{formatAddress(selectedAddress, { terrain: t('address.terrain'), near: t('address.near'), apartment: t('address.apartment') })}</p>
           </div>
 
           {requestType === 'residential'
@@ -110,8 +105,8 @@ export default function ServiceForm() {
 
         {addedToCart && (
           <div role="status" className={styles.addedToCart}>
-            <p>Votre demande a été ajoutée au panier.</p>
-            <Link href={`/${locale}/cart`}>Voir le panier</Link>
+            <p>{t('serviceForm.addedToCart')}</p>
+            <Link href={`/${locale}/cart`}>{t('serviceForm.viewCart')}</Link>
           </div>
         )}
       </div>

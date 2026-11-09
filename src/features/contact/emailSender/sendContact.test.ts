@@ -4,6 +4,10 @@ import type { ContactFormData } from '../schemas/contact.schema';
 const sendMail = vi.hoisted(() => vi.fn());
 
 vi.mock('@/lib/email/sendEmail', () => ({ sendEmail: sendMail, INTERNAL_EMAIL: 'equipe@pancarte.test' }));
+vi.mock('next-intl/server', () => ({
+  getLocale: async () => 'fr',
+  getTranslations: async () => (key: string) => key,
+}));
 
 const { sendContact } = await import('./sendContact');
 
@@ -21,13 +25,33 @@ describe('sendContact', () => {
     sendMail.mockResolvedValue(undefined);
   });
 
-  it("n'envoie qu'à l'équipe, le visiteur en replyTo", async () => {
+  it("envoie à l'équipe (visiteur en replyTo), puis la confirmation au visiteur", async () => {
     await expect(sendContact(valide)).resolves.toEqual({ success: true });
 
-    expect(sendMail).toHaveBeenCalledTimes(1);
-    expect(sendMail).toHaveBeenCalledWith(
+    expect(sendMail).toHaveBeenCalledTimes(2);
+    expect(sendMail).toHaveBeenNthCalledWith(
+      1,
       expect.objectContaining({ to: 'equipe@pancarte.test', replyTo: 'ana@example.com' }),
     );
+    expect(sendMail).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ to: 'ana@example.com', replyTo: 'equipe@pancarte.test' }),
+    );
+  });
+
+  it('ne reprend pas le message du visiteur dans la confirmation', async () => {
+    await sendContact(valide);
+
+    const { text, html } = sendMail.mock.calls[1][0] as { text: string; html: string };
+    expect(text).not.toContain(valide.reason);
+    expect(html).not.toContain(valide.reason);
+  });
+
+  it("réussit même si la confirmation échoue (l'équipe a reçu la demande)", async () => {
+    sendMail.mockResolvedValueOnce(undefined).mockRejectedValueOnce(new Error('SMTP indisponible'));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await expect(sendContact(valide)).resolves.toEqual({ success: true });
   });
 
   it('refuse une liste de destinataires', async () => {
@@ -56,5 +80,7 @@ describe('sendContact', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
 
     await expect(sendContact(valide)).resolves.toEqual({ success: false, error: "L'envoi a échoué, réessayez plus tard" });
+    // Pas de fausse confirmation si l'équipe n'a rien reçu
+    expect(sendMail).toHaveBeenCalledTimes(1);
   });
 });

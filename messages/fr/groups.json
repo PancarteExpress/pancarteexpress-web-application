@@ -1,5 +1,60 @@
 {
     "errors": {
-        "nameTaken": "Ce nom d'équipe est déjà utilisé"
+        "nameTaken": "Ce nom d'équipe est déjà utilisé",
+        "nameTooShort": "Le nom d'équipe doit contenir au moins 2 caractères",
+        "nameTooLong": "Le nom ne peut dépasser 60 caractères",
+        "noMemberSelected": "Sélectionnez au moins un coéquipier"
+    },
+    "createDialog": {
+        "title": "Veuillez inscrire un nom d'équipe pour débuter",
+        "subtitle": "En tant que responsable, vous devez nommer votre équipe avant de continuer.",
+        "label": "Nom de l'équipe",
+        "placeholder": "Ex : PancarteExpress",
+        "creating": "Création…",
+        "create": "Créer l'équipe"
+    },
+    "memberSearch": {
+        "label": "Courriel des coéquipiers",
+        "placeholder": "Rechercher par courriel…",
+        "searching": "Recherche…",
+        "notFound": "Aucun utilisateur disponible",
+        "remove": "Retirer {email}"
+    },
+    "manage": {
+        "title": "Gérer mon équipe",
+        "close": "Fermer",
+        "teamName": "Nom de l'équipe",
+        "name": "Nom",
+        "saving": "Enregistrement…",
+        "save": "Enregistrer",
+        "nameUpdated": "Nom de l'équipe mis à jour",
+        "genericError": "Une erreur est survenue",
+        "billing": "Facturation",
+        "whoPays": "Qui paie les demandes de service ?",
+        "billingModes": {
+            "INDIVIDUAL": {
+                "label": "Chaque membre paie ses factures",
+                "description": "Chaque membre reçoit et règle les factures de ses propres demandes."
+            },
+            "GROUP": {
+                "label": "Je paie pour toute l'équipe",
+                "description": "Toutes les factures de l'équipe, y compris les vôtres, vous sont adressées."
+            }
+        },
+        "billingUpdated": "Mode de facturation mis à jour. Il s'applique aux prochaines commandes.",
+        "membersCount": "Membres ({count})",
+        "admin": "Administrateur",
+        "members": "Membres",
+        "statuses": {
+            "SOLO": "Solo",
+            "PENDING": "En attente",
+            "JOINED": "Membre"
+        },
+        "confirmRemove": "Retirer {email} de l'équipe ?",
+        "removing": "Retrait…",
+        "remove": "Retirer",
+        "membersAdded": "{count, plural, one {# coéquipier ajouté} other {# coéquipiers ajoutés}}",
+        "adding": "Ajout…",
+        "add": "Ajouter ({count})"
     }
 }

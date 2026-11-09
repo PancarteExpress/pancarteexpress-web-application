@@ -14,7 +14,9 @@
   "navbarBigFormat": "Grand format",
   "navbarShop": "Boutique",
   "navbarContact": "Contact",
-  "navbarServices": "Demandes en ligne"
-
-
+  "navbarServices": "Demandes en ligne",
+  "loading": "Chargement…",
+  "logoAlt": "Logo Pancarte Express",
+  "scheduleIconAlt": "Icône horaire",
+  "mapIconAlt": "Icône carte"
 }

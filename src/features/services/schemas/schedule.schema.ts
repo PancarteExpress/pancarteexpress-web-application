@@ -20,9 +20,9 @@ export function createScheduleSchema({ today = new Date() }: { today?: Date } = 
       if (v.delay === null) return report(['delay'], REQUIRED);
       if (v.delay !== 'specificDate') return;
 
-      if (v.date === null || !isValidIsoDate(v.date)) report(['date'], 'Veuillez préciser la date');
-      else if (v.date < earliest) report(['date'], 'Choisissez une date à partir du prochain jour ouvrable');
-      else if (!isBusinessDay(parseIso(v.date))) report(['date'], 'Choisissez un jour ouvrable (ni fin de semaine ni jour férié)');
+      if (v.date === null || !isValidIsoDate(v.date)) report(['date'], 'dateRequired');
+      else if (v.date < earliest) report(['date'], 'dateFromNextBusinessDay');
+      else if (!isBusinessDay(parseIso(v.date))) report(['date'], 'businessDayOnly');
     })
     .transform((v): ServiceSchedule => {
       const delay = defined(v.delay);

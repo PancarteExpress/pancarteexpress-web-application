@@ -1,9 +1,8 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import {
-  LARGE_FORMAT_SERVICE_LABELS, LARGE_FORMAT_SERVICES, type LargeFormatServiceType,
-} from '@/features/services/constants/largeFormat';
+import { useTranslations } from 'next-intl';
+import { LARGE_FORMAT_SERVICES, type LargeFormatServiceType } from '@/features/services/constants/largeFormat';
 import { CheckboxGroup } from '@/features/services/components/fields/CheckboxGroup';
 import { Notice } from '@/features/services/components/fields/Notice';
 import { toOptions } from '@/features/services/components/fields/types';
@@ -24,13 +23,12 @@ type LargeStoragePickupService = Extract<Service, { type: 'largeStoragePickup' }
 type LargeRetrievalService = Extract<Service, { type: 'largeRetrieval' }>;
 type SavedIds = Partial<Record<LargeFormatServiceType, string>>;
 
-const SERVICE_OPTIONS = toOptions(LARGE_FORMAT_SERVICES, LARGE_FORMAT_SERVICE_LABELS);
-
 /**
  * Services grand format d'une adresse. Même fonctionnement que AddressServices (résidentiel) :
  * monté avec key={address.id}, un seul bouton enregistre tous les services cochés.
  */
 export function LargeAddressServices({ address }: { address: Address }) {
+  const t = useTranslations('services');
   const saveService = useAddressStore((s) => s.saveService);
   const removeService = useAddressStore((s) => s.removeServiceFromAddress);
 
@@ -65,7 +63,7 @@ export function LargeAddressServices({ address }: { address: Address }) {
       return !next.includes(type) && id ? [{ type, id }] : [];
     });
     for (const { type } of removing) {
-      if (!window.confirm(`Supprimer le service « ${LARGE_FORMAT_SERVICE_LABELS[type]} » enregistré pour cette adresse ?`)) return;
+      if (!window.confirm(t('serviceForm.confirmRemoveService', { service: t(`serviceTypes.${type}`) }))) return;
     }
     removing.forEach(({ id }) => removeService(address.id, id));
     setSelected(next);
@@ -99,8 +97,8 @@ export function LargeAddressServices({ address }: { address: Address }) {
   return (
     <>
       <CheckboxGroup
-        legend="Quels sont les services dont vous avez besoin pour l'adresse sélectionnée ?"
-        options={SERVICE_OPTIONS}
+        legend={t('serviceForm.servicesLegend')}
+        options={toOptions(LARGE_FORMAT_SERVICES, (type) => t(`serviceTypes.${type}`))}
         value={selected}
         onChange={handleServicesChange}
       />
@@ -131,13 +129,13 @@ export function LargeAddressServices({ address }: { address: Address }) {
 
       {selected.length > 0 && (
         <button type="button" className={styles.submit} onClick={handleSaveAll} disabled={saving}>
-          {saving ? 'Enregistrement…' : 'Enregistrer les services'}
+          {saving ? t('serviceForm.saving') : t('serviceForm.saveServices')}
         </button>
       )}
 
       {justSaved && (
         <div role="status">
-          <Notice>Services enregistrés.</Notice>
+          <Notice>{t('serviceForm.servicesSaved')}</Notice>
         </div>
       )}
     </>

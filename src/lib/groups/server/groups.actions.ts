@@ -1,11 +1,13 @@
 "use server";
 
 import { Prisma } from "@prisma/client";
+import { after } from "next/server";
 import { auth } from "@/app/auth";
 import { prisma } from "@/lib/prisma";
 import { ActionError, requireSuperAdminAction, toActionError, type ActionResult } from "@/lib/auth/actionGuard";
 import { addMembersSchema, groupNameSchema, memberIdSchema, billingModeSchema, userSearchQuerySchema } from "../groups.schema";
 import { getGroupDetails, type GroupDetails } from "./groups.service";
+import { notifyAccountTypeChanges } from "@/lib/users/server/accountType.emails";
 
 const userSearchSelect = {
   id: true,
@@ -109,6 +111,18 @@ export async function addGroupMembersAction(input: unknown): Promise<GroupResult
     if (e instanceof GroupActionError) return { ok: false, error: e.message };
     throw e;
   }
+
+  // En attente → membre : chaque nouveau coéquipier est prévenu, après la réponse
+  const groupId = ctx.groupId;
+  after(async () => {
+    const [members, group] = await Promise.all([
+      prisma.user.findMany({ where: { id: { in: memberIds } }, select: { email: true, firstName: true, locale: true } }),
+      prisma.group.findUnique({ where: { id: groupId }, select: { name: true, billingMode: true } }),
+    ]);
+    await notifyAccountTypeChanges(
+      members.map((m) => ({ ...m, to: "member", groupName: group?.name ?? null, billingMode: group?.billingMode })),
+    );
+  });
   return { ok: true, group: await getGroupDetails(ctx.groupId) };
 }
 
@@ -126,6 +140,15 @@ export async function removeGroupMemberAction(memberId: string): Promise<GroupRe
   });
   if (count === 0) return { ok: false, error: "Ce membre ne peut pas être retiré" };
 
+  // Membre → solo : prévenu après la réponse
+  const groupId = ctx.groupId;
+  after(async () => {
+    const [member, group] = await Promise.all([
+      prisma.user.findUnique({ where: { id: parsed.data }, select: { email: true, firstName: true, locale: true } }),
+      prisma.group.findUnique({ where: { id: groupId }, select: { name: true } }),
+    ]);
+    if (member) await notifyAccountTypeChanges([{ ...member, to: "solo", groupName: group?.name ?? null }]);
+  });
   return { ok: true, group: await getGroupDetails(ctx.groupId) };
 }
 
@@ -133,12 +156,15 @@ export async function deleteGroupAction(groupId: string): Promise<ActionResult> 
   try {
     await requireSuperAdminAction();
 
-    await prisma.$transaction(async (tx) => {
+    const removed = await prisma.$transaction(async (tx) => {
       const group = await tx.group.findUnique({
         where: { id: groupId },
-        select: { id: true },
+        select: { id: true, name: true },
       });
       if (!group) throw new ActionError("Équipe introuvable.");
+
+      // Lus avant le détachement : l'équipe n'existera plus pour les retrouver
+      const members = await tx.user.findMany({ where: { groupId }, select: { email: true, firstName: true, locale: true } });
 
       // Tous les membres, groupAdmin compris, passent en forfait individuel
       await tx.user.updateMany({
@@ -147,8 +173,15 @@ export async function deleteGroupAction(groupId: string): Promise<ActionResult> 
       });
 
       await tx.group.delete({ where: { id: groupId } });
+      return { groupName: group.name, members };
     });
 
+    // Tous passent en forfait individuel : prévenus après la réponse
+    after(() =>
+      notifyAccountTypeChanges(
+        removed.members.map((m) => ({ ...m, to: "solo", groupName: removed.groupName, groupDeleted: true })),
+      ),
+    );
     return { ok: true };
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2003") {

@@ -3,7 +3,8 @@
 import { useId, useImperativeHandle, useState, type Ref } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PICKUP_MATERIAL_LABELS, PICKUP_MATERIALS, PICKUP_TEXT_LIMITS } from '@/features/services/constants/pickup';
+import { useTranslations } from 'next-intl';
+import { PICKUP_MATERIALS, PICKUP_TEXT_LIMITS } from '@/features/services/constants/pickup';
 import {
   createEmptyPickupForm, isPickupDetailsRequired, pickupSchema, toPickupFormValues, type PickupFormValues,
 } from '@/features/services/schemas/pickup.schema';
@@ -15,8 +16,6 @@ import { toOptions } from '@/features/services/components/fields/types';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
 import styles from '../installationForm/installationForm.module.css';
 
-const MATERIAL_OPTIONS = toOptions(PICKUP_MATERIALS, PICKUP_MATERIAL_LABELS);
-
 interface PickupFormProps {
   handle: Ref<ServiceFormHandle<PickupDetails>>;
   initialValues?: PickupDetails;
@@ -24,6 +23,7 @@ interface PickupFormProps {
 
 export function PickupForm({ handle, initialValues }: PickupFormProps) {
   const headingId = useId();
+  const t = useTranslations('services.pickup');
   const [defaultValues] = useState(() =>
     initialValues ? toPickupFormValues(initialValues) : createEmptyPickupForm(),
   );
@@ -48,15 +48,15 @@ export function PickupForm({ handle, initialValues }: PickupFormProps) {
   return (
     <form noValidate className={styles.form} onSubmit={(e) => e.preventDefault()}>
       <section aria-labelledby={headingId} className={styles.section}>
-        <h3 id={headingId} className={styles.sectionTitle}>Détails du ramassage</h3>
+        <h3 id={headingId} className={styles.sectionTitle}>{t('title')}</h3>
 
         <Controller
           control={control}
           name="materials"
           render={({ field, fieldState }) => (
             <CheckboxGroup
-              legend="Que voulez-vous qu'on ramasse ?"
-              options={MATERIAL_OPTIONS}
+              legend={t('materialsLegend')}
+              options={toOptions(PICKUP_MATERIALS, (m) => t(`materials.${m}`))}
               value={field.value}
               onChange={field.onChange}
               onBlur={field.onBlur}
@@ -72,7 +72,7 @@ export function PickupForm({ handle, initialValues }: PickupFormProps) {
           name="newModels"
           render={({ field, fieldState }) => (
             <YesNoField
-              legend="Y a-t-il de nouveaux modèles pour ce ramassage (ex. : changement d'informations, d'agence, etc.) ?"
+              legend={t('newModelsLegend')}
               value={field.value}
               onChange={field.onChange}
               onBlur={field.onBlur}
@@ -88,8 +88,8 @@ export function PickupForm({ handle, initialValues }: PickupFormProps) {
           name="details"
           render={({ field, fieldState }) => (
             <TextField
-              label="Détails supplémentaires"
-              placeholder="Veuillez décrire le matériel à ramasser…"
+              label={t('details')}
+              placeholder={t('detailsPlaceholder')}
               value={field.value}
               onChange={field.onChange}
               onBlur={field.onBlur}

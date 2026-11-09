@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, type ChangeEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
+import { useIssueMessage } from '@/shared/hooks/useIssueMessage';
 import styles from './fields.module.css';
 import type { ElementRef } from './types';
 import { useFieldIds } from './useFieldIds';
@@ -21,6 +23,8 @@ export function QuantityField({
   label, value, onChange, onBlur, inputRef, min = 1, max, error, hint,
 }: QuantityFieldProps) {
   const { id, hintId, errorId, describedBy } = useFieldIds({ hint, error });
+  const t = useTranslations('services.fields');
+  const translateError = useIssueMessage('services.errors');
   const [draft, setDraft] = useState(() => String(value));
   const [syncedValue, setSyncedValue] = useState(value);
 
@@ -75,7 +79,7 @@ export function QuantityField({
           className={styles.stepButton}
           onClick={() => step(-1)}
           disabled={atMin}
-          aria-label="Diminuer"
+          aria-label={t('decrease')}
           aria-controls={id}
         >
           −
@@ -106,7 +110,7 @@ export function QuantityField({
           className={styles.stepButton}
           onClick={() => step(1)}
           disabled={atMax}
-          aria-label="Augmenter"
+          aria-label={t('increase')}
           aria-controls={id}
         >
           +
@@ -114,7 +118,7 @@ export function QuantityField({
       </div>
 
       {hint && <span id={hintId} className={styles.limit}>{hint}</span>}
-      {error && <p id={errorId} className={styles.error}>{error}</p>}
+      {error && <p id={errorId} className={styles.error}>{translateError(error)}</p>}
     </div>
   );
 }

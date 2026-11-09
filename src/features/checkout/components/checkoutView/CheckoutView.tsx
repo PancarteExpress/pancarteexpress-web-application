@@ -25,16 +25,7 @@ import styles from './CheckoutView.module.css';
 import { useCardPayment } from '../../hooks/useCardPayment';
 import { CardFields } from '../cardFields/CardFields';
 import { stripePromise } from '../../services/stripeClient';
-
-const ERROR_MESSAGES: Record<CheckoutErrorCode, string> = {
-  validationFailed: 'Certaines informations sont invalides. Vérifiez le formulaire.',
-  productUnavailable: 'Certains produits ne sont plus disponibles. Retirez-les de votre panier.',
-  alreadyProcessed: 'Cette commande a déjà été traitée.',
-  inProgress: 'Votre commande est en cours de traitement. Patientez quelques secondes, puis réessayez.',
-  network: 'Connexion impossible. Vérifiez votre connexion internet et réessayez.',
-  serverError: 'Une erreur est survenue. Réessayez dans quelques instants.',
-  serviceBlocked: 'Vos demandes de service sont suspendues pour défaut de paiement. Retirez les services du panier pour commander vos produits.',
-};
+import { useIssueMessage } from '@/shared/hooks/useIssueMessage';
 
 export default function Checkout() {
   return (
@@ -48,6 +39,9 @@ function CheckoutForm() {
   const locale = useLocale() === 'en' ? 'en' : 'fr';
   const t = useTranslations('checkout');
   const tCart = useTranslations('cart');
+  // Messages du schéma : clés de checkout.errors
+  const translateError = useIssueMessage('checkout.errors');
+  const submitErrorMessage = (code: CheckoutErrorCode) => t(`submitErrors.${code}`);
   const { data: session, status } = useSession();
   const isAuthenticated = status === 'authenticated';
   const { items, hasHydrated, clear } = useCart();
@@ -117,25 +111,25 @@ function CheckoutForm() {
 
     // Un invité doit laisser un téléphone
     if (!isAuthenticated && !data.phone) {
-      setError('phone', { message: 'Le téléphone est requis' });
+      setError('phone', { message: 'phoneRequired' });
       return;
     }
 
     if (requiresPayment) {
       if (!isComplete) {
-        setCardError('Veuillez compléter les informations de votre carte');
+        setCardError(t('errors.cardIncomplete'));
         return;
       }
       // Vérifié AVANT l'appel API : on ne crée pas une commande qu'on ne pourrait pas payer
       if (!isReady) {
-        setSubmitError('Un paiement est requis, mais le module de paiement est indisponible. Rechargez la page.');
+        setSubmitError(t('errors.paymentModuleUnavailable'));
         return;
       }
     }
 
     try {
-      const fingerprint = JSON.stringify(buildCheckoutPayload(data, items, ''));
-      const payload = buildCheckoutPayload(data, items, getIdempotencyKey(fingerprint));
+      const fingerprint = JSON.stringify(buildCheckoutPayload(data, items, '', locale));
+      const payload = buildCheckoutPayload(data, items, getIdempotencyKey(fingerprint), locale);
       const response = await submitCheckout(payload);
 
       if (response.mode === 'submitted') {
@@ -158,16 +152,18 @@ function CheckoutForm() {
       setConfirmation({ mode: 'payment', orderNumber: response.orderNumber });
       clear();
     } catch (error) {
-      setSubmitError(error instanceof CheckoutApiError ? ERROR_MESSAGES[error.code] : ERROR_MESSAGES.serverError);
+      setSubmitError(submitErrorMessage(error instanceof CheckoutApiError ? error.code : 'serverError'));
     }
   };
 
   const firstError =
-    errors.firstName?.message ||
-    errors.lastName?.message ||
-    errors.email?.message ||
-    errors.phone?.message ||
-    errors.shippingAddress?.message ||
+    translateError(
+      errors.firstName?.message ||
+      errors.lastName?.message ||
+      errors.email?.message ||
+      errors.phone?.message ||
+      errors.shippingAddress?.message,
+    ) ||
     cardError ||
     submitError;
 
@@ -212,13 +208,16 @@ function CheckoutForm() {
               <FaRegCheckCircle />
             </div>
             <p>
-              Commande n° <strong>{confirmation.orderNumber}</strong>.
+              {t.rich('confirmation.orderNumber', {
+                number: confirmation.orderNumber,
+                strong: (chunks) => <strong>{chunks}</strong>,
+              })}
               <br />
-              {confirmation.mode === 'payment' ? 'Votre paiement a été reçu. ' : 'Votre commande a été envoyée. '}
+              {confirmation.mode === 'payment' ? t('confirmation.paymentReceived') : t('confirmation.orderSent')}
               <br />
               {isAuthenticated
-                ? 'Vous pouvez suivre son statut dans votre tableau de bord.'
-                : 'Nous vous contacterons par courriel pour la suite.'}
+                ? t('confirmation.trackInDashboard')
+                : t('confirmation.contactByEmail')}
             </p>
           </div>
         )}
@@ -324,13 +323,13 @@ function CheckoutForm() {
 
             {!confirmation && (
               <button type="submit" disabled={items.length === 0 || isSubmitting}>
-                {isSubmitting ? 'Envoi en cours…' : requiresPayment ? t('makePay') : t('submitOrder')}
+                {isSubmitting ? t('sending') : requiresPayment ? t('makePay') : t('submitOrder')}
               </button>
             )}
 
             {confirmation && (
               <Link href={isAuthenticated ? `/${locale}/dashboard` : `/${locale}/shop`}>
-                {isAuthenticated ? 'Voir mes commandes' : 'Retour à la boutique'}
+                {isAuthenticated ? t('viewOrders') : t('backToShop')}
               </Link>
             )}
           </div>

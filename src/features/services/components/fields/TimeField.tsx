@@ -2,6 +2,8 @@
 
 import type { ReactNode } from 'react';
 import { fromMinutes, isValidTime, toMinutes } from '@/features/services/utils/time';
+import { useTranslations } from 'next-intl';
+import { useIssueMessage } from '@/shared/hooks/useIssueMessage';
 import styles from './fields.module.css';
 import type { ElementRef } from './types';
 import { useFieldIds } from './useFieldIds';
@@ -27,6 +29,8 @@ export function TimeField({
   label, value, onChange, onBlur, inputRef, minuteStep = 5, after, error, required,
 }: TimeFieldProps) {
   const { id, errorId, describedBy } = useFieldIds({ error });
+  const t = useTranslations('services.fields');
+  const translateError = useIssueMessage('services.errors');
 
   const minutes = Array.from({ length: Math.ceil(60 / minuteStep) }, (_, i) => i * minuteStep);
   const [hour, minute] = isValidTime(value) ? value.split(':').map(Number) : [0, 0];
@@ -53,7 +57,7 @@ export function TimeField({
       </legend>
 
       <div className={styles.time}>
-        <label htmlFor={`${id}-h`} className={styles.visuallyHidden}>Heures</label>
+        <label htmlFor={`${id}-h`} className={styles.visuallyHidden}>{t('hours')}</label>
         <select
           {...shared}
           ref={inputRef}
@@ -63,14 +67,14 @@ export function TimeField({
         >
           {HOURS.map((h) => (
             <option key={h} value={h} disabled={!minutes.some((m) => isAllowed(h, m))}>
-              {pad(h)} h
+              {t('hourOption', { hour: pad(h) })}
             </option>
           ))}
         </select>
 
         <span aria-hidden="true">:</span>
 
-        <label htmlFor={`${id}-m`} className={styles.visuallyHidden}>Minutes</label>
+        <label htmlFor={`${id}-m`} className={styles.visuallyHidden}>{t('minutes')}</label>
         <select
           {...shared}
           id={`${id}-m`}
@@ -85,7 +89,7 @@ export function TimeField({
         </select>
       </div>
 
-      {error && <p id={errorId} className={styles.error}>{error}</p>}
+      {error && <p id={errorId} className={styles.error}>{translateError(error)}</p>}
     </fieldset>
   );
 }

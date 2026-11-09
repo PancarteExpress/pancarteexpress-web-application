@@ -3,13 +3,13 @@
 import type { ChangeEvent } from "react";
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 import type { GroupStatus, UserRole } from "@prisma/client";
 import {
   ACCOUNT_TYPES,
   getAccountType,
   isAccountType,
 } from "@/lib/users/accountType";
-import { ACCOUNT_TYPE_LABELS } from "@/features/superAdmin/constants/labels";
 import { updateAccountTypeAction } from "@/lib/users/server/user.actions";
 
 interface AccountTypeSelectProps {
@@ -22,6 +22,7 @@ interface AccountTypeSelectProps {
 
 export function AccountTypeSelect({ userId, userName, role, groupStatus, className }: AccountTypeSelectProps) {
   const router = useRouter();
+  const t = useTranslations("superAdmin");
   const [isPending, startTransition] = useTransition();
   const current = getAccountType(role, groupStatus);
 
@@ -31,8 +32,8 @@ export function AccountTypeSelect({ userId, userName, role, groupStatus, classNa
 
     const message =
       next === "groupAdmin"
-        ? `Créer un nouveau groupe avec ${userName} comme administrateur ?`
-        : `Passer ${userName} en « ${ACCOUNT_TYPE_LABELS[next]} » ?`;
+        ? t("accountTypeSelect.confirmGroupAdmin", { name: userName })
+        : t("accountTypeSelect.confirmChange", { name: userName, type: t(`accountTypes.${next}`) });
     if (!window.confirm(message)) return;
 
     startTransition(async () => {
@@ -51,16 +52,16 @@ export function AccountTypeSelect({ userId, userName, role, groupStatus, classNa
       value={current}
       onChange={handleChange}
       disabled={isPending}
-      aria-label={`Type de compte de ${userName}`}
+      aria-label={t("accountTypeSelect.ariaLabel", { name: userName })}
     >
       {current === "member" && (
         <option value="member" disabled>
-          {ACCOUNT_TYPE_LABELS.member}
+          {t("accountTypes.member")}
         </option>
       )}
       {ACCOUNT_TYPES.map((type) => (
         <option key={type} value={type}>
-          {ACCOUNT_TYPE_LABELS[type]}
+          {t(`accountTypes.${type}`)}
         </option>
       ))}
     </select>

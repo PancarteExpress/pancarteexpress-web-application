@@ -17,6 +17,7 @@ datasource db {
 model User {
   id          String  @id @default(cuid())
   email       String  @unique
+  username    String? @unique
   firstName   String?
   lastName    String?
   phoneNumber String?
@@ -43,11 +44,15 @@ model User {
   // Blocage manuel des demandes de service par le superAdmin :
   // date à partir de laquelle elles sont refusées (clic + 3 jours). null = aucun blocage.
   serviceBlockStartsAt DateTime?
+  // Courriel « blocage effectif » envoyé par le cron ; null = à envoyer dès que serviceBlockStartsAt est passé
+  serviceBlockNoticeSentAt DateTime?
 
   sessions Session[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  locale Locale @default(fr)
 
   @@unique([provider, providerAccountId])
   @@index([groupId])
@@ -98,6 +103,11 @@ model Group {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+enum Locale {
+  fr
+  en
 }
 
 enum UserRole {
@@ -171,6 +181,11 @@ model Order {
   paymentIntentId String?   @unique
   paidAt          DateTime?
 
+  // Date d'envoi de chaque courriel de commande ; null = à (r)envoyer par le cron quotidien.
+  // clientReceiptSentAt est aussi rempli, sans envoi, pour un client connecté (commande visible au dashboard)
+  internalReceiptSentAt DateTime?
+  clientReceiptSentAt   DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -178,6 +193,8 @@ model Order {
   productsStatus  ProductsStatus?
   serviceRequests ServiceRequest[]
   status          OrderStatus
+
+  locale Locale @default(fr)
 
   @@index([userId, createdAt]) // historique du dashboard
   @@index([status, createdAt]) // cron de nettoyage + vue SuperAdmin

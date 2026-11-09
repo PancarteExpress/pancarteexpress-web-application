@@ -1,19 +1,13 @@
 "use client";
 
 import { Fragment, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { AdminUserRow } from "@/lib/users/server/user.service";
-import { ROLE_LABELS } from "../../constants/labels";
 import styles from "./GroupsTable.module.css";
 import type { AdminGroupRow } from "@/lib/groups/server/groups.service";
 import { normalize } from "@/shared/utils/normalize";
 import { getDisplayName } from "@/shared/utils/displayName";
 import { DeleteGroupButton } from "./DeleteGroupButton";
-import type { BillingMode } from "@prisma/client";
-
-const BILLING_MODE_LABELS: Record<BillingMode, string> = {
-  INDIVIDUAL: "Chaque membre",
-  GROUP: "L'administrateur",
-};
 
 interface GroupsTableProps {
   groups: AdminGroupRow[];
@@ -23,9 +17,10 @@ interface GroupsTableProps {
 
 export function GroupsTable({ groups, users, search }: GroupsTableProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const t = useTranslations("superAdmin");
 
   if (groups.length === 0) {
-    return <p className={styles.empty}>Aucune équipe.</p>;
+    return <p className={styles.empty}>{t("groupsTable.empty")}</p>;
   }
 
   // Index des membres par groupe, admin en premier
@@ -55,7 +50,7 @@ export function GroupsTable({ groups, users, search }: GroupsTableProps) {
     : groups;
 
   if (visibleGroups.length === 0) {
-    return <p className={styles.empty}>Aucun résultat.</p>;
+    return <p className={styles.empty}>{t("groupsTable.noResults")}</p>;
   }
 
   const toggle = (id: string) => setExpandedId((current) => (current === id ? null : id));
@@ -72,11 +67,11 @@ export function GroupsTable({ groups, users, search }: GroupsTableProps) {
         </colgroup>
         <thead>
           <tr>
-            <th scope="col">Nom</th>
-            <th scope="col">Administrateur</th>
-            <th scope="col">Membres</th>
-            <th scope="col">Facturé à</th>
-            <th scope="col">Actions</th>
+            <th scope="col">{t("groupsTable.name")}</th>
+            <th scope="col">{t("groupsTable.admin")}</th>
+            <th scope="col">{t("groupsTable.members")}</th>
+            <th scope="col">{t("groupsTable.billedTo")}</th>
+            <th scope="col">{t("groupsTable.actions")}</th>
           </tr>
         </thead>
         <tbody>
@@ -88,10 +83,10 @@ export function GroupsTable({ groups, users, search }: GroupsTableProps) {
             return (
               <Fragment key={group.id}>
                 <tr className={isOpen ? styles.rowOpen : undefined}>
-                  <td title={group.name ?? undefined}>{group.name ?? "Sans nom"}</td>
+                  <td title={group.name ?? undefined}>{group.name ?? t("groupsTable.unnamed")}</td>
                   <td>{group.admin ? getDisplayName(group.admin) : "—"}</td>
                   <td>{group.memberCount}</td>
-                  <td>{BILLING_MODE_LABELS[group.billingMode]}</td>
+                  <td>{t(`groupsTable.billingModes.${group.billingMode}`)}</td>
                   <td>
                     <div className={styles.groupActions}>
                       <button
@@ -101,11 +96,11 @@ export function GroupsTable({ groups, users, search }: GroupsTableProps) {
                         aria-expanded={isOpen}
                         aria-controls={panelId}
                       >
-                        {isOpen ? "Masquer" : "Voir les membres"}
+                        {isOpen ? t("groupsTable.hide") : t("groupsTable.showMembers")}
                       </button>
                       <DeleteGroupButton
                         groupId={group.id}
-                        groupName={group.name ?? "Sans nom"}
+                        groupName={group.name ?? t("groupsTable.unnamed")}
                         memberCount={group.memberCount}
                         className={styles.btnDelete}
                       />
@@ -117,13 +112,13 @@ export function GroupsTable({ groups, users, search }: GroupsTableProps) {
                 <>
 
                 <tr id={panelId} className={styles.panelRow}>
-                  <th>Liste des membres de l equipe</th>
+                  <th>{t("groupsTable.membersListTitle")}</th>
                 </tr>
 
                 <tr id={panelId} className={styles.panelRow}>
                   <td colSpan={5} className={styles.panelCell}>
                     {members.length === 0 ? (
-                      <p className={styles.empty}>Aucun membre.</p>
+                      <p className={styles.empty}>{t("groupsTable.noMembers")}</p>
                     ) : (
                       <ul className={styles.memberList}>
                         {members.map((m) => (
@@ -132,7 +127,7 @@ export function GroupsTable({ groups, users, search }: GroupsTableProps) {
                             <a href={`mailto:${m.email}`} className={styles.memberEmail}>
                               {m.email}
                             </a>
-                            <span className={styles.memberRole}>{ROLE_LABELS[m.role]}</span>
+                            <span className={styles.memberRole}>{t(`roles.${m.role}`)}</span>
                           </li>
                         ))}
                       </ul>

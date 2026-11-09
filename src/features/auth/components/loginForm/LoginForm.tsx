@@ -10,6 +10,7 @@ import Link from "next/link";
 import { useAuthStore } from '../../store/authStore';
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { useIssueMessage } from '@/shared/hooks/useIssueMessage';
 
 interface LoginFormProps {
   locale: string;
@@ -17,6 +18,7 @@ interface LoginFormProps {
 
 export function LoginForm({ locale }: LoginFormProps) {
   const t = useTranslations('login');
+  const tv = useIssueMessage('errors.validation');
 
   const { login } = useAuth();
 
@@ -41,10 +43,12 @@ export function LoginForm({ locale }: LoginFormProps) {
       <div className={styles.inputs}>
         <label htmlFor="loginId" className="block text-sm font-medium mb-1">{t('formId')}</label>
         <input
-          autoComplete="off"
+          autoComplete="username"
+          autoCapitalize="none"
+          spellCheck={false}
           id="loginId"
-          type="email"
-          {...register("email")}
+          type="text"
+          {...register("identifier")}
           className="w-full px-3 py-2 border rounded"
           disabled={isLoading}
         />
@@ -75,7 +79,7 @@ export function LoginForm({ locale }: LoginFormProps) {
 
       {(errors.root || error) &&
       <div className={styles.error}>
-        {error || errors.root?.message}
+        {error || tv(errors.root?.message)}
       </div>}
       
       {success &&

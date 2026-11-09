@@ -18,6 +18,7 @@ import {
 } from "@/lib/groups/server/groups.actions";
 import type { GroupDetails, GroupMember } from "@/lib/groups/server/groups.service";
 import { MemberEmailSearch } from "../memberEmailSearch/MemberEmailSearch";
+import { useIssueMessage } from "@/shared/hooks/useIssueMessage";
 
 interface UpdateGroupProps {
   initialGroup: GroupDetails;
@@ -26,28 +27,15 @@ interface UpdateGroupProps {
 
 type Feedback = { type: "success" | "error"; message: string } | null;
 
-const STATUS_LABELS: Record<GroupMember["groupStatus"], string> = {
-  SOLO: "Solo",
-  PENDING: "En attente",
-  JOINED: "Membre",
-};
-
-const BILLING_OPTIONS: readonly { value: BillingMode; label: string; description: string }[] = [
-  {
-    value: "INDIVIDUAL",
-    label: "Chaque membre paie ses factures",
-    description: "Chaque membre reçoit et règle les factures de ses propres demandes.",
-  },
-  {
-    value: "GROUP",
-    label: "Je paie pour toute l'équipe",
-    description: "Toutes les factures de l'équipe, y compris les vôtres, vous sont adressées.",
-  },
-];
+// Libellé et description : groups.manage.billingModes.<mode>
+const BILLING_MODES = ["INDIVIDUAL", "GROUP"] as const satisfies readonly BillingMode[];
 
 export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps) {
   const router = useRouter();
   const t = useTranslations("groups");
+  // Messages du schéma partagé et des actions : clés de groups.errors (texte libre affiché tel quel)
+  const translateIssue = useIssueMessage("groups.errors");
+  const translateError = (message: string) => translateIssue(message) ?? message;
   const { data: session, update } = useSession();
   const isGroupAdmin = session?.user?.role === "groupAdmin";
 
@@ -84,16 +72,16 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
     try {
       const res = await renameGroupAction(values);
       if (!res.ok) {
-        setNameFeedback({ type: "error", message: "errorKey" in res ? t(`errors.${res.errorKey}`) : res.error });
+        setNameFeedback({ type: "error", message: "errorKey" in res ? t(`errors.${res.errorKey}`) : translateError(res.error) });
         return;
       }
       setGroup(res.group);
       reset({ name: res.group.name ?? "" });
-      setNameFeedback({ type: "success", message: "Nom de l'équipe mis à jour" });
+      setNameFeedback({ type: "success", message: t("manage.nameUpdated") });
       await update(); // rafraîchit groupName dans la session
       router.refresh(); // resynchronise les données serveur de la page
     } catch {
-      setNameFeedback({ type: "error", message: "Une erreur est survenue" });
+      setNameFeedback({ type: "error", message: t("manage.genericError") });
     }
   };
 
@@ -104,34 +92,34 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
     try {
       const res = await addGroupMembersAction({ memberIds: toAdd.map((u) => u.id) });
       if (!res.ok) {
-        setMembersFeedback({ type: "error", message: res.error });
+        setMembersFeedback({ type: "error", message: translateError(res.error) });
         return;
       }
       setGroup(res.group);
-      setMembersFeedback({ type: "success", message: `${toAdd.length} coéquipier(s) ajouté(s)` });
+      setMembersFeedback({ type: "success", message: t("manage.membersAdded", { count: toAdd.length }) });
       setToAdd([]);
       router.refresh();
     } catch {
-      setMembersFeedback({ type: "error", message: "Une erreur est survenue" });
+      setMembersFeedback({ type: "error", message: t("manage.genericError") });
     } finally {
       setIsAdding(false);
     }
   };
 
   const handleRemove = async (member: GroupMember) => {
-    if (!window.confirm(`Retirer ${member.email} de l'équipe ?`)) return;
+    if (!window.confirm(t("manage.confirmRemove", { email: member.email }))) return;
     setRemovingId(member.id);
     setMembersFeedback(null);
     try {
       const res = await removeGroupMemberAction(member.id);
       if (!res.ok) {
-        setMembersFeedback({ type: "error", message: res.error });
+        setMembersFeedback({ type: "error", message: translateError(res.error) });
         return;
       }
       setGroup(res.group);
       router.refresh();
     } catch {
-      setMembersFeedback({ type: "error", message: "Une erreur est survenue" });
+      setMembersFeedback({ type: "error", message: t("manage.genericError") });
     } finally {
       setRemovingId(null);
     }
@@ -143,18 +131,18 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
     try {
       const res = await setBillingModeAction(billingMode);
       if (!res.ok) {
-        setBillingFeedback({ type: "error", message: res.error });
+        setBillingFeedback({ type: "error", message: translateError(res.error) });
         return;
       }
       setGroup(res.group);
       setBillingMode(res.group.billingMode);
       setBillingFeedback({
         type: "success",
-        message: "Mode de facturation mis à jour. Il s'applique aux prochaines commandes.",
+        message: t("manage.billingUpdated"),
       });
       router.refresh();
     } catch {
-      setBillingFeedback({ type: "error", message: "Une erreur est survenue" });
+      setBillingFeedback({ type: "error", message: t("manage.genericError") });
     } finally {
       setIsSavingBilling(false);
     }
@@ -166,19 +154,19 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
     <div className={styles.fixedContainer}>
       <div role="dialog" aria-modal="true" aria-labelledby="update-group-title" className={styles.mainContainer}>
         <div className={styles.header}>
-          <h2 id="update-group-title">Gérer mon équipe</h2>
-          <button type="button" onClick={onClose}>Fermer</button>
+          <h2 id="update-group-title">{t("manage.title")}</h2>
+          <button type="button" onClick={onClose}>{t("manage.close")}</button>
         </div>
 
         <div className={styles.body}>
           {/* Nom */}
           <section className={styles.section}>
-            <h3>Nom de l équipe</h3>
+            <h3>{t("manage.teamName")}</h3>
             <form onSubmit={handleSubmit(onRename)} noValidate>
               <div className={styles.inputs}>
-                <label htmlFor="group-name">Nom</label>
+                <label htmlFor="group-name">{t("manage.name")}</label>
                 <input id="group-name" {...register("name")} aria-invalid={!!errors.name} />
-                {errors.name && <p className={styles.error}>{errors.name.message}</p>}
+                {errors.name?.message && <p className={styles.error}>{translateError(errors.name.message)}</p>}
               </div>
               {nameFeedback && (
                 <p className={nameFeedback.type === "error" ? styles.error : styles.success}>
@@ -187,7 +175,7 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
               )}
               <div className={styles.btnSave}>
                 <button type="submit" disabled={isSubmitting || !isDirty}>
-                  {isSubmitting ? "Enregistrement…" : "Enregistrer"}
+                  {isSubmitting ? t("manage.saving") : t("manage.save")}
                 </button>
               </div>
             </form>
@@ -195,24 +183,24 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
 
           {/* Facturation */}
           <section className={styles.section}>
-            <h3>Facturation</h3>
+            <h3>{t("manage.billing")}</h3>
             <fieldset className={styles.billingOptions} disabled={isSavingBilling}>
-              <legend className={styles.membersLabel}>Qui paie les demandes de service ?</legend>
-              {BILLING_OPTIONS.map((option) => (
+              <legend className={styles.membersLabel}>{t("manage.whoPays")}</legend>
+              {BILLING_MODES.map((mode) => (
                 <label
-                  key={option.value}
-                  className={`${styles.billingOption} ${billingMode === option.value ? styles.billingOptionSelected : ""}`}
+                  key={mode}
+                  className={`${styles.billingOption} ${billingMode === mode ? styles.billingOptionSelected : ""}`}
                 >
                   <input
                     type="radio"
                     name="billingMode"
-                    value={option.value}
-                    checked={billingMode === option.value}
-                    onChange={() => setBillingMode(option.value)}
+                    value={mode}
+                    checked={billingMode === mode}
+                    onChange={() => setBillingMode(mode)}
                   />
                   <span>
-                    <span className={styles.memberName}>{option.label}</span>
-                    <span className={styles.memberEmail}>{option.description}</span>
+                    <span className={styles.memberName}>{t(`manage.billingModes.${mode}.label`)}</span>
+                    <span className={styles.memberEmail}>{t(`manage.billingModes.${mode}.description`)}</span>
                   </span>
                 </label>
               ))}
@@ -230,30 +218,30 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
                 onClick={handleSaveBilling}
                 disabled={isSavingBilling || billingMode === group.billingMode}
               >
-                {isSavingBilling ? "Enregistrement…" : "Enregistrer"}
+                {isSavingBilling ? t("manage.saving") : t("manage.save")}
               </button>
             </div>
           </section>
 
           {/* Membres */}
           <section className={styles.section}>
-            <h3>Membres ({group.users.length})</h3>
+            <h3>{t("manage.membersCount", { count: group.users.length })}</h3>
 
             <div>
-              <span className={styles.membersLabel}>Administrateur</span>
+              <span className={styles.membersLabel}>{t("manage.admin")}</span>
               {group.users.filter(m => m.role === 'groupAdmin').map(member => (
               <div key={member.id} className={styles.adminRow}>
                   <div>
                       <p className={styles.memberName}>{member.firstName} {member.lastName}</p>
                       <p className={styles.memberEmail}>{member.email}</p>
                   </div>
-                  <span className={`${styles.badge} ${styles.badgeAdmin}`}>Administrateur</span>
+                  <span className={`${styles.badge} ${styles.badgeAdmin}`}>{t("manage.admin")}</span>
               </div>
               ))}
             </div>
 
             <div>
-              <span className={styles.membersLabel}>Membres</span>
+              <span className={styles.membersLabel}>{t("manage.members")}</span>
               <div className={styles.memberListWrap}>
                   <ul className={styles.memberList}>
                       {group.users.filter(m => m.role !== 'groupAdmin').map(member => (
@@ -263,10 +251,10 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
                                   <p className={styles.memberEmail}>{member.email}</p>
                               </div>
                               <span className={`${styles.badge} ${member.groupStatus === 'PENDING' ? styles.badgePending : styles.badgeActive}`}>
-                                  {STATUS_LABELS[member.groupStatus]}
+                                  {t(`manage.statuses.${member.groupStatus}`)}
                               </span>
                               <button type="button" className={styles.btnRemove} onClick={() => handleRemove(member)} disabled={removingId === member.id}>
-                                  {removingId === member.id ? "Retrait…" : "Retirer"}
+                                  {removingId === member.id ? t("manage.removing") : t("manage.remove")}
                               </button>
                           </li>
                       ))}
@@ -284,7 +272,7 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
 
             <div className={styles.btnSave}>
               <button type="button" onClick={handleAdd} disabled={isAdding || toAdd.length === 0}>
-                {isAdding ? "Ajout…" : `Ajouter (${toAdd.length})`}
+                {isAdding ? t("manage.adding") : t("manage.add", { count: toAdd.length })}
               </button>
             </div>
           </section>

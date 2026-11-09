@@ -1,16 +1,18 @@
 import * as z from "zod";
 
+// Messages : clés i18n du namespace groups.errors, traduites à l'affichage
+
 export const createGroupSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Le nom d'équipe doit contenir au moins 2 caractères")
-    .max(60, "Le nom ne peut dépasser 60 caractères"),
+    .min(2, "nameTooShort")
+    .max(60, "nameTooLong"),
   memberIds: z.array(z.string().min(1)),
 });
 
 export const addMembersSchema = z.object({
-  memberIds: createGroupSchema.shape.memberIds.min(1, "Sélectionnez au moins un coéquipier"),
+  memberIds: createGroupSchema.shape.memberIds.min(1, "noMemberSelected"),
 });
 
 export type CreateGroupInput = z.infer<typeof createGroupSchema>;

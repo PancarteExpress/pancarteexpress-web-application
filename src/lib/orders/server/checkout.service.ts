@@ -70,6 +70,7 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
       data: {
         idempotencyKey: payload.idempotencyKey,
         status,
+        locale: payload.locale,
         // Les produits commencent en préparation ; null s'il n'y en a pas
         productsStatus: orderLines.length > 0 ? 'PREPARING' : null,
         userId: user?.id ?? null,

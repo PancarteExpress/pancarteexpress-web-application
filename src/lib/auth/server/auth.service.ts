@@ -131,6 +131,7 @@ export const authService = {
           password: hashedPassword,
           emailVerified: new Date(),
           groupStatus,
+          locale,
           pickupInfo: pickup ? { create: pickup } : undefined,
         },
         select: publicUserSelect,
@@ -150,6 +151,10 @@ export const authService = {
       email: user.email,
       provider: "credentials",
       locale,
+      groupStatus,
+      phoneNumber,
+      companyName,
+      pickup,
     });
 
     return user;

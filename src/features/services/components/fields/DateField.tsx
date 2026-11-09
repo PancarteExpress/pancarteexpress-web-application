@@ -3,10 +3,14 @@
 import type { ReactNode } from 'react';
 import { addDays, format, isValid, parse, startOfToday } from 'date-fns';
 import { DayPicker } from 'react-day-picker';
-import { frCA } from 'react-day-picker/locale';
+import { enCA, frCA } from 'react-day-picker/locale';
+import { useFormatter, useTranslations } from 'next-intl';
 import 'react-day-picker/style.css';
 import styles from './fields.module.css';
 import { useFieldIds } from './useFieldIds';
+import { useAppLocale } from '@/shared/hooks/useAppLocale';
+import { useIssueMessage } from '@/shared/hooks/useIssueMessage';
+import { formatDay } from '@/features/services/utils/formatDay';
 
 const ISO_FORMAT = 'yyyy-MM-dd';
 
@@ -34,11 +38,15 @@ interface DateFieldProps {
 
 export function DateField({ label, value, onChange, span = 1, minDate, isDisabled, error, hint, required }: DateFieldProps) {
   const { hintId, errorId, describedBy } = useFieldIds({ hint, error });
+  const t = useTranslations('services.fields');
+  const formatter = useFormatter();
+  const locale = useAppLocale();
+  const translateError = useIssueMessage('services.errors');
 
   const selected = value.map(toDate).filter((d): d is Date => d !== undefined);
   const fromDate = minDate ?? startOfToday();
   const shared = {
-    locale: frCA,
+    locale: locale === 'en' ? enCA : frCA,
     defaultMonth: selected[0] ?? fromDate,
     disabled: isDisabled ? [{ before: fromDate }, isDisabled] : { before: fromDate },
   };
@@ -77,12 +85,13 @@ export function DateField({ label, value, onChange, span = 1, minDate, isDisable
 
       <p className={styles.hint} aria-live="polite">
         {selected.length > 0
-          ? `Date${selected.length > 1 ? 's' : ''} choisie${selected.length > 1 ? 's' : ''} : ${selected
-              .map((d) => format(d, 'EEEE d MMMM yyyy', { locale: frCA }))
-              .join(' et ')}`
-          : 'Aucune date choisie'}
+          ? t('selectedDates', {
+              count: selected.length,
+              dates: formatter.list(selected.map((d) => formatDay(d, locale))),
+            })
+          : t('noDateSelected')}
       </p>
-      {error && <p id={errorId} className={styles.error}>{error}</p>}
+      {error && <p id={errorId} className={styles.error}>{translateError(error)}</p>}
     </fieldset>
   );
 }

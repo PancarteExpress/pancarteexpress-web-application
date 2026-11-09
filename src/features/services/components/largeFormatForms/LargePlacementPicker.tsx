@@ -1,15 +1,10 @@
 'use client';
 
-import {
-  LARGE_ACCESS, LARGE_ACCESS_LABELS, LARGE_LOCATION_LABELS, LARGE_LOCATIONS,
-  type LargeAccess, type LargeLocation,
-} from '@/features/services/constants/largeFormat';
+import { useTranslations } from 'next-intl';
+import { LARGE_ACCESS, LARGE_LOCATIONS, type LargeAccess, type LargeLocation } from '@/features/services/constants/largeFormat';
 import { RadioGroup } from '@/features/services/components/fields/RadioGroup';
 import { toOptions } from '@/features/services/components/fields/types';
 import styles from './largeFormatForms.module.css';
-
-const LOCATION_OPTIONS = toOptions(LARGE_LOCATIONS, LARGE_LOCATION_LABELS);
-const ACCESS_OPTIONS = toOptions(LARGE_ACCESS, LARGE_ACCESS_LABELS);
 
 interface LargePlacementPickerProps {
   legend: string;
@@ -25,11 +20,12 @@ interface LargePlacementPickerProps {
 export function LargePlacementPicker({
   legend, location, access, onLocationChange, onAccessChange, errors = {},
 }: LargePlacementPickerProps) {
+  const t = useTranslations('services');
   return (
     <>
       <RadioGroup
         legend={legend}
-        options={LOCATION_OPTIONS}
+        options={toOptions(LARGE_LOCATIONS, (l) => t(`largeFormat.locations.${l}`))}
         value={location}
         onChange={onLocationChange}
         columns={2}
@@ -39,8 +35,8 @@ export function LargePlacementPicker({
       {location === 'wall' && (
         <div className={styles.subOptions}>
           <RadioGroup
-            legend="Accès"
-            options={ACCESS_OPTIONS}
+            legend={t('placement.access')}
+            options={toOptions(LARGE_ACCESS, (a) => t(`access.${a}`))}
             value={access}
             onChange={onAccessChange}
             columns={2}

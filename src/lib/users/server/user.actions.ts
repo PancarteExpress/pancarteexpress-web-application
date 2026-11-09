@@ -1,6 +1,7 @@
 "use server";
 
 import { Prisma } from "@prisma/client";
+import { after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { ActionError, requireSuperAdminAction, toActionError, type ActionResult } from "@/lib/auth/actionGuard";
 import {
@@ -8,6 +9,8 @@ import {
   isAccountType,
   type AccountType,
 } from "@/lib/users/accountType";
+import { sendAccountDeletedEmail } from "@/lib/users/server/accountDeleted.email";
+import { notifyAccountTypeChanges, type AccountTypeChange } from "@/lib/users/server/accountType.emails";
 
 export async function deleteUserAction(
   userId: string,
@@ -19,15 +22,16 @@ export async function deleteUserAction(
       throw new ActionError("Vous ne pouvez pas supprimer votre propre compte.");
     }
 
-    await prisma.$transaction(async (tx) => {
+    const deleted = await prisma.$transaction(async (tx) => {
       const target = await tx.user.findUnique({
         where: { id: userId },
-        select: { role: true, groupId: true },
+        select: { role: true, groupId: true, email: true, firstName: true, locale: true, group: { select: { name: true } } },
       });
       if (!target) throw new ActionError("Utilisateur introuvable.");
       if (target.role === "superAdmin") throw new ActionError("Impossible de supprimer un superAdmin.");
 
       let emptyGroupId: string | null = null;
+      let promotedAdmin: AccountTypeChange | null = null;
 
       if (target.role === "groupAdmin" && target.groupId) {
         const otherMembers = await tx.user.count({
@@ -46,6 +50,11 @@ export async function deleteUserAction(
           if (promoted.count === 0) {
             throw new ActionError("Le nouvel administrateur doit être membre de ce groupe.");
           }
+          const successor = await tx.user.findUnique({
+            where: { id: newAdminId },
+            select: { email: true, firstName: true, locale: true }
+          });
+          if (successor) promotedAdmin = { ...successor, to: "groupAdmin", groupName: target.group?.name ?? null };
         } else {
           emptyGroupId = target.groupId;
         }
@@ -53,6 +62,18 @@ export async function deleteUserAction(
 
       await tx.user.delete({ where: { id: userId } });
       if (emptyGroupId) await tx.group.delete({ where: { id: emptyGroupId } });
+      return { email: target.email, firstName: target.firstName, locale: target.locale, promotedAdmin };
+    });
+
+    // Seulement une fois la suppression validée ; après la réponse, un échec est journalisé
+    after(async () => {
+      try {
+        await sendAccountDeletedEmail(deleted.email, deleted.firstName, deleted.locale);
+      } catch (err) {
+        console.error("[delete-user] Échec du courriel d'au revoir :", userId, err);
+      }
+      // Le membre promu à la place de l'admin supprimé
+      if (deleted.promotedAdmin) await notifyAccountTypeChanges([deleted.promotedAdmin]);
     });
 
     return { ok: true };
@@ -73,19 +94,22 @@ export async function updateAccountTypeAction(
     // Une Server Action reçoit des données non fiables : on valide aussi à l'exécution
     if (!isAccountType(accountType)) throw new ActionError("Type de compte invalide.");
 
-    await prisma.$transaction(async (tx) => {
+    const change = await prisma.$transaction(async (tx): Promise<AccountTypeChange | null> => {
       const target = await tx.user.findUnique({
         where: { id: userId },
         select: {
+          email: true,
+          firstName: true,
+          locale: true,
           role: true,
           groupStatus: true,
-          group: { select: { id: true, _count: { select: { users: true } } } },
+          group: { select: { id: true, name: true, _count: { select: { users: true } } } },
         },
       });
 
       if (!target) throw new ActionError("Utilisateur introuvable.");
       if (target.role === "superAdmin") throw new ActionError("Impossible de modifier un superAdmin.");
-      if (getAccountType(target.role, target.groupStatus) === accountType) return;
+      if (getAccountType(target.role, target.groupStatus) === accountType) return null;
 
       const ownedGroup = target.role === "groupAdmin" ? target.group : null;
       if (ownedGroup && ownedGroup._count.users > 1) {
@@ -104,17 +128,25 @@ export async function updateAccountTypeAction(
           data: {
             role: "user",
             groupStatus: accountType === "solo" ? "SOLO" : "PENDING",
-            // undefined = champ inchangé pour Prisma
-            groupId: accountType === "solo" || ownedGroup ? null : undefined,
-            joinedAt: accountType === "solo" || ownedGroup ? null : undefined,
+            // Solo comme En attente : hors de toute équipe. Un membre passé En attente doit
+            // pouvoir être ajouté de nouveau, et la recherche d'un admin exige groupId: null
+            groupId: null,
+            joinedAt: null,
           },
         });
       }
 
       // Supprimé après le détachement de l'utilisateur, à cause de la clé étrangère
       if (ownedGroup) await tx.group.delete({ where: { id: ownedGroup.id } });
+
+      const { email, firstName, locale } = target;
+      if (accountType === "groupAdmin") return { email, firstName, locale, to: "groupAdmin", groupName: null };
+      // Équipe quittée : seulement s'il en faisait vraiment partie
+      const leftGroupName = target.groupStatus === "JOINED" ? (target.group?.name ?? null) : undefined;
+      return { email, firstName, locale, to: accountType, groupName: leftGroupName, groupDeleted: ownedGroup !== null };
     });
 
+    if (change) after(() => notifyAccountTypeChanges([change]));
     return { ok: true };
   } catch (e) {
     return toActionError(e);

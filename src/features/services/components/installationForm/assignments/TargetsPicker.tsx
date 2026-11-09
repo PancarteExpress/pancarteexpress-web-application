@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { CheckboxGroup, QuantityField, type ChoiceOption, type Columns } from '@/features/services/components/fields';
 
 const ON_SITE = 'onSite';
@@ -23,8 +24,9 @@ interface TargetsPickerProps {
 }
 
 export function TargetsPicker({
-  label, quantityLabel = 'Quantité', value, onChange, frameUids, quantityError, targetsError,
+  label, quantityLabel, value, onChange, frameUids, quantityError, targetsError,
 }: TargetsPickerProps) {
+  const t = useTranslations('services.installation');
   const assigned = value.frameUids.length;
   // « Sur place » réserve au moins une unité
   const frameSlots = value.quantity - (value.onSite ? 1 : 0);
@@ -32,10 +34,10 @@ export function TargetsPicker({
   const options: ChoiceOption<string>[] = [
     ...frameUids.map((uid, i) => ({
       value: uid,
-      label: `Pancarte ${i + 1}`,
+      label: t('targetFrame', { number: i + 1 }),
       disabled: !value.frameUids.includes(uid) && assigned >= frameSlots,
     })),
-    { value: ON_SITE, label: 'Pancarte déjà sur place', disabled: !value.onSite && assigned >= value.quantity },
+    { value: ON_SITE, label: t('targetOnSite'), disabled: !value.onSite && assigned >= value.quantity },
   ];
 
   const columns: Columns = frameUids.length >= 3 ? 4 : frameUids.length === 2 ? 3 : frameUids.length === 1 ? 2 : 1;
@@ -58,9 +60,9 @@ export function TargetsPicker({
 
   return (
     <>
-      <QuantityField label={quantityLabel} value={value.quantity} onChange={handleQuantity} min={1} error={quantityError} />
+      <QuantityField label={quantityLabel ?? t('targetsQuantity')} value={value.quantity} onChange={handleQuantity} min={1} error={quantityError} />
       <CheckboxGroup
-        legend={`Pancartes qui recevront « ${label} »`}
+        legend={t('targetsLegend', { label })}
         hideLegend
         options={options}
         value={value.onSite ? [...value.frameUids, ON_SITE] : value.frameUids}

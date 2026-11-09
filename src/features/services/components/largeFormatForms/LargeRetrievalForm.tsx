@@ -3,6 +3,7 @@
 import { useId, useState, type Ref } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useTranslations } from 'next-intl';
 import {
   createEmptyLargeRetrievalForm, largeRetrievalSchema, toLargeRetrievalFormValues, type LargeRetrievalFormValues,
 } from '@/features/services/schemas/largeFormat.schema';
@@ -18,6 +19,7 @@ interface LargeRetrievalFormProps {
 
 export function LargeRetrievalForm({ handle, initialValues }: LargeRetrievalFormProps) {
   const headingId = useId();
+  const t = useTranslations('services.largeFormat');
   const [defaultValues] = useState(() =>
     initialValues ? toLargeRetrievalFormValues(initialValues) : createEmptyLargeRetrievalForm(),
   );
@@ -36,9 +38,9 @@ export function LargeRetrievalForm({ handle, initialValues }: LargeRetrievalForm
   return (
     <form noValidate className={formStyles.form} onSubmit={(e) => e.preventDefault()}>
       <section aria-labelledby={headingId} className={formStyles.section}>
-        <h3 id={headingId} className={formStyles.sectionTitle}>Détails de la récupération de pancarte/structure</h3>
+        <h3 id={headingId} className={formStyles.sectionTitle}>{t('retrievalTitle')}</h3>
         <LargePlacementPicker
-          legend="Veuillez préciser l'endroit de la pancarte"
+          legend={t('retrievalLegend')}
           location={location}
           access={access}
           onLocationChange={(next) => {

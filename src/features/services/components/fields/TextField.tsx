@@ -1,6 +1,8 @@
 'use client';
 
 import type { ChangeEvent, ReactNode } from 'react';
+import { useTranslations } from 'next-intl';
+import { useIssueMessage } from '@/shared/hooks/useIssueMessage';
 import styles from './fields.module.css';
 import type { ElementRef } from './types';
 import { useFieldIds } from './useFieldIds';
@@ -27,6 +29,8 @@ export function TextField({
   placeholder, required, hideLabel, error, hint, inputMode,
 }: TextFieldProps) {
   const { id, hintId, errorId, describedBy: baseDescribedBy } = useFieldIds({ hint, error });
+  const t = useTranslations('services.fields');
+  const translateError = useIssueMessage('services.errors');
   const counterId = maxLength ? `${id}-counter` : undefined;
   const describedBy = [baseDescribedBy, counterId].filter(Boolean).join(' ') || undefined;
 
@@ -56,10 +60,10 @@ export function TextField({
 
       {maxLength && (
         <span id={counterId} className={styles.counter} data-full={value.length >= maxLength}>
-          {value.length}/{maxLength} caractères
+          {t('characterCount', { count: value.length, max: maxLength })}
         </span>
       )}
-      {error && <p id={errorId} className={styles.error}>{error}</p>}
+      {error && <p id={errorId} className={styles.error}>{translateError(error)}</p>}
     </div>
   );
 }

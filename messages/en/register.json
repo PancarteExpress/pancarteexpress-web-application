@@ -72,5 +72,25 @@
     "accountCreatedSuccessfully": "Your account has been created successfully!",
 
     "alreadyMember": "Already a member?",
-    "connect": "Log in"
+    "connect": "Log in",
+    "pickup": {
+        "legend": "Should we pick up your material?",
+        "atAddress": "Yes, at a specific address",
+        "atWarehouse": "No, the material will be dropped off at the warehouse",
+        "addressLabel": "Full address where the material should be picked up",
+        "receptionDate": "When will we receive the material?",
+        "dateHint": "Weekends and statutory holidays are not available.",
+        "notes": "Other details?"
+    },
+    "completeProfile": {
+        "title": "Complete your profile",
+        "subtitle": "Tell us how to collect your material before continuing.",
+        "save": "Save"
+    },
+    "pickupEdit": {
+        "loadError": "Unable to load the pickup information.",
+        "updated": "Pickup updated",
+        "loading": "Loading…",
+        "save": "Save pickup"
+    }
 }

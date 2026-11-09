@@ -1,6 +1,7 @@
 'use client';
 
 import { useFieldArray, useFormState, useWatch } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { createRemovalUnit } from '@/features/services/schemas/removal.schema';
 import { QuantityField } from '@/features/services/components/fields';
 import { PlacementPicker, toPlacementErrors } from '@/features/services/components/placement/PlacementPicker';
@@ -20,6 +21,7 @@ interface RemovalUnitsFieldsProps {
 export function RemovalUnitsFields({ name, quantityLabel, unitName, max }: RemovalUnitsFieldsProps) {
   const { control } = useRemovalFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
+  const t = useTranslations('services');
 
   const handleQuantityChange = (next: number) => {
     const current = fields.length;
@@ -38,10 +40,10 @@ export function RemovalUnitsFields({ name, quantityLabel, unitName, max }: Remov
         onChange={handleQuantityChange}
         min={1}
         max={max}
-        hint={`Max ${max}`}
+        hint={t('common.max', { max })}
       />
       {fields.map((field, index) => (
-        <RemovalUnitFields key={field.id} name={name} index={index} title={`${unitName} #${index + 1}`} />
+        <RemovalUnitFields key={field.id} name={name} index={index} title={t('removal.unitTitle', { name: unitName, number: index + 1 })} />
       ))}
     </>
   );
@@ -53,6 +55,7 @@ function RemovalUnitFields({ name, index, title }: { name: UnitsPath; index: num
   const update = useRemovalUpdater();
   const placement = useWatch({ control, name: path });
   const { errors } = useFormState({ control, name: path });
+  const t = useTranslations('services.removal');
 
   const placementErrors =
     name === 'frames.units' ? errors.frames?.units?.[index]?.placement : errors.addons?.units?.[index]?.placement;
@@ -61,7 +64,7 @@ function RemovalUnitFields({ name, index, title }: { name: UnitsPath; index: num
     <fieldset className={styles.unit}>
       <legend className={styles.unitTitle}>{title}</legend>
       <PlacementPicker
-        legend="Veuillez indiquer l'emplacement du retrait"
+        legend={t('placementLegend')}
         value={placement}
         onChange={(next) => update(path, next)}
         errors={toPlacementErrors(placementErrors)}

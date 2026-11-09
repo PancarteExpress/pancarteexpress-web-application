@@ -1,19 +1,12 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import {
-  ACCESS_CHOICES, ACCESS_LABELS, LADDER_LABELS, LADDERS, LOCATION_LABELS, LOCATIONS,
-  MOUNTING_LABELS, MOUNTINGS, TEXT_LIMITS, WINDOW_SIDE_LABELS, WINDOW_SIDES, type AccessChoice,
+  ACCESS_CHOICES, LADDERS, LOCATIONS, MOUNTINGS, TEXT_LIMITS, WINDOW_SIDES, type AccessChoice,
 } from '@/features/services/constants/installation';
 import { createEmptyPlacement, type PlacementFormValues } from '@/features/services/schemas/placement.schema';
 import { RadioGroup, TextField, toOptions, type ChoiceOption } from '@/features/services/components/fields';
 import styles from './PlacementPicker.module.css';
-
-const LOCATION_OPTIONS = toOptions(LOCATIONS, LOCATION_LABELS);
-// Mur : échelles seulement
-const WALL_ACCESS_OPTIONS: ChoiceOption<AccessChoice>[] = toOptions(LADDERS, LADDER_LABELS);
-const WINDOW_BALCONY_ACCESS_OPTIONS = toOptions(ACCESS_CHOICES, ACCESS_LABELS);
-const MOUNTING_OPTIONS = toOptions(MOUNTINGS, MOUNTING_LABELS);
-const WINDOW_SIDE_OPTIONS = toOptions(WINDOW_SIDES, WINDOW_SIDE_LABELS);
 
 export type PlacementErrors = Partial<Record<keyof PlacementFormValues, string>>;
 
@@ -41,6 +34,10 @@ interface PlacementPickerProps {
 }
 
 export function PlacementPicker({ legend, value, onChange, errors = {} }: PlacementPickerProps) {
+  const t = useTranslations('services');
+  const accessLabel = (a: AccessChoice) => t(`access.${a}`);
+  // Mur : échelles seulement
+  const wallAccessOptions: ChoiceOption<AccessChoice>[] = toOptions(LADDERS, accessLabel);
   const set = <K extends keyof PlacementFormValues>(key: K, v: PlacementFormValues[K]) =>
     onChange({ ...value, [key]: v });
 
@@ -60,7 +57,7 @@ export function PlacementPicker({ legend, value, onChange, errors = {} }: Placem
     <>
       <RadioGroup
         legend={legend}
-        options={LOCATION_OPTIONS}
+        options={toOptions(LOCATIONS, (l) => t(`locations.${l}`))}
         value={location}
         // Nouvel emplacement : toutes les sous-options repartent de zéro
         onChange={(next) => onChange({ ...createEmptyPlacement(), location: next })}
@@ -71,16 +68,16 @@ export function PlacementPicker({ legend, value, onChange, errors = {} }: Placem
       {location === 'wall' && (
         <div className={styles.subOptions}>
           <RadioGroup
-            legend="Accès"
-            options={WALL_ACCESS_OPTIONS}
+            legend={t('placement.access')}
+            options={wallAccessOptions}
             value={value.access}
             onChange={(v) => set('access', v)}
             error={errors.access}
             required
           />
           <RadioGroup
-            legend="Méthode de fixation"
-            options={MOUNTING_OPTIONS}
+            legend={t('placement.mounting')}
+            options={toOptions(MOUNTINGS, (m) => t(`mountings.${m}`))}
             value={value.mounting}
             onChange={(v) => set('mounting', v)}
             columns={2}
@@ -93,8 +90,8 @@ export function PlacementPicker({ legend, value, onChange, errors = {} }: Placem
       {(location === 'window' || location === 'balcony') && (
         <div className={styles.subOptions}>
           <RadioGroup
-            legend="Accès"
-            options={WINDOW_BALCONY_ACCESS_OPTIONS}
+            legend={t('placement.access')}
+            options={toOptions(ACCESS_CHOICES, accessLabel)}
             value={value.access}
             onChange={handleAccessChange}
             error={errors.access}
@@ -102,7 +99,7 @@ export function PlacementPicker({ legend, value, onChange, errors = {} }: Placem
           />
           {value.access === 'phoneAppointment' && (
             <TextField
-              label="Coordonnées pour la prise de rendez-vous"
+              label={t('placement.contact')}
               value={value.contact}
               onChange={(v) => set('contact', v)}
               maxLength={TEXT_LIMITS.appointmentContact}
@@ -113,8 +110,8 @@ export function PlacementPicker({ legend, value, onChange, errors = {} }: Placem
           )}
           {value.access === 'keybox' && (
             <TextField
-              label="Informations sur la boîte à clés"
-              placeholder="Ex. : code, emplacement de la boîte…"
+              label={t('placement.keyboxInfo')}
+              placeholder={t('placement.keyboxInfoPlaceholder')}
               value={value.keyboxInfo}
               onChange={(v) => set('keyboxInfo', v)}
               maxLength={TEXT_LIMITS.keyboxAccess}
@@ -124,8 +121,8 @@ export function PlacementPicker({ legend, value, onChange, errors = {} }: Placem
           )}
           {location === 'window' && (
             <RadioGroup
-              legend="Emplacement sur la fenêtre"
-              options={WINDOW_SIDE_OPTIONS}
+              legend={t('placement.windowSide')}
+              options={toOptions(WINDOW_SIDES, (s) => t(`windowSides.${s}`))}
               value={value.windowSide}
               onChange={(v) => set('windowSide', v)}
               columns={2}
@@ -139,7 +136,7 @@ export function PlacementPicker({ legend, value, onChange, errors = {} }: Placem
       {location === 'other' && (
         <div className={styles.subOptions}>
           <TextField
-            label="Veuillez décrire l'emplacement"
+            label={t('placement.description')}
             value={value.description}
             onChange={(v) => set('description', v)}
             maxLength={TEXT_LIMITS.placementDescription}

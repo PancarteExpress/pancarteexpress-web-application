@@ -71,14 +71,14 @@ export default function Home() {
         </div>
 
         <div className={styles.rightContent}>
-          <Image src="/home/pancarte-slider-v2.png" alt="Hero Pancarte" className={styles.logoPancarte} width={800} height={800} priority sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"/>
+          <Image src="/home/pancarte-slider-v2.png" alt={t('imageAlt')} className={styles.logoPancarte} width={800} height={800} priority sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"/>
         </div>
       </div>
 
       <div className={styles.membershipContainer}>
         <div className={styles.advantages}>
           <div className={styles.logoContainer}>
-            <Image src="/home/membership.jpg" alt="Hero Pancarte" className={styles.memberLogo} width={287} height={197} priority/>
+            <Image src="/home/membership.jpg" alt={t('imageAlt')} className={styles.memberLogo} width={287} height={197} priority/>
           </div>
 
           <div className={styles.advantagesList}>
@@ -125,19 +125,19 @@ export default function Home() {
         <div className={styles.examples}>
           <div className={styles.exampleItem}>
             <div className={styles.logo}>
-              <Image src="/home/pancarte-rampe.png" alt="Hero Pancarte" className={styles.logoPancarte} width={94} height={94} priority/>
+              <Image src="/home/pancarte-rampe.png" alt={t('imageAlt')} className={styles.logoPancarte} width={94} height={94} priority/>
             </div>
             <div className={styles.texte}>{t('aboutTableText1')}<br /><span className={styles.bold}>{t('aboutTableBold1')}</span></div>
           </div>
            <div className={styles.exampleItem}>
             <div className={styles.logo}>
-              <Image src="/home/pancarte-structure.png" alt="Hero Pancarte" className={styles.logoPancarte} width={94} height={94} priority/>
+              <Image src="/home/pancarte-structure.png" alt={t('imageAlt')} className={styles.logoPancarte} width={94} height={94} priority/>
             </div>
             <div className={styles.texte}>{t('aboutTableText2')}<br /><span className={styles.bold}>{t('aboutTableBold2')}</span></div>
           </div>
            <div className={styles.exampleItem}>
             <div className={styles.logo}>
-              <Image src="/home/pancarte-mur.png" alt="Hero Pancarte" className={styles.logoPancarte} width={94} height={94} priority/>
+              <Image src="/home/pancarte-mur.png" alt={t('imageAlt')} className={styles.logoPancarte} width={94} height={94} priority/>
             </div>
             <div className={styles.texte}>{t('aboutTableText3')}<br /><span className={styles.bold}>{t('aboutTableBold3')}</span></div>
           </div>

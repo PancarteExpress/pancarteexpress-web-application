@@ -1,12 +1,11 @@
 'use client';
 
 import { Controller } from 'react-hook-form';
-import { FRAME_MODEL_LABELS, FRAME_MODELS, TEXT_LIMITS } from '@/features/services/constants/installation';
+import { useTranslations } from 'next-intl';
+import { FRAME_MODELS, TEXT_LIMITS } from '@/features/services/constants/installation';
 import { RadioGroup, TextField, YesNoField, toOptions } from '@/features/services/components/fields';
 import { bindField, useFormUpdater, useInstallationFormContext, type FrameUnitPath } from '../formContext';
 import styles from '../installationForm.module.css';
-
-const MODEL_OPTIONS = toOptions(FRAME_MODELS, FRAME_MODEL_LABELS);
 
 interface FrameUnitFieldsProps {
   index: number;
@@ -18,10 +17,11 @@ export function FrameUnitFields({ index, isMember, accountName }: FrameUnitField
   const base: FrameUnitPath = `frames.units.${index}`;
   const { control } = useInstallationFormContext();
   const update = useFormUpdater();
+  const t = useTranslations('services');
 
   return (
     <fieldset className={styles.unit}>
-        <legend className={styles.unitTitle}>Détails de la pancarte #{index + 1}</legend>
+        <legend className={styles.unitTitle}>{t('installation.frameUnitTitle', { number: index + 1 })}</legend>
 
         {isMember && (
         <Controller
@@ -35,8 +35,8 @@ export function FrameUnitFields({ index, isMember, accountName }: FrameUnitField
                     props.field.onChange(value);
                     if (value !== 'custom') update(`${base}.modelDescription`, '');
                 }}
-                legend="Quel modèle de pancarte voulez-vous ?"
-                options={MODEL_OPTIONS}
+                legend={t('installation.frameModelLegend')}
+                options={toOptions(FRAME_MODELS, (m) => t(`frameModels.${m}`))}
                 required
                 />
                 {props.field.value === 'custom' && (
@@ -46,7 +46,7 @@ export function FrameUnitFields({ index, isMember, accountName }: FrameUnitField
                     render={(p) => (
                     <TextField
                         {...bindField(p)}
-                        label="Veuillez décrire le modèle"
+                        label={t('installation.describeModel')}
                         maxLength={TEXT_LIMITS.modelDescription}
                         multiline
                         required
@@ -70,7 +70,7 @@ export function FrameUnitFields({ index, isMember, accountName }: FrameUnitField
                   props.field.onChange(value);
                   if (value) update(`${base}.displayName`, '');
                 }}
-                legend={`Est-ce que le nom à afficher est « ${accountName} » ?`}
+                legend={t('installation.useAccountName', { name: accountName })}
                 required
               />
               {props.field.value === false && (
@@ -80,8 +80,8 @@ export function FrameUnitFields({ index, isMember, accountName }: FrameUnitField
                   render={(p) => (
                     <TextField
                       {...bindField(p)}
-                      label="Nom(s) à afficher"
-                      placeholder="Ex. : indiquer le(s) nom(s) à afficher"
+                      label={t('installation.displayName')}
+                      placeholder={t('installation.displayNamePlaceholder')}
                       maxLength={TEXT_LIMITS.displayName}
                       required
                     />

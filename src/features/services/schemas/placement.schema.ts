@@ -36,31 +36,31 @@ const isLadder = (a: AccessChoice): a is Ladder => LADDER_SET.has(a);
 function validateAccess(p: PlacementOutput, path: Path, report: Report) {
   if (p.access === null) report([...path, 'access'], REQUIRED);
   else if (p.access === 'phoneAppointment' && !p.contact) {
-    report([...path, 'contact'], 'Indiquez vos coordonnées');
+    report([...path, 'contact'], 'contactRequired');
   } else if (p.access === 'keybox' && !p.keyboxInfo) {
-    report([...path, 'keyboxInfo'], 'Indiquez les informations de la boîte à clés');
+    report([...path, 'keyboxInfo'], 'keyboxInfoRequired');
   }
 }
 
 export function validatePlacement(p: PlacementOutput, path: Path, report: Report) {
-  if (p.location === null) return report([...path, 'location'], 'Choisissez un emplacement');
+  if (p.location === null) return report([...path, 'location'], 'chooseLocation');
 
   switch (p.location) {
     case 'wall':
       if (p.access === null || !isLadder(p.access)) {
-        report([...path, 'access'], "Choisissez une option d'échelle");
+        report([...path, 'access'], 'chooseLadder');
       }
-      if (p.mounting === null) report([...path, 'mounting'], 'Choisissez une méthode de fixation');
+      if (p.mounting === null) report([...path, 'mounting'], 'chooseMounting');
       break;
     case 'balcony':
       validateAccess(p, path, report);
       break;
     case 'window':
       validateAccess(p, path, report);
-      if (p.windowSide === null) report([...path, 'windowSide'], "Choisissez l'emplacement sur la fenêtre");
+      if (p.windowSide === null) report([...path, 'windowSide'], 'chooseWindowSide');
       break;
     case 'other':
-      if (!p.description) report([...path, 'description'], "Décrivez l'emplacement");
+      if (!p.description) report([...path, 'description'], 'describeLocation');
       break;
   }
 }

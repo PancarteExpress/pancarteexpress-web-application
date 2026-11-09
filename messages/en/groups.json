@@ -1,5 +1,60 @@
 {
     "errors": {
-        "nameTaken": "This team name is already in use"
+        "nameTaken": "This team name is already in use",
+        "nameTooShort": "The team name must be at least 2 characters long",
+        "nameTooLong": "The name cannot exceed 60 characters",
+        "noMemberSelected": "Select at least one teammate"
+    },
+    "createDialog": {
+        "title": "Please enter a team name to get started",
+        "subtitle": "As the team lead, you must name your team before continuing.",
+        "label": "Team name",
+        "placeholder": "E.g.: PancarteExpress",
+        "creating": "Creating…",
+        "create": "Create team"
+    },
+    "memberSearch": {
+        "label": "Teammates' email",
+        "placeholder": "Search by email…",
+        "searching": "Searching…",
+        "notFound": "No users available",
+        "remove": "Remove {email}"
+    },
+    "manage": {
+        "title": "Manage my team",
+        "close": "Close",
+        "teamName": "Team name",
+        "name": "Name",
+        "saving": "Saving…",
+        "save": "Save",
+        "nameUpdated": "Team name updated",
+        "genericError": "An error occurred",
+        "billing": "Billing",
+        "whoPays": "Who pays for service requests?",
+        "billingModes": {
+            "INDIVIDUAL": {
+                "label": "Each member pays their own invoices",
+                "description": "Each member receives and pays the invoices for their own requests."
+            },
+            "GROUP": {
+                "label": "I pay for the whole team",
+                "description": "All of the team's invoices, including yours, are sent to you."
+            }
+        },
+        "billingUpdated": "Billing mode updated. It applies to upcoming orders.",
+        "membersCount": "Members ({count})",
+        "admin": "Administrator",
+        "members": "Members",
+        "statuses": {
+            "SOLO": "Solo",
+            "PENDING": "Pending",
+            "JOINED": "Member"
+        },
+        "confirmRemove": "Remove {email} from the team?",
+        "removing": "Removing…",
+        "remove": "Remove",
+        "membersAdded": "{count, plural, one {# teammate added} other {# teammates added}}",
+        "adding": "Adding…",
+        "add": "Add ({count})"
     }
 }

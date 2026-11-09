@@ -1,0 +1,7 @@
+{
+  "addressAutocomplete": {
+    "placeholder": "Commencez à taper votre adresse",
+    "unavailable": "L'autocomplétion est indisponible. Vérifiez votre adresse manuellement.",
+    "incomplete": "Adresse incomplète : sélectionnez une adresse avec numéro civique, rue et code postal."
+  }
+}

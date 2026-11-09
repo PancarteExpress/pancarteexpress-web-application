@@ -1,6 +1,7 @@
 'use client';
 
 import { Controller, useFieldArray } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { createPlacedUnit } from '@/features/services/schemas/installation.schema';
 import { QuantityField, TextField } from '@/features/services/components/fields';
 import { bindField, useInstallationFormContext } from './formContext';
@@ -20,6 +21,7 @@ interface PlacedUnitsFieldsProps {
 export function PlacedUnitsFields({ name, quantityLabel, unitLabel, max, maxLength, placeholder, }: PlacedUnitsFieldsProps) {
   const { control } = useInstallationFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
+  const t = useTranslations('services.common');
 
   const handleQuantityChange = (next: number) => {
     const current = fields.length;
@@ -38,7 +40,7 @@ export function PlacedUnitsFields({ name, quantityLabel, unitLabel, max, maxLeng
         onChange={handleQuantityChange}
         min={1}
         max={max}
-        hint={`Max ${max}`}
+        hint={t('max', { max })}
       />
       {fields.map((field, index) => (
         <Controller

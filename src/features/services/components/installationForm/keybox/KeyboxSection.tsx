@@ -2,6 +2,7 @@
 
 import { useId } from 'react';
 import { Controller } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { KEYBOX_CODE_MAX_DIGITS, TEXT_LIMITS } from '@/features/services/constants/installation';
 import { TextField } from '@/features/services/components/fields';
 import { bindField, useInstallationFormContext } from '../formContext';
@@ -10,10 +11,11 @@ import styles from '../installationForm.module.css';
 export function KeyboxSection() {
   const headingId = useId();
   const { control } = useInstallationFormContext();
+  const t = useTranslations('services.installation');
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.sectionTitle}>Détails de la boîte à clés</h3>
+      <h3 id={headingId} className={styles.sectionTitle}>{t('keyboxTitle')}</h3>
 
       <Controller
         control={control}
@@ -23,10 +25,10 @@ export function KeyboxSection() {
             {...bindField(props)}
             // Chiffres seulement, longueur maximale imposée à la saisie
             onChange={(value) => props.field.onChange(value.replace(/\D/g, '').slice(0, KEYBOX_CODE_MAX_DIGITS))}
-            label="Veuillez indiquer le code de la boîte à clés"
-            placeholder="Entrez le code ici…"
+            label={t('keyboxCode')}
+            placeholder={t('codePlaceholder')}
             inputMode="numeric"
-            hint={`${KEYBOX_CODE_MAX_DIGITS} chiffres maximum.`}
+            hint={t('codeHint', { max: KEYBOX_CODE_MAX_DIGITS })}
             required
           />
         )}
@@ -38,7 +40,7 @@ export function KeyboxSection() {
         render={(props) => (
           <TextField
             {...bindField(props)}
-            label="Veuillez indiquer l'emplacement de la boîte à clés"
+            label={t('keyboxPlacement')}
             maxLength={TEXT_LIMITS.keyboxPlacement}
             multiline
             rows={2}

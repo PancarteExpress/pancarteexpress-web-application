@@ -1,20 +1,18 @@
 'use client';
 
 import { Controller, useFormState, useWatch } from 'react-hook-form';
-import {
-  ADDON_LABELS, ADDONS_WITH_MODEL, FRAME_MODEL_LABELS, FRAME_MODELS, TEXT_LIMITS, type Addon,
-} from '@/features/services/constants/installation';
+import { useTranslations } from 'next-intl';
+import { ADDONS_WITH_MODEL, FRAME_MODELS, TEXT_LIMITS, type Addon } from '@/features/services/constants/installation';
 import { RadioGroup, TextField, toOptions } from '@/features/services/components/fields';
 import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
 import { TargetsPicker } from './TargetsPicker';
 import styles from '../installationForm.module.css';
 
-const MENTION_FIELDS: Partial<Record<Addon, { label: string; required: boolean }>> = {
-  other: { label: 'Veuillez indiquer la mention qui doit être affichée', required: true },
-  customNoMention: { label: 'Précisions sur votre ajout personnalisé (facultatif)', required: false },
+// Clés i18n du namespace services.installation
+const MENTION_FIELDS: Partial<Record<Addon, { labelKey: 'otherMention' | 'customNoMentionDetails'; required: boolean }>> = {
+  other: { labelKey: 'otherMention', required: true },
+  customNoMention: { labelKey: 'customNoMentionDetails', required: false },
 };
-
-const MODEL_OPTIONS = toOptions(FRAME_MODELS, FRAME_MODEL_LABELS);
 const WITH_MODEL: readonly Addon[] = ADDONS_WITH_MODEL;
 
 interface AddonAssignmentRowProps {
@@ -29,7 +27,8 @@ export function AddonAssignmentRow({ index, frameUids }: AddonAssignmentRowProps
   const entry = useWatch({ control, name: path });
   const { errors } = useFormState({ control, name: path });
   const entryErrors = errors.addons?.[index];
-  const label = ADDON_LABELS[entry.addon];
+  const t = useTranslations('services');
+  const label = t(`addons.${entry.addon}`);
   const mentionField = MENTION_FIELDS[entry.addon];
 
   return (
@@ -48,8 +47,8 @@ export function AddonAssignmentRow({ index, frameUids }: AddonAssignmentRowProps
                   props.field.onChange(value);
                   if (value !== 'custom') update(`${path}.modelDescription`, '');
                 }}
-                legend="Quel modèle voulez-vous ?"
-                options={MODEL_OPTIONS}
+                legend={t('installation.modelLegend')}
+                options={toOptions(FRAME_MODELS, (m) => t(`frameModels.${m}`))}
                 required
               />
               {props.field.value === 'custom' && (
@@ -59,7 +58,7 @@ export function AddonAssignmentRow({ index, frameUids }: AddonAssignmentRowProps
                   render={(p) => (
                     <TextField
                       {...bindField(p)}
-                      label="Veuillez décrire le modèle"
+                      label={t('installation.describeModel')}
                       maxLength={TEXT_LIMITS.modelDescription}
                       multiline
                       rows={2}
@@ -80,7 +79,7 @@ export function AddonAssignmentRow({ index, frameUids }: AddonAssignmentRowProps
           render={(props) => (
             <TextField
               {...bindField(props)}
-              label={mentionField.label}
+              label={t(`installation.${mentionField.labelKey}`)}
               maxLength={TEXT_LIMITS.addonMention}
               multiline
               rows={2}

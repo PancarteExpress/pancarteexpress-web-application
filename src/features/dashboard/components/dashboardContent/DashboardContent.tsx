@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { modalLoading } from "@/shared/components/deferredLoading/DeferredLoading";
 
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import type { TeamOrder, UserOrder } from '@/lib/orders/server/orders.service';
 import ServiceOrders from '../serviceOrders/ServiceOrders';
 import { MemberFilter } from '../memberFilter/MemberFilter';
@@ -28,6 +29,7 @@ interface Props {
 
 export function DashboardContent({ orders, group, teamOrders  }: Props) {
   const router = useRouter();
+  const t = useTranslations("dashboard");
   const { data: session, update } = useSession();
   
   const sessionUser = session?.user ;
@@ -57,15 +59,15 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
     <div className={styles.mainContainer}>
 
       {sessionUser?.role === 'groupAdmin' && sessionUser?.groupName !== null && <>
-        <div className={styles.groupStateJoined}>Vous etes administrateur du groupe {sessionUser?.groupName}</div>
+        <div className={styles.groupStateJoined}>{t('groupAdminBanner', { group: sessionUser?.groupName ?? '' })}</div>
       </>}
 
       {sessionUser?.groupStatus === 'PENDING' && sessionUser?.role === 'user' && <>
-        <div className={styles.groupStatePending}>La personne responsable de votre groupe doit approuver votre integration</div>
+        <div className={styles.groupStatePending}>{t('pendingBanner')}</div>
       </>}
       
       {sessionUser?.groupStatus === 'JOINED' && sessionUser?.role === 'user' && <>
-        <div className={styles.groupStateJoined}>Vous faites partie de lequipe : {sessionUser?.groupName}</div>
+        <div className={styles.groupStateJoined}>{t('joinedBanner', { group: sessionUser?.groupName ?? '' })}</div>
       </>}
       
       <div className={styles.welcome}>
@@ -74,11 +76,10 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
         </div>
         <div>
           <p className={styles.welcomeTitle}>
-            Bonjour, {fullName} 👋 
+            {t('greeting', { name: fullName })}
           </p>
           <p className={styles.welcomeSub}>
-            Bienvenue dans votre espace personnel. Gérez vos commandes, adresses et
-            informations de compte.
+            {t('welcome')}
           </p>
         </div>
       </div>
@@ -88,23 +89,23 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
         <div className={styles.card} onClick={() => setUpdateProfileOpen(true)}>
           <div className={styles.qcardIcon}>👤</div>
           <div>
-            <p className={styles.qcardTitle}>Mon profil</p>
+            <p className={styles.qcardTitle}>{t('myProfile')}</p>
             <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
               {fullName}
             </p>
             <p className={styles.qcardDesc}>{sessionUser?.email}</p>
           </div>
-          <span className={styles.qcardLink}>Modifier mon compte →</span>
+          <span className={styles.qcardLink}>{t('editAccount')}</span>
         </div>
 
         <div className={styles.card}>
           <div className={styles.qcardIcon}>📦</div>
           <div>
-            <p className={styles.qcardTitle}>Commandes</p>
-            <p className={styles.qcardValue}>Demandes de service</p>
-            <p className={styles.qcardDesc}>X en cours · Y terminées · Z annulées</p>
-            <p className={styles.qcardValue}>Produits de la boutique</p>
-            <p className={styles.qcardDesc}>X en cours · Y terminées · Z annulées</p>
+            <p className={styles.qcardTitle}>{t('orders')}</p>
+            <p className={styles.qcardValue}>{t('serviceRequests')}</p>
+            <p className={styles.qcardDesc}>{t('orderStats')}</p>
+            <p className={styles.qcardValue}>{t('shopProducts')}</p>
+            <p className={styles.qcardDesc}>{t('orderStats')}</p>
           </div>
         </div>
       </div>}
@@ -114,49 +115,49 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
         <div className={styles.card} onClick={() => setUpdateProfileOpen(true)}>
           <div className={styles.qcardIcon}>👤</div>
           <div>
-            <p className={styles.qcardTitle}>Mon profil</p>
+            <p className={styles.qcardTitle}>{t('myProfile')}</p>
             <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
               {fullName}
             </p>
             <p className={styles.qcardDesc}>{sessionUser?.email}</p>
           </div>
-          <span className={styles.qcardLink}>Modifier mon compte →</span>
+          <span className={styles.qcardLink}>{t('editAccount')}</span>
         </div>
         
         {canManageGroup && (
         <div className={`${styles.card} ${memberCount === 0 ? styles.groupEmpty : ""}`} onClick={() => setUpdateGroupOpen(true)}>
           <div className={styles.qcardIcon}>👤</div>
           <div>
-            <p className={styles.qcardTitle}>Information du groupe</p>
+            <p className={styles.qcardTitle}>{t('groupInfo')}</p>
             <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
               {sessionUser?.groupName}
               <br />
               <br />
-              {memberCount === 0 && <span style={{ color: 'red'}}>En tant qu administrateur du groupe, vous devez ajouter au moins un membre dans votre equipe</span>}
+              {memberCount === 0 && <span style={{ color: 'red'}}>{t('addMemberWarning')}</span>}
             </p>
           </div>
-          <span className={styles.qcardLink}>Modifier le groupe →</span>
+          <span className={styles.qcardLink}>{t('editGroup')}</span>
         </div>
         )}
 
         <div className={styles.card}>
           <div className={styles.qcardIcon}>📦</div>
           <div>
-            <p className={styles.qcardTitle}>Mes Commandes</p>
-            <p className={styles.qcardValue}>Demandes de service</p>
-            <p className={styles.qcardDesc}>X en cours · Y terminées · Z annulées</p>
-            <p className={styles.qcardValue}>Produits de la boutique</p>
-            <p className={styles.qcardDesc}>X en cours · Y terminées · Z annulées</p>
+            <p className={styles.qcardTitle}>{t('myOrders')}</p>
+            <p className={styles.qcardValue}>{t('serviceRequests')}</p>
+            <p className={styles.qcardDesc}>{t('orderStats')}</p>
+            <p className={styles.qcardValue}>{t('shopProducts')}</p>
+            <p className={styles.qcardDesc}>{t('orderStats')}</p>
           </div>
         </div>
       </div>}
 
-      <ServiceOrders orders={orders} title={canManageGroup ? "Mes demandes de service" : "Demandes de service"} />
+      <ServiceOrders orders={orders} title={canManageGroup ? t('myServiceRequests') : t('serviceRequests')} />
 
       {canManageGroup && (
         <ServiceOrders
           orders={filteredTeamOrders}
-          title="Demandes de service de l'équipe"
+          title={t('teamServiceRequests')}
           productsVisible={false}
           toolbar={
             teamMembers.length > 0 && (

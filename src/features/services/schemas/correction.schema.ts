@@ -11,8 +11,8 @@ const correctionFormSchema = z.object({
 export const correctionSchema = correctionFormSchema
   .superRefine((v, ctx) => {
     const report: Report = (path, message) => ctx.addIssue({ code: 'custom', path, message });
-    if (v.kind === null) report(['kind'], 'Choisissez le type de correction');
-    else if (v.kind === 'explain' && !v.explanation) report(['explanation'], 'Expliquez la correction à apporter');
+    if (v.kind === null) report(['kind'], 'chooseCorrectionKind');
+    else if (v.kind === 'explain' && !v.explanation) report(['explanation'], 'explainCorrection');
   })
   .transform((v): CorrectionDetails => {
     const kind = defined(v.kind);

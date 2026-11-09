@@ -15,6 +15,7 @@ import type { User } from "next-auth";
 import { useTranslations } from "next-intl";
 import { readErrorCode, type AppErrorCode } from "@/lib/errors/appError";
 import AddressAutocomplete from "@/shared/components/addressAutocomplete/AddressAutocomplete";
+import { useIssueMessage } from "@/shared/hooks/useIssueMessage";
 
 // Erreurs serveur rattachées à un champ ; les autres s'affichent en message global
 const PROFILE_ERROR_FIELDS: Partial<Record<AppErrorCode, keyof UpdateProfileInput>> = {
@@ -32,6 +33,9 @@ interface UpdateProfileProps {
 export default function UpdateProfile({ sessionUser, onClose }: UpdateProfileProps) {
   const { update } = useSession();
   const tErrors = useTranslations("errors");
+  const t = useTranslations("dashboard.profile");
+  // Messages du schéma partagé (clés errors.validation) ; les erreurs serveur sont déjà traduites
+  const tv = useIssueMessage("errors.validation");
   const [isLoading, setIsLoading] = useState(false);
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -129,7 +133,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
         return;
       }
 
-      setProfileSuccess("Profile updated successfully");
+      setProfileSuccess(t("profileUpdated"));
       await update();
 
       setTimeout(() => setProfileSuccess(null), 3000);
@@ -160,7 +164,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
         return;
       }
 
-      setPasswordSuccess("Password updated successfully");
+      setPasswordSuccess(t("passwordUpdated"));
       resetPassword();
 
       setTimeout(() => setPasswordSuccess(null), 3000);
@@ -175,13 +179,13 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
     <div className={styles.fixedContainer}>
       <div className={styles.mainContainer}>
         <div className={styles.header}>
-          <h2>Update Profile</h2>
-          <button onClick={onClose}>Fermer</button>
+          <h2>{t("title")}</h2>
+          <button onClick={onClose}>{t("close")}</button>
         </div>
 
         {/* Profile Form */}
         <div className={styles.personalInfos}>
-          <h3 className="text-xl font-semibold mb-4">Profile Information</h3>
+          <h3 className="text-xl font-semibold mb-4">{t("profileInfo")}</h3>
 
           {profileSuccess && (
             <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">{profileSuccess}</div>
@@ -194,43 +198,43 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
           <form onSubmit={handleSubmitProfile(onSubmitProfile)} className="space-y-4">
             <div className={styles.formGroup}>
               <div className={styles.inputs}>
-                <label className="block text-sm font-medium">First Name</label>
+                <label className="block text-sm font-medium">{t("firstName")}</label>
                 <input {...registerProfile("firstName")} type="text" className="w-full px-3 py-2 border rounded" />
                 {profileErrors.firstName && (
-                  <span className="text-red-500 text-sm">{profileErrors.firstName.message}</span>
+                  <span className="text-red-500 text-sm">{tv(profileErrors.firstName.message)}</span>
                 )}
               </div>
 
               <div className={styles.inputs}>
-                <label className="block text-sm font-medium">Last Name</label>
+                <label className="block text-sm font-medium">{t("lastName")}</label>
                 <input {...registerProfile("lastName")} type="text" className="w-full px-3 py-2 border rounded" />
                 {profileErrors.lastName && (
-                  <span className="text-red-500 text-sm">{profileErrors.lastName.message}</span>
+                  <span className="text-red-500 text-sm">{tv(profileErrors.lastName.message)}</span>
                 )}
               </div>
             </div>
 
             <div className={styles.formGroup}>
               <div className={styles.inputs}>
-                <label className="block text-sm font-medium">Email</label>
+                <label className="block text-sm font-medium">{t("email")}</label>
                 <input {...registerProfile("email")} type="email" readOnly className="w-full px-3 py-2 border rounded" />
                 {profileErrors.email && (
-                  <span className="text-red-500 text-sm">{profileErrors.email.message}</span>
+                  <span className="text-red-500 text-sm">{tv(profileErrors.email.message)}</span>
                 )}
               </div>
 
               <div className={styles.inputs}>
-                <label className="block text-sm font-medium">Phone Number</label>
+                <label className="block text-sm font-medium">{t("phone")}</label>
                 <input {...registerProfile("phoneNumber")} type="tel" className="w-full px-3 py-2 border rounded" />
                 {profileErrors.phoneNumber && (
-                  <span className="text-red-500 text-sm">{profileErrors.phoneNumber.message}</span>
+                  <span className="text-red-500 text-sm">{tv(profileErrors.phoneNumber.message)}</span>
                 )}
               </div>
             </div>
 
             <div className={styles.formGroup}>
               <div className={styles.inputs}>
-                <label htmlFor="pickupAddress" className="block text-sm font-medium">Adresse de ramassage</label>
+                <label htmlFor="pickupAddress" className="block text-sm font-medium">{t("pickupAddress")}</label>
                 <Controller
                   control={controlProfile}
                   name="pickupAddress"
@@ -254,34 +258,34 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
                   )}
                 />
                 {profileErrors.pickupAddress && (
-                  <span className="text-red-500 text-sm">{profileErrors.pickupAddress.message}</span>
+                  <span className="text-red-500 text-sm">{tv(profileErrors.pickupAddress.message)}</span>
                 )}
               </div>
 
               <div className={styles.inputs}>
-                <label className="block text-sm font-medium">Company Name</label>
+                <label className="block text-sm font-medium">{t("companyName")}</label>
                 <input {...registerProfile("companyName")} type="text" className="w-full px-3 py-2 border rounded" />
                 {profileErrors.companyName && (
-                  <span className="text-red-500 text-sm">{profileErrors.companyName.message}</span>
+                  <span className="text-red-500 text-sm">{tv(profileErrors.companyName.message)}</span>
                 )}
               </div>
             </div>
 
             <div className={styles.accountStatus}>
-              {sessionUser?.role === "groupAdmin" ? <span className={styles.role}>Administrateur</span> : <span className={styles.role}>User</span>}
-              {sessionUser?.groupStatus === "SOLO" && <span className={styles.solo}>solo</span>}
-              {sessionUser?.groupStatus === "PENDING" && <span className={styles.pending}>En attente de rejoindre un groupe</span>}
+              {sessionUser?.role === "groupAdmin" ? <span className={styles.role}>{t("roleAdmin")}</span> : <span className={styles.role}>{t("roleUser")}</span>}
+              {sessionUser?.groupStatus === "SOLO" && <span className={styles.solo}>{t("solo")}</span>}
+              {sessionUser?.groupStatus === "PENDING" && <span className={styles.pending}>{t("pendingGroup")}</span>}
               {sessionUser?.groupStatus === "JOINED" && <span className={styles.joined}>{sessionUser?.groupName}</span>}
             </div>
 
             <div className={styles.btnSave}>
               <button type="submit" disabled={isLoading}>
-                {isLoading ? "Saving..." : "Save Profile"}
+                {isLoading ? t("saving") : t("saveProfile")}
               </button>
             </div>
           </form>
 
-          <h3 className="text-xl font-semibold mb-4">Change Password</h3>
+          <h3 className="text-xl font-semibold mb-4">{t("changePassword")}</h3>
 
           {passwordSuccess && (
             <div className="mb-4 p-3 bg-green-100 text-green-700 rounded">{passwordSuccess}</div>
@@ -294,35 +298,35 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
           <form onSubmit={handleSubmitPassword(onSubmitPassword)} className="space-y-4">
             <div className={styles.formGroup}>
               <div className={styles.inputs}>
-                <label className="block text-sm font-medium">Current Password</label>
+                <label className="block text-sm font-medium">{t("currentPassword")}</label>
                 <input {...registerPassword("currentPassword")} type="password" autoComplete="current-password" className="w-full px-3 py-2 border rounded" />
                 {passwordErrors.currentPassword && (
-                  <span className="text-red-500 text-sm">{passwordErrors.currentPassword.message}</span>
+                  <span className="text-red-500 text-sm">{tv(passwordErrors.currentPassword.message)}</span>
                 )}
               </div>
             </div>
 
             <div className={styles.formGroup}>
               <div className={styles.inputs}>
-                <label className="block text-sm font-medium">New Password</label>
+                <label className="block text-sm font-medium">{t("newPassword")}</label>
                 <input {...registerPassword("newPassword")} type="password" autoComplete="new-password" className="w-full px-3 py-2 border rounded" />
                 {passwordErrors.newPassword && (
-                  <span className="text-red-500 text-sm">{passwordErrors.newPassword.message}</span>
+                  <span className="text-red-500 text-sm">{tv(passwordErrors.newPassword.message)}</span>
                 )}
               </div>
 
               <div className={styles.inputs}>
-                <label className="block text-sm font-medium">Confirm Password</label>
+                <label className="block text-sm font-medium">{t("confirmPassword")}</label>
                 <input {...registerPassword("confirmPassword")} type="password" autoComplete="new-password" className="w-full px-3 py-2 border rounded" />
                 {passwordErrors.confirmPassword && (
-                  <span className="text-red-500 text-sm">{passwordErrors.confirmPassword.message}</span>
+                  <span className="text-red-500 text-sm">{tv(passwordErrors.confirmPassword.message)}</span>
                 )}
               </div>
             </div>
 
             <div className={styles.btnSave}>
               <button type="submit" disabled={isLoading}>
-                {isLoading ? "Saving..." : "Update Password"}
+                {isLoading ? t("saving") : t("updatePassword")}
               </button>
             </div>
           </form>

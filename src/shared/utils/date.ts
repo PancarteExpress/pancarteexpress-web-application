@@ -1,8 +1,15 @@
-// Dates affichées en français, toujours à l'heure de Montréal (même rendu serveur et client)
-const DATE_FORMATTERS = {
-  medium: new Intl.DateTimeFormat("fr-CA", { dateStyle: "medium", timeZone: "America/Toronto" }),
-  long: new Intl.DateTimeFormat("fr-CA", { dateStyle: "long", timeZone: "America/Toronto" }),
-};
+import type { Locale } from "@/shared/constants/locales";
 
-export const formatDate = (date: Date, style: keyof typeof DATE_FORMATTERS = "medium"): string =>
-  DATE_FORMATTERS[style].format(date);
+// Dates affichées dans la langue de l'interface, toujours à l'heure de Montréal (même rendu serveur et client)
+type DateStyle = "medium" | "long";
+const DATE_FORMATTERS = new Map<string, Intl.DateTimeFormat>();
+
+export function formatDate(date: Date, style: DateStyle = "medium", locale: Locale = "fr"): string {
+  const key = `${locale}-${style}`;
+  let formatter = DATE_FORMATTERS.get(key);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(`${locale}-CA`, { dateStyle: style, timeZone: "America/Toronto" });
+    DATE_FORMATTERS.set(key, formatter);
+  }
+  return formatter.format(date);
+}

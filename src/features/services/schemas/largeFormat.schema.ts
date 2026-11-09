@@ -20,8 +20,8 @@ const placementShape = {
 };
 
 function validatePlacement(v: { location: string | null; access: string | null }, report: Report) {
-  if (v.location === null) report(['location'], 'Choisissez un emplacement');
-  else if (v.location === 'wall' && v.access === null) report(['access'], 'Choisissez un accès');
+  if (v.location === null) report(['location'], 'chooseLocation');
+  else if (v.location === 'wall' && v.access === null) report(['access'], 'chooseAccess');
 }
 
 /* ==========================================================================
@@ -52,7 +52,7 @@ function validatePaint(
   report: Report,
 ) {
   if (paint === null) report([`${prefix}Paint`], REQUIRED);
-  else if (paint && !color) report([`${prefix}Color`], 'Indiquez la couleur');
+  else if (paint && !color) report([`${prefix}Color`], 'colorRequired');
 }
 
 function toStructure(s: Structure, v: InstallationOutput): StructureChoice {
@@ -71,20 +71,20 @@ function toStructure(s: Structure, v: InstallationOutput): StructureChoice {
 export const largeInstallationSchema = largeInstallationFormSchema
   .superRefine((v, ctx) => {
     const report = reporter(ctx);
-    if (!v.dimensions) report(['dimensions'], 'Indiquez les dimensions');
+    if (!v.dimensions) report(['dimensions'], 'dimensionsRequired');
     validatePlacement(v, report);
     if (v.location !== 'ground') return;
 
-    if (v.structures.length === 0) report(['structures'], 'Sélectionnez au moins une structure');
+    if (v.structures.length === 0) report(['structures'], 'selectStructure');
     const has = (s: Structure) => v.structures.includes(s);
     if (has('aluminumFramd') && v.aluminumAcquisition === null) report(['aluminumAcquisition'], REQUIRED);
     if (has('signageFramd') && v.signageAcquisition === null) report(['signageAcquisition'], REQUIRED);
     if (has('woodFramd')) {
-      if (v.woodFramdStyle === null) report(['woodFramdStyle'], 'Choisissez un style');
+      if (v.woodFramdStyle === null) report(['woodFramdStyle'], 'chooseStyle');
       validatePaint(v.woodFramdPaint, v.woodFramdColor, 'woodFramd', report);
     }
     if (has('woodEasel')) {
-      if (v.easelStyle === null) report(['easelStyle'], 'Choisissez un style');
+      if (v.easelStyle === null) report(['easelStyle'], 'chooseStyle');
       validatePaint(v.easelPaint, v.easelColor, 'easel', report);
     }
   })
@@ -155,7 +155,7 @@ export function toLargeInstallationFormValues(d: LargeInstallationDetails): Larg
 export const largeStoragePickupSchema = z
   .object({ materials: z.array(z.enum(STORAGE_PICKUP_MATERIALS)) })
   .superRefine((v, ctx) => {
-    if (v.materials.length === 0) reporter(ctx)(['materials'], 'Sélectionnez au moins un élément à ramasser');
+    if (v.materials.length === 0) reporter(ctx)(['materials'], 'selectPickupItem');
   })
   .transform((v): LargeStoragePickupDetails => ({
     // Ordre de la liste, quel que soit l'ordre des clics

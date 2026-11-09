@@ -14,5 +14,9 @@
   "navbarBigFormat": "Large format",
   "navbarShop": "Shop",
   "navbarContact": "Contact",
-  "navbarServices": "Online requests"
+  "navbarServices": "Online requests",
+  "loading": "Loading…",
+  "logoAlt": "Pancarte Express logo",
+  "scheduleIconAlt": "Schedule icon",
+  "mapIconAlt": "Map icon"
 }

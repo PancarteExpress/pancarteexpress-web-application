@@ -1,6 +1,8 @@
 "use client";
 
 import { Controller, useFormContext } from "react-hook-form";
+import { useTranslations } from "next-intl";
+import { useIssueMessage } from "@/shared/hooks/useIssueMessage";
 import AddressAutocomplete from "@/shared/components/addressAutocomplete/AddressAutocomplete";
 import type { PickupFieldsInput } from "@/lib/auth/auth.schema";
 
@@ -17,25 +19,27 @@ export function PickupFields() {
   const { register, control, setValue, watch, formState: { errors } } = useFormContext<PickupFieldsInput>();
   const pickupMode = watch("pickupMode");
   const [earliestPickupDate] = useState(() => earliestSpecificDate(new Date()));
+  const t = useTranslations("register.pickup");
+  const tv = useIssueMessage("errors.validation");
 
   return (
     <>
       <fieldset className={styles.inputs}>
         <legend className="block text-sm font-medium">
-          Devons-nous ramasser votre matériel ? <span className={styles.req}>*</span>
+          {t("legend")} <span className={styles.req}>*</span>
         </legend>
         <label>
-          <input type="radio" value="address" {...register("pickupMode")} /> Oui, à une adresse particulière
+          <input type="radio" value="address" {...register("pickupMode")} /> {t("atAddress")}
         </label>
         <label>
-          <input type="radio" value="warehouse" {...register("pickupMode")} /> Non, le matériel sera déposé à l entrepôt
+          <input type="radio" value="warehouse" {...register("pickupMode")} /> {t("atWarehouse")}
         </label>
       </fieldset>
 
       {pickupMode === "address" && (
         <div className={styles.inputs}>
           <label htmlFor="pickupAddress" className="block text-sm font-medium">
-            Adresse complète de l endroit où ramasser le matériel <span className={styles.req}>*</span>
+            {t("addressLabel")} <span className={styles.req}>*</span>
           </label>
           <Controller
             control={control}
@@ -56,9 +60,9 @@ export function PickupFields() {
               />
             )}
           />
-          {errors.pickupAddress && <span className={styles.error}>{errors.pickupAddress.message}</span>}
-          {errors.pickupCity && <span className={styles.error}>{errors.pickupCity.message}</span>}
-          {errors.pickupPostalCode && <span className={styles.error}>{errors.pickupPostalCode.message}</span>}
+          {errors.pickupAddress && <span className={styles.error}>{tv(errors.pickupAddress.message)}</span>}
+          {errors.pickupCity && <span className={styles.error}>{tv(errors.pickupCity.message)}</span>}
+          {errors.pickupPostalCode && <span className={styles.error}>{tv(errors.pickupPostalCode.message)}</span>}
         </div>
       )}
 
@@ -69,13 +73,13 @@ export function PickupFields() {
             name="receptionDate"
             render={({ field, fieldState }) => (
               <DateField
-                label="Quand recevrons-nous le matériel ?"
+                label={t("receptionDate")}
                 value={field.value ? [field.value] : []}
                 onChange={(dates) => field.onChange(dates[0] ?? "")}
                 minDate={earliestPickupDate}
                 isDisabled={isNonBusinessDay}
-                hint="Les fins de semaine et les jours fériés ne sont pas disponibles."
-                error={fieldState.error?.message}
+                hint={t("dateHint")}
+                error={tv(fieldState.error?.message)}
                 required
               />
             )}
@@ -86,7 +90,7 @@ export function PickupFields() {
             name="pickupNotes"
             render={({ field }) => (
               <TextField
-                label="Autres détails ?"
+                label={t("notes")}
                 value={field.value ?? ""}
                 onChange={field.onChange}
                 onBlur={field.onBlur}

@@ -2,6 +2,7 @@
 
 import { useImperativeHandle, useState, type Ref } from 'react';
 import { useSession } from 'next-auth/react';
+import { useTranslations } from 'next-intl';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createEmptyInstallationForm, createInstallationSchema, toInstallationFormValues, type InstallationFormValues, } from '../../schemas/installation.schema';
@@ -29,8 +30,9 @@ interface InstallationFormProps {
 
 export function InstallationForm({ handle, initialValues }: InstallationFormProps) {
   const { data: session, status } = useSession();
+  const t = useTranslations('services.installation');
   
-  if (status === 'loading') return <p aria-busy="true">Chargement…</p>;
+  if (status === 'loading') return <p aria-busy="true">{t('loading')}</p>;
 
   const user = status === 'authenticated' ? session.user : undefined;
   // Les comptes stockent prénom et nom séparément ; `name` sert de repli

@@ -11,5 +11,24 @@
     "validationFailed": "Certaines informations sont invalides.",
     "invalidJson": "Requête invalide.",
     "emailSendFailed": "Impossible d'envoyer le courriel, réessayez plus tard",
-    "serverError": "Une erreur est survenue, réessayez plus tard."
+    "serverError": "Une erreur est survenue, réessayez plus tard.",
+    "validation": {
+        "firstNameRequired": "Prénom requis",
+        "lastNameRequired": "Nom requis",
+        "emailRequired": "Adresse courriel requise",
+        "passwordTooShort": "Le mot de passe doit contenir au moins 8 caractères",
+        "passwordTooLong": "Le mot de passe doit contenir au plus 72 caractères",
+        "phoneRequired": "Numéro de téléphone requis",
+        "codeLength": "Le code doit contenir 6 chiffres",
+        "codeDigits": "Le code ne doit contenir que des chiffres",
+        "addressRequired": "Adresse requise",
+        "cityRequired": "Ville requise",
+        "postalCodeRequired": "Code postal requis",
+        "dateRequired": "Date requise",
+        "businessDayFromToday": "Choisissez un jour ouvrable, à partir d'aujourd'hui",
+        "passwordsMismatch": "Les mots de passe ne correspondent pas",
+        "passwordRequired": "Mot de passe requis",
+        "credentialsRequired": "Veuillez saisir vos identifiants",
+        "currentPasswordRequired": "Mot de passe actuel requis"
+    }
 }

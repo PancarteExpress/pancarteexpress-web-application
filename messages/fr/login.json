@@ -21,5 +21,24 @@
     "errorInvalidCredentials": "Identifiants invalides.",
     "errorGoogle": "La connexion avec Google n'a pas abouti. Veuillez réessayer.",
     "errorGeneric": "Une erreur est survenue pendant la connexion. Réessayez dans un instant.",
-    "becomeMember": "Devenir membre"
+    "becomeMember": "Devenir membre",
+    "forgotPassword": {
+        "emailPrompt": "Veuillez entrer l'adresse courriel associée à votre compte",
+        "email": "Courriel",
+        "codeSent": "Un code a été envoyé à votre adresse courriel",
+        "resetSuccess": "Mot de passe réinitialisé ! Redirection vers la connexion…",
+        "sending": "Envoi…",
+        "sendCode": "Envoyer le code",
+        "backToLogin": "Retour à la connexion",
+        "enterCode": "Entrez le code à 6 chiffres envoyé à <bold>{email}</bold>",
+        "code": "Code",
+        "verifying": "Vérification…",
+        "verifyCode": "Vérifier le code",
+        "backToSendCode": "Retour à l'envoi du code",
+        "newPasswordPrompt": "Veuillez entrer votre nouveau mot de passe",
+        "newPassword": "Nouveau mot de passe",
+        "confirmPassword": "Confirmer le mot de passe",
+        "resetting": "Réinitialisation…",
+        "resetPassword": "Réinitialiser le mot de passe"
+    }
 }

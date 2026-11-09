@@ -3,7 +3,8 @@
 import { useId, useState, type Ref } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { STORAGE_PICKUP_MATERIAL_LABELS, STORAGE_PICKUP_MATERIALS } from '@/features/services/constants/largeFormat';
+import { useTranslations } from 'next-intl';
+import { STORAGE_PICKUP_MATERIALS } from '@/features/services/constants/largeFormat';
 import {
   createEmptyLargeStoragePickupForm, largeStoragePickupSchema, toLargeStoragePickupFormValues,
   type LargeStoragePickupFormValues,
@@ -14,8 +15,6 @@ import { toOptions } from '@/features/services/components/fields/types';
 import { useServiceFormHandle, type ServiceFormHandle } from '../serviceForm/serviceFormHandle';
 import formStyles from '../installationForm/installationForm.module.css';
 
-const MATERIAL_OPTIONS = toOptions(STORAGE_PICKUP_MATERIALS, STORAGE_PICKUP_MATERIAL_LABELS);
-
 interface LargeStoragePickupFormProps {
   handle: Ref<ServiceFormHandle<LargeStoragePickupDetails>>;
   initialValues?: LargeStoragePickupDetails;
@@ -23,6 +22,7 @@ interface LargeStoragePickupFormProps {
 
 export function LargeStoragePickupForm({ handle, initialValues }: LargeStoragePickupFormProps) {
   const headingId = useId();
+  const t = useTranslations('services.largeFormat');
   const [defaultValues] = useState(() =>
     initialValues ? toLargeStoragePickupFormValues(initialValues) : createEmptyLargeStoragePickupForm(),
   );
@@ -38,15 +38,15 @@ export function LargeStoragePickupForm({ handle, initialValues }: LargeStoragePi
     <form noValidate className={formStyles.form} onSubmit={(e) => e.preventDefault()}>
       <section aria-labelledby={headingId} className={formStyles.section}>
         <h3 id={headingId} className={formStyles.sectionTitle}>
-          Détails du ramassage de nouveau matériel pour l&apos;entreposage
+          {t('storageTitle')}
         </h3>
         <Controller
           control={control}
           name="materials"
           render={({ field, fieldState }) => (
             <CheckboxGroup
-              legend="Veuillez préciser le matériel à ramasser"
-              options={MATERIAL_OPTIONS}
+              legend={t('storageLegend')}
+              options={toOptions(STORAGE_PICKUP_MATERIALS, (m) => t(`storageMaterials.${m}`))}
               value={field.value}
               onChange={field.onChange}
               onBlur={field.onBlur}

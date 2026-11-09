@@ -1,0 +1,7 @@
+{
+  "addressAutocomplete": {
+    "placeholder": "Start typing your address",
+    "unavailable": "Autocomplete is unavailable. Please check your address manually.",
+    "incomplete": "Incomplete address: select an address with a civic number, street and postal code."
+  }
+}

@@ -2,6 +2,7 @@
 
 import { useId } from 'react';
 import { Controller } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { MAX_REMOVAL_ADDONS, REMOVAL_TEXT_LIMITS } from '@/features/services/constants/removal';
 import { TextField } from '@/features/services/components/fields';
 import { useRemovalFormContext } from '../formContext';
@@ -11,15 +12,16 @@ import styles from '../../installationForm/installationForm.module.css';
 export function RemovalAddonsSection() {
   const headingId = useId();
   const { control } = useRemovalFormContext();
+  const t = useTranslations('services.removal');
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.sectionTitle}>Détails du retrait d&apos;ajouts</h3>
+      <h3 id={headingId} className={styles.sectionTitle}>{t('addonsTitle')}</h3>
 
       <RemovalUnitsFields
         name="addons.units"
-        quantityLabel="Combien d'ajouts voulez-vous retirer ?"
-        unitName="Ajout"
+        quantityLabel={t('addonsQuantity')}
+        unitName={t('addonUnit')}
         max={MAX_REMOVAL_ADDONS}
       />
 
@@ -28,8 +30,8 @@ export function RemovalAddonsSection() {
         name="addons.details"
         render={({ field, fieldState }) => (
           <TextField
-            label="Précision sur l'ajout à retirer"
-            placeholder="Veuillez préciser l'ajout à retirer s'il y en a plusieurs…"
+            label={t('addonsDetails')}
+            placeholder={t('addonsDetailsPlaceholder')}
             value={field.value}
             onChange={field.onChange}
             onBlur={field.onBlur}

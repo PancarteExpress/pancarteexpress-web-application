@@ -1,15 +1,19 @@
+import { useTranslations } from "next-intl";
 import type { AdminClientServices } from "@/lib/services/server/services.service";
 import styles from "./ServicesTable.module.css";
-import { SERVICE_TYPE_LABELS } from "@/features/superAdmin/constants/labels";
 import { formatDate } from "@/shared/utils/date";
+import { useAppLocale } from "@/shared/hooks/useAppLocale";
 
 interface ServicesTableProps {
   clients: AdminClientServices[];
 }
 
 export function ServicesTable({ clients }: ServicesTableProps) {
+  const t = useTranslations("superAdmin");
+  const locale = useAppLocale();
+
   if (clients.length === 0) {
-    return <p className={styles.empty}>Aucune demande de service.</p>;
+    return <p className={styles.empty}>{t("servicesTable.empty")}</p>;
   }
 
   return (
@@ -20,7 +24,7 @@ export function ServicesTable({ clients }: ServicesTableProps) {
             <p className={styles.clientName}>{client.name}</p>
             <a href={`mailto:${client.email}`} className={styles.clientEmail}>{client.email}</a>
             <span className={styles.clientCount}>
-              {client.services.length} service{client.services.length > 1 ? "s" : ""}
+              {t("servicesTable.serviceCount", { count: client.services.length })}
             </span>
           </header>
 
@@ -35,20 +39,20 @@ export function ServicesTable({ clients }: ServicesTableProps) {
               </colgroup>
               <thead>
                 <tr>
-                  <th scope="col"># Commande</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Adresse</th>
-                  <th scope="col">Demandé le</th>
-                  <th scope="col">Délai</th>
+                  <th scope="col">{t("servicesTable.orderNumber")}</th>
+                  <th scope="col">{t("servicesTable.type")}</th>
+                  <th scope="col">{t("servicesTable.address")}</th>
+                  <th scope="col">{t("servicesTable.requestedOn")}</th>
+                  <th scope="col">{t("servicesTable.delay")}</th>
                 </tr>
               </thead>
               <tbody>
                 {client.services.map((s) => (
                   <tr key={s.id}>
                     <td className={styles.mono}>#{s.orderNumber}</td>
-                    <td>{SERVICE_TYPE_LABELS[s.type]}</td>
+                    <td>{t(`serviceTypes.${s.type}`)}</td>
                     <td title={s.address}>{s.address}</td>
-                    <td>{formatDate(s.orderedAt)}</td>
+                    <td>{formatDate(s.orderedAt, "medium", locale)}</td>
                     <td>{s.delay}</td>
                   </tr>
                 ))}

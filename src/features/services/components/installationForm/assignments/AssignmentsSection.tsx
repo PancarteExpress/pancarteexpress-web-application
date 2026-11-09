@@ -2,6 +2,7 @@
 
 import { useId } from 'react';
 import { useWatch } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import { useFrameUids, useInstallationFormContext } from '../formContext';
 import { AddonAssignmentRow } from './AddonAssignmentRow';
 import { OpenHouseAssignmentRow } from './OpenHouseAssignmentRow';
@@ -14,6 +15,7 @@ export function AssignmentsSection() {
   const frameUids = useFrameUids();
   const materials = useWatch({ control, name: 'materials' });
   const addons = useWatch({ control, name: 'addons' });
+  const t = useTranslations('services.installation');
 
   const showAddons = materials.includes('addons') && addons.length > 0;
   const showOpenHouse = materials.includes('openHouse');
@@ -22,7 +24,7 @@ export function AssignmentsSection() {
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.sectionTitle}>Veuillez confirmer les ajouts par pancarte</h3>
+      <h3 id={headingId} className={styles.sectionTitle}>{t('assignmentsTitle')}</h3>
 
       {showAddons &&
         addons.map((a, i) => (

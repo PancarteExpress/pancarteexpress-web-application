@@ -17,5 +17,40 @@
   "makePay": "Payer",
   "submitOrder": "Envoyer la commande",
   "invalidServiceDate": "La date demandée n'est pas disponible. Choisissez un jour ouvrable à partir du prochain jour ouvrable.",
-  "invalidSchedule": "La demande de service est incomplète. Veuillez la refaire depuis le formulaire."
+  "invalidSchedule": "La demande de service est incomplète. Veuillez la refaire depuis le formulaire.",
+  "errors": {
+    "firstNameRequired": "Le prénom est requis",
+    "lastNameRequired": "Le nom est requis",
+    "emailInvalid": "Courriel invalide",
+    "phoneInvalid": "Numéro de téléphone invalide",
+    "phoneRequired": "Le téléphone est requis",
+    "shippingAddressRequired": "Veuillez sélectionner une adresse de livraison dans la liste",
+    "postalCodeMissing": "Adresse incomplète : code postal manquant",
+    "cardIncomplete": "Veuillez compléter les informations de votre carte",
+    "paymentModuleUnavailable": "Un paiement est requis, mais le module de paiement est indisponible. Rechargez la page."
+  },
+  "submitErrors": {
+    "validationFailed": "Certaines informations sont invalides. Vérifiez le formulaire.",
+    "productUnavailable": "Certains produits ne sont plus disponibles. Retirez-les de votre panier.",
+    "alreadyProcessed": "Cette commande a déjà été traitée.",
+    "inProgress": "Votre commande est en cours de traitement. Patientez quelques secondes, puis réessayez.",
+    "network": "Connexion impossible. Vérifiez votre connexion internet et réessayez.",
+    "serverError": "Une erreur est survenue. Réessayez dans quelques instants.",
+    "serviceBlocked": "Vos demandes de service sont suspendues pour défaut de paiement. Retirez les services du panier pour commander vos produits."
+  },
+  "payment": {
+    "unavailable": "Le module de paiement est indisponible. Rechargez la page.",
+    "declined": "Le paiement a été refusé.",
+    "notConfirmed": "Le paiement n'a pas pu être confirmé. Réessayez."
+  },
+  "confirmation": {
+    "orderNumber": "Commande n° <strong>{number}</strong>.",
+    "paymentReceived": "Votre paiement a été reçu.",
+    "orderSent": "Votre commande a été envoyée.",
+    "trackInDashboard": "Vous pouvez suivre son statut dans votre tableau de bord.",
+    "contactByEmail": "Nous vous contacterons par courriel pour la suite."
+  },
+  "sending": "Envoi en cours…",
+  "viewOrders": "Voir mes commandes",
+  "backToShop": "Retour à la boutique"
 }

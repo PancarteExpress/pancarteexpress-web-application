@@ -48,7 +48,7 @@ export function useAuth() {
         setLoading(true);
 
         const result = await nextAuthSignIn("credentials", {
-          email: input.email,
+          identifier: input.identifier,
           password: input.password,
           redirect: false,
         });

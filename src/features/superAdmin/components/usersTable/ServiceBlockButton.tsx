@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import { setServiceBlockAction } from '@/lib/users/server/serviceBlock.actions';
 import { SERVICE_BLOCK_GRACE_DAYS } from '@/lib/orders/billing';
 
@@ -24,13 +25,14 @@ export function ServiceBlockButton({
   noteClassName,
 }: ServiceBlockButtonProps) {
   const router = useRouter();
+  const t = useTranslations('superAdmin.serviceBlock');
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
   const handleClick = () => {
     const question = isBlocked
-      ? `Débloquer ${userName} ? Les demandes de service seront de nouveau possibles immédiatement.`
-      : `Bloquer ${userName} ? Ses demandes de service seront refusées dans ${SERVICE_BLOCK_GRACE_DAYS} jours.`;
+      ? t('confirmUnblock', { name: userName })
+      : t('confirmBlock', { name: userName, days: SERVICE_BLOCK_GRACE_DAYS });
     if (!window.confirm(question)) return;
 
     setError(null);
@@ -53,7 +55,7 @@ export function ServiceBlockButton({
         disabled={isPending || disabledReason !== undefined}
         title={disabledReason}
       >
-        {isPending ? '…' : isBlocked ? 'Débloquer' : 'Bloquer'}
+        {isPending ? '…' : isBlocked ? t('unblock') : t('block')}
       </button>
       {/* Visible aussi au toucher et pour les lecteurs d'écran, contrairement à l'infobulle seule */}
       {disabledReason && <span className={noteClassName}>{disabledReason}</span>}

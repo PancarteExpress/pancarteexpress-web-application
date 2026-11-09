@@ -17,5 +17,40 @@
   "makePay": "Pay",
   "submitOrder": "Submit order",
   "invalidServiceDate": "The requested date isn't available. Please choose a business day starting from the next business day.",
-  "invalidSchedule": "The service request is incomplete. Please submit it again from the form."
+  "invalidSchedule": "The service request is incomplete. Please submit it again from the form.",
+  "errors": {
+    "firstNameRequired": "First name is required",
+    "lastNameRequired": "Last name is required",
+    "emailInvalid": "Invalid email",
+    "phoneInvalid": "Invalid phone number",
+    "phoneRequired": "Phone number is required",
+    "shippingAddressRequired": "Please select a shipping address from the list",
+    "postalCodeMissing": "Incomplete address: postal code missing",
+    "cardIncomplete": "Please complete your card information",
+    "paymentModuleUnavailable": "A payment is required, but the payment module is unavailable. Please reload the page."
+  },
+  "submitErrors": {
+    "validationFailed": "Some information is invalid. Please check the form.",
+    "productUnavailable": "Some products are no longer available. Remove them from your cart.",
+    "alreadyProcessed": "This order has already been processed.",
+    "inProgress": "Your order is being processed. Wait a few seconds, then try again.",
+    "network": "Unable to connect. Check your internet connection and try again.",
+    "serverError": "An error occurred. Please try again in a few moments.",
+    "serviceBlocked": "Your service requests are suspended due to overdue payments. Remove the services from your cart to order your products."
+  },
+  "payment": {
+    "unavailable": "The payment module is unavailable. Please reload the page.",
+    "declined": "The payment was declined.",
+    "notConfirmed": "The payment could not be confirmed. Please try again."
+  },
+  "confirmation": {
+    "orderNumber": "Order no. <strong>{number}</strong>.",
+    "paymentReceived": "Your payment has been received.",
+    "orderSent": "Your order has been sent.",
+    "trackInDashboard": "You can track its status in your dashboard.",
+    "contactByEmail": "We will contact you by email about next steps."
+  },
+  "sending": "Sending…",
+  "viewOrders": "View my orders",
+  "backToShop": "Back to the shop"
 }

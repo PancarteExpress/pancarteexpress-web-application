@@ -20,6 +20,15 @@
     "sendingFeedback": "Envoi en cours…",
     "successFeedback": "Message envoyé avec succès !",
 
-    "formSend": "Envoyer ma demande"
-    
+    "formSend": "Envoyer ma demande",
+    "firstnamePlaceholder": "Jean",
+    "lastnamePlaceholder": "Tremblay",
+
+    "confirmationEmail": {
+        "subject": "Nous avons bien reçu votre demande | Pancarte Express",
+        "title": "Nous avons bien reçu votre demande",
+        "greeting": "Bonjour,",
+        "body": "Merci d'avoir communiqué avec Pancarte Express. Notre équipe vous répondra dans les plus brefs délais.",
+        "urgent": "Pour une demande urgente, appelez-nous au {phone}."
+    }
 }

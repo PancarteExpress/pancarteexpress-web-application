@@ -1,31 +1,32 @@
-import {
-  LADDER_LABELS, LOCATION_LABELS, MOUNTING_LABELS, WINDOW_SIDE_LABELS,
-} from '@/features/services/constants/installation';
 import type { Placement, PlacementAccess } from '@/features/services/types/installation';
 
-function describeAccess(a: PlacementAccess): string {
+/** Traducteur du namespace « services » : useTranslations('services') */
+export type ServicesTranslator = (key: string, values?: Record<string, string | number>) => string;
+
+function describeAccess(a: PlacementAccess, t: ServicesTranslator): string {
   switch (a.type) {
     case 'ladder':
-      return LADDER_LABELS[a.ladder];
+      return t(`access.${a.ladder}`);
     case 'phoneAppointment':
-      return `Rendez-vous téléphonique : ${a.contact}`;
+      return t('placement.phoneAppointmentText', { contact: a.contact });
     case 'keybox':
-      return `Boîte à clés : ${a.info}`;
+      return t('placement.keyboxText', { info: a.info });
   }
 }
 
-export function describePlacement(p: Placement): string {
-  const location = LOCATION_LABELS[p.location];
+/** Texte d'un emplacement, dans la langue de l'interface */
+export function describePlacement(p: Placement, t: ServicesTranslator): string {
+  const location = t(`locations.${p.location}`);
   switch (p.location) {
     case 'ground':
     case 'ramp':
       return location;
     case 'wall':
-      return `${location} — ${LADDER_LABELS[p.ladder]}, ${MOUNTING_LABELS[p.mounting]}`;
+      return `${location} — ${t(`access.${p.ladder}`)}, ${t(`mountings.${p.mounting}`)}`;
     case 'balcony':
-      return `${location} — ${describeAccess(p.access)}`;
+      return `${location} — ${describeAccess(p.access, t)}`;
     case 'window':
-      return `${location} (${WINDOW_SIDE_LABELS[p.side].toLowerCase()}) — ${describeAccess(p.access)}`;
+      return `${location} (${t(`windowSides.${p.side}`).toLowerCase()}) — ${describeAccess(p.access, t)}`;
     case 'other':
       return `${location} — ${p.description}`;
   }

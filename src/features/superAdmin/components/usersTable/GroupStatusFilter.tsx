@@ -2,8 +2,8 @@
 
 import { useTransition, type ChangeEvent } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { GROUP_STATUSES, type GroupStatusFilter as Filter } from "@/lib/users/adminUserFilters.schema";
-import { GROUP_STATUS_LABELS } from "../../constants/labels";
 
 interface GroupStatusFilterProps {
   value: Filter;
@@ -12,6 +12,7 @@ interface GroupStatusFilterProps {
 
 export function GroupStatusFilter({ value, className }: GroupStatusFilterProps) {
   const router = useRouter();
+  const t = useTranslations("superAdmin");
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -26,12 +27,12 @@ export function GroupStatusFilter({ value, className }: GroupStatusFilterProps) 
 
   return (
     <label className={className}>
-      Statut de groupe
+      {t("groupStatusFilter.label")}
       <select value={value ?? ""} onChange={handleChange} disabled={isPending}>
-        <option value="">Tous</option>
+        <option value="">{t("groupStatusFilter.all")}</option>
         {GROUP_STATUSES.map((status) => (
           <option key={status} value={status}>
-            {GROUP_STATUS_LABELS[status]}
+            {t(`groupStatuses.${status}`)}
           </option>
         ))}
       </select>

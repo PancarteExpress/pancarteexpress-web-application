@@ -24,6 +24,11 @@ const LOADERS = {
   errorPages: (locale) => import(`@/messages/${locale}/errorPages.json`),
 
   footer: (locale) => import(`@/messages/${locale}/footer.json`),
+  common: (locale) => import(`@/messages/${locale}/common.json`),
+  metadata: (locale) => import(`@/messages/${locale}/metadata.json`),
+  services: (locale) => import(`@/messages/${locale}/services.json`),
+  dashboard: (locale) => import(`@/messages/${locale}/dashboard.json`),
+  superAdmin: (locale) => import(`@/messages/${locale}/superAdmin.json`),
 
 } satisfies Record<string, Loader>;
 

@@ -19,6 +19,15 @@
     "sendingFeedback": "Sending…",
     "successFeedback": "Message sent successfully!",
 
-    "formSend": "Send my request"
-    
+    "formSend": "Send my request",
+    "firstnamePlaceholder": "John",
+    "lastnamePlaceholder": "Smith",
+
+    "confirmationEmail": {
+        "subject": "We received your request | Pancarte Express",
+        "title": "We received your request",
+        "greeting": "Hello,",
+        "body": "Thank you for contacting Pancarte Express. Our team will get back to you as soon as possible.",
+        "urgent": "For an urgent request, call us at {phone}."
+    }
 }

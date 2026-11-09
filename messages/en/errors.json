@@ -11,5 +11,24 @@
     "validationFailed": "Some information is invalid.",
     "invalidJson": "Invalid request.",
     "emailSendFailed": "Unable to send the email, please try again later",
-    "serverError": "Something went wrong, please try again later."
+    "serverError": "Something went wrong, please try again later.",
+    "validation": {
+        "firstNameRequired": "First name required",
+        "lastNameRequired": "Last name required",
+        "emailRequired": "Email address required",
+        "passwordTooShort": "Password must be at least 8 characters",
+        "passwordTooLong": "Password must be at most 72 characters",
+        "phoneRequired": "Phone number required",
+        "codeLength": "Code must be 6 digits",
+        "codeDigits": "Code must contain only digits",
+        "addressRequired": "Address required",
+        "cityRequired": "City required",
+        "postalCodeRequired": "Postal code required",
+        "dateRequired": "Date required",
+        "businessDayFromToday": "Choose a business day, starting today",
+        "passwordsMismatch": "Passwords don't match",
+        "passwordRequired": "Password required",
+        "credentialsRequired": "Please enter your credentials",
+        "currentPasswordRequired": "Current password required"
+    }
 }

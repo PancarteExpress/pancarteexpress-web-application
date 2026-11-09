@@ -134,6 +134,7 @@ export const checkoutPayloadSchema = checkoutFormSchema
   .extend({
     idempotencyKey: z.string().uuid(),
     items: z.array(checkoutItemSchema).min(1, { message: 'emptyCart' }).max(MAX_CART_ITEMS),
+    locale: z.enum(['fr', 'en']).default('fr'),
   })
   .superRefine((data, ctx) => {
     const productIds = data.items.flatMap((i) => (i.kind === 'product' ? [i.productId] : []));

@@ -9,6 +9,8 @@ export const CONTACT = {
   infoEmail: "info@pancarteexpress.com",
   commercialEmail: "structureframd@gmail.com",
   accountingEmail: "stephany@pancarteexpress.com",
+  /** Adresse de l'entrepôt (page contact, ramassage) */
+  address: "2160 Rue Léger, Lasalle, QC H8N 2L8",
 } as const;
 
 /** "514-825-2709" → "tel:+15148252709" (numéro nord-américain à 10 chiffres) */

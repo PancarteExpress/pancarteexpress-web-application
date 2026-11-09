@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import { cleanupAbandonedOrders } from '@/lib/orders/server/cleanup.service';
 import { retryFailedOptimoSyncs } from '@/lib/optimoroute/server/syncOrder';
+import { retryUnsentReceipts } from '@/lib/orders/server/receipts.email';
+import { notifyEffectiveServiceBlocks } from '@/lib/users/server/serviceBlock.emails';
 
 function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
@@ -26,8 +28,16 @@ export async function GET(request: Request) {
       console.error('[cron] Réessai OptimoRoute en échec', error);
       return 0;
     });
-    console.info('[cleanup] Terminé', { ...result, optimoRetried });
-    return NextResponse.json({ ...result, optimoRetried });
+    const receiptsRetried = await retryUnsentReceipts().catch((error: unknown) => {
+      console.error('[cron] Relance des courriels de commande en échec', error);
+      return 0;
+    });
+    const blockNoticesSent = await notifyEffectiveServiceBlocks().catch((error: unknown) => {
+      console.error('[cron] Courriels de blocage effectif en échec', error);
+      return 0;
+    });
+    console.info('[cleanup] Terminé', { ...result, optimoRetried, receiptsRetried, blockNoticesSent });
+    return NextResponse.json({ ...result, optimoRetried, receiptsRetried, blockNoticesSent });
   } catch (error) {
     console.error('[cleanup] Échec', error);
     return NextResponse.json({ error: 'cleanupFailed' }, { status: 500 });
