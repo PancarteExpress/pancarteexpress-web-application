@@ -214,3 +214,40 @@
     background: #C5D8EF;
     cursor: not-allowed;
 }
+
+/* ─── Langue ─── */
+
+.mainContainer .personalInfos .languageToggle {
+    display: flex;
+    border: 1px solid #C5D8EF;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.mainContainer .personalInfos .languageToggle button {
+    all: unset;
+    flex: 1;
+    padding: 9px 12px;
+    text-align: center;
+    font-family: var(--font-text), sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #5F7FA8;
+    background: #F8FAFD;
+    cursor: pointer;
+    transition: background .15s, color .15s;
+}
+
+.mainContainer .personalInfos .languageToggle button + button {
+    border-left: 1px solid #C5D8EF;
+}
+
+.mainContainer .personalInfos .languageToggle .languageActive {
+    background: #0E4D9A;
+    color: #fff;
+}
+
+.mainContainer .personalInfos .languageToggle button:focus-visible {
+    outline: 2px solid #0E4D9A;
+    outline-offset: -2px;
+}

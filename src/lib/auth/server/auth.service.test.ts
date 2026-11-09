@@ -19,6 +19,7 @@ vi.mock("@/lib/auth/server/password", () => ({
   bcryptCompare: vi.fn(async () => true),
 }));
 vi.mock("@/lib/auth/server/authEmails", () => emailMock);
+vi.mock("server-only", () => ({}));
 
 const { authService } = await import("./auth.service");
 const { AppError } = await import("@/lib/errors/appError");
@@ -47,6 +48,7 @@ describe("authService — retours de user sans hash", () => {
       firstName: "Ana",
       lastName: "Roy",
       email: " Ana@Example.com ",
+      locale: "fr",
     });
 
     expect(prismaMock.user.update).toHaveBeenCalledWith(
@@ -63,6 +65,7 @@ describe("authService — retours de user sans hash", () => {
         firstName: "Ana",
         lastName: "Roy",
         email: "victime@gmail.com",
+        locale: "fr",
       }),
     ).rejects.toMatchObject({ code: "emailChangeNotAllowed" });
     expect(prismaMock.user.update).not.toHaveBeenCalled();

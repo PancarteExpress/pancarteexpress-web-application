@@ -9,6 +9,7 @@ export const APP_ERROR_STATUS = {
   noPassword: 400,
   currentPasswordIncorrect: 400,
   emailChangeNotAllowed: 403,
+  usernameTaken: 409,
   invalidCode: 400,
   tooManyAttempts: 429,
   validationFailed: 400,

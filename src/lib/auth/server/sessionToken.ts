@@ -16,6 +16,8 @@ export async function refreshSessionToken(token: JWT, signedInUserId?: string): 
       where: { id: token.id },
       select: {
         email: true,
+        username: true,
+        locale: true,
         firstName: true,
         lastName: true,
         phoneNumber: true,

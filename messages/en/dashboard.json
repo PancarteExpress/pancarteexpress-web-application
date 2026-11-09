@@ -73,6 +73,10 @@
     "currentPassword": "Current Password",
     "newPassword": "New Password",
     "confirmPassword": "Confirm Password",
-    "updatePassword": "Update Password"
+    "updatePassword": "Update Password",
+    "username": "Username",
+    "language": "Language",
+    "languageFr": "Français",
+    "languageEn": "English"
   }
 }

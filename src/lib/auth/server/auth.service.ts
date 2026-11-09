@@ -2,7 +2,7 @@ import { randomInt } from "node:crypto";
 import { Prisma, type TokenType, type VerificationToken } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/errors/appError";
-import { hashPassword, bcryptCompare } from "@/lib/auth/server/password";
+import { hashPassword } from "@/lib/auth/server/password";
 import { publicUserSelect } from "@/lib/users/publicUser";
 
 import {
@@ -14,6 +14,7 @@ import {
 
 import type { RegisterInput, UpdateProfileInput, UpdatePasswordInput, ForgotPasswordInput } from "@/lib/auth/auth.schema";
 import { PickupCreateData } from "./pickup";
+import { verifyPassword } from "./legacyPassword";
 
 const CODE_TTL_MS = 15 * 60 * 1000;
 const MAX_CODE_ATTEMPTS = 5;
@@ -89,7 +90,7 @@ export const authService = {
     if (!user) throw new AppError("userNotFound");
     if (!user.password) throw new AppError("noPassword");
 
-    const isPasswordValid = await bcryptCompare(input.currentPassword, user.password);
+    const isPasswordValid = await verifyPassword(input.currentPassword, user.password);
 
     if (!isPasswordValid) {
       throw new AppError("currentPasswordIncorrect");
@@ -183,10 +184,16 @@ export const authService = {
       data: {
         firstName: input.firstName,
         lastName: input.lastName,
+        username: input.username === undefined ? undefined : input.username || null,
+        locale: input.locale,
         phoneNumber: input.phoneNumber,
         companyName: input.companyName,
       },
       select: publicUserSelect,
+    }).catch((e: unknown) => {
+      // Seule contrainte unique modifiable ici : le nom d'utilisateur
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2002") throw new AppError("usernameTaken");
+      throw e;
     });
   },
 

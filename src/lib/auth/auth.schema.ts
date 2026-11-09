@@ -120,10 +120,20 @@ export const loginSchema = z.object({
   path: ["root"],
 });
 
+// Nom d'utilisateur : pas de « @ », sinon ambigu avec un courriel à la connexion.
+// Chaîne vide = retirer le nom d'utilisateur (converti en null côté serveur).
+const usernameSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .refine((v) => v === "" || /^[a-z0-9._-]{3,30}$/.test(v), "usernameInvalid");
+
 export const updateProfileSchema = z.object({
   firstName: firstNameSchema,
   lastName: lastNameSchema,
   email: emailSchema,
+  username: usernameSchema.optional(),
+  locale: z.enum(["fr", "en"]),
   phoneNumber: phoneSchema.optional(),
   companyName: z.string().optional(),
   groupStatus: z.enum(["SOLO", "PENDING", "JOINED"]).optional(),

@@ -12,7 +12,7 @@ import {
 } from "@/lib/auth/auth.schema";
 import { useSession } from "next-auth/react";
 import type { User } from "next-auth";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { readErrorCode, type AppErrorCode } from "@/lib/errors/appError";
 import AddressAutocomplete from "@/shared/components/addressAutocomplete/AddressAutocomplete";
 import { useIssueMessage } from "@/shared/hooks/useIssueMessage";
@@ -20,6 +20,7 @@ import { useIssueMessage } from "@/shared/hooks/useIssueMessage";
 // Erreurs serveur rattachées à un champ ; les autres s'affichent en message global
 const PROFILE_ERROR_FIELDS: Partial<Record<AppErrorCode, keyof UpdateProfileInput>> = {
   emailChangeNotAllowed: "email",
+  usernameTaken: "username",
 };
 const PASSWORD_ERROR_FIELDS: Partial<Record<AppErrorCode, keyof UpdatePasswordInput>> = {
   currentPasswordIncorrect: "currentPassword",
@@ -34,6 +35,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
   const { update } = useSession();
   const tErrors = useTranslations("errors");
   const t = useTranslations("dashboard.profile");
+  const currentLocale = useLocale() === "en" ? "en" : "fr";
   // Messages du schéma partagé (clés errors.validation) ; les erreurs serveur sont déjà traduites
   const tv = useIssueMessage("errors.validation");
   const [isLoading, setIsLoading] = useState(false);
@@ -63,6 +65,8 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       firstName: "",
       lastName: "",
       email: "",
+      username: "",
+      locale: currentLocale,
       phoneNumber: "",
       companyName: "",
       pickupAddress: "",
@@ -80,11 +84,13 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       firstName: sessionUser.firstName || "",
       lastName: sessionUser.lastName || "",
       email: sessionUser.email || "",
+      username: sessionUser.username || "",
+      locale: sessionUser.locale ?? currentLocale,
       phoneNumber: sessionUser.phoneNumber || "",
       companyName: sessionUser.companyName || "",
       groupStatus: sessionUser.groupStatus || "SOLO",
     }));
-  }, [sessionUser, resetProfile]);
+  }, [sessionUser, resetProfile, currentLocale]);
 
   // Adresse de ramassage enregistrée
   useEffect(() => {
@@ -135,6 +141,13 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
 
       setProfileSuccess(t("profileUpdated"));
       await update();
+
+      // Langue changée : on recharge la même page dans la nouvelle langue
+      if (data.locale !== currentLocale) {
+        const { pathname, search } = window.location;
+        window.location.assign(pathname.replace(/^\/(fr|en)(?=\/|$)/, `/${data.locale}`) + search);
+        return;
+      }
 
       setTimeout(() => setProfileSuccess(null), 3000);
     } catch {
@@ -268,6 +281,44 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
                 {profileErrors.companyName && (
                   <span className="text-red-500 text-sm">{tv(profileErrors.companyName.message)}</span>
                 )}
+              </div>
+            </div>
+
+                        <div className={styles.formGroup}>
+              <div className={styles.inputs}>
+                <label htmlFor="username">{t("username")}</label>
+                <input
+                  id="username"
+                  {...registerProfile("username")}
+                  type="text"
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                />
+                {profileErrors.username && <span>{tv(profileErrors.username.message)}</span>}
+              </div>
+
+              <div className={styles.inputs}>
+                <label id="languageLabel">{t("language")}</label>
+                <Controller
+                  control={controlProfile}
+                  name="locale"
+                  render={({ field }) => (
+                    <div className={styles.languageToggle} role="group" aria-labelledby="languageLabel">
+                      {(["fr", "en"] as const).map((lang) => (
+                        <button
+                          key={lang}
+                          type="button"
+                          aria-pressed={field.value === lang}
+                          className={field.value === lang ? styles.languageActive : undefined}
+                          onClick={() => field.onChange(lang)}
+                        >
+                          {t(lang === "fr" ? "languageFr" : "languageEn")}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                />
               </div>
             </div>
 

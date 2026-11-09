@@ -8,6 +8,7 @@ import {
   resetPasswordRequestSchema,
   storeGroupStatusSchema,
   updatePasswordSchema,
+  updateProfileSchema,
   verifyEmailSchema,
   verifyResetCodeSchema,
 } from "./auth.schema";
@@ -36,7 +37,7 @@ describe("passwordSchema", () => {
   });
 
   it("ne s'applique pas au login (comptes existants au mot de passe court)", () => {
-    expect(loginSchema.safeParse({ email: "admin@example.com", password: "abc" }).success).toBe(true);
+    expect(loginSchema.safeParse({ identifier: "admin@example.com", password: "abc" }).success).toBe(true);
   });
 });
 
@@ -99,5 +100,26 @@ describe("registerPlanSchema", () => {
     expect(registerPlanSchema.safeParse("PENDING").success).toBe(false);
     expect(registerPlanSchema.safeParse(["solo", "group"]).success).toBe(false);
     expect(registerPlanSchema.safeParse(undefined).success).toBe(false);
+  });
+});
+
+describe("loginSchema", () => {
+  it("accepte un nom d'utilisateur et le met en minuscules", () => {
+    const r = loginSchema.safeParse({ identifier: " JShamounInc ", password: "x" });
+    expect(r.success && r.data.identifier).toBe("jshamouninc");
+  });
+});
+
+describe("updateProfileSchema — username", () => {
+  const base = { firstName: "Ana", lastName: "Lopez", email: "ana@example.com", locale: "fr" as const };
+
+  it("accepte une chaîne vide (retrait du nom d'utilisateur)", () => {
+    expect(updateProfileSchema.safeParse({ ...base, username: "" }).success).toBe(true);
+  });
+
+  it("refuse un @, trop court ou trop long", () => {
+    for (const username of ["ana@x", "ab", "a".repeat(31)]) {
+      expect(updateProfileSchema.safeParse({ ...base, username }).success).toBe(false);
+    }
   });
 });

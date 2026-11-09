@@ -152,12 +152,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }: { session: Session; token: JWT }): Promise<Session> {
       if (session.user) {
         session.user.id = token.id;
-        session.user.email = token.email;              // ← Ajoute ça
+        session.user.email = token.email;
+        session.user.username = token.username;
+        session.user.locale = token.locale;
         session.user.firstName = token.firstName;
         session.user.lastName = token.lastName;
         session.user.phoneNumber = token.phoneNumber;
         session.user.companyName = token.companyName;
-        session.user.role = token.role;                // ← Ajoute ça aussi
+        session.user.role = token.role;
         session.user.groupStatus = token.groupStatus;
         session.user.groupId = token.groupId;
         session.user.groupName = token.groupName;

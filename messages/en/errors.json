@@ -12,7 +12,9 @@
     "invalidJson": "Invalid request.",
     "emailSendFailed": "Unable to send the email, please try again later",
     "serverError": "Something went wrong, please try again later.",
+    "usernameTaken": "This username is already taken",
     "validation": {
+        "usernameInvalid": "3 to 30 characters: lowercase letters, digits, . _ -",
         "firstNameRequired": "First name required",
         "lastNameRequired": "Last name required",
         "emailRequired": "Email address required",

@@ -12,7 +12,9 @@
     "invalidJson": "Requête invalide.",
     "emailSendFailed": "Impossible d'envoyer le courriel, réessayez plus tard",
     "serverError": "Une erreur est survenue, réessayez plus tard.",
+    "usernameTaken": "Ce nom d'utilisateur est déjà utilisé",
     "validation": {
+        "usernameInvalid": "3 à 30 caractères : lettres minuscules, chiffres, . _ -",
         "firstNameRequired": "Prénom requis",
         "lastNameRequired": "Nom requis",
         "emailRequired": "Adresse courriel requise",

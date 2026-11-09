@@ -73,6 +73,12 @@
     "currentPassword": "Mot de passe actuel",
     "newPassword": "Nouveau mot de passe",
     "confirmPassword": "Confirmer le mot de passe",
-    "updatePassword": "Mettre à jour le mot de passe"
+    "updatePassword": "Mettre à jour le mot de passe",
+    "username": "Nom d'utilisateur",
+    "language": "Langue",
+    "languageFr": "Français",
+    "languageEn": "English"
   }
+
+  
 }
