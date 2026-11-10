@@ -473,8 +473,11 @@
   },
   "lookup": {
     "title": "Vous avez déjà fait une demande ?",
-    "intro": "Retrouvez le résumé de votre demande avec votre numéro de commande et le courriel utilisé pour la commande.",
-    "orderNumber": "Numéro de commande",
+    "intro": "Entrez le numéro de demande (ex. PE-11111) inscrit dans votre courriel de confirmation, ainsi que le courriel utilisé lors de la commande.",
+    
+    "addressNumber": "Numéro de demande",
+    "addressTitle": "Demande {number}",
+    
     "email": "Courriel utilisé pour la commande",
     "submit": "Retrouver ma demande",
     "searching": "Recherche…",
@@ -484,8 +487,8 @@
     "tooManyAttempts": "Trop de tentatives. Réessayez dans quelques minutes.",
     "invalid": "Vérifiez le numéro de commande et le courriel.",
     "networkError": "La recherche a échoué. Vérifiez votre connexion et réessayez.",
-    "orderTitle": "Commande n° {number}",
-    "noServices": "Cette commande ne contient aucune demande de service.",
+    
+    
     "close": "Fermer le résumé"
   }
 }

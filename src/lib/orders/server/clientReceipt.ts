@@ -4,6 +4,7 @@ import type { Locale, ServiceDelay } from '@prisma/client';
 import { formatCents } from '@/lib/pricing/money';
 import { formatServiceDate } from '@/lib/orders/serviceDelay';
 import { CONTACT } from '@/shared/constants/contact';
+import { formatAddressNumber } from '@/lib/services/addressNumber';
 import { LARGE_FORMAT_SERVICES } from '@/features/services/constants/largeFormat';
 import { parseLargeFormatService } from '@/features/services/schemas/largeFormatDomain.schema';
 import {
@@ -170,7 +171,7 @@ export function buildClientReceipt(order: Receipt): ClientReceipt {
         ...order.serviceRequests.flatMap((request) => [
           `${l.delay}${l.colon}${formatDelay(request.delay, request.requestedDate, l)}`,
           ...request.addresses.flatMap((address) => [
-            `- [${tServices(`requestTypes.${request.requestType}`)}] ${formatAddress(address, l)}${l.colon}` +
+            `- ${formatAddressNumber(address.addressNumber)} [${tServices(`requestTypes.${request.requestType}`)}] ${formatAddress(address, l)}${l.colon}` +
               address.services.map((s) => tServices(`serviceTypes.${s.type}`)).join(', '),
             ...address.services.flatMap(largeFormatDetails),
           ]),

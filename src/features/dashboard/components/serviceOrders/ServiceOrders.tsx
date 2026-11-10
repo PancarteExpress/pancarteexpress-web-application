@@ -7,6 +7,7 @@ import { formatCents } from '@/lib/pricing/money';
 import { getDisplayName } from '@/shared/utils/displayName';
 import { formatServiceDate } from '@/lib/orders/serviceDelay';
 import { useAppLocale } from '@/shared/hooks/useAppLocale';
+import { formatAddressNumber } from '@/lib/services/addressNumber';
 
 import styles from './ServiceOrders.module.css';
 import { ServiceDetailsSummary } from '@/features/services/components/servicesSummary/ServiceDetailsSummary';
@@ -113,6 +114,7 @@ export default function ServiceOrders({ orders, title, productsVisible = true, t
                       {addresses.map((address) => (
                         <div key={address.id} className={styles.address}>
                           <p className={styles.addressLine}>
+                            <span className={styles.addressNumber}>{formatAddressNumber(address.addressNumber)}</span>
                             <span className={styles.addressKind}>
                               {address.kind === 'civicAddress' ? t('residence') : t('terrain')}
                             </span>

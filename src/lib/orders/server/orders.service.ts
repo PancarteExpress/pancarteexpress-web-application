@@ -23,6 +23,7 @@ const userOrderSelect = {
       addresses: {
         select: {
           id: true,
+          addressNumber: true,
           kind: true,
 
           streetNumber: true,

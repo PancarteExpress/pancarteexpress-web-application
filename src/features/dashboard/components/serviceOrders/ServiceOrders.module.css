@@ -443,3 +443,9 @@
 .service { padding: 8px 12px; border-left: 3px solid #d6e2f0; display: flex; flex-direction: column; gap: 6px; }
 .serviceHeader { margin: 0; font-family: var(--font-text); }
 .serviceDate { margin: 0; font-size: 0.875rem; opacity: 0.8; }
+
+.addressNumber {
+  font-family: var(--font-title);
+  font-weight: 600;
+  margin-right: 0.5rem;
+}

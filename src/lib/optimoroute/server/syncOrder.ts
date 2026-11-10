@@ -3,6 +3,7 @@ import type { OrderStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { buildOptimoPayload } from '../payload';
 import { sendOptimoOrder } from './client';
+import { formatAddressNumber } from '@/lib/services/addressNumber';
 
 const MAX_ERROR_LENGTH = 500;
 const RETRY_BATCH = 50;
@@ -10,7 +11,8 @@ const SENDABLE_STATUSES: OrderStatus[] = ['PENDING', 'PAID'];
 
 /**
  * Une adresse de service = un arrêt OptimoRoute (tous les services de l'adresse dans la même tâche).
- * orderNo = "<orderNumber>-<n>" : stable, donc SYNC rend les réessais idempotents.
+ * orderNo = "PE-<addressNumber>" : unique et stable, donc SYNC rend les réessais idempotents.
+ * Le préfixe évite toute collision avec les numéros de l'ancien site (50 000+).
  */
 async function syncAddresses(addressIds?: string[], orderId?: string): Promise<void> {
   const orders = await prisma.order.findMany({
@@ -22,7 +24,6 @@ async function syncAddresses(addressIds?: string[], orderId?: string): Promise<v
         : { serviceRequests: { some: { addresses: { some: { id: { in: addressIds } } } } } }),
     },
     select: {
-      orderNumber: true,
       createdAt: true,
       firstName: true,
       lastName: true,
@@ -39,6 +40,7 @@ async function syncAddresses(addressIds?: string[], orderId?: string): Promise<v
             orderBy: { id: 'asc' },
             select: {
               id: true,
+              addressNumber: true,
               kind: true,
               streetNumber: true,
               streetName: true,
@@ -57,10 +59,8 @@ async function syncAddresses(addressIds?: string[], orderId?: string): Promise<v
   });
 
   const jobs = orders.flatMap((order) => {
-    const addresses = order.serviceRequests.flatMap((req) => req.addresses.map((address) => ({ req, address })));
-
-    return addresses
-      .map(({ req, address }, index) => ({ req, address, orderNo: `${order.orderNumber}-${index + 1}` }))
+    return order.serviceRequests
+      .flatMap((req) => req.addresses.map((address) => ({ req, address, orderNo: formatAddressNumber(address.addressNumber) })))
       .filter(({ address }) => address.services.length > 0 && address.optimoSyncStatus !== 'SYNCED')
       .filter(({ address }) => !addressIds || addressIds.includes(address.id))
       .map(async ({ req, address, orderNo }) => {

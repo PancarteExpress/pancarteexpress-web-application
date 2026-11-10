@@ -10,6 +10,7 @@ import { LARGE_FORMAT_SERVICES } from '@/features/services/constants/largeFormat
 import { parseLargeFormatService } from '@/features/services/schemas/largeFormatDomain.schema';
 import { describeLargeFormatService } from '@/features/services/utils/largeFormatText';
 import { buildClientReceipt } from './clientReceipt';
+import { formatAddressNumber } from '@/lib/services/addressNumber';
 
 /* ── Données de la commande ───────────────────────────────────── */
 
@@ -40,6 +41,7 @@ const receiptSelect = {
       requestedDate: true,
       addresses: {
         select: {
+          addressNumber: true,
           kind: true,
           streetNumber: true,
           streetName: true,
@@ -126,7 +128,7 @@ function serviceLines(order: Receipt): string[] {
     ...order.serviceRequests.flatMap((request) => [
       `Délai : ${formatServiceDelay(request.delay, request.requestedDate)}`,
       ...request.addresses.flatMap((address) => [
-        `- [${REQUEST_LABELS[request.requestType]}] ${formatAddress(address)} : ` +
+        `- ${formatAddressNumber(address.addressNumber)} [${REQUEST_LABELS[request.requestType]}] ${formatAddress(address)} : ` +
           address.services.map((s) => SERVICE_LABELS[s.type]).join(', '),
         ...address.services.flatMap(largeFormatDetailLines),
       ]),

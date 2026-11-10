@@ -473,8 +473,11 @@
   },
   "lookup": {
     "title": "Already submitted a request?",
-    "intro": "Find your request summary with your order number and the email used for the order.",
-    "orderNumber": "Order number",
+    "intro": "Enter the request number (e.g. PE-11111) shown in your confirmation email, along with the email used when ordering.",
+    
+    "addressNumber": "Request number",
+    "addressTitle": "Request {number}",
+    
     "email": "Email used for the order",
     "submit": "Find my request",
     "searching": "Searching…",
@@ -484,8 +487,8 @@
     "tooManyAttempts": "Too many attempts. Please try again in a few minutes.",
     "invalid": "Please check the order number and email.",
     "networkError": "The search failed. Check your connection and try again.",
-    "orderTitle": "Order #{number}",
-    "noServices": "This order has no service requests.",
+    
+    
     "close": "Close summary"
   }
 }

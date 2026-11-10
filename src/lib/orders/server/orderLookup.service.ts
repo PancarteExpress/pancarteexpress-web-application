@@ -8,67 +8,57 @@ import type { OrderLookupInput } from '@/lib/orders/orderLookup.schema';
  * Les codes de boîtes à clés restent visibles (choix du propriétaire du site).
  */
 const lookupSelect = {
-  orderNumber: true,
-  user: { select: { id: true } },
-  serviceRequests: {
-    orderBy: { id: 'asc' },
-    select: {
-      id: true,
-      requestType: true,
-      delay: true,
-      requestedDate: true,
-      addresses: {
-        select: {
-          id: true,
-          kind: true,
-          streetNumber: true,
-          streetName: true,
-          apartment: true,
-          description: true,
-          nearbyAddress: true,
-          city: true,
-          services: { select: { id: true, type: true, details: true } },
-        },
-      },
-    },
+  id: true,
+  addressNumber: true,
+  kind: true,
+  streetNumber: true,
+  streetName: true,
+  apartment: true,
+  description: true,
+  nearbyAddress: true,
+  city: true,
+  services: { select: { id: true, type: true, details: true } },
+  serviceRequest: {
+    select: { requestType: true, delay: true, requestedDate: true, order: { select: { userId: true } } },
   },
-} satisfies Prisma.OrderSelect;
+} satisfies Prisma.ServiceAddressSelect;
 
-type RequestRow = Prisma.OrderGetPayload<{ select: typeof lookupSelect }>['serviceRequests'][number];
+type AddressRow = Prisma.ServiceAddressGetPayload<{ select: typeof lookupSelect }>;
+type RequestRow = AddressRow['serviceRequest'];
 
-/** Date en 'yyyy-MM-dd' : sérialisable en JSON sans ambiguïté de fuseau */
-export type LookupServiceRequest = Omit<RequestRow, 'requestedDate'> & { requestedDate: string | null };
-
-export interface LookupOrder {
-  orderNumber: number;
-  serviceRequests: LookupServiceRequest[];
-}
+/** Une adresse et le contexte de sa demande ; date en 'yyyy-MM-dd' (sérialisable sans ambiguïté de fuseau) */
+export type LookupAddress = Omit<AddressRow, 'serviceRequest'> &
+  Pick<RequestRow, 'requestType' | 'delay'> & { requestedDate: string | null };
 
 export type OrderLookupResult =
   | { status: 'notFound' }
   /** Commande liée à un compte : on renvoie vers le tableau de bord, sans rien afficher */
   | { status: 'member' }
-  | { status: 'found'; order: LookupOrder };
+  | { status: 'found'; address: LookupAddress };
 
-export async function lookupOrder({ orderNumber, email }: OrderLookupInput): Promise<OrderLookupResult> {
-  const order = await prisma.order.findFirst({
-    where: { orderNumber, email: { equals: email, mode: 'insensitive' } },
+export async function lookupOrder({ addressNumber, email }: OrderLookupInput): Promise<OrderLookupResult> {
+  const row = await prisma.serviceAddress.findFirst({
+    where: {
+      addressNumber,
+      serviceRequest: { order: { email: { equals: email, mode: 'insensitive' } } },
+    },
     select: lookupSelect,
   });
 
   // Même réponse si le numéro n'existe pas ou si le courriel ne correspond pas (anti-énumération)
-  if (!order) return { status: 'notFound' };
-  if (order.user) return { status: 'member' };
+  if (!row) return { status: 'notFound' };
+
+  const { serviceRequest: request, ...address } = row;
+  if (request.order.userId) return { status: 'member' };
 
   return {
     status: 'found',
-    order: {
-      orderNumber: order.orderNumber,
-      serviceRequests: order.serviceRequests.map((r) => ({
-        ...r,
-        // @db.Date stockée à minuit UTC : la partie date ISO est le bon jour
-        requestedDate: r.requestedDate ? r.requestedDate.toISOString().slice(0, 10) : null,
-      })),
+    address: {
+      ...address,
+      requestType: request.requestType,
+      delay: request.delay,
+      // @db.Date stockée à minuit UTC : la partie date ISO est le bon jour
+      requestedDate: request.requestedDate ? request.requestedDate.toISOString().slice(0, 10) : null,
     },
   };
 }

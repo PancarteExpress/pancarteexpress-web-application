@@ -125,6 +125,7 @@ describe('sendReceipts', () => {
           requestedDate: null,
           addresses: [
             {
+              addressNumber: 11111,
               kind: 'civicAddress',
               streetNumber: '200',
               streetName: 'Boulevard Lebeau',
@@ -144,11 +145,12 @@ describe('sendReceipts', () => {
     const [internal, client] = sendEmail.mock.calls.map(([options]) => options as { subject: string; text: string });
     expect(internal.text).toContain('Produits :');
     expect(internal.text).toContain('Retrait');
+    expect(internal.text).toContain('- PE-11111 [Résidentielle] 200 Boulevard Lebeau, Montréal : Retrait');
     expect(client.subject).toBe('Your order #1042 confirmation | Pancarte Express');
     expect(client.text).toContain('Key boxes ×1');
     expect(client.text).toContain('GST: ');
     expect(client.text).toContain('Turnaround: Urgent 12 h');
-    expect(client.text).toContain('[Residential request] 200 Boulevard Lebeau, Montréal: Removal');
+    expect(client.text).toContain('- PE-11111 [Residential request] 200 Boulevard Lebeau, Montréal: Removal');
     expect(client.text).toContain('The amount paid covers the products only');
   });
 

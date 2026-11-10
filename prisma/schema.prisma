@@ -235,7 +235,8 @@ model ServiceAddress {
   id               String         @id @default(cuid())
   serviceRequestId String
   serviceRequest   ServiceRequest @relation(fields: [serviceRequestId], references: [id], onDelete: Cascade)
-
+  addressNumber    Int            @unique @default(autoincrement())
+  
   kind AddressKind // civicAddress | terrain
 
   // Adresse civique
