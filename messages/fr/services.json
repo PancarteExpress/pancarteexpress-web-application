@@ -485,6 +485,7 @@
     "invalid": "Vérifiez le numéro de commande et le courriel.",
     "networkError": "La recherche a échoué. Vérifiez votre connexion et réessayez.",
     "orderTitle": "Commande n° {number}",
-    "noServices": "Cette commande ne contient aucune demande de service."
+    "noServices": "Cette commande ne contient aucune demande de service.",
+    "close": "Fermer le résumé"
   }
 }

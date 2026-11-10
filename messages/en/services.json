@@ -485,6 +485,7 @@
     "invalid": "Please check the order number and email.",
     "networkError": "The search failed. Check your connection and try again.",
     "orderTitle": "Order #{number}",
-    "noServices": "This order has no service requests."
+    "noServices": "This order has no service requests.",
+    "close": "Close summary"
   }
 }

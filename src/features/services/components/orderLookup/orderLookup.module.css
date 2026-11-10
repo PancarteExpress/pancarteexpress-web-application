@@ -66,7 +66,24 @@
   font-weight: 700;
 }
 
+/* Fermer le résumé : bouton contourné, en bas à gauche */
+.closeButton {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  border: 1.5px solid #1f4e9c;
+  border-radius: 8px;
+  background: #fff;
+  color: #1f4e9c;
+  font-family: var(--font-title);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.closeButton:hover { background: #f6f8fb; }
+.closeButton:focus-visible { outline: 3px solid #1565c0; outline-offset: 2px; }
+
 @media (max-width: 640px) {
   .form { grid-template-columns: 1fr; }
-  .submit { width: 100%; }
+  .submit,
+  .closeButton { width: 100%; }
 }

@@ -80,14 +80,14 @@ export function OrderLookup() {
             <Link href={`/${locale}/dashboard`} className={styles.link}>{t('lookup.toDashboard')}</Link>
           </Notice>
         )}
-        {result?.status === 'found' && <LookupResult order={result.order} />}
+        {result?.status === 'found' && <LookupResult order={result.order} onClose={() => setResult(null)} />}
       </div>
     </section>
   );
 }
 
 /** Résumé en lecture seule : mêmes cartes que le résumé du formulaire, sans boutons */
-function LookupResult({ order }: { order: LookupOrder }) {
+function LookupResult({ order, onClose }: { order: LookupOrder; onClose: () => void }) {
   const t = useTranslations('services');
   const tCart = useTranslations('cart');
   const locale = useAppLocale();
@@ -149,6 +149,10 @@ function LookupResult({ order }: { order: LookupOrder }) {
           ))}
         </div>
       ))}
+
+      <button type="button" className={styles.closeButton} onClick={onClose}>
+        {t('lookup.close')}
+      </button>
     </div>
   );
 }
