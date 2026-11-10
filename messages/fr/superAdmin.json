@@ -81,6 +81,7 @@
     "delete": "Supprimer l'équipe"
   },
   "servicesTable": {
+    "addressNumber": "N° de demande",
     "empty": "Aucune demande de service.",
     "serviceCount": "{count, plural, one {# service} other {# services}}",
     "orderNumber": "# Commande",

@@ -12,6 +12,7 @@ const adminServiceSelect = {
   scheduledFor: true,
   serviceAddress: {
     select: {
+      addressNumber: true,
       kind: true,
       streetNumber: true,
       streetName: true,
@@ -57,6 +58,7 @@ export interface AdminServiceRow {
   requestedDate: Date | null;
   requestType: RequestType;
   orderNumber: number;
+  addressNumber: number;
   orderedAt: Date;
 }
 
@@ -110,6 +112,7 @@ export async function listServicesForAdmin(): Promise<AdminClientServices[]> {
       requestedDate,
       requestType,
       orderNumber: order.orderNumber,
+      addressNumber: s.serviceAddress.addressNumber,
       orderedAt: order.createdAt,
     });
 

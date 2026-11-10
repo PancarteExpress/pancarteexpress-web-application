@@ -3,6 +3,7 @@ import type { AdminClientServices } from "@/lib/services/server/services.service
 import styles from "./ServicesTable.module.css";
 import { formatDate } from "@/shared/utils/date";
 import { useAppLocale } from "@/shared/hooks/useAppLocale";
+import { formatAddressNumber } from "@/lib/services/addressNumber";
 
 interface ServicesTableProps {
   clients: AdminClientServices[];
@@ -32,6 +33,7 @@ export function ServicesTable({ clients }: ServicesTableProps) {
             <table className={styles.table}>
               <colgroup>
                 <col className={styles.colOrder} />
+                <col className={styles.colAddressNo} />
                 <col className={styles.colType} />
                 <col className={styles.colAddress} />
                 <col className={styles.colDate} />
@@ -40,6 +42,7 @@ export function ServicesTable({ clients }: ServicesTableProps) {
               <thead>
                 <tr>
                   <th scope="col">{t("servicesTable.orderNumber")}</th>
+                  <th scope="col">{t("servicesTable.addressNumber")}</th>
                   <th scope="col">{t("servicesTable.type")}</th>
                   <th scope="col">{t("servicesTable.address")}</th>
                   <th scope="col">{t("servicesTable.requestedOn")}</th>
@@ -50,6 +53,7 @@ export function ServicesTable({ clients }: ServicesTableProps) {
                 {client.services.map((s) => (
                   <tr key={s.id}>
                     <td className={styles.mono}>#{s.orderNumber}</td>
+                    <td>{formatAddressNumber(s.addressNumber)}</td>
                     <td>{t(`serviceTypes.${s.type}`)}</td>
                     <td title={s.address}>{s.address}</td>
                     <td>{formatDate(s.orderedAt, "medium", locale)}</td>
