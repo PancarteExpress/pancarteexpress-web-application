@@ -43,8 +43,8 @@
     display: flex;
     
     gap: 20px;
-    width: 35vw;
 }
+
 
 .mainContainer .hero .contacts .responsiveContact {
     font-size: 1rem;
