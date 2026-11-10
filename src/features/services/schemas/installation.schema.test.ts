@@ -8,6 +8,7 @@ import {
   toInstallationFormValues,
   type AddonEntryFormValues, type FrameUnitFormValues, type InstallationFormValues, type InstallationSchema,
 } from './installation.schema';
+import { expectReadable } from './expectReadable.testUtils';
 
 /* ---------- Helpers ---------- */
 
@@ -408,6 +409,7 @@ describe('toInstallationFormValues — aller-retour', () => {
     const first = schema.parse(values);
     const second = schema.parse(toInstallationFormValues(first));
     expect(second).toEqual(first);
+    expectReadable('installation', schema, values);
   };
 
   it('membre : variantes de modèle, de nom et ajouts', () => {

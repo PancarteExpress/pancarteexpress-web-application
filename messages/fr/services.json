@@ -411,7 +411,8 @@
     "keyboxesToRemove": "Boîtes à clés à retirer ({count})",
     "flagsToRemove": "Drapeaux à retirer ({count})",
     "directionalsToRemove": "Directionnelles à retirer ({count})",
-    "specialRemoval": "Retrait spécial"
+    "specialRemoval": "Retrait spécial",
+    "detailsUnavailable": "Détails indisponibles."
   },
   "errors": {
     "required": "Ce champ est requis",
@@ -469,5 +470,21 @@
     "dateRequired": "Veuillez préciser la date",
     "dateFromNextBusinessDay": "Choisissez une date à partir du prochain jour ouvrable",
     "businessDayOnly": "Choisissez un jour ouvrable (ni fin de semaine ni jour férié)"
+  },
+  "lookup": {
+    "title": "Vous avez déjà fait une demande ?",
+    "intro": "Retrouvez le résumé de votre demande avec votre numéro de commande et le courriel utilisé pour la commande.",
+    "orderNumber": "Numéro de commande",
+    "email": "Courriel utilisé pour la commande",
+    "submit": "Retrouver ma demande",
+    "searching": "Recherche…",
+    "notFound": "Aucune commande ne correspond à ce numéro et à ce courriel.",
+    "member": "Cette commande est liée à un compte. Connectez-vous pour la consulter dans votre tableau de bord.",
+    "toDashboard": "Aller à mon tableau de bord",
+    "tooManyAttempts": "Trop de tentatives. Réessayez dans quelques minutes.",
+    "invalid": "Vérifiez le numéro de commande et le courriel.",
+    "networkError": "La recherche a échoué. Vérifiez votre connexion et réessayez.",
+    "orderTitle": "Commande n° {number}",
+    "noServices": "Cette commande ne contient aucune demande de service."
   }
 }

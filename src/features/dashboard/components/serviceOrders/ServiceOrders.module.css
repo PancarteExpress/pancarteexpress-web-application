@@ -436,3 +436,10 @@
     font-size: 0.875rem !important;
     font-weight: 600;
 }
+
+.address { display: flex; flex-direction: column; gap: 8px; padding: 12px 0; border-top: 1px solid #e3ebf5; }
+.addressLine { display: flex; align-items: center; gap: 8px; margin: 0; }
+.terrainDescription { margin: 0; font-style: italic; white-space: pre-line; }
+.service { padding: 8px 12px; border-left: 3px solid #d6e2f0; display: flex; flex-direction: column; gap: 6px; }
+.serviceHeader { margin: 0; font-family: var(--font-text); }
+.serviceDate { margin: 0; font-size: 0.875rem; opacity: 0.8; }

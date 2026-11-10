@@ -78,13 +78,17 @@ function ServiceItem({ service, onRemove }: { service: Service; onRemove: () => 
         <div className={styles.actions}>
           <button
             type="button"
+            className={styles.actionButton}
             aria-expanded={expanded}
             aria-controls={detailsId}
             onClick={() => setExpanded((v) => !v)}
           >
             {expanded ? t('summary.lessDetails') : t('summary.moreDetails')}
+            <span aria-hidden="true">{expanded ? '▲' : '▼'}</span>
           </button>
-          <button type="button" onClick={handleRemove}>{t('summary.remove')}</button>
+          <button type="button" className={styles.actionButton} onClick={handleRemove}>
+            {t('summary.remove')}
+          </button>
         </div>
       </div>
 

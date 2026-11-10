@@ -7,6 +7,9 @@ import { removalDayAfter } from '@/features/services/utils/time';
 import { formatIsoDay } from '@/features/services/utils/formatDay';
 import { useAppLocale } from '@/shared/hooks/useAppLocale';
 import styles from '../servicesSummary.module.css';
+import {
+  Field, Fields, Panel, Pill, Prose, SubSection, TextOrEmpty, UnitCard, UnitGrid, UnitRow, UnitRows,
+} from '../SummaryParts';
 
 /* ---------- Formatage (fonctions pures, t = useTranslations('services')) ---------- */
 
@@ -65,159 +68,140 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
   // uid → numéro affiché (Pancarte 1, 2, 3)
   const frameNumbers = new Map(frames?.units.map((u, i) => [u.uid, i + 1]) ?? []);
 
+  const notSpecified = t('common.notSpecified');
+
   return (
     <div className={styles.installation}>
-      <dl className={styles.list}>
-        <dt>{t('summary.placement')}</dt>
-        <dd>{describePlacement(placement, t)}</dd>
-      </dl>
-      {frames && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.frames', { count: frames.units.length })}</h4>
-          <p className={styles.muted}>{t('summary.kitIncluded')}</p>
+      <Fields>
+        <Field label={t('summary.placement')} wide>
+          <Pill>{describePlacement(placement, t)}</Pill>
+        </Field>
+      </Fields>
 
-          {frames.units.map((unit, i) => (
-            <dl key={unit.uid} className={styles.unit}>
-              <dt className={styles.unitTitle}>{t('summary.frame', { number: i + 1 })}</dt>
-              <dd>
-                <dl className={styles.list}>
-                  {unit.model && (
-                    <>
-                      <dt>{t('summary.model')}</dt>
-                      <dd>{describeModel(unit.model, t)}</dd>
-                    </>
-                  )}
-                  {unit.displayName && (
-                    <>
-                      <dt>{t('summary.displayName')}</dt>
-                      <dd>{describeDisplayName(unit.displayName)}</dd>
-                    </>
-                  )}
-                </dl>
-              </dd>
-            </dl>
-          ))}
-        </section>
+      {frames && (
+        <SubSection title={t('summary.frames', { count: frames.units.length })} note={t('summary.kitIncluded')}>
+          <UnitGrid>
+            {frames.units.map((unit, i) => (
+              <UnitCard key={unit.uid} title={t('summary.frame', { number: i + 1 })}>
+                {(unit.model || unit.displayName) && (
+                  <UnitRows>
+                    {unit.model && <UnitRow label={t('summary.model')}>{describeModel(unit.model, t)}</UnitRow>}
+                    {unit.displayName && (
+                      <UnitRow label={t('summary.displayName')}>{describeDisplayName(unit.displayName)}</UnitRow>
+                    )}
+                  </UnitRows>
+                )}
+              </UnitCard>
+            ))}
+          </UnitGrid>
+        </SubSection>
       )}
 
       {kits && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.kits', { count: kits.units.length })}</h4>
-          <dl className={styles.list}>
+        <SubSection title={t('summary.kits', { count: kits.units.length })}>
+          <UnitGrid>
             {kits.units.map((kit, i) => (
-              <div key={kit.uid} className={styles.row}>
-                <dt>{t('summary.kit', { number: i + 1 })}</dt>
-                <dd>{describeKitModel(kit.model, t)}</dd>
-              </div>
+              <UnitCard key={kit.uid} title={t('summary.kit', { number: i + 1 })}>
+                <UnitRows>
+                  <UnitRow label={t('summary.model')}>{describeKitModel(kit.model, t)}</UnitRow>
+                </UnitRows>
+              </UnitCard>
             ))}
-          </dl>
-        </section>
+          </UnitGrid>
+        </SubSection>
       )}
 
       {addons && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.addons')}</h4>
-          <dl className={styles.list}>
+        <SubSection title={t('summary.addons')}>
+          <UnitGrid>
             {addons.map((a) => (
-              <div key={a.addon} className={styles.row}>
-                <dt>{describeAddon(a, t)} ×{a.quantity}</dt>
-                <dd>{describeTargets(a, frameNumbers, t)}</dd>
-              </div>
+              <UnitCard key={a.addon} title={`${describeAddon(a, t)} ×${a.quantity}`}>
+                <p className={styles.muted}>{describeTargets(a, frameNumbers, t)}</p>
+              </UnitCard>
             ))}
-          </dl>
-        </section>
+          </UnitGrid>
+        </SubSection>
       )}
 
       {openHouse && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.openHouse')}</h4>
-          <dl className={styles.list}>
-            <dt>{t('summary.dates', { count: openHouse.dates.length })}</dt>
-            <dd>{formatter.list(openHouse.dates.map(formatDate))}</dd>
-
-            <dt>{t('summary.hours')}</dt>
-            <dd>{t('summary.timeRange', { start: formatTime(openHouse.startTime, t), end: formatTime(openHouse.endTime, t) })}</dd>
-
-            <dt>{t('summary.signs', { count: openHouse.quantity })}</dt>
-            <dd>{describeTargets(openHouse, frameNumbers, t)}</dd>
-
+        <Panel title={t('summary.openHouse')}>
+          <Fields>
+            <Field label={t('summary.dates', { count: openHouse.dates.length })}>
+              {formatter.list(openHouse.dates.map(formatDate))}
+            </Field>
+            <Field label={t('summary.hours')}>
+              {t('summary.timeRange', { start: formatTime(openHouse.startTime, t), end: formatTime(openHouse.endTime, t) })}
+            </Field>
+            <Field label={t('summary.signs', { count: openHouse.quantity })}>
+              {describeTargets(openHouse, frameNumbers, t)}
+            </Field>
             {openHouse.directionals.length > 0 && (
-              <>
-                <dt>{t('summary.directionals', { count: openHouse.directionals.length })}</dt>
-                <dd>
-                  <ol className={styles.inlineList}>
-                    {openHouse.directionals.map((d) => <li key={d.uid}>{d.placement || t('common.notSpecified')}</li>)}
-                  </ol>
-                </dd>
-              </>
+              <Field label={t('summary.directionals', { count: openHouse.directionals.length })}>
+                <ol className={styles.inlineList}>
+                  {openHouse.directionals.map((d) => (
+                    <li key={d.uid}><TextOrEmpty value={d.placement} emptyLabel={notSpecified} /></li>
+                  ))}
+                </ol>
+              </Field>
             )}
-
-            {openHouse.flagCount > 0 && (
-              <>
-                <dt>{t('summary.flags')}</dt>
-                <dd>{openHouse.flagCount}</dd>
-              </>
-            )}
-
-            <dt>{t('summary.removeNextMonday')}</dt>
-            <dd>
-              {openHouse.removeNextMonday
-                ? t('summary.yesWithDate', { date: formatDate(removalDayAfter(openHouse.dates) ?? openHouse.dates[0]) })
-                : t('common.no')}
-            </dd>
-          </dl>
-        </section>
+            {openHouse.flagCount > 0 && <Field label={t('summary.flags')}>{openHouse.flagCount}</Field>}
+            <Field label={t('summary.removeNextMonday')}>
+              {openHouse.removeNextMonday ? (
+                <>
+                  <Pill tone="success">{t('common.yes')}</Pill>{' '}
+                  {formatDate(removalDayAfter(openHouse.dates) ?? openHouse.dates[0])}
+                </>
+              ) : (
+                t('common.no')
+              )}
+            </Field>
+          </Fields>
+        </Panel>
       )}
 
       {keybox && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.keybox')}</h4>
-          <dl className={styles.list}>
-            <dt>{t('summary.code')}</dt>
-            <dd>{keybox.code}</dd>
-            <dt>{t('summary.placement')}</dt>
-            <dd>{keybox.placement || t('common.notSpecified')}</dd>
-          </dl>
-        </section>
+        <SubSection title={t('summary.keybox')}>
+          <Fields>
+            <Field label={t('summary.code')}>{keybox.code}</Field>
+            <Field label={t('summary.placement')}>
+              <TextOrEmpty value={keybox.placement} emptyLabel={notSpecified} />
+            </Field>
+          </Fields>
+        </SubSection>
       )}
 
       {flags && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.flags')}</h4>
-          <dl className={styles.list}>
-            <dt>{t('summary.mention')}</dt>
-            <dd>
+        <SubSection title={t('summary.flags')}>
+          <Fields>
+            <Field label={t('summary.mention')}>
               {flags.mention === 'other'
                 ? t('summary.labelWithDetail', { label: t('mentions.other'), detail: flags.customMention })
                 : t(`mentions.${flags.mention}`)}
-            </dd>
-            <dt>{t('summary.quantity')}</dt>
-            <dd>{flags.quantity}</dd>
-          </dl>
-        </section>
+            </Field>
+            <Field label={t('summary.quantity')}>{flags.quantity}</Field>
+          </Fields>
+        </SubSection>
       )}
 
       {directionals && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.directionals', { count: directionals.units.length })}</h4>
-          <dl className={styles.list}>
-            <dt>{t('summary.mention')}</dt>
-            <dd>{t(`mentions.${directionals.mention}`)}</dd>
+        <SubSection
+          title={t('summary.directionals', { count: directionals.units.length })}
+          note={t(`mentions.${directionals.mention}`)}
+        >
+          <UnitGrid>
             {directionals.units.map((u, i) => (
-              <div key={u.uid} className={styles.row}>
-                <dt>{t('summary.directional', { number: i + 1 })}</dt>
-                <dd>{u.placement || t('common.notSpecified')}</dd>
-              </div>
+              <UnitCard key={u.uid} title={t('summary.directional', { number: i + 1 })}>
+                <p className={styles.muted}><TextOrEmpty value={u.placement} emptyLabel={notSpecified} /></p>
+              </UnitCard>
             ))}
-          </dl>
-        </section>
+          </UnitGrid>
+        </SubSection>
       )}
 
       {otherNeeds && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.otherNeeds')}</h4>
-          <p className={styles.prose}>{otherNeeds}</p>
-        </section>
+        <SubSection title={t('summary.otherNeeds')}>
+          <Prose>{otherNeeds}</Prose>
+        </SubSection>
       )}
     </div>
   );

@@ -21,6 +21,9 @@
     "allMembers": "All members"
   },
   "serviceOrders": {
+    "statuses": { "TO_SCHEDULE": "To schedule", "SCHEDULED": "Scheduled", "COMPLETED": "Completed", "CANCELLED": "Cancelled" },
+    "scheduledFor": "Scheduled for {date}",
+    "completedAt": "Completed on {date}",
     "order": "Order",
     "noOrders": "No service requests",
     "close": "Close",

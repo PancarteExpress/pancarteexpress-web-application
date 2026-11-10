@@ -146,3 +146,32 @@ describe('removalSchema — boîtes à clés, drapeaux, directionnelles, autres'
     expect(removalSchema.parse(toRemovalFormValues(first))).toEqual(first);
   });
 });
+
+import { expectReadable } from './expectReadable.testUtils';
+
+describe('removalSchema — relecture depuis la base', () => {
+  it.each<[string, RemovalFormValues]>([
+    ['pancartes : sol, mur, balcon', form([
+      unit({ location: 'ground' }),
+      unit({ location: 'wall', access: 'smallLadder', mounting: 'flatDoubleTape' }),
+      unit({ location: 'balcony', access: 'keybox', keyboxInfo: 'Code 4821' }),
+    ])],
+    ['pancartes : fenêtre, autre', form([
+      unit({ location: 'window', access: 'phoneAppointment', contact: '514-555-0000', windowSide: 'exterior' }),
+      unit({ location: 'other', description: 'Derrière la haie' }),
+    ])],
+    ['ajouts avec précision', {
+      ...createEmptyRemovalForm(),
+      materials: ['addons'],
+      addons: { units: [unit({ location: 'ramp' })], details: 'Le « Vendu »' },
+    }],
+    ['boîtes, drapeaux, directionnelles, autres', {
+      ...createEmptyRemovalForm(),
+      materials: ['keybox', 'flags', 'directional', 'other'],
+      keybox: { quantity: 2, code: '123456', placement: 'Rampe avant' },
+      flags: { quantity: 2, placement: 'Coin de la rue' },
+      directionals: { units: [{ ...createRemovalDirectional(), placement: 'Newman et Léger' }] },
+      otherDetails: 'Retirer le support mural',
+    }],
+  ])('%s', (_, values) => expectReadable('removal', removalSchema, values));
+});

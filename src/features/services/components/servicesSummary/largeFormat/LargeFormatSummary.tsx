@@ -11,10 +11,12 @@ export function LargeFormatSummary({ service }: { service: LargeFormatService })
   const t = useTranslations('services');
 
   return (
-    <ul className={styles.inlineList}>
-      {describeLargeFormatServiceTranslated(service, t).map((line, i) => (
-        <li key={`${i}-${line}`}>{line}</li>
-      ))}
-    </ul>
+    <div className={styles.installation}>
+      <ul className={styles.lines}>
+        {describeLargeFormatServiceTranslated(service, t).map((line, i) => (
+          <li key={`${i}-${line}`}>{line}</li>
+        ))}
+      </ul>
+    </div>
   );
 }

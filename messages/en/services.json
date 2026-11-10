@@ -365,6 +365,7 @@
     "shopStillOpen": "Shop purchases are still available."
   },
   "summary": {
+    "detailsUnavailable": "Details unavailable.",
     "title": "Request summary",
     "addToCart": "Add to cart",
     "lessDetails": "Fewer details",
@@ -469,5 +470,21 @@
     "dateRequired": "Please specify the date",
     "dateFromNextBusinessDay": "Choose a date starting from the next business day",
     "businessDayOnly": "Choose a business day (no weekends or statutory holidays)"
+  },
+  "lookup": {
+    "title": "Already submitted a request?",
+    "intro": "Find your request summary with your order number and the email used for the order.",
+    "orderNumber": "Order number",
+    "email": "Email used for the order",
+    "submit": "Find my request",
+    "searching": "Searching…",
+    "notFound": "No order matches this number and email.",
+    "member": "This order is linked to an account. Log in to view it in your dashboard.",
+    "toDashboard": "Go to my dashboard",
+    "tooManyAttempts": "Too many attempts. Please try again in a few minutes.",
+    "invalid": "Please check the order number and email.",
+    "networkError": "The search failed. Check your connection and try again.",
+    "orderTitle": "Order #{number}",
+    "noServices": "This order has no service requests."
   }
 }

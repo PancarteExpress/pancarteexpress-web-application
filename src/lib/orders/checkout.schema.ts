@@ -5,6 +5,7 @@ import { SERVICE_TYPES } from '@/lib/pricing/constants';
 import { earliestSpecificDate, isBusinessDay, parseIso, todayInMontreal } from '@/features/services/utils/holidays';
 import { isValidIsoDate } from '@/features/services/utils/time';
 import { LARGE_FORMAT_SERVICES } from '@/features/services/constants/largeFormat';
+import { parseServiceDetails } from '@/features/services/schemas/serviceDetails.schema';
 
 const LARGE_FORMAT_SET: ReadonlySet<string> = new Set(LARGE_FORMAT_SERVICES);
 const isLargeFormatService = (type: string) => LARGE_FORMAT_SET.has(type);
@@ -81,10 +82,16 @@ const serviceDetailsSchema = z
   .record(z.string(), z.unknown())
   .refine((d) => JSON.stringify(d).length <= MAX_DETAILS_BYTES, { message: 'detailsTooLarge' });
 
-const serviceSchema = z.object({
-  type: z.enum(SERVICE_TYPES),
-  details: serviceDetailsSchema,
-});
+const serviceSchema = z
+  .object({
+    type: z.enum(SERVICE_TYPES),
+    details: serviceDetailsSchema,
+  })
+  .superRefine((s, ctx) => {
+    if (!parseServiceDetails(s.type, s.details)) {
+      ctx.addIssue({ code: 'custom', path: ['details'], message: 'invalidServiceDetails' });
+    }
+  });
 
 const servicesSchema = z.array(serviceSchema).min(1, { message: 'noService' }).max(MAX_SERVICES_PER_ADDRESS);
 

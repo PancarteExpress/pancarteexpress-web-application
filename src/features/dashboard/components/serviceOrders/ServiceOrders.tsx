@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, type ReactNode } from 'react';
-import { useTranslations } from 'next-intl';
+import { useFormatter, useTranslations } from 'next-intl';
 import type { OrderOwner, UserOrder } from '@/lib/orders/server/orders.service';
 import { formatCents } from '@/lib/pricing/money';
 import { getDisplayName } from '@/shared/utils/displayName';
@@ -9,6 +9,7 @@ import { formatServiceDate } from '@/lib/orders/serviceDelay';
 import { useAppLocale } from '@/shared/hooks/useAppLocale';
 
 import styles from './ServiceOrders.module.css';
+import { ServiceDetailsSummary } from '@/features/services/components/servicesSummary/ServiceDetailsSummary';
 
 interface Props {
   orders: (UserOrder & { user?: OrderOwner | null })[];
@@ -25,6 +26,15 @@ export default function ServiceOrders({ orders, title, productsVisible = true, t
   const t = useTranslations('dashboard.serviceOrders');
   const tDashboard = useTranslations('dashboard');
   const locale = useAppLocale();
+
+  const format = useFormatter();
+  const formatDateTime = (date: Date) =>
+    format.dateTime(date, { dateStyle: 'long', timeStyle: 'short', timeZone: 'America/Toronto' });
+
+  const formatAddress = (a: ServiceAddressRow): string =>
+    a.kind === 'civicAddress'
+      ? `${a.streetNumber} ${a.streetName}${a.apartment ? t('apartment', { apartment: a.apartment }) : ''}, ${a.city}${a.postalCode ? ` ${a.postalCode}` : ''}`
+      : `${a.city}${a.nearbyAddress ? t('near', { address: a.nearbyAddress }) : ''}`;
 
   // null = le SuperAdmin n'a pas encore fixé le prix
   const formatServicePrice = (price: OrderService['price']): string => price === null ? t('onQuote') : formatCents(price, locale);
@@ -101,25 +111,33 @@ export default function ServiceOrders({ orders, title, productsVisible = true, t
                         </p>
                       ))}
                       {addresses.map((address) => (
-                        <label key={address.id}>
-                          <span className={styles.addressKind}>
-                            {address.kind === 'civicAddress' && t('residence')}
-                            {address.kind === 'terrain' && t('terrain')}
-                          </span>
+                        <div key={address.id} className={styles.address}>
+                          <p className={styles.addressLine}>
+                            <span className={styles.addressKind}>
+                              {address.kind === 'civicAddress' ? t('residence') : t('terrain')}
+                            </span>
+                            <span className={styles.addressDetails}>{formatAddress(address)}</span>
+                          </p>
+                          {address.kind === 'terrain' && address.description && (
+                            <p className={styles.terrainDescription}>{address.description}</p>
+                          )}
 
-                          <span className={styles.addressDetails}>
-                            {address.kind === 'civicAddress' &&
-                              `${address.streetNumber} ${address.streetName}${address.apartment ? t('apartment', { apartment: address.apartment }) : ''}, ${address.city}`}
-                            {address.kind === 'terrain' &&
-                              `${address.city}${address.nearbyAddress ? t('near', { address: address.nearbyAddress }) : ''}`}
-                          </span>
-
-                          <span className={styles.selectedServices}>
-                            - {address.services
-                              .map((s) => `${t(`serviceTypes.${s.type}`)} (${s.status === 'CANCELLED' ? t('cancelled') : formatServicePrice(s.price)})`)
-                              .join(', ')}
-                          </span>
-                        </label>
+                          {address.services.map((s) => (
+                            <div key={s.id} className={styles.service}>
+                              <p className={styles.serviceHeader}>
+                                <strong>{t(`serviceTypes.${s.type}`)}</strong>
+                                {' · '}{t(`statuses.${s.status}`)}
+                                {s.status !== 'CANCELLED' && <>{' · '}{formatServicePrice(s.price)}</>}
+                              </p>
+                              {s.completedAt ? (
+                                <p className={styles.serviceDate}>{t('completedAt', { date: formatDateTime(s.completedAt) })}</p>
+                              ) : s.scheduledFor && (
+                                <p className={styles.serviceDate}>{t('scheduledFor', { date: formatDateTime(s.scheduledFor) })}</p>
+                              )}
+                              <ServiceDetailsSummary type={s.type} details={s.details} />
+                            </div>
+                          ))}
+                        </div>
                       ))}
                     </div>
                   )}

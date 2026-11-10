@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
+import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { inlineLoading } from '@/shared/components/deferredLoading/DeferredLoading';
 import { Notice } from '@/features/services/components/fields/Notice';
@@ -27,11 +28,14 @@ import { addressesWithServicesOf } from '@/features/services/utils/serviceReques
 
 const AddressManager = dynamic(() => import('@/features/services/components/addressManager/AddressManager'), { loading: inlineLoading });
 const AddressServices = dynamic(() => import('./AddressServices').then((m) => m.AddressServices), { loading: inlineLoading });
+// Recherche d'une commande : visiteurs non connectés seulement, chargée à la demande
+const OrderLookup = dynamic(() => import('../orderLookup/OrderLookup').then((m) => m.OrderLookup), { loading: inlineLoading });
 const LargeAddressServices = dynamic(() => import('./LargeAddressServices').then((m) => m.LargeAddressServices), { loading: inlineLoading });
 
 export default function ServiceForm() {
   const locale = useLocale();
   const t = useTranslations('services');
+  const { status: sessionStatus } = useSession();
   const addServiceRequest = useCartStore((s) => s.addServiceRequest);
 
   // Sélecteurs ciblés : ce composant ne se redessine que si ces valeurs changent
@@ -78,6 +82,8 @@ export default function ServiceForm() {
 
   return (
     <div className={styles.mainContainer}>
+      {sessionStatus === 'unauthenticated' && <OrderLookup />}
+
       <div className={styles.serviceForm}>
         <RadioGroup
           legend={t('serviceForm.requestTypeLegend')}

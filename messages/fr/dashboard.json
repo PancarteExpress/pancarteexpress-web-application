@@ -21,6 +21,9 @@
     "allMembers": "Tous les membres"
   },
   "serviceOrders": {
+    "statuses": { "TO_SCHEDULE": "À planifier", "SCHEDULED": "Planifié", "COMPLETED": "Terminé", "CANCELLED": "Annulé" },
+    "scheduledFor": "Prévu le {date}",
+    "completedAt": "Réalisé le {date}",
     "order": "Commande",
     "noOrders": "Aucune demande de service",
     "close": "Fermer",

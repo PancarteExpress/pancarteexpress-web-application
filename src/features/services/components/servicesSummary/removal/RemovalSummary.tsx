@@ -2,84 +2,77 @@ import { useTranslations } from 'next-intl';
 import type { RemovalDetails } from '@/features/services/types/removal';
 import { describePlacement } from '@/features/services/utils/placement';
 import styles from '../servicesSummary.module.css';
+import { Field, Fields, Prose, SubSection, TextOrEmpty, UnitCard, UnitGrid } from '../SummaryParts';
 
 export function RemovalSummary({ details }: { details: RemovalDetails }) {
   const { frames, addons, keybox, flags, directionals, otherDetails } = details;
   const t = useTranslations('services');
+  const notSpecified = t('common.notSpecified');
 
   return (
     <div className={styles.installation}>
       {frames && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.framesToRemove', { count: frames.units.length })}</h4>
-          <p className={styles.muted}>{t('summary.addonsIncluded')}</p>
-          <dl className={styles.list}>
+        <SubSection title={t('summary.framesToRemove', { count: frames.units.length })} note={t('summary.addonsIncluded')}>
+          <UnitGrid>
             {frames.units.map((u, i) => (
-              <div key={u.uid} className={styles.row}>
-                <dt>{t('summary.frame', { number: i + 1 })}</dt>
-                <dd>{describePlacement(u.placement, t)}</dd>
-              </div>
+              <UnitCard key={u.uid} title={t('summary.frame', { number: i + 1 })}>
+                <p className={styles.muted}>{describePlacement(u.placement, t)}</p>
+              </UnitCard>
             ))}
-          </dl>
-        </section>
+          </UnitGrid>
+        </SubSection>
       )}
 
       {addons && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.addonsToRemove', { count: addons.units.length })}</h4>
-          {addons.details && <p className={styles.prose}>{addons.details}</p>}
-          <dl className={styles.list}>
+        <SubSection title={t('summary.addonsToRemove', { count: addons.units.length })}>
+          {addons.details && <Prose>{addons.details}</Prose>}
+          <UnitGrid>
             {addons.units.map((u, i) => (
-              <div key={u.uid} className={styles.row}>
-                <dt>{t('summary.addon', { number: i + 1 })}</dt>
-                <dd>{describePlacement(u.placement, t)}</dd>
-              </div>
+              <UnitCard key={u.uid} title={t('summary.addon', { number: i + 1 })}>
+                <p className={styles.muted}>{describePlacement(u.placement, t)}</p>
+              </UnitCard>
             ))}
-          </dl>
-        </section>
+          </UnitGrid>
+        </SubSection>
       )}
 
       {keybox && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.keyboxesToRemove', { count: keybox.quantity })}</h4>
-          <dl className={styles.list}>
-            <dt>{t('summary.code')}</dt>
-            <dd>{keybox.code}</dd>
-            <dt>{t('summary.placement')}</dt>
-            <dd>{keybox.placement || t('common.notSpecified')}</dd>
-          </dl>
-        </section>
+        <SubSection title={t('summary.keyboxesToRemove', { count: keybox.quantity })}>
+          <Fields>
+            <Field label={t('summary.code')}>{keybox.code}</Field>
+            <Field label={t('summary.placement')}>
+              <TextOrEmpty value={keybox.placement} emptyLabel={notSpecified} />
+            </Field>
+          </Fields>
+        </SubSection>
       )}
 
       {flags && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.flagsToRemove', { count: flags.quantity })}</h4>
-          <dl className={styles.list}>
-            <dt>{t('summary.placement')}</dt>
-            <dd>{flags.placement || t('common.notSpecified')}</dd>
-          </dl>
-        </section>
+        <SubSection title={t('summary.flagsToRemove', { count: flags.quantity })}>
+          <Fields>
+            <Field label={t('summary.placement')} wide>
+              <TextOrEmpty value={flags.placement} emptyLabel={notSpecified} />
+            </Field>
+          </Fields>
+        </SubSection>
       )}
 
       {directionals && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.directionalsToRemove', { count: directionals.units.length })}</h4>
-          <dl className={styles.list}>
+        <SubSection title={t('summary.directionalsToRemove', { count: directionals.units.length })}>
+          <UnitGrid>
             {directionals.units.map((u, i) => (
-              <div key={u.uid} className={styles.row}>
-                <dt>{t('summary.directional', { number: i + 1 })}</dt>
-                <dd>{u.placement || t('common.notSpecified')}</dd>
-              </div>
+              <UnitCard key={u.uid} title={t('summary.directional', { number: i + 1 })}>
+                <p className={styles.muted}><TextOrEmpty value={u.placement} emptyLabel={notSpecified} /></p>
+              </UnitCard>
             ))}
-          </dl>
-        </section>
+          </UnitGrid>
+        </SubSection>
       )}
 
       {otherDetails && (
-        <section>
-          <h4 className={styles.subtitle}>{t('summary.specialRemoval')}</h4>
-          <p className={styles.prose}>{otherDetails}</p>
-        </section>
+        <SubSection title={t('summary.specialRemoval')}>
+          <Prose>{otherDetails}</Prose>
+        </SubSection>
       )}
     </div>
   );

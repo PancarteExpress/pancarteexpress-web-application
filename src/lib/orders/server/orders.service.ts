@@ -28,13 +28,14 @@ const userOrderSelect = {
           streetNumber: true,
           streetName: true,
           apartment: true,
+          postalCode: true,
 
           description: true,
           nearbyAddress: true,
 
           city: true,
           
-          services: { select: { id: true, type: true, price: true, status: true, scheduledFor: true, completedAt: true } },
+          services: { select: { id: true, type: true, price: true, status: true, scheduledFor: true, completedAt: true, details: true } },
         },
       },
     },
