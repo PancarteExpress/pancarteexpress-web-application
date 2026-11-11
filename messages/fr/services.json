@@ -280,6 +280,59 @@
     "details": "Détails supplémentaires",
     "detailsPlaceholder": "Veuillez décrire le matériel à ramasser…"
   },
+  "delivery": {
+    "title": "Détails de la livraison",
+    "materialsLegend": "Que voulez-vous qu'on livre ?",
+    "materials": {
+      "frames": "Pancartes",
+      "addons": "Ajouts",
+      "keybox": "Boîtes à clés",
+      "directional": "Directionnelles",
+      "other": "Autres"
+    },
+    "addons": {
+      "forSale": "À vendre",
+      "sold": "Vendu",
+      "forRent": "À louer",
+      "rented": "Loué",
+      "customNoMention": "Ajout personnalisé (sans mention)",
+      "openHouse": "Visite libre",
+      "other": "Autres"
+    },
+    "directionalModels": {
+      "forSale": "À vendre",
+      "openHouse": "Visite libre",
+      "custom": "Modèle particulier"
+    },
+    "framesTitle": "Détails des modèles de pancartes à livrer",
+    "addonsTitle": "Détails des modèles d'ajouts à livrer",
+    "keyboxTitle": "Détails des boîtes à clés à livrer",
+    "directionalsTitle": "Détails des directionnelles à livrer",
+    "othersTitle": "Détails du matériel spécifique à livrer",
+    "modelNumber": "Modèle no {number}",
+    "itemNumber": "Matériel no {number}",
+    "frameModelLegend": "Modèle de pancarte",
+    "describeModel": "Veuillez décrire le modèle",
+    "frameQuantity": "Combien de pancartes de ce modèle ?",
+    "withAnchorsAndPoles": "Voulez-vous qu'on livre aussi les ancrages et les poteaux qui vont avec ce modèle de pancarte ?",
+    "addonLegend": "Ajout",
+    "addonMention": "Veuillez indiquer la mention de l'ajout",
+    "customAddonModel": "Veuillez indiquer le modèle de l'ajout personnalisé, si nécessaire",
+    "addonQuantity": "Combien d'ajouts de ce modèle ?",
+    "keyboxQuantity": "Combien de boîtes à clés ?",
+    "keyboxCode": "Combinaison",
+    "directionalModelLegend": "Modèle de directionnelle",
+    "directionalQuantity": "Combien de directionnelles ?",
+    "withPoles": "Voulez-vous qu'on livre aussi les poteaux qui vont avec ce modèle de directionnelle ?",
+    "otherDescription": "Veuillez décrire le matériel",
+    "otherQuantity": "Indiquez la quantité de ce matériel",
+    "addModel": "Ajouter un autre modèle à la livraison",
+    "addItem": "Ajouter un autre matériel à la livraison",
+    "removeModel": "Retirer ce modèle",
+    "removeItem": "Retirer ce matériel",
+    "maxModels": "{max} modèles maximum",
+    "maxItems": "{max} matériels maximum"
+  },
   "largeFormat": {
     "locations": {
       "ground": "Au sol",
@@ -412,7 +465,16 @@
     "flagsToRemove": "Drapeaux à retirer ({count})",
     "directionalsToRemove": "Directionnelles à retirer ({count})",
     "specialRemoval": "Retrait spécial",
-    "detailsUnavailable": "Détails indisponibles."
+    "detailsUnavailable": "Détails indisponibles.",
+    "deliveryFrames": "Pancartes à livrer ({count, plural, one {# modèle} other {# modèles}})",
+    "deliveryAddons": "Ajouts à livrer ({count, plural, one {# modèle} other {# modèles}})",
+    "deliveryKeyboxes": "Boîtes à clés à livrer",
+    "deliveryDirectionals": "Directionnelles à livrer ({count, plural, one {# modèle} other {# modèles}})",
+    "deliveryOthers": "Autre matériel à livrer ({count})",
+    "modelNumber": "Modèle {number}",
+    "withAnchorsAndPoles": "Ancrages et poteaux",
+    "withPoles": "Poteaux",
+    "combination": "Combinaison"
   },
   "errors": {
     "required": "Ce champ est requis",
@@ -469,7 +531,14 @@
     "removalDetailsRequired": "Indiquez les détails du retrait",
     "dateRequired": "Veuillez préciser la date",
     "dateFromNextBusinessDay": "Choisissez une date à partir du prochain jour ouvrable",
-    "businessDayOnly": "Choisissez un jour ouvrable (ni fin de semaine ni jour férié)"
+    "businessDayOnly": "Choisissez un jour ouvrable (ni fin de semaine ni jour férié)",
+    "selectDeliveryItem": "Sélectionnez au moins un élément à livrer",
+    "addAtLeastOneModel": "Ajoutez au moins un modèle",
+    "duplicateModel": "Ce modèle est déjà dans la livraison",
+    "chooseAddon": "Choisissez un ajout",
+    "describeMaterial": "Décrivez le matériel",
+    "quantityRange": "Entre {min} et {max}",
+    "tooManyModels": "{max} modèles maximum"
   },
   "lookup": {
     "title": "Vous avez déjà fait une demande ?",

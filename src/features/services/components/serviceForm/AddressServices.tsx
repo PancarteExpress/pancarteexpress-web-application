@@ -13,11 +13,13 @@ import { InstallationForm } from '@/features/services/components/installationFor
 import { RemovalForm } from '@/features/services/components/removalForm/RemovalForm';
 import { CorrectionForm } from '@/features/services/components/correctionForm/CorrectionForm';
 import { PickupForm } from '@/features/services/components/pickupForm/PickupForm';
+import { DeliveryForm } from '@/features/services/components/deliveryForm/DeliveryForm';
 
 import type { InstallationDetails } from '@/features/services/types/installation';
 import type { RemovalDetails } from '@/features/services/types/removal';
 import type { CorrectionDetails } from '@/features/services/types/correction';
 import type { PickupDetails } from '@/features/services/types/pickup';
+import type { DeliveryDetails } from '@/features/services/types/delivery';
 
 import type { ServiceFormHandle } from './serviceFormHandle';
 
@@ -27,6 +29,7 @@ type InstallationService = Extract<Service, { type: 'installation' }>;
 type RemovalService = Extract<Service, { type: 'removal' }>;
 type CorrectionService = Extract<Service, { type: 'correction' }>;
 type PickupService = Extract<Service, { type: 'pickup' }>;
+type DeliveryService = Extract<Service, { type: 'delivery' }>;
 
 type SavedIds = Partial<Record<ServiceType, string>>;
 
@@ -47,8 +50,13 @@ export function AddressServices({ address }: { address: Address }) {
   const removal = address.services.find((s): s is RemovalService => s.type === 'removal');
   const correction = address.services.find((s): s is CorrectionService => s.type === 'correction');
   const pickup = address.services.find((s): s is PickupService => s.type === 'pickup');
+  const delivery = address.services.find((s): s is DeliveryService => s.type === 'delivery');
   const savedIds: SavedIds = {
-    installation: installation?.id, removal: removal?.id, correction: correction?.id, pickup: pickup?.id,
+    installation: installation?.id, 
+    removal: removal?.id, 
+    correction: correction?.id, 
+    pickup: pickup?.id, 
+    delivery: delivery?.id,
   };
 
   const [selected, setSelected] = useState<ServiceType[]>(() => IMPLEMENTED.filter((t) => savedIds[t]));
@@ -59,7 +67,7 @@ export function AddressServices({ address }: { address: Address }) {
   const removalRef = useRef<ServiceFormHandle<RemovalDetails>>(null);
   const correctionRef = useRef<ServiceFormHandle<CorrectionDetails>>(null);
   const pickupRef = useRef<ServiceFormHandle<PickupDetails>>(null);
-
+  const deliveryRef = useRef<ServiceFormHandle<DeliveryDetails>>(null);
   // Service supprimé ailleurs (ex. depuis le résumé) : on le décoche, pendant le rendu
   const [prevIds, setPrevIds] = useState<SavedIds>(savedIds);
   if (IMPLEMENTED.some((t) => prevIds[t] !== savedIds[t])) {
@@ -87,13 +95,14 @@ export function AddressServices({ address }: { address: Address }) {
     setSaving(true);
     try {
       // undefined = service non coché ; null = invalide (erreurs affichées dans son formulaire)
-      const [installation, removal, correction, pickup] = await Promise.all([
+      const [installation, removal, correction, pickup, delivery] = await Promise.all([
         selected.includes('installation') ? (installationRef.current?.submit() ?? null) : undefined,
         selected.includes('removal') ? (removalRef.current?.submit() ?? null) : undefined,
         selected.includes('correction') ? (correctionRef.current?.submit() ?? null) : undefined,
         selected.includes('pickup') ? (pickupRef.current?.submit() ?? null) : undefined,
+        selected.includes('delivery') ? (deliveryRef.current?.submit() ?? null) : undefined,
       ]);
-      if (installation === null || removal === null || correction === null || pickup === null) {
+      if (installation === null || removal === null || correction === null || pickup === null || delivery === null) {
         setJustSaved(false);
         return;
       }
@@ -102,6 +111,7 @@ export function AddressServices({ address }: { address: Address }) {
       if (removal) saveService(address.id, { type: 'removal', ...removal });
       if (correction) saveService(address.id, { type: 'correction', ...correction });
       if (pickup) saveService(address.id, { type: 'pickup', ...pickup });
+      if (delivery) saveService(address.id, { type: 'delivery', ...delivery });
       setJustSaved(true);
     } finally {
       setSaving(false);
@@ -132,6 +142,10 @@ export function AddressServices({ address }: { address: Address }) {
 
       {selected.includes('pickup') && (
         <PickupForm key={`pickup-${pickup?.id ?? 'new'}`} handle={pickupRef} initialValues={pickup} />
+      )}
+
+      {selected.includes('delivery') && (
+        <DeliveryForm key={`delivery-${delivery?.id ?? 'new'}`} handle={deliveryRef} initialValues={delivery} />
       )}
 
       {selected.length > 0 && (

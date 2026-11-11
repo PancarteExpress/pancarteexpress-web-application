@@ -321,6 +321,7 @@ enum ServiceType {
   removal
   correction
   pickup
+  delivery
   largeInstallation
   largeStoragePickup
   largeRetrieval

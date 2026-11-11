@@ -21,6 +21,7 @@
     "removal": "Retrait",
     "correction": "Correction",
     "pickup": "Ramassage",
+    "delivery": "Livraison",
     "largeInstallation": "Installation de pancarte/structure (grand format)",
     "largeStoragePickup": "Ramassage de matériel pour entreposage (grand format)",
     "largeRetrieval": "Récupération de pancarte/structure (grand format)"

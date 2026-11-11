@@ -3,6 +3,7 @@ import type { InstallationDetails } from './installation';
 import type { RemovalDetails } from './removal';
 import type { CorrectionDetails } from './correction';
 import type { PickupDetails } from './pickup';
+import type { DeliveryDetails } from './delivery';
 import type { LargeInstallationDetails, LargeRetrievalDetails, LargeStoragePickupDetails } from './largeFormat';
 
 export interface Installation extends InstallationDetails {
@@ -19,6 +20,10 @@ export interface Pickup extends PickupDetails {
 
 export type Correction = { type: 'correction' } & CorrectionDetails;
 
+export interface Delivery extends DeliveryDetails {
+  type: 'delivery';
+}
+
 /* ---------- Grand format ---------- */
 export type LargeInstallation = { type: 'largeInstallation' } & LargeInstallationDetails;
 export interface LargeStoragePickup extends LargeStoragePickupDetails {
@@ -26,7 +31,7 @@ export interface LargeStoragePickup extends LargeStoragePickupDetails {
 }
 export type LargeRetrieval = { type: 'largeRetrieval' } & LargeRetrievalDetails;
 
-export type ResidentialService = Installation | Removal | Correction | Pickup;
+export type ResidentialService = Installation | Removal | Correction | Pickup | Delivery;
 export type LargeFormatService = LargeInstallation | LargeStoragePickup | LargeRetrieval;
 
 export type Service = (ResidentialService | LargeFormatService) & { id: string };

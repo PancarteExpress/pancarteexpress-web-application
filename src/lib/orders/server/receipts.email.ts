@@ -67,6 +67,7 @@ const SERVICE_LABELS: Record<ServiceType, string> = {
   largeInstallation: 'Installation grand format',
   largeStoragePickup: 'Ramassage pour entreposage (grand format)',
   largeRetrieval: 'Récupération grand format',
+  delivery: 'Livraison de matériel',
 };
 
 const REQUEST_LABELS: Record<RequestType, string> = {

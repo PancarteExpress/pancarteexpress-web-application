@@ -12,6 +12,7 @@ import { InstallationSummary } from './installation/InstallationSummary';
 import { RemovalSummary } from './removal/RemovalSummary';
 import { CorrectionSummary } from './correction/CorrectionSummary';
 import { PickupSummary } from './pickup/PickupSummary';
+import { DeliverySummary } from './delivery/DeliverySummary';
 
 import styles from './servicesSummary.module.css';
 
@@ -97,6 +98,7 @@ function ServiceItem({ service, onRemove }: { service: Service; onRemove: () => 
         {service.type === 'removal' && <RemovalSummary details={service} />}
         {service.type === 'correction' && <CorrectionSummary details={service} />}
         {service.type === 'pickup' && <PickupSummary details={service} />}
+        {service.type === 'delivery' && <DeliverySummary details={service} />}
         {isLargeFormatService(service) && <LargeFormatSummary service={service} />}
       </div>
     </li>

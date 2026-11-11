@@ -7,7 +7,12 @@ import { CORRECTION_KINDS } from '../constants/correction';
 import type { InstallationDetails, Placement } from '../types/installation';
 import type { RemovalDetails } from '../types/removal';
 import type { PickupDetails } from '../types/pickup';
+import {
+  DELIVERY_ADDONS, DELIVERY_DIRECTIONAL_MODELS, DELIVERY_FRAME_MODELS,
+} from '../constants/delivery';
+
 import type { CorrectionDetails } from '../types/correction';
+
 import { isValidIsoDate, isValidTime } from '../utils/time';
 
 /**
@@ -129,3 +134,52 @@ export const correctionDetailsSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.enum(CORRECTION_KINDS).exclude(['explain']) }),
   z.object({ kind: z.literal('explain'), explanation: z.string().min(1) }),
 ]) satisfies z.ZodType<CorrectionDetails>;
+
+/* ==========================================================================
+   Livraison de matériel
+   ========================================================================== */
+
+const deliveryQuantity = z.number().int().positive();
+
+/** Modèle fixe, ou « custom » avec sa description */
+const deliveryFrame = z.union([
+  z.object({
+    model: z.enum(DELIVERY_FRAME_MODELS).exclude(['custom']),
+    quantity: deliveryQuantity,
+    withAnchorsAndPoles: z.boolean(),
+  }),
+  z.object({
+    model: z.literal('custom'),
+    description: z.string(),
+    quantity: deliveryQuantity,
+    withAnchorsAndPoles: z.boolean(),
+  }),
+]);
+
+const deliveryAddon = z.union([
+  z.object({ addon: z.enum(DELIVERY_ADDONS).exclude(['other', 'customNoMention']), quantity: deliveryQuantity }),
+  z.object({ addon: z.literal('other'), mention: z.string(), quantity: deliveryQuantity }),
+  z.object({ addon: z.literal('customNoMention'), model: z.string().nullable(), quantity: deliveryQuantity }),
+]);
+
+const deliveryDirectional = z.union([
+  z.object({
+    model: z.enum(DELIVERY_DIRECTIONAL_MODELS).exclude(['custom']),
+    quantity: deliveryQuantity,
+    withPoles: z.boolean(),
+  }),
+  z.object({
+    model: z.literal('custom'),
+    description: z.string(),
+    quantity: deliveryQuantity,
+    withPoles: z.boolean(),
+  }),
+]);
+
+export const deliveryDetailsSchema = z.object({
+  frames: z.array(deliveryFrame).nullable(),
+  addons: z.array(deliveryAddon).nullable(),
+  keybox: z.object({ quantity: deliveryQuantity, code: z.string().nullable() }).nullable(),
+  directionals: z.array(deliveryDirectional).nullable(),
+  others: z.array(z.object({ description: z.string(), quantity: deliveryQuantity })).nullable(),
+});

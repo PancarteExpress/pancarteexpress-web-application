@@ -50,7 +50,8 @@
     "installation": "Installation",
     "removal": "Retrait",
     "correction": "Correction",
-    "pickup": "Ramassage",
+    "pickup": "Ramassage de matériel",
+    "delivery": "Livraison de matériel",
     "largeInstallation": "Installation grand format",
     "largeStoragePickup": "Ramassage pour entreposage (grand format)",
     "largeRetrieval": "Récupération grand format"

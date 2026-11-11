@@ -50,7 +50,8 @@
     "installation": "Installation",
     "removal": "Removal",
     "correction": "Correction",
-    "pickup": "Pickup",
+    "pickup": "Material pickup",
+    "delivery": "Material delivery",
     "largeInstallation": "Large-format installation",
     "largeStoragePickup": "Pickup for storage (large format)",
     "largeRetrieval": "Large-format retrieval"
@@ -90,6 +91,7 @@
     "requestedOn": "Requested on",
     "delay": "Turnaround"
   },
+  
   "accountTypeSelect": {
     "confirmGroupAdmin": "Create a new group with {name} as administrator?",
     "confirmChange": "Change {name} to “{type}”?",

@@ -9,6 +9,8 @@ const SERVICE_NOTE_LABELS: Record<ServiceType, string> = {
   removal: 'RECUP',
   correction: 'CORRECTION',
   pickup: 'RAMASSAGE',
+  delivery: 'LIVRAISON',
+
   // Jamais envoyés à OptimoRoute (grand format exclu de la synchronisation) ; requis par le type
   largeInstallation: 'INSTALLATION GRAND FORMAT',
   largeStoragePickup: 'RAMASSAGE ENTREPOSAGE',

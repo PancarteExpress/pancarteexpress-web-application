@@ -280,6 +280,59 @@
     "details": "Additional details",
     "detailsPlaceholder": "Please describe the material to pick up…"
   },
+  "delivery": {
+    "title": "Delivery details",
+    "materialsLegend": "What do you want us to deliver?",
+    "materials": {
+      "frames": "Signs",
+      "addons": "Addons",
+      "keybox": "Keyboxes",
+      "directional": "Directional signs",
+      "other": "Other"
+    },
+    "addons": {
+      "forSale": "For sale",
+      "sold": "Sold",
+      "forRent": "For rent",
+      "rented": "Rented",
+      "customNoMention": "Custom addon (no text)",
+      "openHouse": "Open house",
+      "other": "Other"
+    },
+    "directionalModels": {
+      "forSale": "For sale",
+      "openHouse": "Open house",
+      "custom": "Custom model"
+    },
+    "framesTitle": "Sign models to deliver",
+    "addonsTitle": "Addon models to deliver",
+    "keyboxTitle": "Keyboxes to deliver",
+    "directionalsTitle": "Directional signs to deliver",
+    "othersTitle": "Specific material to deliver",
+    "modelNumber": "Model #{number}",
+    "itemNumber": "Item #{number}",
+    "frameModelLegend": "Sign model",
+    "describeModel": "Please describe the model",
+    "frameQuantity": "How many signs of this model?",
+    "withAnchorsAndPoles": "Should we also deliver the anchors and posts that go with this sign model?",
+    "addonLegend": "Addon",
+    "addonMention": "Please indicate the addon text",
+    "customAddonModel": "Please indicate the custom addon model, if needed",
+    "addonQuantity": "How many addons of this model?",
+    "keyboxQuantity": "How many keyboxes?",
+    "keyboxCode": "Combination",
+    "directionalModelLegend": "Directional sign model",
+    "directionalQuantity": "How many directional signs?",
+    "withPoles": "Should we also deliver the posts that go with this directional sign model?",
+    "otherDescription": "Please describe the material",
+    "otherQuantity": "Indicate the quantity of this material",
+    "addModel": "Add another model to the delivery",
+    "addItem": "Add another item to the delivery",
+    "removeModel": "Remove this model",
+    "removeItem": "Remove this item",
+    "maxModels": "{max} models maximum",
+    "maxItems": "{max} items maximum"
+  },
   "largeFormat": {
     "locations": {
       "ground": "On the ground",
@@ -412,7 +465,16 @@
     "keyboxesToRemove": "Keyboxes to remove ({count})",
     "flagsToRemove": "Flags to remove ({count})",
     "directionalsToRemove": "Directional signs to remove ({count})",
-    "specialRemoval": "Special removal"
+    "specialRemoval": "Special removal",
+    "deliveryFrames": "Signs to deliver ({count, plural, one {# model} other {# models}})",
+    "deliveryAddons": "Addons to deliver ({count, plural, one {# model} other {# models}})",
+    "deliveryKeyboxes": "Keyboxes to deliver",
+    "deliveryDirectionals": "Directional signs to deliver ({count, plural, one {# model} other {# models}})",
+    "deliveryOthers": "Other material to deliver ({count})",
+    "modelNumber": "Model {number}",
+    "withAnchorsAndPoles": "Anchors and posts",
+    "withPoles": "Posts",
+    "combination": "Combination"
   },
   "errors": {
     "required": "This field is required",
@@ -469,7 +531,14 @@
     "removalDetailsRequired": "Enter the removal details",
     "dateRequired": "Please specify the date",
     "dateFromNextBusinessDay": "Choose a date starting from the next business day",
-    "businessDayOnly": "Choose a business day (no weekends or statutory holidays)"
+    "businessDayOnly": "Choose a business day (no weekends or statutory holidays)",
+    "selectDeliveryItem": "Select at least one item to deliver",
+    "addAtLeastOneModel": "Add at least one model",
+    "duplicateModel": "This model is already in the delivery",
+    "chooseAddon": "Choose an addon",
+    "describeMaterial": "Describe the material",
+    "quantityRange": "Between {min} and {max}",
+    "tooManyModels": "{max} models maximum"
   },
   "lookup": {
     "title": "Already submitted a request?",

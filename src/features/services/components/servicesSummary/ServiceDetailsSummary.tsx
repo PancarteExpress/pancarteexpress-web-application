@@ -6,6 +6,7 @@ import { InstallationSummary } from './installation/InstallationSummary';
 import { RemovalSummary } from './removal/RemovalSummary';
 import { CorrectionSummary } from './correction/CorrectionSummary';
 import { PickupSummary } from './pickup/PickupSummary';
+import { DeliverySummary } from './delivery/DeliverySummary';
 import styles from './servicesSummary.module.css';
 
 /** Détails d'un service enregistré (Service.details), relus et validés selon son type */
@@ -24,6 +25,8 @@ export function ServiceDetailsSummary({ type, details }: { type: ServiceType; de
       return <CorrectionSummary details={parsed.details} />;
     case 'pickup':
       return <PickupSummary details={parsed.details} />;
+    case 'delivery':
+      return <DeliverySummary details={parsed.details} />;
     case 'largeFormat':
       return (
         <div className={styles.installation}>

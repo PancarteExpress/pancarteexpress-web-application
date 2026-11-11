@@ -21,6 +21,7 @@
     "removal": "Removal",
     "correction": "Correction",
     "pickup": "Pickup",
+    "delivery": "Delivery",
     "largeInstallation": "Sign/structure installation (large format)",
     "largeStoragePickup": "Equipment pickup for storage (large format)",
     "largeRetrieval": "Sign/structure retrieval (large format)"

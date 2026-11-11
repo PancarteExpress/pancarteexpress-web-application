@@ -1,6 +1,6 @@
 export const SERVICE_CHOICES = ['installation', 'removal', 'correction', 'delivery', 'pickup'] as const;
 export type ServiceType = (typeof SERVICE_CHOICES)[number];
-export const IMPLEMENTED_SERVICES = ['installation', 'removal', 'correction', 'pickup'] as const satisfies readonly ServiceType[];
+export const IMPLEMENTED_SERVICES = ['installation', 'removal', 'correction', 'pickup', 'delivery'] as const satisfies readonly ServiceType[];
 
 export const MATERIALS = [
   'frames', 
