@@ -34,8 +34,6 @@ async function syncAddresses(addressIds?: string[], orderId?: string): Promise<v
         where: { requestType: 'residential' },
         orderBy: { id: 'asc' },
         select: {
-          delay: true,
-          requestedDate: true,
           addresses: {
             orderBy: { id: 'asc' },
             select: {
@@ -49,6 +47,8 @@ async function syncAddresses(addressIds?: string[], orderId?: string): Promise<v
               description: true,
               nearbyAddress: true,
               city: true,
+              delay: true,
+              requestedDate: true,
               optimoSyncStatus: true,
               services: { where: { status: { not: 'CANCELLED' } }, select: { type: true } },
             },
@@ -67,10 +67,10 @@ async function syncAddresses(addressIds?: string[], orderId?: string): Promise<v
         const payload = buildOptimoPayload({
           orderNo,
           orderCreatedAt: order.createdAt,
-          // Seules les demandes résidentielles arrivent ici, et elles ont toujours un délai ;
+          // Seules les adresses résidentielles arrivent ici, et elles ont toujours un délai ;
           // le repli ne sert qu'aux très anciennes demandes enregistrées sans délai
-          delay: req.delay ?? 'standard24h',
-          requestedDate: req.requestedDate,
+          delay: address.delay ?? 'standard24h',
+          requestedDate: address.requestedDate,
           address,
           serviceTypes: address.services.map((s) => s.type),
           customer: order,

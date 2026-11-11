@@ -13,7 +13,7 @@ import type { ParsedAddress } from '@/shared/types/address';
 import { useCart } from '@/features/cart/hooks/useCart';
 import { formatCents } from '@/lib/pricing/money';
 import { checkoutSchema, type CheckoutInput } from '../../schemas/checkout.schema';
-import { formatServiceDate, isoToUtcDate } from '@/lib/orders/serviceDelay';
+import { useDelayText } from '@/features/cart/hooks/useDelayText';
 import {
   buildCheckoutPayload,
   submitCheckout,
@@ -39,6 +39,7 @@ function CheckoutForm() {
   const locale = useLocale() === 'en' ? 'en' : 'fr';
   const t = useTranslations('checkout');
   const tCart = useTranslations('cart');
+  const delayText = useDelayText(locale);
   // Messages du schéma : clés de checkout.errors
   const translateError = useIssueMessage('checkout.errors');
   const submitErrorMessage = (code: CheckoutErrorCode) => t(`submitErrors.${code}`);
@@ -185,15 +186,8 @@ function CheckoutForm() {
               ) : (
                 <div key={item.id} className={styles.item}>
                   <span>{tCart(`requestType.${item.requestType}`)}</span>
-                  <span>
-                    {item.schedule === null
-                      ? tCart('delay.none')
-                      : item.schedule.delay === 'specificDate'
-                        ? tCart('delay.specificDate', {
-                            date: formatServiceDate(isoToUtcDate(item.schedule.date), locale === 'en' ? 'en-CA' : 'fr-CA'),
-                          })
-                        : tCart(`delay.${item.schedule.delay}`)}
-                  </span>
+                  {/* Un délai par adresse : chaque délai différent n'est affiché qu'une fois */}
+                  <span>{[...new Set(item.addresses.map((a) => delayText(a.schedule)))].join(' · ')}</span>
                   
                   <span>{tCart('priceOnQuote')}</span>
                 </div>

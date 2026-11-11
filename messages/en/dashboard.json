@@ -42,6 +42,7 @@
       "removal": "Removal",
       "correction": "Correction",
       "pickup": "Pickup",
+      "delivery": "Delivery",
       "largeInstallation": "Large-format installation",
       "largeStoragePickup": "Pickup for storage (large format)",
       "largeRetrieval": "Large-format retrieval"

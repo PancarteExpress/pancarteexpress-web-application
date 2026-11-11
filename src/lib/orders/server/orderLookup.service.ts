@@ -17,9 +17,11 @@ const lookupSelect = {
   description: true,
   nearbyAddress: true,
   city: true,
+  delay: true,
+  requestedDate: true,
   services: { select: { id: true, type: true, details: true } },
   serviceRequest: {
-    select: { requestType: true, delay: true, requestedDate: true, order: { select: { userId: true } } },
+    select: { requestType: true, order: { select: { userId: true } } },
   },
 } satisfies Prisma.ServiceAddressSelect;
 
@@ -27,8 +29,8 @@ type AddressRow = Prisma.ServiceAddressGetPayload<{ select: typeof lookupSelect 
 type RequestRow = AddressRow['serviceRequest'];
 
 /** Une adresse et le contexte de sa demande ; date en 'yyyy-MM-dd' (sérialisable sans ambiguïté de fuseau) */
-export type LookupAddress = Omit<AddressRow, 'serviceRequest'> &
-  Pick<RequestRow, 'requestType' | 'delay'> & { requestedDate: string | null };
+export type LookupAddress = Omit<AddressRow, 'serviceRequest' | 'requestedDate'> &
+  Pick<RequestRow, 'requestType'> & { requestedDate: string | null };
 
 export type OrderLookupResult =
   | { status: 'notFound' }
@@ -56,9 +58,8 @@ export async function lookupOrder({ addressNumber, email }: OrderLookupInput): P
     address: {
       ...address,
       requestType: request.requestType,
-      delay: request.delay,
       // @db.Date stockée à minuit UTC : la partie date ISO est le bon jour
-      requestedDate: request.requestedDate ? request.requestedDate.toISOString().slice(0, 10) : null,
+      requestedDate: address.requestedDate ? address.requestedDate.toISOString().slice(0, 10) : null,
     },
   };
 }

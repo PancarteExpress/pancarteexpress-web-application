@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { FRAME_MODELS, TEXT_LIMITS } from '@/features/services/constants/installation';
 import { RadioGroup, TextField, YesNoField, toOptions } from '@/features/services/components/fields';
 import { bindField, useFormUpdater, useInstallationFormContext, type FrameUnitPath } from '../formContext';
+import { UnitPlacementField } from '../PlacementFields';
 import styles from '../installationForm.module.css';
 
 interface FrameUnitFieldsProps {
@@ -92,6 +93,9 @@ export function FrameUnitFields({ index, isMember, accountName }: FrameUnitField
           )}
         />
       )}
+
+      {/* Emplacement propre à cette pancarte, en dernier */}
+      <UnitPlacementField name={`${base}.placement`} />
     </fieldset>
   );
 }

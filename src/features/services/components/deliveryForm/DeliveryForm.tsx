@@ -24,6 +24,7 @@ import { TextField } from '@/features/services/components/fields/TextField';
 import { YesNoField } from '@/features/services/components/fields/YesNoField';
 import { toOptions, type ChoiceOption } from '@/features/services/components/fields/types';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
+import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 import formStyles from '../installationForm/installationForm.module.css';
 import styles from './deliveryForm.module.css';
 
@@ -50,20 +51,24 @@ function firstFree<T extends string>(models: readonly T[], chosen: (T | null)[],
 interface DeliveryFormProps {
   handle: Ref<ServiceFormHandle<DeliveryDetails>>;
   initialValues?: DeliveryDetails;
+  /** Saisie en cours, reprise telle quelle (prioritaire sur initialValues) */
+  draft?: DeliveryFormValues;
+  onAutoSave: AutoSaveHandler<DeliveryFormValues, DeliveryDetails>;
 }
 
-export function DeliveryForm({ handle, initialValues }: DeliveryFormProps) {
+export function DeliveryForm({ handle, initialValues, draft, onAutoSave }: DeliveryFormProps) {
   const headingId = useId();
   const t = useTranslations('services.delivery');
   const [defaultValues] = useState(() =>
-    initialValues ? toDeliveryFormValues(initialValues) : createEmptyDeliveryForm(),
+    draft ?? (initialValues ? toDeliveryFormValues(initialValues) : createEmptyDeliveryForm()),
   );
 
-  const { control, handleSubmit, setValue, formState } = useForm<Values, unknown, DeliveryDetails>({
+  const { control, handleSubmit, setValue, formState, watch, getValues } = useForm<Values, unknown, DeliveryDetails>({
     resolver: zodResolver(deliverySchema),
     defaultValues,
     shouldFocusError: true,
   });
+  useAutoSave(watch, getValues, deliverySchema, onAutoSave);
   const materials = useWatch({ control, name: 'materials' });
   const validate = formState.isSubmitted;
 

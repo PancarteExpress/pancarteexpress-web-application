@@ -7,6 +7,7 @@ import { FormProvider, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createEmptyInstallationForm, createInstallationSchema, toInstallationFormValues, type InstallationFormValues, } from '../../schemas/installation.schema';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
+import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 import type { InstallationDetails } from '../../types/installation';
 import { getFullName } from '@/shared/utils/displayName';
 import styles from './installationForm.module.css';
@@ -15,7 +16,6 @@ import { MaterialsSelector } from './MaterialsSelector';
 import { FramesSection } from './frames/FramesSection';
 import { KitSection } from './kits/KitSection';
 import { AddonsSection } from './addons/AddonsSection';
-import { PlacementFields } from './PlacementFields';
 import { OpenHouseSection } from './openHouse/OpenHouseSection';
 import { AssignmentsSection } from './assignments/AssignmentsSection';
 import { DirectionalsSection } from './directionals/DirectionalsSection';
@@ -26,9 +26,12 @@ import { OtherSection } from './other/OtherSection';
 interface InstallationFormProps {
   handle: Ref<ServiceFormHandle<InstallationDetails>>;
   initialValues?: InstallationDetails;
+  /** Saisie en cours, reprise telle quelle (prioritaire sur initialValues) */
+  draft?: InstallationFormValues;
+  onAutoSave: AutoSaveHandler<InstallationFormValues, InstallationDetails>;
 }
 
-export function InstallationForm({ handle, initialValues }: InstallationFormProps) {
+export function InstallationForm({ handle, initialValues, draft, onAutoSave }: InstallationFormProps) {
   const { data: session, status } = useSession();
   const t = useTranslations('services.installation');
   
@@ -45,6 +48,8 @@ export function InstallationForm({ handle, initialValues }: InstallationFormProp
       isMember={status === 'authenticated'}
       accountName={accountName}
       initialValues={initialValues}
+      draft={draft}
+      onAutoSave={onAutoSave}
     />
   );
 }
@@ -54,9 +59,11 @@ interface InnerProps extends InstallationFormProps {
   accountName: string | null;
 }
 
-function InstallationFormInner({ handle, initialValues, isMember, accountName }: InnerProps) {
+function InstallationFormInner({ handle, initialValues, draft, onAutoSave, isMember, accountName }: InnerProps) {
   const [schema] = useState(() => createInstallationSchema({ isMember, accountName }));
-  const [defaultValues] = useState(() => initialValues ? toInstallationFormValues(initialValues) : createEmptyInstallationForm(),);
+  const [defaultValues] = useState(() =>
+    draft ?? (initialValues ? toInstallationFormValues(initialValues) : createEmptyInstallationForm()),
+  );
   const methods = useForm<InstallationFormValues, unknown, InstallationDetails>({
     resolver: zodResolver(schema),
     defaultValues,
@@ -65,6 +72,7 @@ function InstallationFormInner({ handle, initialValues, isMember, accountName }:
 
   const materials = useWatch({ control: methods.control, name: 'materials' });
   const { handleSubmit } = methods;
+  useAutoSave(methods.watch, methods.getValues, schema, onAutoSave);
 
   useImperativeHandle(handle, () => ({
     // handleSubmit valide, affiche les erreurs et place le focus sur la première
@@ -87,7 +95,6 @@ function InstallationFormInner({ handle, initialValues, isMember, accountName }:
         {materials.includes('directional') && <DirectionalsSection />}
         {materials.includes('other') && <OtherSection />}
         <AssignmentsSection />
-        {materials.length > 0 && <PlacementFields />}
       </form>
     </FormProvider>
   );

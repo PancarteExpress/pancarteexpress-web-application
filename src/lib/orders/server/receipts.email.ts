@@ -37,11 +37,11 @@ const receiptSelect = {
   serviceRequests: {
     select: {
       requestType: true,
-      delay: true,
-      requestedDate: true,
       addresses: {
         select: {
           addressNumber: true,
+          delay: true,
+          requestedDate: true,
           kind: true,
           streetNumber: true,
           streetName: true,
@@ -126,14 +126,14 @@ function serviceLines(order: Receipt): string[] {
   if (order.serviceRequests.length === 0) return [];
   return [
     'Services (prix sur soumission) :',
-    ...order.serviceRequests.flatMap((request) => [
-      `Délai : ${formatServiceDelay(request.delay, request.requestedDate)}`,
-      ...request.addresses.flatMap((address) => [
+    ...order.serviceRequests.flatMap((request) =>
+      request.addresses.flatMap((address) => [
         `- ${formatAddressNumber(address.addressNumber)} [${REQUEST_LABELS[request.requestType]}] ${formatAddress(address)} : ` +
           address.services.map((s) => SERVICE_LABELS[s.type]).join(', '),
+        `    Délai : ${formatServiceDelay(address.delay, address.requestedDate)}`,
         ...address.services.flatMap(largeFormatDetailLines),
       ]),
-    ]),
+    ),
   ];
 }
 

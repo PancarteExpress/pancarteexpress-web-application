@@ -17,12 +17,17 @@ export interface ProductCartItem extends CartItemBase {
   quantity: number;
 }
 
+/**
+ * Adresse dans le panier : son délai est validé (null pour le grand format, sans délai).
+ * Le brouillon de délai (scheduleDraft) est retiré avant l'ajout au panier.
+ */
+export type CartAddress = Address & { schedule: ServiceSchedule | null };
+
 export interface ServiceRequestCartItem extends CartItemBase {
   kind: 'serviceRequest';
   requestType: RequestType;
-  addresses: Address[];
-  /** Délai de réalisation, commun à toutes les adresses et tous les services de la demande */
-  schedule: ServiceSchedule | null;
+  /** Chaque adresse a son propre délai */
+  addresses: CartAddress[];
 }
 
 export type CartItem = ProductCartItem | ServiceRequestCartItem;

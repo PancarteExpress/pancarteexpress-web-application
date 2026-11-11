@@ -9,26 +9,31 @@ import {
 } from '@/features/services/schemas/largeFormat.schema';
 import type { LargeRetrievalDetails } from '@/features/services/types/largeFormat';
 import { useServiceFormHandle, type ServiceFormHandle } from '../serviceForm/serviceFormHandle';
+import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 import { LargePlacementPicker } from './LargePlacementPicker';
 import formStyles from '../installationForm/installationForm.module.css';
 
 interface LargeRetrievalFormProps {
   handle: Ref<ServiceFormHandle<LargeRetrievalDetails>>;
   initialValues?: LargeRetrievalDetails;
+  /** Saisie en cours, reprise telle quelle (prioritaire sur initialValues) */
+  draft?: LargeRetrievalFormValues;
+  onAutoSave: AutoSaveHandler<LargeRetrievalFormValues, LargeRetrievalDetails>;
 }
 
-export function LargeRetrievalForm({ handle, initialValues }: LargeRetrievalFormProps) {
+export function LargeRetrievalForm({ handle, initialValues, draft, onAutoSave }: LargeRetrievalFormProps) {
   const headingId = useId();
   const t = useTranslations('services.largeFormat');
   const [defaultValues] = useState(() =>
-    initialValues ? toLargeRetrievalFormValues(initialValues) : createEmptyLargeRetrievalForm(),
+    draft ?? (initialValues ? toLargeRetrievalFormValues(initialValues) : createEmptyLargeRetrievalForm()),
   );
 
-  const { control, handleSubmit, setValue, formState } = useForm<LargeRetrievalFormValues, unknown, LargeRetrievalDetails>({
+  const { control, handleSubmit, setValue, formState, watch, getValues } = useForm<LargeRetrievalFormValues, unknown, LargeRetrievalDetails>({
     resolver: zodResolver(largeRetrievalSchema),
     defaultValues,
     shouldFocusError: true,
   });
+  useAutoSave(watch, getValues, largeRetrievalSchema, onAutoSave);
   useServiceFormHandle(handle, handleSubmit);
 
   const location = useWatch({ control, name: 'location' });

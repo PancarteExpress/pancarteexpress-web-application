@@ -102,6 +102,8 @@ const streetAddressSchema = z.object({
   apartment: optionalText(20),
   city: requiredText(100),
   postalCode: postalCodeSchema,
+  /** Délai de l'adresse : obligatoire en résidentiel, null en grand format */
+  schedule: scheduleSchema.nullable(),
   services: servicesSchema,
 });
 
@@ -110,6 +112,8 @@ const terrainAddressSchema = z.object({
   description: requiredText(1000),
   city: requiredText(100),
   nearbyAddress: optionalText(300),
+  /** Délai de l'adresse : obligatoire en résidentiel, null en grand format */
+  schedule: scheduleSchema.nullable(),
   services: servicesSchema,
 });
 
@@ -119,15 +123,16 @@ const serviceRequestItemSchema = z
   .object({
     kind: z.literal('serviceRequest'),
     requestType: z.enum(REQUEST_TYPES),
-    /** Résidentiel : obligatoire ; grand format : null (pas de délai) */
-    schedule: scheduleSchema.nullable(),
     addresses: z.array(serviceAddressSchema).min(1).max(MAX_ADDRESSES_PER_REQUEST),
   })
   .superRefine((item, ctx) => {
     const residential = item.requestType === 'residential';
-    if (residential !== (item.schedule !== null)) {
-      ctx.addIssue({ code: 'custom', path: ['schedule'], message: 'invalidSchedule' });
-    }
+    // Résidentiel : chaque adresse a son délai ; grand format : aucune
+    item.addresses.forEach((address, i) => {
+      if (residential !== (address.schedule !== null)) {
+        ctx.addIssue({ code: 'custom', path: ['addresses', i, 'schedule'], message: 'invalidSchedule' });
+      }
+    });
     // Chaque service doit appartenir au type de la demande (pas de service résidentiel dans une demande grand format)
     const mismatch = item.addresses.some((a) => a.services.some((s) => isLargeFormatService(s.type) === residential));
     if (mismatch) ctx.addIssue({ code: 'custom', path: ['addresses'], message: 'invalidSchedule' });

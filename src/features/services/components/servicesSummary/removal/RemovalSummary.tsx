@@ -50,6 +50,13 @@ export function RemovalSummary({ details }: { details: RemovalDetails }) {
       {flags && (
         <SubSection title={t('summary.flagsToRemove', { count: flags.quantity })}>
           <Fields>
+            <Field label={t('summary.mention')} wide>
+              {flags.mention === 'other'
+                ? t('summary.labelWithDetail', { label: t('mentions.other'), detail: flags.customMention })
+                : flags.mention
+                  ? t(`mentions.${flags.mention}`)
+                  : <TextOrEmpty value={null} emptyLabel={notSpecified} />}
+            </Field>
             <Field label={t('summary.placement')} wide>
               <TextOrEmpty value={flags.placement} emptyLabel={notSpecified} />
             </Field>
@@ -58,7 +65,11 @@ export function RemovalSummary({ details }: { details: RemovalDetails }) {
       )}
 
       {directionals && (
-        <SubSection title={t('summary.directionalsToRemove', { count: directionals.units.length })}>
+        <SubSection
+          title={t('summary.directionalsToRemove', { count: directionals.units.length })}
+          // Retraits enregistrés avant cette question : pas de mention
+          note={directionals.mention ? t(`mentions.${directionals.mention}`) : undefined}
+        >
           <UnitGrid>
             {directionals.units.map((u, i) => (
               <UnitCard key={u.uid} title={t('summary.directional', { number: i + 1 })}>

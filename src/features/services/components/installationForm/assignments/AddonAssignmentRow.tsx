@@ -6,6 +6,7 @@ import { ADDONS_WITH_MODEL, FRAME_MODELS, TEXT_LIMITS, type Addon } from '@/feat
 import { RadioGroup, TextField, toOptions } from '@/features/services/components/fields';
 import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
 import { TargetsPicker } from './TargetsPicker';
+import { OwnPlacementsField } from '../PlacementFields';
 import styles from '../installationForm.module.css';
 
 // Clés i18n du namespace services.installation
@@ -92,12 +93,19 @@ export function AddonAssignmentRow({ index, frameUids }: AddonAssignmentRowProps
       <TargetsPicker
         label={label}
         value={entry}
-        // Une seule mise à jour de l'entrée : quantité et cibles restent cohérentes
-        onChange={(targets) => update(path, { ...entry, ...targets })}
+        // Une seule mise à jour de l'entrée : quantité, cibles et emplacements restent cohérents
+        onChange={(targets) =>
+          update(path, { ...entry, ...targets, placements: entry.placements.slice(0, targets.quantity) })
+        }
         frameUids={frameUids}
         quantityError={entryErrors?.quantity?.message}
         targetsError={entryErrors?.frameUids?.message ?? entryErrors?.onSite?.message}
       />
+
+      {/* Sans pancarte commandée, l'ajout a ses propres emplacements */}
+      {frameUids.length === 0 && (
+        <OwnPlacementsField name={`${path}.placements`} quantity={entry.quantity} label={label} />
+      )}
     </fieldset>
   );
 }

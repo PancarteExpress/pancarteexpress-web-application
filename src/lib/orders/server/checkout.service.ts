@@ -150,14 +150,17 @@ async function buildProductLines(items: ProductItem[]) {
 
 const toServiceRequestCreate = (item: ServiceRequestItem): Prisma.ServiceRequestCreateWithoutOrderInput => ({
   requestType: item.requestType,
-  // Grand format : aucun délai
-  delay: item.schedule?.delay ?? null,
-  requestedDate: item.schedule?.delay === 'specificDate' && item.schedule.date ? new Date(`${item.schedule.date}T00:00:00Z`) : null,
   addresses: {
     create: item.addresses.map((address) => ({
       // MODIFIÉ : le client utilise encore 'address' ; la BD utilise 'civicAddress'
       kind: address.type === 'address' ? 'civicAddress' : 'terrain',
       city: address.city,
+      // Délai de l'adresse ; grand format : aucun. Minuit UTC : une colonne @db.Date ne garde que la date
+      delay: address.schedule?.delay ?? null,
+      requestedDate:
+        address.schedule?.delay === 'specificDate' && address.schedule.date
+          ? new Date(`${address.schedule.date}T00:00:00Z`)
+          : null,
       ...(address.type === 'address'
         ? {
             streetNumber: address.streetNumber,

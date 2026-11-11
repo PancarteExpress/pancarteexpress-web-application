@@ -20,11 +20,11 @@ const adminServiceSelect = {
       description: true,
       nearbyAddress: true,
       city: true,
+      delay: true,
+      requestedDate: true,
       serviceRequest: {
         select: {
           requestType: true,
-          delay: true,
-          requestedDate: true,
           order: {
             select: {
               id: true,
@@ -89,7 +89,8 @@ export async function listServicesForAdmin(): Promise<AdminClientServices[]> {
   const clients = new Map<string, AdminClientServices>();
 
   for (const s of services) {
-    const { requestType, delay, requestedDate, order } = s.serviceAddress.serviceRequest;
+    const { requestType, order } = s.serviceAddress.serviceRequest;
+    const { delay, requestedDate } = s.serviceAddress;
     const person = order.user ?? order;
     const key = order.userId ?? `guest:${order.email.toLowerCase()}`;
 

@@ -21,7 +21,6 @@ interface Props {
 
 type ServiceAddressRow = UserOrder['serviceRequests'][number]['addresses'][number];
 type OrderService = ServiceAddressRow['services'][number];
-type ServiceRequestRow = UserOrder['serviceRequests'][number];
 
 export default function ServiceOrders({ orders, title, productsVisible = true, toolbar }: Props) {
   const t = useTranslations('dashboard.serviceOrders');
@@ -41,7 +40,7 @@ export default function ServiceOrders({ orders, title, productsVisible = true, t
   const formatServicePrice = (price: OrderService['price']): string => price === null ? t('onQuote') : formatCents(price, locale);
 
   // null = grand format, sans délai
-  const formatDelay = ({ delay, requestedDate }: ServiceRequestRow): string => {
+  const formatDelay = ({ delay, requestedDate }: ServiceAddressRow): string => {
     if (delay === null) return t('delays.none');
     return delay === 'specificDate' && requestedDate
       ? t('delays.specificDate', { date: formatServiceDate(requestedDate, `${locale}-CA`) })
@@ -106,11 +105,6 @@ export default function ServiceOrders({ orders, title, productsVisible = true, t
                   {addresses.length !== 0 && (
                     <div className={styles.services}>
                       <h3>{t('services')}</h3>
-                      {order.serviceRequests.map((r) => (
-                        <p key={r.id} className={styles.delay}>
-                          {t('delay', { delay: formatDelay(r) })}
-                        </p>
-                      ))}
                       {addresses.map((address) => (
                         <div key={address.id} className={styles.address}>
                           <p className={styles.addressLine}>
@@ -120,6 +114,8 @@ export default function ServiceOrders({ orders, title, productsVisible = true, t
                             </span>
                             <span className={styles.addressDetails}>{formatAddress(address)}</span>
                           </p>
+                          {/* Délai propre à l'adresse */}
+                          <p className={styles.delay}>{t('delay', { delay: formatDelay(address) })}</p>
                           {address.kind === 'terrain' && address.description && (
                             <p className={styles.terrainDescription}>{address.description}</p>
                           )}

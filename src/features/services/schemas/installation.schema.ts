@@ -5,7 +5,8 @@ import {
   type Addon, type AddonWithModel, type FrameModelType, type ImplementedMaterial,
 } from '../constants/installation';
 import type {
-  AddonAssignment, FlagsDetails, FrameModel, FrameUnit, InstallationDetails, KitUnit, OpenHouseDetails, PlacedUnit, UnitTargets,
+  AddonAssignment, FlagsDetails, FrameModel, FrameUnit, InstallationDetails, KitUnit, OpenHouseDetails, PlacedUnit,
+  Placement, UnitTargets,
 } from '../types/installation';
 import { addMinutesClamped, isNextDay, isValidIsoDate, isValidTime, toMinutes } from '../utils/time';
 import {
@@ -53,12 +54,14 @@ const frameUnitFormSchema = z.object({
   modelDescription: text(TEXT_LIMITS.modelDescription),
   useAccountName: z.boolean().nullable(),
   displayName: text(TEXT_LIMITS.displayName),
+  placement: placementFormSchema,
 });
 
 const kitUnitFormSchema = z.object({
   uid: z.string().min(1),
   model: z.enum(KIT_MODELS).nullable(),
   description: text(TEXT_LIMITS.kitDescription),
+  placement: placementFormSchema,
 });
 
 const addonEntryFormSchema = z.object({
@@ -67,10 +70,14 @@ const addonEntryFormSchema = z.object({
   model: z.enum(FRAME_MODELS).nullable(),
   modelDescription: text(TEXT_LIMITS.modelDescription),
   ...targetsFormShape,
+  /** Utilisés seulement sans pancarte commandée */
+  placements: z.array(placementFormSchema),
 });
 
 const openHouseFormSchema = z.object({
   ...targetsFormShape,
+  /** Utilisés seulement sans pancarte commandée */
+  placements: z.array(placementFormSchema),
   dates: z.array(z.string()).max(OPEN_HOUSE.maxDates),
   twoDates: z.boolean(),
   startTime: z.string(),
@@ -86,7 +93,6 @@ const openHouseFormSchema = z.object({
 
 const installationFormSchema = z.object({
   materials: z.array(z.enum(IMPLEMENTED_MATERIALS)),
-  placement: placementFormSchema,
   frames: z.object({
     pickup: z.boolean().nullable(),
     pickupAddress: z.string().trim(),
@@ -105,6 +111,7 @@ const installationFormSchema = z.object({
     mention: z.enum(FLAG_MENTIONS).nullable(),
     customMention: text(TEXT_LIMITS.flagMention),
     quantity: z.number().int().min(1, 'Minimum 1').max(MAX_FLAGS, `Maximum ${MAX_FLAGS} drapeaux`),
+    placement: text(TEXT_LIMITS.flagPlacement),
   }),
   directionals: z.object({
     mention: z.enum(SIGN_MENTIONS).nullable(),
@@ -122,6 +129,7 @@ type KitUnitOutput = z.output<typeof kitUnitFormSchema>;
 type OpenHouseOutput = z.output<typeof openHouseFormSchema>;
 type TargetsOutput = { quantity: number; frameUids: string[]; onSite: boolean };
 type PlacedUnitOutput = { uid: string; placement: string };
+type PlacementOutput = FrameUnitOutput['placement'];
 
 /* ==========================================================================
    Règles conditionnelles
@@ -141,11 +149,31 @@ function validateFrameUnit(u: FrameUnitOutput, path: Path, session: SessionConte
       report([...path, 'displayName'], 'displayNameRequired');
     }
   }
+
+  validatePlacement(u.placement, [...path, 'placement'], report);
 }
 
 function validateKitUnit(k: KitUnitOutput, path: Path, report: Report) {
   if (k.model === null) report([...path, 'model'], 'chooseKitModel');
   else if (k.model === 'custom' && !k.description) report([...path, 'description'], 'describePole');
+  validatePlacement(k.placement, [...path, 'placement'], report);
+}
+
+/**
+ * Emplacements d'ajouts sans pancarte commandée : de 1 à `quantity`, à des endroits différents.
+ * Un seul emplacement : toutes les unités vont au même endroit.
+ */
+function validateOwnPlacements(placements: PlacementOutput[], quantity: number, path: Path, report: Report) {
+  if (placements.length === 0) {
+    report([...path, 'placements'], 'choosePlacement');
+    return;
+  }
+  if (placements.length > quantity) {
+    report([...path, 'placements'], issueMessage('tooManyPlacements', { max: quantity }));
+  }
+  const locations = placements.map((p) => p.location);
+  if (new Set(locations).size !== locations.length) report([...path, 'placements'], 'duplicatePlacement');
+  placements.forEach((p, i) => validatePlacement(p, [...path, 'placements', i], report));
 }
 
 function validateTargets(t: TargetsOutput, path: Path, validFrameUids: Set<string>, report: Report) {
@@ -166,7 +194,10 @@ function validateTargets(t: TargetsOutput, path: Path, validFrameUids: Set<strin
   }
 }
 
-function validateAddon(a: AddonEntryOutput, path: Path, validFrameUids: Set<string>, report: Report) {
+function validateAddon(
+  a: AddonEntryOutput, path: Path, validFrameUids: Set<string>, hasFrames: boolean, report: Report,
+) {
+  if (!hasFrames) validateOwnPlacements(a.placements, a.quantity, path, report);
   if (a.addon === 'other' && !a.mention) report([...path, 'mention'], 'mentionRequired');
   if (hasModel(a.addon)) {
     if (a.model === null) report([...path, 'model'], 'chooseModel');
@@ -181,8 +212,11 @@ function validatePlacedUnits(units: PlacedUnitOutput[], path: Path, emptyMessage
   if (units.length === 0) report(path, emptyMessage);
 }
 
-function validateOpenHouse(o: OpenHouseOutput, path: Path, validFrameUids: Set<string>, report: Report) {
+function validateOpenHouse(
+  o: OpenHouseOutput, path: Path, validFrameUids: Set<string>, hasFrames: boolean, report: Report,
+) {
   validateTargets(o, path, validFrameUids, report);
+  if (!hasFrames) validateOwnPlacements(o.placements, o.quantity, path, report);
 
   const expected = o.twoDates ? 2 : 1;
   if (o.dates.length !== expected || !o.dates.every(isValidIsoDate)) {
@@ -217,6 +251,7 @@ function toFrameUnit(u: FrameUnitOutput, { isMember, accountName }: SessionConte
       accountName === null ? null
       : u.useAccountName ? { type: 'account', name: accountName }
       : { type: 'custom', names: u.displayName },
+    placement: toPlacement(u.placement),
   };
 }
 
@@ -225,8 +260,13 @@ function toKitUnit(k: KitUnitOutput): KitUnit {
   return {
     uid: k.uid,
     model: model === 'custom' ? { type: 'custom', description: k.description } : { type: model },
+    placement: toPlacement(k.placement),
   };
 }
+
+/** Avec des pancartes commandées, les ajouts vont sur elles : pas d'emplacement propre */
+const toOwnPlacements = (placements: PlacementOutput[], hasFrames: boolean): Placement[] | null =>
+  hasFrames ? null : placements.map(toPlacement);
 
 function toTargets(t: TargetsOutput): UnitTargets {
   return {
@@ -238,8 +278,8 @@ function toTargets(t: TargetsOutput): UnitTargets {
 
 const toPlacedUnit = (u: PlacedUnitOutput): PlacedUnit => ({ uid: u.uid, placement: u.placement });
 
-function toAddonAssignment(a: AddonEntryOutput): AddonAssignment {
-  const base = toTargets(a);
+function toAddonAssignment(a: AddonEntryOutput, hasFrames: boolean): AddonAssignment {
+  const base = { ...toTargets(a), placements: toOwnPlacements(a.placements, hasFrames) };
   const { addon } = a;
   switch (addon) {
     case 'other':
@@ -253,9 +293,10 @@ function toAddonAssignment(a: AddonEntryOutput): AddonAssignment {
   }
 }
 
-function toOpenHouse(o: OpenHouseOutput): OpenHouseDetails {
+function toOpenHouse(o: OpenHouseOutput, hasFrames: boolean): OpenHouseDetails {
   return {
     ...toTargets(o),
+    placements: toOwnPlacements(o.placements, hasFrames),
     // Le format yyyy-MM-dd se trie correctement comme une chaîne
     dates: [...o.dates].sort(),
     startTime: o.startTime,
@@ -269,8 +310,8 @@ function toOpenHouse(o: OpenHouseOutput): OpenHouseDetails {
 function toFlags(f: FormOutput['flags']): FlagsDetails {
   const mention = defined(f.mention);
   return mention === 'other'
-    ? { mention, customMention: f.customMention, quantity: f.quantity }
-    : { mention, quantity: f.quantity };
+    ? { mention, customMention: f.customMention, quantity: f.quantity, placement: f.placement }
+    : { mention, quantity: f.quantity, placement: f.placement };
 }
 
 /* ==========================================================================
@@ -288,7 +329,6 @@ export function createInstallationSchema(session: SessionContext) {
       const validFrameUids = new Set(hasFrames ? v.frames.units.map((u) => u.uid) : []);
 
       if (v.materials.length === 0) report(['materials'], 'selectInstallItem');
-      else validatePlacement(v.placement, ['placement'], report);
 
       if (hasFrames) {
         if (!isMember) {
@@ -311,10 +351,10 @@ export function createInstallationSchema(session: SessionContext) {
         if (v.addons.length === 0) report(['addons'], 'selectAddon');
         const keys = v.addons.map((a) => a.addon);
         if (new Set(keys).size !== keys.length) report(['addons'], 'duplicateAddon');
-        v.addons.forEach((a, i) => validateAddon(a, ['addons', i], validFrameUids, report));
+        v.addons.forEach((a, i) => validateAddon(a, ['addons', i], validFrameUids, hasFrames, report));
       }
 
-      if (has('openHouse')) validateOpenHouse(v.openHouse, ['openHouse'], validFrameUids, report);
+      if (has('openHouse')) validateOpenHouse(v.openHouse, ['openHouse'], validFrameUids, hasFrames, report);
 
       if (has('keybox') && !v.keybox.code) report(['keybox', 'code'], 'keyboxCodeRequired');
 
@@ -339,7 +379,6 @@ export function createInstallationSchema(session: SessionContext) {
       const hasFrames = has('frames');
 
       return {
-        placement: toPlacement(v.placement),
         frames: hasFrames
           ? {
               pickupAddress: !isMember && v.frames.pickup ? v.frames.pickupAddress : null,
@@ -347,8 +386,8 @@ export function createInstallationSchema(session: SessionContext) {
             }
           : null,
         kits: has('kit') && !hasFrames ? { units: v.kits.units.map(toKitUnit) } : null,
-        addons: has('addons') ? v.addons.map(toAddonAssignment) : null,
-        openHouse: has('openHouse') ? toOpenHouse(v.openHouse) : null,
+        addons: has('addons') ? v.addons.map((a) => toAddonAssignment(a, hasFrames)) : null,
+        openHouse: has('openHouse') ? toOpenHouse(v.openHouse, hasFrames) : null,
         keybox: has('keybox') ? { code: v.keybox.code, placement: v.keybox.placement } : null,
         flags: has('flags') ? toFlags(v.flags) : null,
         directionals: has('directional')
@@ -377,12 +416,14 @@ export const createFrameUnit = (): FrameUnitFormValues => ({
   modelDescription: '',
   useAccountName: true,
   displayName: '',
+  placement: createDefaultPlacement(),
 });
 
 export const createKitUnit = (): KitUnitFormValues => ({
   uid: crypto.randomUUID(),
   model: null,
   description: '',
+  placement: createDefaultPlacement(),
 });
 
 export const createAddonEntry = (addon: Addon): AddonEntryFormValues => ({
@@ -393,6 +434,7 @@ export const createAddonEntry = (addon: Addon): AddonEntryFormValues => ({
   quantity: 1,
   frameUids: [],
   onSite: false,
+  placements: [createDefaultPlacement()],
 });
 
 export const createPlacedUnit = (): PlacedUnitFormValues => ({ uid: crypto.randomUUID(), placement: '' });
@@ -404,6 +446,7 @@ export const createEmptyOpenHouse = (): OpenHouseFormValues => ({
   quantity: 1,
   frameUids: [],
   onSite: false,
+  placements: [createDefaultPlacement()],
   dates: [],
   twoDates: false,
   startTime: OPEN_HOUSE.defaultStartTime,
@@ -415,13 +458,12 @@ export const createEmptyOpenHouse = (): OpenHouseFormValues => ({
 
 export const createEmptyInstallationForm = (): InstallationFormValues => ({
   materials: [],
-  placement: createDefaultPlacement(),
   frames: { pickup: null, pickupAddress: '', units: [] },
   kits: { units: [] },
   addons: [],
   openHouse: createEmptyOpenHouse(),
   keybox: { code: '', placement: '' },
-  flags: { mention: null, customMention: '', quantity: 1 },
+  flags: { mention: null, customMention: '', quantity: 1, placement: '' },
   directionals: { mention: null, units: [] },
   otherNeeds: '',
 });
@@ -438,6 +480,7 @@ function fromFrameUnit(u: FrameUnit): FrameUnitFormValues {
     modelDescription: u.model?.type === 'custom' ? u.model.description : '',
     useAccountName: u.displayName === null ? null : u.displayName.type === 'account',
     displayName: u.displayName?.type === 'custom' ? u.displayName.names : '',
+    placement: fromPlacement(u.placement),
   };
 }
 
@@ -446,8 +489,13 @@ function fromKitUnit(k: KitUnit): KitUnitFormValues {
     uid: k.uid,
     model: k.model.type,
     description: k.model.type === 'custom' ? k.model.description : '',
+    placement: fromPlacement(k.placement),
   };
 }
+
+/** Avec pancartes (null), on repart de « Au sol » au cas où les pancartes seraient retirées */
+const fromOwnPlacements = (placements: Placement[] | null) =>
+  placements?.map(fromPlacement) ?? [createDefaultPlacement()];
 
 function fromTargets(t: UnitTargets): TargetsOutput {
   // Copie : le formulaire ne partage aucune référence avec le store
@@ -467,12 +515,14 @@ function fromAddon(a: AddonAssignment): AddonEntryFormValues {
     model: model?.type ?? 'regular',
     modelDescription: model?.type === 'custom' ? model.description : '',
     ...fromTargets(a),
+    placements: fromOwnPlacements(a.placements),
   };
 }
 
 function fromOpenHouse(o: OpenHouseDetails): OpenHouseFormValues {
   return {
     ...fromTargets(o),
+    placements: fromOwnPlacements(o.placements),
     dates: [...o.dates],
     twoDates: o.dates.length > 1,
     startTime: o.startTime,
@@ -499,7 +549,6 @@ export function toInstallationFormValues(details: InstallationDetails): Installa
 
   return {
     materials,
-    placement: fromPlacement(details.placement),
     frames: details.frames
       ? {
           pickup: details.frames.pickupAddress !== null,
@@ -518,6 +567,7 @@ export function toInstallationFormValues(details: InstallationDetails): Installa
           mention: details.flags.mention,
           customMention: details.flags.mention === 'other' ? details.flags.customMention : '',
           quantity: details.flags.quantity,
+          placement: details.flags.placement ?? '',
         }
       : empty.flags,
     directionals: details.directionals

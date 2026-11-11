@@ -1,9 +1,9 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import { IMPLEMENTED_SERVICES, SERVICE_CHOICES, type ServiceType, } from '@/features/services/constants/installation';
-import { CheckboxGroup, Notice, type ChoiceOption } from '@/features/services/components/fields';
+import { IMPLEMENTED_SERVICES, SERVICE_CHOICES, type ServiceType } from '@/features/services/constants/installation';
+import { CheckboxGroup, type ChoiceOption } from '@/features/services/components/fields';
 
 import { useAddressStore } from '@/features/services/store/addressStore';
 import type { Address } from '@/features/services/types/address';
@@ -14,109 +14,57 @@ import { RemovalForm } from '@/features/services/components/removalForm/RemovalF
 import { CorrectionForm } from '@/features/services/components/correctionForm/CorrectionForm';
 import { PickupForm } from '@/features/services/components/pickupForm/PickupForm';
 import { DeliveryForm } from '@/features/services/components/deliveryForm/DeliveryForm';
+import { ScheduleForm } from '@/features/services/components/scheduleForm/ScheduleForm';
 
 import type { InstallationDetails } from '@/features/services/types/installation';
 import type { RemovalDetails } from '@/features/services/types/removal';
 import type { CorrectionDetails } from '@/features/services/types/correction';
 import type { PickupDetails } from '@/features/services/types/pickup';
 import type { DeliveryDetails } from '@/features/services/types/delivery';
+import type { ServiceSchedule } from '@/features/services/types/schedule';
 
 import type { ServiceFormHandle } from './serviceFormHandle';
+import { useServiceSelection } from './useServiceSelection';
 
-import styles from '../installationForm/installationForm.module.css';
-
-type InstallationService = Extract<Service, { type: 'installation' }>;
-type RemovalService = Extract<Service, { type: 'removal' }>;
-type CorrectionService = Extract<Service, { type: 'correction' }>;
-type PickupService = Extract<Service, { type: 'pickup' }>;
-type DeliveryService = Extract<Service, { type: 'delivery' }>;
-
-type SavedIds = Partial<Record<ServiceType, string>>;
+type Find<T extends Service['type']> = Extract<Service, { type: T }>;
 
 const IMPLEMENTED: readonly ServiceType[] = IMPLEMENTED_SERVICES;
 
-/** Monté avec key={address.id} : l'état local repart de zéro à chaque changement d'adresse. */
+/**
+ * Services résidentiels d'une adresse, enregistrés automatiquement à chaque modification.
+ * Monté avec key={address.id} : l'état local repart de zéro à chaque changement d'adresse.
+ */
 export function AddressServices({ address }: { address: Address }) {
   const t = useTranslations('services');
+  const saveService = useAddressStore((s) => s.saveService);
+  const setAddressSchedule = useAddressStore((s) => s.setAddressSchedule);
+
   const serviceOptions: ChoiceOption<ServiceType>[] = SERVICE_CHOICES.map((type) => ({
     value: type,
     label: t(`serviceTypes.${type}`),
     disabled: !IMPLEMENTED.includes(type),
   }));
-  const saveService = useAddressStore((s) => s.saveService);
-  const removeService = useAddressStore((s) => s.removeServiceFromAddress);
 
-  const installation = address.services.find((s): s is InstallationService => s.type === 'installation');
-  const removal = address.services.find((s): s is RemovalService => s.type === 'removal');
-  const correction = address.services.find((s): s is CorrectionService => s.type === 'correction');
-  const pickup = address.services.find((s): s is PickupService => s.type === 'pickup');
-  const delivery = address.services.find((s): s is DeliveryService => s.type === 'delivery');
-  const savedIds: SavedIds = {
-    installation: installation?.id, 
-    removal: removal?.id, 
-    correction: correction?.id, 
-    pickup: pickup?.id, 
-    delivery: delivery?.id,
-  };
-
-  const [selected, setSelected] = useState<ServiceType[]>(() => IMPLEMENTED.filter((t) => savedIds[t]));
-  const [justSaved, setJustSaved] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const find = <T extends ServiceType>(type: T) =>
+    address.services.find((s): s is Find<T> => s.type === type);
+  const installation = find('installation');
+  const removal = find('removal');
+  const correction = find('correction');
+  const pickup = find('pickup');
+  const delivery = find('delivery');
 
   const installationRef = useRef<ServiceFormHandle<InstallationDetails>>(null);
   const removalRef = useRef<ServiceFormHandle<RemovalDetails>>(null);
   const correctionRef = useRef<ServiceFormHandle<CorrectionDetails>>(null);
   const pickupRef = useRef<ServiceFormHandle<PickupDetails>>(null);
   const deliveryRef = useRef<ServiceFormHandle<DeliveryDetails>>(null);
-  // Service supprimé ailleurs (ex. depuis le résumé) : on le décoche, pendant le rendu
-  const [prevIds, setPrevIds] = useState<SavedIds>(savedIds);
-  if (IMPLEMENTED.some((t) => prevIds[t] !== savedIds[t])) {
-    const removed = IMPLEMENTED.filter((t) => prevIds[t] && !savedIds[t]);
-    setPrevIds(savedIds);
-    if (removed.length > 0) setSelected((s) => s.filter((t) => !removed.includes(t)));
-  }
+  const scheduleRef = useRef<ServiceFormHandle<ServiceSchedule>>(null);
 
-  const handleServicesChange = (next: ServiceType[]) => {
-    const removing = selected.flatMap((type) => {
-      const id = savedIds[type];
-      return !next.includes(type) && id ? [{ type, id }] : [];
-    });
-
-    for (const { type } of removing) {
-      if (!window.confirm(t('serviceForm.confirmRemoveService', { service: t(`serviceTypes.${type}`) }))) return;
-    }
-    removing.forEach(({ id }) => removeService(address.id, id));
-    setSelected(next);
-    setJustSaved(false);
-  };
-
-  /** Valide tous les services cochés ; n'enregistre que si tous sont valides */
-  const handleSaveAll = async () => {
-    setSaving(true);
-    try {
-      // undefined = service non coché ; null = invalide (erreurs affichées dans son formulaire)
-      const [installation, removal, correction, pickup, delivery] = await Promise.all([
-        selected.includes('installation') ? (installationRef.current?.submit() ?? null) : undefined,
-        selected.includes('removal') ? (removalRef.current?.submit() ?? null) : undefined,
-        selected.includes('correction') ? (correctionRef.current?.submit() ?? null) : undefined,
-        selected.includes('pickup') ? (pickupRef.current?.submit() ?? null) : undefined,
-        selected.includes('delivery') ? (deliveryRef.current?.submit() ?? null) : undefined,
-      ]);
-      if (installation === null || removal === null || correction === null || pickup === null || delivery === null) {
-        setJustSaved(false);
-        return;
-      }
-
-      if (installation) saveService(address.id, { type: 'installation', ...installation });
-      if (removal) saveService(address.id, { type: 'removal', ...removal });
-      if (correction) saveService(address.id, { type: 'correction', ...correction });
-      if (pickup) saveService(address.id, { type: 'pickup', ...pickup });
-      if (delivery) saveService(address.id, { type: 'delivery', ...delivery });
-      setJustSaved(true);
-    } finally {
-      setSaving(false);
-    }
-  };
+  const { selected, handleServicesChange, recordDraft, drafts } = useServiceSelection(address, IMPLEMENTED, () => {
+    // Affiche les erreurs de chaque formulaire coché
+    for (const ref of [installationRef, removalRef, correctionRef, pickupRef, deliveryRef]) void ref.current?.submit();
+    void scheduleRef.current?.submit();
+  });
 
   return (
     <>
@@ -125,39 +73,83 @@ export function AddressServices({ address }: { address: Address }) {
         options={serviceOptions}
         value={selected}
         onChange={handleServicesChange}
-        hint={t('serviceForm.otherServicesSoon')}
+        hint={IMPLEMENTED.length < SERVICE_CHOICES.length ? t('serviceForm.otherServicesSoon') : undefined}
       />
 
+      {/* Clé stable par type : le formulaire n'est pas recréé quand le service reçoit son id */}
       {selected.includes('installation') && (
-        <InstallationForm key={`installation-${installation?.id ?? 'new'}`} handle={installationRef} initialValues={installation} />
+        <InstallationForm
+          key="installation"
+          handle={installationRef}
+          initialValues={installation}
+          draft={drafts?.installation?.values}
+          onAutoSave={(values, details) => {
+            recordDraft('installation', values, details !== null);
+            if (details) saveService(address.id, { type: 'installation', ...details });
+          }}
+        />
       )}
 
       {selected.includes('removal') && (
-        <RemovalForm key={`removal-${removal?.id ?? 'new'}`} handle={removalRef} initialValues={removal} />
+        <RemovalForm
+          key="removal"
+          handle={removalRef}
+          initialValues={removal}
+          draft={drafts?.removal?.values}
+          onAutoSave={(values, details) => {
+            recordDraft('removal', values, details !== null);
+            if (details) saveService(address.id, { type: 'removal', ...details });
+          }}
+        />
       )}
 
       {selected.includes('correction') && (
-        <CorrectionForm key={`correction-${correction?.id ?? 'new'}`} handle={correctionRef} initialValues={correction} />
+        <CorrectionForm
+          key="correction"
+          handle={correctionRef}
+          initialValues={correction}
+          draft={drafts?.correction?.values}
+          onAutoSave={(values, details) => {
+            recordDraft('correction', values, details !== null);
+            if (details) saveService(address.id, { type: 'correction', ...details });
+          }}
+        />
       )}
 
       {selected.includes('pickup') && (
-        <PickupForm key={`pickup-${pickup?.id ?? 'new'}`} handle={pickupRef} initialValues={pickup} />
+        <PickupForm
+          key="pickup"
+          handle={pickupRef}
+          initialValues={pickup}
+          draft={drafts?.pickup?.values}
+          onAutoSave={(values, details) => {
+            recordDraft('pickup', values, details !== null);
+            if (details) saveService(address.id, { type: 'pickup', ...details });
+          }}
+        />
       )}
 
       {selected.includes('delivery') && (
-        <DeliveryForm key={`delivery-${delivery?.id ?? 'new'}`} handle={deliveryRef} initialValues={delivery} />
+        <DeliveryForm
+          key="delivery"
+          handle={deliveryRef}
+          initialValues={delivery}
+          draft={drafts?.delivery?.values}
+          onAutoSave={(values, details) => {
+            recordDraft('delivery', values, details !== null);
+            if (details) saveService(address.id, { type: 'delivery', ...details });
+          }}
+        />
       )}
 
+      {/* Délai propre à cette adresse, dès qu'un service est coché */}
       {selected.length > 0 && (
-        <button type="button" className={styles.submit} onClick={handleSaveAll} disabled={saving}>
-          {saving ? t('serviceForm.saving') : t('serviceForm.saveServices')}
-        </button>
-      )}
-
-      {justSaved && (
-        <div role="status">
-          <Notice>{t('serviceForm.servicesSaved')}</Notice>
-        </div>
+        <ScheduleForm
+          key="schedule"
+          handle={scheduleRef}
+          draft={address.scheduleDraft}
+          onAutoSave={(values) => setAddressSchedule(address.id, values)}
+        />
       )}
     </>
   );

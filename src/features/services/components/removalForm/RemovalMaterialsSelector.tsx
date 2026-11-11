@@ -45,9 +45,9 @@ export function RemovalMaterialsSelector() {
           if (toggled('frames')) update('frames', { units: isOn('frames') ? [createRemovalUnit()] : [] });
           if (toggled('addons')) update('addons', { units: isOn('addons') ? [createRemovalUnit()] : [], details: '' });
           if (toggled('keybox')) update('keybox', { quantity: 1, code: '', placement: '' });
-          if (toggled('flags')) update('flags', { quantity: 1, placement: '' });
+          if (toggled('flags')) update('flags', { mention: null, customMention: '', quantity: 1, placement: '' });
           if (toggled('directional')) {
-            update('directionals', { units: isOn('directional') ? [createRemovalDirectional()] : [] });
+            update('directionals', { mention: null, units: isOn('directional') ? [createRemovalDirectional()] : [] });
           }
           if (toggled('other')) update('otherDetails', '');
 

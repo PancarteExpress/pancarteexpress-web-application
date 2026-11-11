@@ -28,6 +28,8 @@ export interface FrameUnit {
   uid: string;
   model: FrameModel | null;
   displayName: FrameDisplayName | null;
+  /** Emplacement propre à cette pancarte */
+  placement: Placement;
 }
 
 export interface FramesDetails {
@@ -45,7 +47,16 @@ export interface UnitTargets {
   onSiteCount: number;
 }
 
-export type AddonAssignment = UnitTargets &
+/**
+ * Emplacements d'ajouts (ou d'affichettes de visite libre) installés sans pancarte commandée.
+ * null : des pancartes sont commandées, les ajouts vont sur elles.
+ * Sinon de 1 à `quantity` emplacements distincts ; un seul = tous au même endroit.
+ */
+export interface OwnPlacements {
+  placements: Placement[] | null;
+}
+
+export type AddonAssignment = UnitTargets & OwnPlacements &
   (
     | { addon: Exclude<Addon, 'other' | 'customNoMention' | AddonWithModel> }
     | { addon: 'other'; mention: string }
@@ -61,6 +72,8 @@ export type KitModel =
 export interface KitUnit {
   uid: string;
   model: KitModel;
+  /** Emplacement propre à ce kit */
+  placement: Placement;
 }
 
 /** Kit commandé seul (sans pancarte). Avec des pancartes, le kit est inclus et n'a pas de détails. */
@@ -74,7 +87,8 @@ export interface KeyboxDetails {
   placement: string;
 }
 
-export type FlagsDetails = { quantity: number } & (
+/** placement : texte libre facultatif ('' si non précisé) */
+export type FlagsDetails = { quantity: number; placement: string } & (
   | { mention: Exclude<FlagMention, 'other'> }
   | { mention: 'other'; customMention: string }
 );
@@ -85,7 +99,6 @@ export interface DirectionalsDetails {
 }
 
 export interface InstallationDetails {
-  placement: Placement;
   frames: FramesDetails | null;
   kits: KitsDetails | null;
   addons: AddonAssignment[] | null;
@@ -105,7 +118,7 @@ export interface PlacedUnit {
 export type OpenHouseDirectional = PlacedUnit;
 
 /** Visite libre : une date et une plage horaire pour toutes les affichettes */
-export interface OpenHouseDetails extends UnitTargets {
+export interface OpenHouseDetails extends UnitTargets, OwnPlacements {
   /** 1 ou 2 dates locales triées, format yyyy-MM-dd ; mêmes heures pour chacune */
   dates: string[];
   /** Heures locales en 24 h, format HH:mm */

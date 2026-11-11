@@ -49,6 +49,7 @@ export const TEXT_LIMITS = {
   directionalPlacement: 50,
   keyboxPlacement: 50,
   flagMention: 50,
+  flagPlacement: 50,
   otherNeeds: 250,
 } as const;
 

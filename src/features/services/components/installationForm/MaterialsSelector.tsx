@@ -69,7 +69,7 @@ export function MaterialsSelector() {
           const toggled = (m: Material) => current.includes(m) !== materials.includes(m);
           const isOn = (m: Material) => materials.includes(m);
           if (toggled('keybox')) update('keybox', { code: '', placement: '' });
-          if (toggled('flags')) update('flags', { mention: null, customMention: '', quantity: 1 });
+          if (toggled('flags')) update('flags', { mention: null, customMention: '', quantity: 1, placement: '' });
           if (toggled('directional')) {
             update('directionals', { mention: null, units: isOn('directional') ? [createPlacedUnit()] : [] });
           }

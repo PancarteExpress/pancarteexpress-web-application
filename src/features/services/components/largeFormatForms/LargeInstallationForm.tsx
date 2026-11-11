@@ -18,6 +18,7 @@ import { TextField } from '@/features/services/components/fields/TextField';
 import { YesNoField } from '@/features/services/components/fields/YesNoField';
 import { toOptions } from '@/features/services/components/fields/types';
 import { useServiceFormHandle, type ServiceFormHandle } from '../serviceForm/serviceFormHandle';
+import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 import { LargePlacementPicker } from './LargePlacementPicker';
 import formStyles from '../installationForm/installationForm.module.css';
 import styles from './largeFormatForms.module.css';
@@ -27,21 +28,25 @@ type Values = LargeInstallationFormValues;
 interface LargeInstallationFormProps {
   handle: Ref<ServiceFormHandle<LargeInstallationDetails>>;
   initialValues?: LargeInstallationDetails;
+  /** Saisie en cours, reprise telle quelle (prioritaire sur initialValues) */
+  draft?: LargeInstallationFormValues;
+  onAutoSave: AutoSaveHandler<LargeInstallationFormValues, LargeInstallationDetails>;
 }
 
-export function LargeInstallationForm({ handle, initialValues }: LargeInstallationFormProps) {
+export function LargeInstallationForm({ handle, initialValues, draft, onAutoSave }: LargeInstallationFormProps) {
   const headingId = useId();
   const t = useTranslations('services.largeFormat');
   const acquisitionOptions = toOptions(ACQUISITIONS, (a) => t(`acquisitions.${a}`));
   const [defaultValues] = useState(() =>
-    initialValues ? toLargeInstallationFormValues(initialValues) : createEmptyLargeInstallationForm(),
+    draft ?? (initialValues ? toLargeInstallationFormValues(initialValues) : createEmptyLargeInstallationForm()),
   );
 
-  const { control, handleSubmit, setValue, formState } = useForm<Values, unknown, LargeInstallationDetails>({
+  const { control, handleSubmit, setValue, formState, watch, getValues } = useForm<Values, unknown, LargeInstallationDetails>({
     resolver: zodResolver(largeInstallationSchema),
     defaultValues,
     shouldFocusError: true,
   });
+  useAutoSave(watch, getValues, largeInstallationSchema, onAutoSave);
   useServiceFormHandle(handle, handleSubmit);
 
   const location = useWatch({ control, name: 'location' });

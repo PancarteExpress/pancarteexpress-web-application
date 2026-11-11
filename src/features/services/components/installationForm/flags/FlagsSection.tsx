@@ -69,6 +69,24 @@ export function FlagsSection() {
           />
         )}
       />
+
+      {/* Emplacement facultatif, comme pour les directionnelles */}
+      <Controller
+        control={control}
+        name="flags.placement"
+        render={({ field, fieldState }) => (
+          <TextField
+            label={t('installation.flagsPlacement')}
+            placeholder={t('installation.placementExample')}
+            value={field.value}
+            onChange={field.onChange}
+            onBlur={field.onBlur}
+            inputRef={field.ref}
+            maxLength={TEXT_LIMITS.flagPlacement}
+            error={fieldState.error?.message}
+          />
+        )}
+      />
     </section>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { CheckboxGroup, QuantityField, type ChoiceOption, type Columns } from '@/features/services/components/fields';
+import { CheckboxGroup, Notice, QuantityField, type ChoiceOption, type Columns } from '@/features/services/components/fields';
 
 const ON_SITE = 'onSite';
 
@@ -70,6 +70,18 @@ export function TargetsPicker({
         columns={columns}
         error={targetsError}
       />
+
+      {/* « Sur place » coché avec moins de choix que d'unités : le reste va aussi sur des pancartes sur place */}
+      {frameUids.length > 0 && value.onSite && value.quantity > assigned + 1 && (
+        <Notice>
+          {t('onSiteAssumption', {
+            choices: assigned + 1,
+            quantity: value.quantity,
+            label,
+            extra: value.quantity - assigned - 1,
+          })}
+        </Notice>
+      )}
     </>
   );
 }

@@ -25,7 +25,6 @@ const frame = (overrides: Partial<FrameUnitFormValues> = {}): FrameUnitFormValue
 const form = (overrides: Partial<InstallationFormValues> = {}): InstallationFormValues => ({
   ...createEmptyInstallationForm(),
   materials: ['frames'],
-  placement: { ...createEmptyPlacement(), location: 'ground' },
   frames: { pickup: false, pickupAddress: '', units: [frame()] },
   ...overrides,
 });
@@ -53,7 +52,7 @@ describe('createInstallationSchema — pancartes (membre)', () => {
       model: { type: 'regular' },
       displayName: { type: 'account', name: 'Jean Tremblay' },
     });
-    expect(result.data.placement).toEqual({ location: 'ground' });
+    expect(result.data.frames?.units[0].placement).toEqual({ location: 'ground' });
     expect(result.data.addons).toBeNull();
   });
 
@@ -101,32 +100,33 @@ describe('createInstallationSchema — pancartes (non-membre)', () => {
   });
 });
 
-describe('createInstallationSchema — emplacement', () => {
-  const withPlacement = (placement: Partial<InstallationFormValues['placement']>) =>
-    form({ placement: { ...createEmptyPlacement(), ...placement } });
+describe('createInstallationSchema — emplacement par pancarte', () => {
+  const P = 'frames.units.0.placement';
+  const withPlacement = (placement: Partial<FrameUnitFormValues['placement']>) =>
+    form({ frames: { pickup: false, pickupAddress: '', units: [frame({ placement: { ...createEmptyPlacement(), ...placement } })] } });
 
-  it('exige un emplacement dès qu\'un matériel est choisi', () => {
-    expect(issuePaths(memberSchema.safeParse(withPlacement({ location: null })))).toContain('placement.location');
+  it('exige un emplacement pour chaque pancarte', () => {
+    expect(issuePaths(memberSchema.safeParse(withPlacement({ location: null })))).toContain(`${P}.location`);
   });
 
-  it('ne valide pas l\'emplacement sans matériel', () => {
-    const paths = issuePaths(memberSchema.safeParse(form({ materials: [], placement: createEmptyPlacement() })));
+  it('ne valide pas les pancartes sans matériel', () => {
+    const paths = issuePaths(memberSchema.safeParse({ ...withPlacement({ location: null }), materials: [] }));
     expect(paths).toEqual(['materials']);
   });
 
   it('au mur : refuse le rendez-vous et exige la fixation', () => {
     const paths = issuePaths(memberSchema.safeParse(withPlacement({ location: 'wall', access: 'phoneAppointment' })));
-    expect(paths).toEqual(expect.arrayContaining(['placement.access', 'placement.mounting']));
+    expect(paths).toEqual(expect.arrayContaining([`${P}.access`, `${P}.mounting`]));
   });
 
   it('fenêtre + rendez-vous : exige les coordonnées et produit le bon objet', () => {
     expect(issuePaths(memberSchema.safeParse(withPlacement({ location: 'window', access: 'phoneAppointment' }))))
-       .toContain('placement.contact');
+      .toContain(`${P}.contact`);
 
     const result = memberSchema.safeParse(
       withPlacement({ location: 'window', access: 'phoneAppointment', contact: '514-555-0000', windowSide: 'interior' }),
     );
-    expect(result.success && result.data.placement).toEqual({
+    expect(result.success && result.data.frames?.units[0].placement).toEqual({
       location: 'window',
       access: { type: 'phoneAppointment', contact: '514-555-0000' },
       side: 'interior',
@@ -135,24 +135,63 @@ describe('createInstallationSchema — emplacement', () => {
 
   it('fenêtre : exige le côté (intérieur / extérieur)', () => {
     expect(issuePaths(memberSchema.safeParse(withPlacement({ location: 'window', access: 'noLadder' }))))
-      .toContain('placement.windowSide');
+      .toContain(`${P}.windowSide`);
   });
 
   it('autres : exige une description', () => {
-    expect(issuePaths(memberSchema.safeParse(withPlacement({ location: 'other' }))))
-      .toContain('placement.description');
+    expect(issuePaths(memberSchema.safeParse(withPlacement({ location: 'other' })))).toContain(`${P}.description`);
   });
 
   it('accès par boîte à clés : exige les informations', () => {
-    expect(issuePaths(memberSchema.safeParse(
-      withPlacement({ location: 'balcony', access: 'keybox' }),
-    ))).toContain('placement.keyboxInfo');
+    expect(issuePaths(memberSchema.safeParse(withPlacement({ location: 'balcony', access: 'keybox' }))))
+      .toContain(`${P}.keyboxInfo`);
   });
 
   it('au mur : refuse la boîte à clés', () => {
     expect(issuePaths(memberSchema.safeParse(
       withPlacement({ location: 'wall', access: 'keybox', mounting: 'vShapeDrilled' }),
-    ))).toContain('placement.access');
+    ))).toContain(`${P}.access`);
+  });
+
+  it('kit seul : un emplacement par kit', () => {
+    const kit = { ...createKitUnit(), model: 'shortPost36' as const, placement: createEmptyPlacement() };
+    expect(issuePaths(memberSchema.safeParse(form({ materials: ['kit'], kits: { units: [kit] } }))))
+      .toContain('kits.units.0.placement.location');
+  });
+});
+
+describe('createInstallationSchema — emplacements des ajouts sans pancarte', () => {
+  const addonsOnly = (entry: Partial<AddonEntryFormValues>) =>
+    form({ materials: ['addons'], addons: [{ ...createAddonEntry('forSale'), onSite: true, ...entry }] });
+  const ground = { ...createEmptyPlacement(), location: 'ground' as const };
+  const ramp = { ...createEmptyPlacement(), location: 'ramp' as const };
+
+  it('« Au sol » par défaut, enregistré sur l\'ajout', () => {
+    const result = memberSchema.safeParse(addonsOnly({}));
+    expect(result.success && result.data.addons?.[0].placements).toEqual([{ location: 'ground' }]);
+  });
+
+  it('exige au moins un emplacement, au plus un par unité, sans doublon', () => {
+    expect(issuePaths(memberSchema.safeParse(addonsOnly({ placements: [] })))).toContain('addons.0.placements');
+    expect(issuePaths(memberSchema.safeParse(addonsOnly({ quantity: 1, placements: [ground, ramp] }))))
+      .toContain('addons.0.placements');
+    expect(issuePaths(memberSchema.safeParse(addonsOnly({ quantity: 3, placements: [ground, ground] }))))
+      .toContain('addons.0.placements');
+  });
+
+  it('accepte moins d\'emplacements que d\'unités (répartis par l\'équipe)', () => {
+    const result = memberSchema.safeParse(addonsOnly({ quantity: 3, placements: [ground, ramp] }));
+    expect(result.success && result.data.addons?.[0].placements).toEqual([{ location: 'ground' }, { location: 'ramp' }]);
+  });
+
+  it('avec des pancartes : aucun emplacement propre (null), même invalide', () => {
+    const unit = frame();
+    const result = memberSchema.safeParse(form({
+      materials: ['frames', 'addons'],
+      frames: { pickup: false, pickupAddress: '', units: [unit] },
+      addons: [{ ...createAddonEntry('forSale'), frameUids: [unit.uid], placements: [] }],
+    }));
+    expect(result.success && result.data.addons?.[0].placements).toBeNull();
   });
 });
 
@@ -215,6 +254,8 @@ describe('createInstallationSchema — ajouts', () => {
       quantity: 3,
       frameUids: [unit.uid],
       onSiteCount: 2,
+      // Pancartes commandées : l'ajout va sur elles, sans emplacement propre
+      placements: null,
     });
   });
 
@@ -382,13 +423,13 @@ describe('createInstallationSchema — boîte à clés, drapeaux, directionnelle
 
   it('drapeaux : mention requise, 2 maximum', () => {
     expect(issuePaths(memberSchema.safeParse(only(['flags'])))).toContain('flags.mention');
-    expect(issuePaths(memberSchema.safeParse(only(['flags'], { flags: { mention: 'sold', customMention: '', quantity: 3 } }))))
+    expect(issuePaths(memberSchema.safeParse(only(['flags'], { flags: { mention: 'sold', customMention: '', quantity: 3, placement: '' } }))))
       .toContain('flags.quantity');
   });
 
   it('drapeaux : « Autres » exige une mention', () => {
     expect(issuePaths(memberSchema.safeParse(only(['flags'], {
-      flags: { mention: 'other', customMention: '', quantity: 1 },
+      flags: { mention: 'other', customMention: '', quantity: 1, placement: '' },
     })))).toContain('flags.customMention');
   });
 
@@ -437,8 +478,10 @@ describe('toInstallationFormValues — aller-retour', () => {
     { location: 'window', access: 'noLadder', windowSide: 'exterior' },
     { location: 'window', access: 'keybox', keyboxInfo: 'Code 4821, porte', windowSide: 'interior' },
     { location: 'other', description: 'Derrière la haie' },
-  ] satisfies Partial<InstallationFormValues['placement']>[])('emplacement $location ($access)', (placement) => {
-    expectRoundTrip(memberSchema, form({ placement: { ...createEmptyPlacement(), ...placement } }));
+  ] satisfies Partial<FrameUnitFormValues['placement']>[])('emplacement $location ($access)', (placement) => {
+    expectRoundTrip(memberSchema, form({
+      frames: { pickup: false, pickupAddress: '', units: [frame({ placement: { ...createEmptyPlacement(), ...placement } })] },
+    }));
   });
 
   it('non-membre : ramassage conservé', () => {
@@ -498,7 +541,7 @@ describe('toInstallationFormValues — aller-retour', () => {
       materials: ['keybox', 'flags', 'directional', 'other'],
       frames: createEmptyInstallationForm().frames,
       keybox: { code: '123456', placement: 'Porte arrière' },
-      flags: { mention: 'other', customMention: 'Prix réduit', quantity: 2 },
+      flags: { mention: 'other', customMention: 'Prix réduit', quantity: 2, placement: 'Sur la clôture' },
       directionals: {
         mention: 'forRent',
         units: [{ ...createPlacedUnit(), placement: 'Coin Principale' }, { ...createPlacedUnit(), placement: 'Sortie 12' }],

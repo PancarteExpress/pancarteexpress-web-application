@@ -168,14 +168,14 @@ export function buildClientReceipt(order: Receipt): ClientReceipt {
     ? []
     : [
         l.services,
-        ...order.serviceRequests.flatMap((request) => [
-          `${l.delay}${l.colon}${formatDelay(request.delay, request.requestedDate, l)}`,
-          ...request.addresses.flatMap((address) => [
+        ...order.serviceRequests.flatMap((request) =>
+          request.addresses.flatMap((address) => [
             `- ${formatAddressNumber(address.addressNumber)} [${tServices(`requestTypes.${request.requestType}`)}] ${formatAddress(address, l)}${l.colon}` +
               address.services.map((s) => tServices(`serviceTypes.${s.type}`)).join(', '),
+            `    ${l.delay}${l.colon}${formatDelay(address.delay, address.requestedDate, l)}`,
             ...address.services.flatMap(largeFormatDetails),
           ]),
-        ]),
+        ),
       ];
 
   const pricingNote = hasServices ? [hasProducts ? l.pricedProducts : l.pricedNothing] : [];

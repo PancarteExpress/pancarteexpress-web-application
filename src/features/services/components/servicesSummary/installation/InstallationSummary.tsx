@@ -1,6 +1,6 @@
 import { useFormatter, useTranslations } from 'next-intl';
 import type {
-  AddonAssignment, FrameDisplayName, FrameModel, InstallationDetails, KitModel, UnitTargets,
+  AddonAssignment, FrameDisplayName, FrameModel, InstallationDetails, KitModel, Placement, UnitTargets,
 } from '@/features/services/types/installation';
 import { describePlacement, type ServicesTranslator } from '@/features/services/utils/placement';
 import { removalDayAfter } from '@/features/services/utils/time';
@@ -50,6 +50,11 @@ function describeTargets(a: UnitTargets, frameNumbers: Map<string, number>, t: S
   return targets.join(', ');
 }
 
+/** Emplacements propres (sans pancarte) : un seul = tous au même endroit */
+function describePlacements(placements: Placement[], t: ServicesTranslator): string {
+  return placements.map((p) => describePlacement(p, t)).join(' · ');
+}
+
 /** '13:30' → '13 h 30' (fr) / '13:30' (en) */
 function formatTime(time: string, t: ServicesTranslator): string {
   const [hours, minutes] = time.split(':');
@@ -59,7 +64,7 @@ function formatTime(time: string, t: ServicesTranslator): string {
 /* ---------- Composant ---------- */
 
 export function InstallationSummary({ details }: { details: InstallationDetails }) {
-  const { placement, frames, kits, addons, openHouse, keybox, flags, directionals, otherNeeds } = details;
+  const { frames, kits, addons, openHouse, keybox, flags, directionals, otherNeeds } = details;
   const t = useTranslations('services');
   const formatter = useFormatter();
   const locale = useAppLocale();
@@ -72,25 +77,18 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
 
   return (
     <div className={styles.installation}>
-      <Fields>
-        <Field label={t('summary.placement')} wide>
-          <Pill>{describePlacement(placement, t)}</Pill>
-        </Field>
-      </Fields>
-
       {frames && (
         <SubSection title={t('summary.frames', { count: frames.units.length })} note={t('summary.kitIncluded')}>
           <UnitGrid>
             {frames.units.map((unit, i) => (
               <UnitCard key={unit.uid} title={t('summary.frame', { number: i + 1 })}>
-                {(unit.model || unit.displayName) && (
-                  <UnitRows>
-                    {unit.model && <UnitRow label={t('summary.model')}>{describeModel(unit.model, t)}</UnitRow>}
-                    {unit.displayName && (
-                      <UnitRow label={t('summary.displayName')}>{describeDisplayName(unit.displayName)}</UnitRow>
-                    )}
-                  </UnitRows>
-                )}
+                <UnitRows>
+                  {unit.model && <UnitRow label={t('summary.model')}>{describeModel(unit.model, t)}</UnitRow>}
+                  {unit.displayName && (
+                    <UnitRow label={t('summary.displayName')}>{describeDisplayName(unit.displayName)}</UnitRow>
+                  )}
+                  <UnitRow label={t('summary.placement')}>{describePlacement(unit.placement, t)}</UnitRow>
+                </UnitRows>
               </UnitCard>
             ))}
           </UnitGrid>
@@ -104,6 +102,7 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
               <UnitCard key={kit.uid} title={t('summary.kit', { number: i + 1 })}>
                 <UnitRows>
                   <UnitRow label={t('summary.model')}>{describeKitModel(kit.model, t)}</UnitRow>
+                  <UnitRow label={t('summary.placement')}>{describePlacement(kit.placement, t)}</UnitRow>
                 </UnitRows>
               </UnitCard>
             ))}
@@ -117,6 +116,12 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
             {addons.map((a) => (
               <UnitCard key={a.addon} title={`${describeAddon(a, t)} ×${a.quantity}`}>
                 <p className={styles.muted}>{describeTargets(a, frameNumbers, t)}</p>
+                {/* Sans pancarte commandée : emplacements propres à l'ajout */}
+                {a.placements && (
+                  <UnitRows>
+                    <UnitRow label={t('summary.placement')}>{describePlacements(a.placements, t)}</UnitRow>
+                  </UnitRows>
+                )}
               </UnitCard>
             ))}
           </UnitGrid>
@@ -135,6 +140,9 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
             <Field label={t('summary.signs', { count: openHouse.quantity })}>
               {describeTargets(openHouse, frameNumbers, t)}
             </Field>
+            {openHouse.placements && (
+              <Field label={t('summary.placement')}>{describePlacements(openHouse.placements, t)}</Field>
+            )}
             {openHouse.directionals.length > 0 && (
               <Field label={t('summary.directionals', { count: openHouse.directionals.length })}>
                 <ol className={styles.inlineList}>
@@ -179,6 +187,9 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
                 : t(`mentions.${flags.mention}`)}
             </Field>
             <Field label={t('summary.quantity')}>{flags.quantity}</Field>
+            <Field label={t('summary.placement')} wide>
+              <TextOrEmpty value={flags.placement} emptyLabel={notSpecified} />
+            </Field>
           </Fields>
         </SubSection>
       )}

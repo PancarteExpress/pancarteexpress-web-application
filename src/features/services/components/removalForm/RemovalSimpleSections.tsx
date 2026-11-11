@@ -3,12 +3,14 @@
 import { useId, type ReactNode } from 'react';
 import { Controller, useFieldArray } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
-import { KEYBOX_CODE_MAX_DIGITS } from '@/features/services/constants/installation';
+import {
+  FLAG_MENTIONS, KEYBOX_CODE_MAX_DIGITS, SIGN_MENTIONS, TEXT_LIMITS,
+} from '@/features/services/constants/installation';
 import {
   MAX_REMOVAL_DIRECTIONALS, MAX_REMOVAL_FLAGS, MAX_REMOVAL_KEYBOXES, REMOVAL_TEXT_LIMITS,
 } from '@/features/services/constants/removal';
 import { createRemovalDirectional } from '@/features/services/schemas/removal.schema';
-import { QuantityField, TextField } from '@/features/services/components/fields';
+import { QuantityField, RadioGroup, TextField, toOptions } from '@/features/services/components/fields';
 import { bindRemovalField, useRemovalFormContext } from './formContext';
 import styles from '../installationForm/installationForm.module.css';
 
@@ -81,11 +83,46 @@ export function RemovalKeyboxSection() {
 /* ---------- Drapeaux ---------- */
 
 export function RemovalFlagsSection() {
-  const { control } = useRemovalFormContext();
+  const { control, setValue, formState } = useRemovalFormContext();
   const t = useTranslations('services');
 
   return (
     <Section title={t('removal.flagsTitle')}>
+      {/* Mêmes mentions qu'à l'installation */}
+      <Controller
+        control={control}
+        name="flags.mention"
+        render={(props) => (
+          <>
+            <RadioGroup
+              {...bindRemovalField(props)}
+              onChange={(value) => {
+                props.field.onChange(value);
+                if (value !== 'other') {
+                  setValue('flags.customMention', '', { shouldDirty: true, shouldValidate: formState.isSubmitted });
+                }
+              }}
+              legend={t('installation.flagMentionLegend')}
+              options={toOptions(FLAG_MENTIONS, (m) => t(`mentions.${m}`))}
+              required
+            />
+            {props.field.value === 'other' && (
+              <Controller
+                control={control}
+                name="flags.customMention"
+                render={(p) => (
+                  <TextField
+                    {...bindRemovalField(p)}
+                    label={t('installation.flagCustomMention')}
+                    maxLength={TEXT_LIMITS.flagMention}
+                    required
+                  />
+                )}
+              />
+            )}
+          </>
+        )}
+      />
       <Controller
         control={control}
         name="flags.quantity"
@@ -136,6 +173,18 @@ export function RemovalDirectionalsSection() {
 
   return (
     <Section title={t('removal.directionalsTitle')}>
+      <Controller
+        control={control}
+        name="directionals.mention"
+        render={(props) => (
+          <RadioGroup
+            {...bindRemovalField(props)}
+            legend={t('installation.directionalMentionLegend')}
+            options={toOptions(SIGN_MENTIONS, (m) => t(`mentions.${m}`))}
+            required
+          />
+        )}
+      />
       <QuantityField
         label={t('removal.directionalsQuantity')}
         value={fields.length}

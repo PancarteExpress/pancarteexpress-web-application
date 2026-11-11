@@ -18,12 +18,12 @@ const userOrderSelect = {
     select: {
       id: true,
       requestType: true,
-      delay: true,
-      requestedDate: true,
       addresses: {
         select: {
           id: true,
           addressNumber: true,
+          delay: true,
+          requestedDate: true,
           kind: true,
 
           streetNumber: true,

@@ -41,7 +41,7 @@ export function buildCheckoutPayload(
         : {
             kind: 'serviceRequest',
             requestType: item.requestType,
-            schedule: item.schedule,
+            // Délai par adresse : chaque adresse porte le sien (schedule)
             addresses: item.addresses.map((address) => ({
               ...address,
               // Le serveur attend { type, details } ; les `id` sont ignorés par sa validation

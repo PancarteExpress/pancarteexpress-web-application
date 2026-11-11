@@ -1,4 +1,5 @@
-import { Service } from "./services";
+import type { Service } from "./services";
+import type { ScheduleFormValues } from "../schemas/schedule.schema";
 
 // Type "address"
 export interface StreetAddress {
@@ -21,6 +22,8 @@ export interface TerrainAddress {
 export type Address = (StreetAddress | TerrainAddress) & {
   id: string;
   services: Service[];
+  /** Délai résidentiel tel que saisi (validé à l'ajout au panier) ; absent = « Standard 24 h » */
+  scheduleDraft?: ScheduleFormValues;
 };
 
 // Factory functions

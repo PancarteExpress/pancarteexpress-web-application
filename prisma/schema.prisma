@@ -222,10 +222,6 @@ model ServiceRequest {
 
   requestType RequestType
 
-  /// null pour le grand format (pas de délai)
-  delay         ServiceDelay?
-  requestedDate DateTime?    @db.Date
-
   addresses ServiceAddress[]
 
   @@index([orderId])
@@ -250,6 +246,10 @@ model ServiceAddress {
   nearbyAddress String?
 
   city String
+
+  /// Délai propre à l'adresse ; null pour le grand format (pas de délai)
+  delay         ServiceDelay?
+  requestedDate DateTime?    @db.Date
 
   services Service[]
 

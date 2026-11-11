@@ -7,6 +7,7 @@ import { createEmptyRemovalForm, removalSchema, toRemovalFormValues, type Remova
 import { RemovalDirectionalsSection, RemovalFlagsSection, RemovalKeyboxSection, RemovalOtherSection, } from './RemovalSimpleSections';
 import type { RemovalDetails } from '@/features/services/types/removal';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
+import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 
 import styles from '../installationForm/installationForm.module.css';
 import { RemovalMaterialsSelector } from './RemovalMaterialsSelector';
@@ -16,12 +17,15 @@ import { RemovalAddonsSection } from './addons/RemovalAddonsSection';
 interface RemovalFormProps {
   handle: Ref<ServiceFormHandle<RemovalDetails>>;
   initialValues?: RemovalDetails;
+  /** Saisie en cours, reprise telle quelle (prioritaire sur initialValues) */
+  draft?: RemovalFormValues;
+  onAutoSave: AutoSaveHandler<RemovalFormValues, RemovalDetails>;
 }
 
-export function RemovalForm({ handle, initialValues }: RemovalFormProps) {
+export function RemovalForm({ handle, initialValues, draft, onAutoSave }: RemovalFormProps) {
   // Calculé une seule fois : useForm ne lit defaultValues qu'au montage
   const [defaultValues] = useState(() =>
-    initialValues ? toRemovalFormValues(initialValues) : createEmptyRemovalForm(),
+    draft ?? (initialValues ? toRemovalFormValues(initialValues) : createEmptyRemovalForm()),
   );
 
   const methods = useForm<RemovalFormValues, unknown, RemovalDetails>({
@@ -29,6 +33,7 @@ export function RemovalForm({ handle, initialValues }: RemovalFormProps) {
     defaultValues,
     shouldFocusError: true,
   });
+  useAutoSave(methods.watch, methods.getValues, removalSchema, onAutoSave);
 
   const materials = useWatch({ control: methods.control, name: 'materials' });
   const { handleSubmit } = methods;

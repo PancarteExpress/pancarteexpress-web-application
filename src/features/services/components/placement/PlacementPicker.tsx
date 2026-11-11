@@ -31,9 +31,11 @@ interface PlacementPickerProps {
   value: PlacementFormValues;
   onChange: (value: PlacementFormValues) => void;
   errors?: PlacementErrors;
+  /** N'affiche que les sous-options : l'emplacement est choisi ailleurs (cases à cocher) */
+  hideLocation?: boolean;
 }
 
-export function PlacementPicker({ legend, value, onChange, errors = {} }: PlacementPickerProps) {
+export function PlacementPicker({ legend, value, onChange, errors = {}, hideLocation = false }: PlacementPickerProps) {
   const t = useTranslations('services');
   const accessLabel = (a: AccessChoice) => t(`access.${a}`);
   // Mur : échelles seulement
@@ -55,15 +57,17 @@ export function PlacementPicker({ legend, value, onChange, errors = {} }: Placem
 
   return (
     <>
-      <RadioGroup
-        legend={legend}
-        options={toOptions(LOCATIONS, (l) => t(`locations.${l}`))}
-        value={location}
-        // Nouvel emplacement : toutes les sous-options repartent de zéro
-        onChange={(next) => onChange({ ...createEmptyPlacement(), location: next })}
-        error={errors.location}
-        required
-      />
+      {!hideLocation && (
+        <RadioGroup
+          legend={legend}
+          options={toOptions(LOCATIONS, (l) => t(`locations.${l}`))}
+          value={location}
+          // Nouvel emplacement : toutes les sous-options repartent de zéro
+          onChange={(next) => onChange({ ...createEmptyPlacement(), location: next })}
+          error={errors.location}
+          required
+        />
+      )}
 
       {location === 'wall' && (
         <div className={styles.subOptions}>

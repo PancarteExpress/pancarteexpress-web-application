@@ -42,6 +42,7 @@
       "removal": "Retrait",
       "correction": "Correction",
       "pickup": "Ramassage",
+      "delivery": "Livraison",
       "largeInstallation": "Installation grand format",
       "largeStoragePickup": "Ramassage pour entreposage (grand format)",
       "largeRetrieval": "Récupération grand format"

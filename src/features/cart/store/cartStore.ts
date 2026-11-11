@@ -5,21 +5,54 @@ import type {
   NewProductItem,
   NewServiceRequestItem,
   ProductCartItem,
+  ServiceRequestCartItem,
 } from '../types/cart';
+import type { ServiceSchedule } from '@/features/services/types/schedule';
+import type { Service } from '@/features/services/types/services';
+import { upgradeInstallationDetails } from '@/features/services/utils/legacyInstallation';
 import { MAX_QUANTITY } from '@/lib/orders/constants';
 
 const STORAGE_KEY = 'pancarte-cart';
-const STORAGE_VERSION = 5;
+const STORAGE_VERSION = 7;
 
 const clampQuantity = (q: number): number =>
   Number.isFinite(q) ? Math.min(MAX_QUANTITY, Math.max(1, Math.trunc(q))) : 1;
 
-// v5 : délai de réalisation ; les demandes plus anciennes passent en « Standard 24 h »
-const withDefaultSchedule = (items: CartItem[]): CartItem[] =>
+/** Demande enregistrée avant la v6 : un seul délai, sur la demande */
+type LegacyServiceRequest = ServiceRequestCartItem & { schedule?: ServiceSchedule | null };
+
+/**
+ * v6 : délai par adresse. Chaque adresse sans délai reçoit celui de sa demande (v5),
+ * sinon « Standard 24 h » en résidentiel ; le grand format n'a jamais de délai.
+ */
+const withAddressSchedules = (items: CartItem[]): CartItem[] =>
+  items.map((item) => {
+    if (item.kind !== 'serviceRequest') return item;
+    const legacy = item as LegacyServiceRequest;
+    const fallback: ServiceSchedule | null =
+      item.requestType === 'commercial' ? null : (legacy.schedule ?? { delay: 'standard24h' });
+    const next: LegacyServiceRequest = {
+      ...item,
+      addresses: item.addresses.map((a) => (a.schedule === undefined ? { ...a, schedule: fallback } : a)),
+    };
+    delete next.schedule;
+    return next;
+  });
+
+/** v7 : emplacement par élément de l'installation ; l'ancien emplacement unique est reporté sur chacun */
+const withInstallationPlacements = (items: CartItem[]): CartItem[] =>
   items.map((item) =>
-    item.kind === 'serviceRequest' && item.schedule === undefined
-      ? { ...item, schedule: item.requestType === 'residential' ? { delay: 'standard24h' } : null }
-      : item,
+    item.kind !== 'serviceRequest'
+      ? item
+      : {
+          ...item,
+          addresses: item.addresses.map((a) => ({
+            ...a,
+            services: a.services.map((s) =>
+              s.type === 'installation' ? (upgradeInstallationDetails(s) as Service) : s,
+            ),
+          })),
+        },
   );
 
 // Le localStorage est modifiable par l'utilisateur : on ne garde que les items plausibles
@@ -149,9 +182,9 @@ export const useCartStore = create<CartState>()(
         // v1 : conservé, considéré comme invité
         if (version === 1) return { items: stripLegacyInstallations(items), ownerId: null };
         // v2 : propriétaire conservé
-        if (version >= 2 && version <= 4) {
+        if (version >= 2 && version <= 6) {
           return {
-            items: withDefaultSchedule(version < 4 ? stripLegacyInstallations(items) : items),
+            items: withInstallationPlacements(withAddressSchedules(version < 4 ? stripLegacyInstallations(items) : items)),
             ownerId: typeof p?.ownerId === 'string' ? p.ownerId : null,
           };
         }
@@ -163,7 +196,7 @@ export const useCartStore = create<CartState>()(
         const p = persisted as Partial<PersistedCart> | undefined;
         return {
           ...current,
-          items: Array.isArray(p?.items) ? withDefaultSchedule(p.items.filter(isCartItem)) : [],
+          items: Array.isArray(p?.items) ? withAddressSchedules(p.items.filter(isCartItem)) : [],
           ownerId: typeof p?.ownerId === 'string' ? p.ownerId : null,
         };
       },

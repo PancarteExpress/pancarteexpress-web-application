@@ -6,14 +6,11 @@ import { useLocale, useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { inlineLoading } from '@/shared/components/deferredLoading/DeferredLoading';
-import { Notice } from '@/features/services/components/fields/Notice';
 import { RadioGroup } from '@/features/services/components/fields/RadioGroup';
 import { toOptions } from '@/features/services/components/fields/types';
 
-import { useRef } from 'react';
-import type { ServiceSchedule } from '@/features/services/types/schedule';
-import type { ServiceFormHandle } from './serviceFormHandle';
-import { ScheduleForm } from '../scheduleForm/ScheduleForm';
+import type { CartAddress } from '@/features/cart/types/cart';
+import { createEmptyScheduleForm, createScheduleSchema } from '@/features/services/schemas/schedule.schema';
 
 import { useAddressStore } from '@/features/services/store/addressStore';
 
@@ -24,7 +21,8 @@ import styles from './ServiceForm.module.css';
 import { formatAddress } from '@/features/services/utils/formatAddress';
 import { ServicesSummary } from '../servicesSummary/ServicesSummary';
 
-import { addressesWithServicesOf } from '@/features/services/utils/serviceRequestType';
+import { addressesWithServicesOf, requestTypeOf } from '@/features/services/utils/serviceRequestType';
+import type { ServiceKey } from '@/features/services/store/addressStore';
 
 const AddressManager = dynamic(() => import('@/features/services/components/addressManager/AddressManager'), { loading: inlineLoading });
 const AddressServices = dynamic(() => import('./AddressServices').then((m) => m.AddressServices), { loading: inlineLoading });
@@ -43,17 +41,37 @@ export default function ServiceForm() {
   const selectedAddressId = useAddressStore((s) => s.selectedAddressId);
   const clearServicesOf = useAddressStore((s) => s.clearServicesOf);
   const removeService = useAddressStore((s) => s.removeServiceFromAddress);
+  const drafts = useAddressStore((s) => s.drafts);
+  const clearDraft = useAddressStore((s) => s.clearDraft);
+  const setSelectedAddressId = useAddressStore((s) => s.setSelectedAddressId);
+  const requestValidation = useAddressStore((s) => s.requestValidation);
 
   const [requestType, setRequestType] = useState<RequestType | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId) ?? null;
+  // Services complets : ce qui part au panier
   const addressesWithServices = requestType ? addressesWithServicesOf(addresses, requestType) : [];
 
-  const scheduleRef = useRef<ServiceFormHandle<ServiceSchedule>>(null);
-  // Incrémentée après chaque ajout au panier : le délai repart de « Standard 24 h »
-  const [scheduleKey, setScheduleKey] = useState(0);
+  // Services de ce type de demande dont la saisie en cours est incomplète, par adresse
+  const incomplete: Record<string, ServiceKey[]> = {};
+  if (requestType) {
+    for (const [addressId, addressDrafts] of Object.entries(drafts)) {
+      const types = (Object.keys(addressDrafts) as ServiceKey[]).filter(
+        (type) => addressDrafts[type]?.complete === false && requestTypeOf({ type }) === requestType,
+      );
+      if (types.length > 0) incomplete[addressId] = types;
+    }
+  }
+
+  // Résumé : adresses avec des services complets ou en cours de saisie
+  const summaryAddresses = requestType
+    ? addresses
+        .map((a) => ({ ...a, services: a.services.filter((s) => requestTypeOf(s) === requestType) }))
+        .filter((a) => a.services.length > 0 || incomplete[a.id])
+    : [];
+
 
   const handleRequestTypeChange = (type: RequestType) => {
     setRequestType(type);
@@ -65,19 +83,40 @@ export default function ServiceForm() {
       setError(t('serviceForm.requestTypeRequired'));
       return;
     }
-    let schedule = null;
-    if (requestType === 'residential') {
-      schedule = await scheduleRef.current?.submit();
-      if (!schedule) return; // erreurs affichées dans le formulaire du délai
+    // Service incomplet : on ouvre la première adresse concernée et ses formulaires affichent leurs erreurs
+    const firstIncomplete = summaryAddresses.find((a) => incomplete[a.id]);
+    if (firstIncomplete) {
+      setError(t('serviceForm.incompleteServices'));
+      setSelectedAddressId(firstIncomplete.id);
+      requestValidation();
+      return;
+    }
+
+    // Délai de chaque adresse, validé maintenant : une date précise a pu passer depuis la saisie
+    const schema = createScheduleSchema();
+    const cartAddresses: CartAddress[] = [];
+    for (const address of addressesWithServices) {
+      const { scheduleDraft, ...rest } = address;
+      if (requestType === 'commercial') {
+        cartAddresses.push({ ...rest, schedule: null }); // grand format : aucun délai
+        continue;
+      }
+      const result = schema.safeParse(scheduleDraft ?? createEmptyScheduleForm());
+      if (!result.success) {
+        setError(t('serviceForm.invalidSchedule'));
+        setSelectedAddressId(address.id);
+        requestValidation();
+        return;
+      }
+      cartAddresses.push({ ...rest, schedule: result.data });
     }
 
     // Le store du panier fait une copie profonde : vider les adresses ne touche pas le panier
-    addServiceRequest({ requestType, addresses: addressesWithServices, schedule });
+    addServiceRequest({ requestType, addresses: cartAddresses });
     clearServicesOf(requestType);
     setRequestType(null);
     setError(null);
     setAddedToCart(true);
-    setScheduleKey((k) => k + 1);
   };
 
   return (
@@ -117,12 +156,14 @@ export default function ServiceForm() {
         )}
       </div>
 
-      {addressesWithServices.length > 0 && (
+      {summaryAddresses.length > 0 && (
         <>
-          {requestType === 'residential' && <ScheduleForm key={scheduleKey} handle={scheduleRef} />}
           <ServicesSummary
-            addresses={addressesWithServices}
+            addresses={summaryAddresses}
+            incomplete={incomplete}
+            showSchedule={requestType === 'residential'}
             onRemoveService={removeService}
+            onRemoveDraft={clearDraft}
             onAddToCart={handleAddToCart}
             error={error}
           />

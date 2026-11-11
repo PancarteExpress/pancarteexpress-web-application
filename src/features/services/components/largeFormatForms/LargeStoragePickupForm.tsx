@@ -13,25 +13,30 @@ import type { LargeStoragePickupDetails } from '@/features/services/types/largeF
 import { CheckboxGroup } from '@/features/services/components/fields/CheckboxGroup';
 import { toOptions } from '@/features/services/components/fields/types';
 import { useServiceFormHandle, type ServiceFormHandle } from '../serviceForm/serviceFormHandle';
+import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 import formStyles from '../installationForm/installationForm.module.css';
 
 interface LargeStoragePickupFormProps {
   handle: Ref<ServiceFormHandle<LargeStoragePickupDetails>>;
   initialValues?: LargeStoragePickupDetails;
+  /** Saisie en cours, reprise telle quelle (prioritaire sur initialValues) */
+  draft?: LargeStoragePickupFormValues;
+  onAutoSave: AutoSaveHandler<LargeStoragePickupFormValues, LargeStoragePickupDetails>;
 }
 
-export function LargeStoragePickupForm({ handle, initialValues }: LargeStoragePickupFormProps) {
+export function LargeStoragePickupForm({ handle, initialValues, draft, onAutoSave }: LargeStoragePickupFormProps) {
   const headingId = useId();
   const t = useTranslations('services.largeFormat');
   const [defaultValues] = useState(() =>
-    initialValues ? toLargeStoragePickupFormValues(initialValues) : createEmptyLargeStoragePickupForm(),
+    draft ?? (initialValues ? toLargeStoragePickupFormValues(initialValues) : createEmptyLargeStoragePickupForm()),
   );
 
-  const { control, handleSubmit } = useForm<LargeStoragePickupFormValues, unknown, LargeStoragePickupDetails>({
+  const { control, handleSubmit, watch, getValues } = useForm<LargeStoragePickupFormValues, unknown, LargeStoragePickupDetails>({
     resolver: zodResolver(largeStoragePickupSchema),
     defaultValues,
     shouldFocusError: true,
   });
+  useAutoSave(watch, getValues, largeStoragePickupSchema, onAutoSave);
   useServiceFormHandle(handle, handleSubmit);
 
   return (

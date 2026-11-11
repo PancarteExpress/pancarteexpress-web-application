@@ -37,7 +37,9 @@
     "confirmRemoveService": "Delete the “{service}” service saved for this address?",
     "saving": "Saving…",
     "saveServices": "Save services",
-    "servicesSaved": "Services saved."
+    "servicesSaved": "Services saved.",
+    "incompleteServices": "Some services are incomplete. Please complete them before adding the request to the cart.",
+    "invalidSchedule": "An address has an invalid timeframe. Please check the specific date chosen."
   },
   "addressManager": {
     "selectFromList": "Please select an address from the list",
@@ -210,7 +212,13 @@
     "removalPlanned": "Removal scheduled for {date}.",
     "removalPlannedHoliday": "Removal scheduled for {date} ({monday} is a holiday).",
     "otherTitle": "Other needs",
-    "otherNeeds": "Please specify your installation needs"
+    "otherNeeds": "Please specify your installation needs",
+    "unitPlacementLegend": "Please indicate the installation location",
+    "ownPlacementsLegend": "Where should we install {count, plural, one {the “{label}” addon} other {the # “{label}” addons}}?",
+    "ownPlacementsHint": "A single location: all addons will be installed in the same place.",
+    "placementsSpread": "{count} addons for {places} locations: our team will distribute them among these locations.",
+    "onSiteAssumption": "{choices} sign choices for {quantity} “{label}” addons: we will assume {extra, plural, one {the remaining addon will also be installed} other {the # remaining addons will also be installed}} on a sign already on site.",
+    "flagsPlacement": "Please indicate the location of the flags"
   },
   "placement": {
     "access": "Access",
@@ -474,7 +482,9 @@
     "modelNumber": "Model {number}",
     "withAnchorsAndPoles": "Anchors and posts",
     "withPoles": "Posts",
-    "combination": "Combination"
+    "combination": "Combination",
+    "incomplete": "Incomplete",
+    "dateToSpecify": "Specific date to choose"
   },
   "errors": {
     "required": "This field is required",
@@ -538,15 +548,16 @@
     "chooseAddon": "Choose an addon",
     "describeMaterial": "Describe the material",
     "quantityRange": "Between {min} and {max}",
-    "tooManyModels": "{max} models maximum"
+    "tooManyModels": "{max} models maximum",
+    "choosePlacement": "Choose at least one location",
+    "tooManyPlacements": "{max, plural, one {Only one location allowed} other {# locations maximum}}",
+    "duplicatePlacement": "Each location can only be chosen once"
   },
   "lookup": {
     "title": "Already submitted a request?",
     "intro": "Enter the request number (e.g. PE-11111) shown in your confirmation email, along with the email used when ordering.",
-    
     "addressNumber": "Request number",
     "addressTitle": "Request {number}",
-    
     "email": "Email used for the order",
     "submit": "Find my request",
     "searching": "Searching…",
@@ -556,8 +567,6 @@
     "tooManyAttempts": "Too many attempts. Please try again in a few minutes.",
     "invalid": "Please check the order number and email.",
     "networkError": "The search failed. Check your connection and try again.",
-    
-    
     "close": "Close summary"
   }
 }

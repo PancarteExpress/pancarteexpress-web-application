@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl';
 import { SERVICE_DELAYS } from '@/features/services/constants/schedule';
 import { CONTACT } from '@/shared/constants/contact';
 import {
-  createEmptyScheduleForm, createScheduleSchema, toScheduleFormValues, type ScheduleFormValues,
+  createEmptyScheduleForm, createScheduleSchema, type ScheduleFormValues,
 } from '@/features/services/schemas/schedule.schema';
 import type { ServiceSchedule } from '@/features/services/types/schedule';
 import { earliestSpecificDate, isBusinessDay } from '@/features/services/utils/holidays';
@@ -15,29 +15,32 @@ import { DateField } from '@/features/services/components/fields/DateField';
 import { RadioGroup } from '@/features/services/components/fields/RadioGroup';
 import { toOptions } from '@/features/services/components/fields/types';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
+import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 import styles from '../installationForm/installationForm.module.css';
 
 const isNonBusinessDay = (date: Date) => !isBusinessDay(date);
 
 interface ScheduleFormProps {
   handle: Ref<ServiceFormHandle<ServiceSchedule>>;
-  initialValues?: ServiceSchedule;
+  /** Délai déjà saisi pour cette adresse */
+  draft?: ScheduleFormValues;
+  onAutoSave: AutoSaveHandler<ScheduleFormValues, ServiceSchedule>;
 }
 
-export function ScheduleForm({ handle, initialValues }: ScheduleFormProps) {
+/** Délai de réalisation d'une adresse résidentielle, enregistré automatiquement */
+export function ScheduleForm({ handle, draft, onAutoSave }: ScheduleFormProps) {
   const headingId = useId();
   const t = useTranslations('services.schedule');
   const [schema] = useState(() => createScheduleSchema());
   const [earliest] = useState(() => earliestSpecificDate(new Date()));
-  const [defaultValues] = useState(() =>
-    initialValues ? toScheduleFormValues(initialValues) : createEmptyScheduleForm(),
-  );
+  const [defaultValues] = useState(() => draft ?? createEmptyScheduleForm());
 
-  const { control, handleSubmit, setValue, formState } = useForm<ScheduleFormValues, unknown, ServiceSchedule>({
+  const { control, handleSubmit, setValue, formState, watch, getValues } = useForm<ScheduleFormValues, unknown, ServiceSchedule>({
     resolver: zodResolver(schema),
     defaultValues,
     shouldFocusError: true,
   });
+  useAutoSave(watch, getValues, schema, onAutoSave);
   const delay = useWatch({ control, name: 'delay' });
 
   useImperativeHandle(handle, () => ({

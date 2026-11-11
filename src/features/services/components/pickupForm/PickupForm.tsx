@@ -14,25 +14,30 @@ import { TextField } from '@/features/services/components/fields/TextField';
 import { YesNoField } from '@/features/services/components/fields/YesNoField';
 import { toOptions } from '@/features/services/components/fields/types';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
+import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 import styles from '../installationForm/installationForm.module.css';
 
 interface PickupFormProps {
   handle: Ref<ServiceFormHandle<PickupDetails>>;
   initialValues?: PickupDetails;
+  /** Saisie en cours, reprise telle quelle (prioritaire sur initialValues) */
+  draft?: PickupFormValues;
+  onAutoSave: AutoSaveHandler<PickupFormValues, PickupDetails>;
 }
 
-export function PickupForm({ handle, initialValues }: PickupFormProps) {
+export function PickupForm({ handle, initialValues, draft, onAutoSave }: PickupFormProps) {
   const headingId = useId();
   const t = useTranslations('services.pickup');
   const [defaultValues] = useState(() =>
-    initialValues ? toPickupFormValues(initialValues) : createEmptyPickupForm(),
+    draft ?? (initialValues ? toPickupFormValues(initialValues) : createEmptyPickupForm()),
   );
 
-  const { control, handleSubmit } = useForm<PickupFormValues, unknown, PickupDetails>({
+  const { control, handleSubmit, watch, getValues } = useForm<PickupFormValues, unknown, PickupDetails>({
     resolver: zodResolver(pickupSchema),
     defaultValues,
     shouldFocusError: true,
   });
+  useAutoSave(watch, getValues, pickupSchema, onAutoSave);
 
   const materials = useWatch({ control, name: 'materials' });
   const newModels = useWatch({ control, name: 'newModels' });

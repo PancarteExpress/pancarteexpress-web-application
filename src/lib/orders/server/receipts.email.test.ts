@@ -103,7 +103,7 @@ describe('sendReceipts', () => {
   it('précise que le montant payé ne couvre que les produits quand il y a des services', async () => {
     prismaMock.order.findUnique.mockResolvedValue({
       ...order,
-      serviceRequests: [{ requestType: 'residential', delay: 'standard24h', requestedDate: null, addresses: [] }],
+      serviceRequests: [{ requestType: 'residential', addresses: [] }],
     });
 
     await sendReceipts('o1');
@@ -121,11 +121,12 @@ describe('sendReceipts', () => {
       serviceRequests: [
         {
           requestType: 'residential',
-          delay: 'urgent12h',
-          requestedDate: null,
           addresses: [
             {
               addressNumber: 11111,
+              // Délai par adresse
+              delay: 'urgent12h',
+              requestedDate: null,
               kind: 'civicAddress',
               streetNumber: '200',
               streetName: 'Boulevard Lebeau',

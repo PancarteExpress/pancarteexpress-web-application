@@ -14,6 +14,7 @@ import {
 import type { CorrectionDetails } from '../types/correction';
 
 import { isValidIsoDate, isValidTime } from '../utils/time';
+import { upgradeInstallationDetails } from '../utils/legacyInstallation';
 
 /**
  * Schémas de la forme DOMAINE (sortie des schémas de formulaire), telle que stockée dans Service.details.
@@ -53,6 +54,8 @@ const targets = {
   quantity: z.number().int().min(1),
   frameUids: z.array(z.string()),
   onSiteCount: z.number().int().min(0),
+  /** null : posés sur les pancartes commandées */
+  placements: z.array(placementSchema).min(1).nullable(),
 };
 
 const addonSchema = z.union([
@@ -63,8 +66,8 @@ const addonSchema = z.union([
 ]);
 
 const flagsSchema = z.union([
-  z.object({ quantity: z.number().int().min(1), mention: z.enum(FLAG_MENTIONS).exclude(['other']) }),
-  z.object({ quantity: z.number().int().min(1), mention: z.literal('other'), customMention: z.string() }),
+  z.object({ quantity: z.number().int().min(1), placement: z.string(), mention: z.enum(FLAG_MENTIONS).exclude(['other']) }),
+  z.object({ quantity: z.number().int().min(1), placement: z.string(), mention: z.literal('other'), customMention: z.string() }),
 ]);
 
 const openHouseSchema = z.object({
@@ -77,8 +80,8 @@ const openHouseSchema = z.object({
   removeNextMonday: z.boolean(),
 });
 
-export const installationDetailsSchema = z.object({
-  placement: placementSchema,
+/** Les anciennes installations (emplacement unique) sont converties avant validation */
+export const installationDetailsSchema = z.preprocess(upgradeInstallationDetails, z.object({
   frames: absent(z.object({
     pickupAddress: z.string().nullable(),
     units: z.array(z.object({
@@ -88,6 +91,7 @@ export const installationDetailsSchema = z.object({
         z.object({ type: z.literal('account'), name: z.string() }),
         z.object({ type: z.literal('custom'), names: z.string() }),
       ]).nullable(),
+      placement: placementSchema,
     })).min(1),
   })),
   kits: absent(z.object({
@@ -97,6 +101,7 @@ export const installationDetailsSchema = z.object({
         z.object({ type: z.enum(KIT_MODELS).exclude(['custom']) }),
         z.object({ type: z.literal('custom'), description: z.string() }),
       ]),
+      placement: placementSchema,
     })).min(1),
   })),
   addons: absent(z.array(addonSchema).min(1)),
@@ -105,7 +110,7 @@ export const installationDetailsSchema = z.object({
   flags: absent(flagsSchema),
   directionals: absent(z.object({ mention: z.enum(SIGN_MENTIONS), units: z.array(placedUnit).min(1) })),
   otherNeeds: absent(z.string()),
-}) satisfies z.ZodType<InstallationDetails>;
+})) satisfies z.ZodType<InstallationDetails>;
 
 /* ---------- Retrait ---------- */
 
@@ -115,8 +120,20 @@ export const removalDetailsSchema = z.object({
   frames: absent(z.object({ units: z.array(removalUnit).min(1) })),
   addons: absent(z.object({ units: z.array(removalUnit).min(1), details: z.string().nullable() })),
   keybox: absent(z.object({ quantity: z.number().int().min(1), code: z.string().min(1), placement: z.string() })),
-  flags: absent(z.object({ quantity: z.number().int().min(1), placement: z.string() })),
-  directionals: absent(z.object({ units: z.array(placedUnit).min(1) })),
+  // Mention absente des retraits enregistrés avant cette question : null
+  flags: absent(z.union([
+    z.object({
+      quantity: z.number().int().min(1), placement: z.string(), mention: z.literal('other'), customMention: z.string(),
+    }),
+    z.object({
+      quantity: z.number().int().min(1), placement: z.string(),
+      mention: z.enum(FLAG_MENTIONS).exclude(['other']).nullable().default(null),
+    }),
+  ])),
+  directionals: absent(z.object({
+    mention: z.enum(SIGN_MENTIONS).nullable().default(null),
+    units: z.array(placedUnit).min(1),
+  })),
   otherDetails: absent(z.string()),
 }) satisfies z.ZodType<RemovalDetails>;
 

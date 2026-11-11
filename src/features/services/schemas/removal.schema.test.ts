@@ -119,16 +119,28 @@ describe('removalSchema — boîtes à clés, drapeaux, directionnelles, autres'
     expect(result.success && result.data.keybox).toEqual({ quantity: 2, code: '4821', placement: '' });
   });
 
-  it('drapeaux : 2 maximum, emplacement facultatif', () => {
-    expect(removalSchema.safeParse(only(['flags'])).success).toBe(true);
-    expect(issuePaths(removalSchema.safeParse(only(['flags'], { flags: { quantity: 3, placement: '' } }))))
+  const flags = (o: Partial<RemovalFormValues['flags']> = {}): RemovalFormValues['flags'] =>
+    ({ mention: 'sold', customMention: '', quantity: 1, placement: '', ...o });
+
+  it('drapeaux : mention requise, 2 maximum, emplacement facultatif', () => {
+    expect(issuePaths(removalSchema.safeParse(only(['flags'])))).toContain('flags.mention');
+    expect(removalSchema.safeParse(only(['flags'], { flags: flags() })).success).toBe(true);
+    expect(issuePaths(removalSchema.safeParse(only(['flags'], { flags: flags({ quantity: 3 }) }))))
       .toContain('flags.quantity');
   });
 
-  it('directionnelles : au moins une, emplacements facultatifs', () => {
-    expect(issuePaths(removalSchema.safeParse(only(['directional'])))).toContain('directionals.units');
+  it('drapeaux : « Autres » exige le texte de la mention', () => {
+    expect(issuePaths(removalSchema.safeParse(only(['flags'], { flags: flags({ mention: 'other' }) }))))
+      .toContain('flags.customMention');
+    const result = removalSchema.safeParse(only(['flags'], { flags: flags({ mention: 'other', customMention: 'Prix réduit' }) }));
+    expect(result.success && result.data.flags).toEqual({ mention: 'other', customMention: 'Prix réduit', quantity: 1, placement: '' });
+  });
+
+  it('directionnelles : mention requise, au moins une, emplacements facultatifs', () => {
+    expect(issuePaths(removalSchema.safeParse(only(['directional']))))
+      .toEqual(expect.arrayContaining(['directionals.mention', 'directionals.units']));
     expect(removalSchema.safeParse(only(['directional'], {
-      directionals: { units: [createRemovalDirectional()] },
+      directionals: { mention: 'forRent', units: [createRemovalDirectional()] },
     })).success).toBe(true);
   });
 
@@ -139,8 +151,8 @@ describe('removalSchema — boîtes à clés, drapeaux, directionnelles, autres'
   it('aller-retour complet', () => {
     const first = removalSchema.parse(only(['keybox', 'flags', 'directional', 'other'], {
       keybox: { quantity: 2, code: '123456', placement: 'Rampe avant' },
-      flags: { quantity: 2, placement: 'Coin de la rue' },
-      directionals: { units: [{ ...createRemovalDirectional(), placement: 'Newman et Léger' }] },
+      flags: flags({ mention: 'other', customMention: 'Prix réduit', quantity: 2, placement: 'Coin de la rue' }),
+      directionals: { mention: 'sold', units: [{ ...createRemovalDirectional(), placement: 'Newman et Léger' }] },
       otherDetails: 'Retirer le support mural',
     }));
     expect(removalSchema.parse(toRemovalFormValues(first))).toEqual(first);
@@ -169,9 +181,22 @@ describe('removalSchema — relecture depuis la base', () => {
       ...createEmptyRemovalForm(),
       materials: ['keybox', 'flags', 'directional', 'other'],
       keybox: { quantity: 2, code: '123456', placement: 'Rampe avant' },
-      flags: { quantity: 2, placement: 'Coin de la rue' },
-      directionals: { units: [{ ...createRemovalDirectional(), placement: 'Newman et Léger' }] },
+      flags: { mention: 'forSale', customMention: '', quantity: 2, placement: 'Coin de la rue' },
+      directionals: { mention: 'forSale', units: [{ ...createRemovalDirectional(), placement: 'Newman et Léger' }] },
       otherDetails: 'Retirer le support mural',
     }],
   ])('%s', (_, values) => expectReadable('removal', removalSchema, values));
+});
+import { removalDetailsSchema } from './residentialDomain.schema';
+
+describe('removalDetailsSchema — retraits enregistrés avant la question de la mention', () => {
+  it('restent lisibles, sans mention', () => {
+    const result = removalDetailsSchema.safeParse({
+      frames: null, addons: null, keybox: null, otherDetails: null,
+      flags: { quantity: 1, placement: '' },
+      directionals: { units: [{ uid: 'd1', placement: '' }] },
+    });
+    expect(result.success && result.data.flags?.mention).toBeNull();
+    expect(result.success && result.data.directionals?.mention).toBeNull();
+  });
 });

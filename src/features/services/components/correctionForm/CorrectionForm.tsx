@@ -13,26 +13,31 @@ import { RadioGroup } from '@/features/services/components/fields/RadioGroup';
 import { TextField } from '@/features/services/components/fields/TextField';
 import { toOptions } from '@/features/services/components/fields/types';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
+import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 import styles from '../installationForm/installationForm.module.css';
 
 interface CorrectionFormProps {
   handle: Ref<ServiceFormHandle<CorrectionDetails>>;
   initialValues?: CorrectionDetails;
+  /** Saisie en cours, reprise telle quelle (prioritaire sur initialValues) */
+  draft?: CorrectionFormValues;
+  onAutoSave: AutoSaveHandler<CorrectionFormValues, CorrectionDetails>;
 }
 
-export function CorrectionForm({ handle, initialValues }: CorrectionFormProps) {
+export function CorrectionForm({ handle, initialValues, draft, onAutoSave }: CorrectionFormProps) {
   const headingId = useId();
   const t = useTranslations('services.correction');
   // Calculé une seule fois : useForm ne lit defaultValues qu'au montage
   const [defaultValues] = useState(() =>
-    initialValues ? toCorrectionFormValues(initialValues) : createEmptyCorrectionForm(),
+    draft ?? (initialValues ? toCorrectionFormValues(initialValues) : createEmptyCorrectionForm()),
   );
 
-  const { control, handleSubmit, setValue, formState } = useForm<CorrectionFormValues, unknown, CorrectionDetails>({
+  const { control, handleSubmit, setValue, formState, watch, getValues } = useForm<CorrectionFormValues, unknown, CorrectionDetails>({
     resolver: zodResolver(correctionSchema),
     defaultValues,
     shouldFocusError: true,
   });
+  useAutoSave(watch, getValues, correctionSchema, onAutoSave);
 
   useImperativeHandle(handle, () => ({
     submit: () =>
