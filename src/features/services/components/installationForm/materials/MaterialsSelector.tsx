@@ -2,15 +2,10 @@
 
 import { Controller } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
-import {
-  FRAME_BUNDLED_MATERIALS, IMPLEMENTED_MATERIALS, MATERIALS,
-  type ImplementedMaterial, type Material,
-} from '../../constants/installation';
-import {
-  createEmptyOpenHouse, createFrameUnit, createKitUnit, createPlacedUnit,
-} from '@/features/services/schemas/installation.schema';
-import { CheckboxGroup, Notice, type ChoiceOption } from '../fields';
-import { bindField, useFormUpdater, useInstallationFormContext } from './formContext';
+import { FRAME_BUNDLED_MATERIALS, IMPLEMENTED_MATERIALS, MATERIALS, type ImplementedMaterial, type Material, } from '../../../constants/installation';
+import { createEmptyOpenHouse, createFrameUnit, createKitUnit, createPlacedUnit, } from '@/features/services/schemas/installation.schema';
+import { CheckboxGroup, Notice, type ChoiceOption } from '../../fields';
+import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
 
 const IMPLEMENTED: readonly Material[] = IMPLEMENTED_MATERIALS;
 const BUNDLED: readonly Material[] = FRAME_BUNDLED_MATERIALS;
@@ -43,7 +38,6 @@ export function MaterialsSelector() {
           const nextHasFrames = selected.includes('frames');
           // Avec des pancartes, le kit est inclus : le kit seul et ses détails sont retirés
           const materials = nextHasFrames ? selected.filter((m) => m !== 'kit') : selected;
-
 
           if (nextHasFrames !== hasFrames) {
             update('frames', {

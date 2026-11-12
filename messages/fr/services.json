@@ -151,7 +151,21 @@
     "forRent": "À louer",
     "other": "Autres"
   },
+  
+  "placement": {
+    "access": "Accès",
+    "mounting": "Méthode de fixation",
+    "contact": "Coordonnées pour la prise de rendez-vous",
+    "keyboxInfo": "Informations sur la boîte à clés",
+    "keyboxInfoPlaceholder": "Ex. : code, emplacement de la boîte…",
+    "windowSide": "Emplacement sur la fenêtre",
+    "description": "Veuillez décrire l'emplacement",
+    "phoneAppointmentText": "Rendez-vous téléphonique : {contact}",
+    "keyboxText": "Boîte à clés : {info}"
+  },
+
   "installation": {
+    "title": "Détails de l'installation",
     "loading": "Chargement…",
     "materialsLegend": "Qu'avez-vous besoin d'installer ?",
     "kitIncluded": "Les installations de pancartes incluent l'installation du kit (ancrage et poteau).",
@@ -183,7 +197,7 @@
     "useAccountName": "Est-ce que le nom à afficher est « {name} » ?",
     "displayName": "Nom(s) à afficher",
     "displayNamePlaceholder": "Ex. : indiquer le(s) nom(s) à afficher",
-    "framesTitle": "Détails des pancartes",
+    "framesTitle": "Détails de l'installation des pancartes",
     "framesQuantity": "Combien de pancartes voulez-vous ?",
     "pickupLegend": "Devons-nous aller chercher le matériel à installer (pancartes, ancrages, poteaux) à une autre adresse ?",
     "pickupFee": "Un montant supplémentaire basé sur la distance du déplacement sera appliqué.",
@@ -220,18 +234,8 @@
     "onSiteAssumption": "{choices} choix de pancartes pour {quantity} ajouts « {label} » : nous considérons que {extra, plural, one {l'ajout restant sera aussi installé} other {les # ajouts restants seront aussi installés}} sur une pancarte déjà sur place.",
     "flagsPlacement": "Veuillez indiquer l'emplacement des drapeaux"
   },
-  "placement": {
-    "access": "Accès",
-    "mounting": "Méthode de fixation",
-    "contact": "Coordonnées pour la prise de rendez-vous",
-    "keyboxInfo": "Informations sur la boîte à clés",
-    "keyboxInfoPlaceholder": "Ex. : code, emplacement de la boîte…",
-    "windowSide": "Emplacement sur la fenêtre",
-    "description": "Veuillez décrire l'emplacement",
-    "phoneAppointmentText": "Rendez-vous téléphonique : {contact}",
-    "keyboxText": "Boîte à clés : {info}"
-  },
   "removal": {
+    "title": "Détails du retrait",
     "materials": {
       "frames": "Pancarte (incluant ajouts)",
       "addons": "Ajouts (sans la pancarte)",
@@ -395,6 +399,7 @@
       "noPaint": "sans peinture"
     }
   },
+
   "schedule": {
     "delays": {
       "standard24h": "Standard 24 h*",

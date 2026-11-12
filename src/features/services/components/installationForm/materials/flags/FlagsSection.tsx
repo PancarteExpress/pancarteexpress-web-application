@@ -5,8 +5,8 @@ import { Controller } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { FLAG_MENTIONS, MAX_FLAGS, TEXT_LIMITS } from '@/features/services/constants/installation';
 import { QuantityField, RadioGroup, TextField, toOptions } from '@/features/services/components/fields';
-import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
-import styles from '../installationForm.module.css';
+import { bindField, useFormUpdater, useInstallationFormContext } from '../../formContext';
+import styles from '../../installationForm.module.css';
 
 export function FlagsSection() {
   const headingId = useId();
@@ -16,7 +16,7 @@ export function FlagsSection() {
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.sectionTitle}>{t('installation.flagsTitle')}</h3>
+      <h3 id={headingId} className={styles.materialTitle}>{t('installation.flagsTitle')}</h3>
 
       <Controller
         control={control}

@@ -4,7 +4,7 @@ import { Controller, useFieldArray } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { createPlacedUnit } from '@/features/services/schemas/installation.schema';
 import { QuantityField, TextField } from '@/features/services/components/fields';
-import { bindField, useInstallationFormContext } from './formContext';
+import { bindField, useInstallationFormContext } from '../../formContext';
 
 type PlacedUnitsPath = 'directionals.units';
 

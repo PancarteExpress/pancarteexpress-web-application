@@ -4,10 +4,10 @@ import { Controller, useFormState, useWatch } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { ADDONS_WITH_MODEL, FRAME_MODELS, TEXT_LIMITS, type Addon } from '@/features/services/constants/installation';
 import { RadioGroup, TextField, toOptions } from '@/features/services/components/fields';
-import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
+import { bindField, useFormUpdater, useInstallationFormContext } from '../../formContext';
 import { TargetsPicker } from './TargetsPicker';
-import { OwnPlacementsField } from '../PlacementFields';
-import styles from '../installationForm.module.css';
+import { MultiplePlacementFields } from '../../placementFieldsTEst/multiplePlacementFields';
+import styles from '../../installationForm.module.css';
 
 // Clés i18n du namespace services.installation
 const MENTION_FIELDS: Partial<Record<Addon, { labelKey: 'otherMention' | 'customNoMentionDetails'; required: boolean }>> = {
@@ -104,7 +104,7 @@ export function AddonAssignmentRow({ index, frameUids }: AddonAssignmentRowProps
 
       {/* Sans pancarte commandée, l'ajout a ses propres emplacements */}
       {frameUids.length === 0 && (
-        <OwnPlacementsField name={`${path}.placements`} quantity={entry.quantity} label={label} />
+        <MultiplePlacementFields name={`${path}.placements`} quantity={entry.quantity} label={label} />
       )}
     </fieldset>
   );

@@ -1,16 +1,14 @@
 .group {
-  min-inline-size: 0;
-  margin: 0 0 1.25rem;
-  padding: 0;
   border: 0;
-  
+  margin: 1rem 0;
 }
 
 .legend,
 .label {
   padding: 0;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   font-weight: 700;
+  font-size: 1.125rem;
 }
 
 .required,
@@ -126,11 +124,12 @@
 /* ---------- Bandeaux ---------- */
 
 .notice {
-  margin: 0 0 1rem;
   padding: 0.625rem 0.875rem;
   border-radius: 8px;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
+  display: flex;
+  justify-content: center;
 }
 
 .notice[data-variant='info'] { background: #d6e6ff; }

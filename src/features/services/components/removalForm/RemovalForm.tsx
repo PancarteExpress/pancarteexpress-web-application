@@ -13,6 +13,7 @@ import styles from '../installationForm/installationForm.module.css';
 import { RemovalMaterialsSelector } from './RemovalMaterialsSelector';
 import { RemovalFramesSection } from './frames/RemovalFramesSection';
 import { RemovalAddonsSection } from './addons/RemovalAddonsSection';
+import { useTranslations } from 'next-intl';
 
 interface RemovalFormProps {
   handle: Ref<ServiceFormHandle<RemovalDetails>>;
@@ -23,6 +24,7 @@ interface RemovalFormProps {
 }
 
 export function RemovalForm({ handle, initialValues, draft, onAutoSave }: RemovalFormProps) {
+  const t = useTranslations('services.removal');
   // Calculé une seule fois : useForm ne lit defaultValues qu'au montage
   const [defaultValues] = useState(() =>
     draft ?? (initialValues ? toRemovalFormValues(initialValues) : createEmptyRemovalForm()),
@@ -48,6 +50,7 @@ export function RemovalForm({ handle, initialValues, draft, onAutoSave }: Remova
   return (
     <FormProvider {...methods}>
       <form noValidate className={styles.form} onSubmit={(e) => e.preventDefault()}>
+        <h3 className={styles.sectionTitle}>{t('title')}</h3>
         <RemovalMaterialsSelector />
         {materials.includes('frames') && <RemovalFramesSection />}
         {materials.includes('addons') && <RemovalAddonsSection />}

@@ -8,9 +8,12 @@ import AddressAutocomplete from '@/shared/components/addressAutocomplete/Address
 import { MAX_FRAMES } from '@/features/services/constants/installation';
 import { createFrameUnit } from '@/features/services/schemas/installation.schema';
 import { Notice, QuantityField, YesNoField } from '@/features/services/components/fields';
-import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
+import { bindField, useFormUpdater, useInstallationFormContext } from '../../formContext';
 import { FrameUnitFields } from './FrameUnitFields';
-import styles from '../installationForm.module.css';
+
+import { FaSignHanging } from "react-icons/fa6";
+
+import styles from '../../installationForm.module.css';
 
 interface FramesSectionProps {
   isMember: boolean;
@@ -48,24 +51,25 @@ export function FramesSection({ isMember, accountName }: FramesSectionProps) {
   };
 
   return (
-    <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.sectionTitle}>{t('installation.framesTitle')}</h3>
+    <section aria-labelledby={headingId} className={styles.material}>
+      <h3 id={headingId} className={styles.title}><FaSignHanging size={24} /> {t('installation.framesTitle')}</h3>
 
-      {!isMember && <PickupFields />}
+      <div style={{margin : '10px 0' }}>
+        {!isMember && <PickupFields />}
 
-      <QuantityField
-        label={t('installation.framesQuantity')}
-        value={fields.length}
-        onChange={handleQuantityChange}
-        min={1}
-        max={MAX_FRAMES}
-        hint={t('common.max', { max: MAX_FRAMES })}
-      />
+        <QuantityField
+          label={t('installation.framesQuantity')}
+          value={fields.length}
+          onChange={handleQuantityChange}
+          min={1}
+          max={MAX_FRAMES}
+          hint={t('common.max', { max: MAX_FRAMES })}
+        />
 
-      {/* Temporaire : remplacé par FrameUnitFields à l'étape 3c */}
-      {fields.map((field, index) => (
-        <FrameUnitFields key={field.id} index={index} isMember={isMember} accountName={accountName} />
-      ))}
+        {fields.map((field, index) => (
+          <FrameUnitFields key={field.id} index={index} isMember={isMember} accountName={accountName} />
+        ))}
+      </div>
     </section>
   );
 }

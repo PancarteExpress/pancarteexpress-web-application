@@ -3,10 +3,10 @@
 import { useId } from 'react';
 import { useWatch } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
-import { useFrameUids, useInstallationFormContext } from '../formContext';
+import { useFrameUids, useInstallationFormContext } from '../../formContext';
 import { AddonAssignmentRow } from './AddonAssignmentRow';
 import { OpenHouseAssignmentRow } from './OpenHouseAssignmentRow';
-import styles from '../installationForm.module.css';
+import styles from '../../installationForm.module.css';
 
 /** Répartition de tout ce qui se pose sur une pancarte : ajouts et visite libre. */
 export function AssignmentsSection() {
@@ -24,7 +24,7 @@ export function AssignmentsSection() {
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.sectionTitle}>{t('assignmentsTitle')}</h3>
+      <h3 id={headingId} className={styles.materialTitle}>{t('assignmentsTitle')}</h3>
 
       {showAddons &&
         addons.map((a, i) => (

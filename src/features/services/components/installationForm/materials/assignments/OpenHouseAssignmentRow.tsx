@@ -2,10 +2,10 @@
 
 import { useFormState, useWatch } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
-import { useFormUpdater, useInstallationFormContext } from '../formContext';
+import { useFormUpdater, useInstallationFormContext } from '../../formContext';
 import { TargetsPicker } from './TargetsPicker';
-import { OwnPlacementsField } from '../PlacementFields';
-import styles from '../installationForm.module.css';
+import { MultiplePlacementFields } from '../../placementFieldsTEst/multiplePlacementFields';
+import styles from '../../installationForm.module.css';
 
 export function OpenHouseAssignmentRow({ frameUids }: { frameUids: string[] }) {
   const { control } = useInstallationFormContext();
@@ -39,7 +39,7 @@ export function OpenHouseAssignmentRow({ frameUids }: { frameUids: string[] }) {
 
       {/* Sans pancarte commandée, les affichettes ont leurs propres emplacements */}
       {frameUids.length === 0 && (
-        <OwnPlacementsField name="openHouse.placements" quantity={quantity} label={t('openHouse')} />
+        <MultiplePlacementFields name="openHouse.placements" quantity={quantity} label={t('openHouse')} />
       )}
     </fieldset>
   );

@@ -9,8 +9,8 @@ import { addMinutesClamped, removalDayAfter, toMinutes } from '@/features/servic
 import { parseIso } from '@/features/services/utils/holidays';
 import { getDay, nextMonday } from 'date-fns';
 import { DateField, QuantityField, TextField, TimeField, YesNoField } from '@/features/services/components/fields';
-import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
-import styles from '../installationForm.module.css';
+import { bindField, useFormUpdater, useInstallationFormContext } from '../../formContext';
+import styles from '../../installationForm.module.css';
 import { addDays, format, parse } from 'date-fns';
 import { useAppLocale } from '@/shared/hooks/useAppLocale';
 import { formatIsoDay } from '@/features/services/utils/formatDay';
@@ -60,7 +60,7 @@ export function OpenHouseSection() {
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.sectionTitle}>{t('installation.openHouseTitle')}</h3>
+      <h3 id={headingId} className={styles.materialTitle}>{t('installation.openHouseTitle')}</h3>
 
       <QuantityField
         label={t('installation.openHouseDirectionalsQuantity')}

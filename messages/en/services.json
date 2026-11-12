@@ -151,7 +151,21 @@
     "forRent": "For rent",
     "other": "Other"
   },
+  
+  "placement": {
+    "access": "Access",
+    "mounting": "Mounting method",
+    "contact": "Contact details to book the appointment",
+    "keyboxInfo": "Keybox information",
+    "keyboxInfoPlaceholder": "E.g.: code, keybox location…",
+    "windowSide": "Position on the window",
+    "description": "Please describe the location",
+    "phoneAppointmentText": "Phone appointment: {contact}",
+    "keyboxText": "Keybox: {info}"
+  },
+
   "installation": {
+    "title": "Installation details",
     "loading": "Loading…",
     "materialsLegend": "What do you need installed?",
     "kitIncluded": "Sign installations include installation of the kit (anchor and post).",
@@ -183,7 +197,7 @@
     "useAccountName": "Is the name to display “{name}”?",
     "displayName": "Name(s) to display",
     "displayNamePlaceholder": "E.g.: enter the name(s) to display",
-    "framesTitle": "Sign details",
+    "framesTitle": "Sign installation details",
     "framesQuantity": "How many signs do you want?",
     "pickupLegend": "Do we need to pick up the material to install (signs, anchors, posts) at another address?",
     "pickupFee": "An additional fee based on the travel distance will apply.",
@@ -220,18 +234,8 @@
     "onSiteAssumption": "{choices} sign choices for {quantity} “{label}” addons: we will assume {extra, plural, one {the remaining addon will also be installed} other {the # remaining addons will also be installed}} on a sign already on site.",
     "flagsPlacement": "Please indicate the location of the flags"
   },
-  "placement": {
-    "access": "Access",
-    "mounting": "Mounting method",
-    "contact": "Contact details to book the appointment",
-    "keyboxInfo": "Keybox information",
-    "keyboxInfoPlaceholder": "E.g.: code, keybox location…",
-    "windowSide": "Position on the window",
-    "description": "Please describe the location",
-    "phoneAppointmentText": "Phone appointment: {contact}",
-    "keyboxText": "Keybox: {info}"
-  },
   "removal": {
+    "title": "Removal details",
     "materials": {
       "frames": "Sign (including addons)",
       "addons": "Addons (without the sign)",
@@ -395,6 +399,7 @@
       "noPaint": "no paint"
     }
   },
+
   "schedule": {
     "delays": {
       "standard24h": "Standard 24 h*",

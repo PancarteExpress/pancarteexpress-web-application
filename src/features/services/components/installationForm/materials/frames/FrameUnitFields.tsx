@@ -4,9 +4,9 @@ import { Controller } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { FRAME_MODELS, TEXT_LIMITS } from '@/features/services/constants/installation';
 import { RadioGroup, TextField, YesNoField, toOptions } from '@/features/services/components/fields';
-import { bindField, useFormUpdater, useInstallationFormContext, type FrameUnitPath } from '../formContext';
-import { UnitPlacementField } from '../PlacementFields';
-import styles from '../installationForm.module.css';
+import { bindField, useFormUpdater, useInstallationFormContext, type FrameUnitPath } from '../../formContext';
+import { UnitPlacementField } from '../../placementFieldsTEst/unitPlacementField';
+import styles from '../../installationForm.module.css';
 
 interface FrameUnitFieldsProps {
   index: number;

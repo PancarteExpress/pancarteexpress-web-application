@@ -131,7 +131,6 @@ export default function ServiceForm() {
           onChange={handleRequestTypeChange}
           columns={2}
         />
-
         {requestType !== null && (
         <>
         <AddressManager />

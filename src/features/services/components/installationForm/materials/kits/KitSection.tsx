@@ -5,10 +5,10 @@ import { Controller, useFieldArray } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { KIT_MODELS, MAX_KITS, TEXT_LIMITS } from '@/features/services/constants/installation';
 import { createKitUnit } from '@/features/services/schemas/installation.schema';
-import { UnitPlacementField } from '../PlacementFields';
+import { UnitPlacementField } from '../../placementFieldsTEst/unitPlacementField';
 import { QuantityField, RadioGroup, TextField, toOptions } from '@/features/services/components/fields';
-import { bindField, useFormUpdater, useInstallationFormContext } from '../formContext';
-import styles from '../installationForm.module.css';
+import { bindField, useFormUpdater, useInstallationFormContext } from '../../formContext';
+import styles from '../../installationForm.module.css';
 
 export function KitSection() {
   const headingId = useId();
@@ -27,7 +27,7 @@ export function KitSection() {
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.sectionTitle}>{t('installation.kitTitle')}</h3>
+      <h3 id={headingId} className={styles.materialTitle}>{t('installation.kitTitle')}</h3>
 
       <QuantityField
         label={t('installation.kitsQuantity')}

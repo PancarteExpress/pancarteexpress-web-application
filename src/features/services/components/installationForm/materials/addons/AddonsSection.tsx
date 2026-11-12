@@ -6,8 +6,8 @@ import { useTranslations } from 'next-intl';
 import { ADDONS, MAX_ADDONS, type Addon } from '@/features/services/constants/installation';
 import { createAddonEntry } from '@/features/services/schemas/installation.schema';
 import { CheckboxGroup, toOptions } from '@/features/services/components/fields';
-import { useFormUpdater, useInstallationFormContext } from '../formContext';
-import styles from '../installationForm.module.css';
+import { useFormUpdater, useInstallationFormContext } from '../../formContext';
+import styles from '../../installationForm.module.css';
 
 export function AddonsSection() {
   const headingId = useId();
@@ -29,7 +29,7 @@ export function AddonsSection() {
 
   return (
     <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.sectionTitle}>{t('installation.addonsTitle')}</h3>
+      <h3 id={headingId} className={styles.materialTitle}>{t('installation.addonsTitle')}</h3>
 
       <CheckboxGroup
         legend={t('installation.addonsLegend')}

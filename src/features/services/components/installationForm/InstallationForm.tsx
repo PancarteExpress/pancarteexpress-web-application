@@ -11,17 +11,19 @@ import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 import type { InstallationDetails } from '../../types/installation';
 import { getFullName } from '@/shared/utils/displayName';
 import styles from './installationForm.module.css';
-import { MaterialsSelector } from './MaterialsSelector';
+import { MaterialsSelector } from './materials/MaterialsSelector';
 
-import { FramesSection } from './frames/FramesSection';
-import { KitSection } from './kits/KitSection';
-import { AddonsSection } from './addons/AddonsSection';
-import { OpenHouseSection } from './openHouse/OpenHouseSection';
-import { AssignmentsSection } from './assignments/AssignmentsSection';
-import { DirectionalsSection } from './directionals/DirectionalsSection';
-import { FlagsSection } from './flags/FlagsSection';
-import { KeyboxSection } from './keybox/KeyboxSection';
-import { OtherSection } from './other/OtherSection';
+import { FramesSection } from './materials/frames/FramesSection';
+import { KitSection } from './materials/kits/KitSection';
+import { AddonsSection } from './materials/addons/AddonsSection';
+import { OpenHouseSection } from './materials/openHouse/OpenHouseSection';
+import { AssignmentsSection } from './materials/assignments/AssignmentsSection';
+import { DirectionalsSection } from './materials/directionals/DirectionalsSection';
+import { FlagsSection } from './materials/flags/FlagsSection';
+import { KeyboxSection } from './materials/keybox/KeyboxSection';
+import { OtherSection } from './materials/other/OtherSection';
+
+import { IoConstructSharp } from "react-icons/io5";
 
 interface InstallationFormProps {
   handle: Ref<ServiceFormHandle<InstallationDetails>>;
@@ -60,6 +62,7 @@ interface InnerProps extends InstallationFormProps {
 }
 
 function InstallationFormInner({ handle, initialValues, draft, onAutoSave, isMember, accountName }: InnerProps) {
+  const t = useTranslations('services.installation');
   const [schema] = useState(() => createInstallationSchema({ isMember, accountName }));
   const [defaultValues] = useState(() =>
     draft ?? (initialValues ? toInstallationFormValues(initialValues) : createEmptyInstallationForm()),
@@ -84,8 +87,11 @@ function InstallationFormInner({ handle, initialValues, draft, onAutoSave, isMem
 
   return (
     <FormProvider {...methods}>
-      <form noValidate className={styles.form} onSubmit={(e) => e.preventDefault()}>
+      <form noValidate className={styles.installationForm} onSubmit={(e) => e.preventDefault()}>
+        <h3 className={styles.title}><IoConstructSharp size={24} /> {t('title')}</h3>
+
         <MaterialsSelector />
+        
         {materials.includes('frames') && <FramesSection isMember={isMember} accountName={accountName} />}
         {materials.includes('kit') && <KitSection />}
         {materials.includes('addons') && <AddonsSection />}
