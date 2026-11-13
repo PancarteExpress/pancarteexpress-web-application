@@ -178,7 +178,7 @@
     "customNoMentionDetails": "Précisions sur votre ajout personnalisé (facultatif)",
     "modelLegend": "Quel modèle voulez-vous ?",
     "describeModel": "Veuillez décrire le modèle",
-    "assignmentsTitle": "Veuillez confirmer les ajouts par pancarte",
+    "assignmentsTitle": "Veuillez confirmer la disposition des ajouts",
     "targetsQuantity": "Quantité",
     "targetFrame": "Pancarte {number}",
     "targetOnSite": "Pancarte déjà sur place",
@@ -206,7 +206,7 @@
     "keyboxCode": "Veuillez indiquer le code de la boîte à clés",
     "codePlaceholder": "Entrez le code ici…",
     "codeHint": "{max} chiffres maximum.",
-    "keyboxPlacement": "Veuillez indiquer l'emplacement de la boîte à clés",
+    "keyboxPlacement": "Veuillez indiquer l'emplacement de la boîte à clés (optionnel)",
     "kitTitle": "Détails du kit (sans pancarte)",
     "kitsQuantity": "Combien de kits voulez-vous ?",
     "kitUnitTitle": "Détails du kit #{number}",
@@ -232,7 +232,7 @@
     "ownPlacementsHint": "Un seul emplacement : tous les ajouts seront installés au même endroit.",
     "placementsSpread": "{count} ajouts pour {places} emplacements : notre équipe les répartira entre ces emplacements.",
     "onSiteAssumption": "{choices} choix de pancartes pour {quantity} ajouts « {label} » : nous considérons que {extra, plural, one {l'ajout restant sera aussi installé} other {les # ajouts restants seront aussi installés}} sur une pancarte déjà sur place.",
-    "flagsPlacement": "Veuillez indiquer l'emplacement des drapeaux"
+    "flagsPlacement": "Veuillez indiquer l'emplacement des drapeaux (optionnel)"
   },
   "removal": {
     "title": "Détails du retrait",

@@ -26,8 +26,8 @@ export function KitSection() {
   };
 
   return (
-    <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.materialTitle}>{t('installation.kitTitle')}</h3>
+    <section aria-labelledby={headingId} className={styles.material}>
+      <h3 id={headingId} className={styles.title}>{t('installation.kitTitle')}</h3>
 
       <QuantityField
         label={t('installation.kitsQuantity')}

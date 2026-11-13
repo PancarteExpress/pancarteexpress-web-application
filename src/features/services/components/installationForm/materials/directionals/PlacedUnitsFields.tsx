@@ -50,14 +50,14 @@ export function PlacedUnitsFields({ name, quantityLabel, unitLabel, max, maxLeng
           name={`${name}.${index}.placement`}
           render={(props) => (
             <fieldset className={styles.unit}>
-            <TextField
-              {...bindField(props)}
-              label={unitLabel(index)}
-              maxLength={maxLength}
-              placeholder={placeholder}
-              multiline
-              rows={1}
-            />
+              <TextField
+                {...bindField(props)}
+                label={unitLabel(index)}
+                maxLength={maxLength}
+                placeholder={placeholder}
+                multiline
+                rows={1}
+              />
             </fieldset>
           )}
         />

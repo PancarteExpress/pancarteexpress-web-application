@@ -20,7 +20,7 @@ export function OpenHouseAssignmentRow({ frameUids }: { frameUids: string[] }) {
   const t = useTranslations('services.materials');
 
   return (
-    <fieldset className={styles.assignment}>
+    <fieldset className={styles.unit}>
       <legend className={styles.unitTitle}>{t('openHouse')}</legend>
       <TargetsPicker
         label={t('openHouse')}

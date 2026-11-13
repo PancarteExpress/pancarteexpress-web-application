@@ -10,6 +10,8 @@ import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
 import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 
 import styles from '../installationForm/installationForm.module.css';
+import { IoConstructSharp } from "react-icons/io5";
+
 import { RemovalMaterialsSelector } from './RemovalMaterialsSelector';
 import { RemovalFramesSection } from './frames/RemovalFramesSection';
 import { RemovalAddonsSection } from './addons/RemovalAddonsSection';
@@ -49,9 +51,11 @@ export function RemovalForm({ handle, initialValues, draft, onAutoSave }: Remova
 
   return (
     <FormProvider {...methods}>
-      <form noValidate className={styles.form} onSubmit={(e) => e.preventDefault()}>
-        <h3 className={styles.sectionTitle}>{t('title')}</h3>
+      <form noValidate className={styles.removalForm} onSubmit={(e) => e.preventDefault()}>
+        <h3 className={styles.title}><IoConstructSharp size={24} /> {t('title')}</h3>
+
         <RemovalMaterialsSelector />
+        
         {materials.includes('frames') && <RemovalFramesSection />}
         {materials.includes('addons') && <RemovalAddonsSection />}
         {materials.includes('keybox') && <RemovalKeyboxSection />}

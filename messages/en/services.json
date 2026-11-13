@@ -178,7 +178,7 @@
     "customNoMentionDetails": "Details about your custom addon (optional)",
     "modelLegend": "Which model do you want?",
     "describeModel": "Please describe the model",
-    "assignmentsTitle": "Please confirm the addons for each sign",
+    "assignmentsTitle": "Please confirm the addons (toppers) layout",
     "targetsQuantity": "Quantity",
     "targetFrame": "Sign {number}",
     "targetOnSite": "Sign already on site",
@@ -206,7 +206,7 @@
     "keyboxCode": "Please enter the keybox code",
     "codePlaceholder": "Enter the code here…",
     "codeHint": "{max} digits maximum.",
-    "keyboxPlacement": "Please indicate the keybox location",
+    "keyboxPlacement": "Please indicate the keybox location (optional)",
     "kitTitle": "Kit details (without sign)",
     "kitsQuantity": "How many kits do you want?",
     "kitUnitTitle": "Kit #{number} details",
@@ -232,7 +232,7 @@
     "ownPlacementsHint": "A single location: all addons will be installed in the same place.",
     "placementsSpread": "{count} addons for {places} locations: our team will distribute them among these locations.",
     "onSiteAssumption": "{choices} sign choices for {quantity} “{label}” addons: we will assume {extra, plural, one {the remaining addon will also be installed} other {the # remaining addons will also be installed}} on a sign already on site.",
-    "flagsPlacement": "Please indicate the location of the flags"
+    "flagsPlacement": "Please indicate the location of the flags (optional)"
   },
   "removal": {
     "title": "Removal details",

@@ -1,10 +1,12 @@
+/* Installation */
+
 .installationForm {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
 
   border: 1px solid #d0d7e2;
-  padding: 0 0.5rem;
+  padding: 1.5rem 0.5rem;
   border-radius: 10px;
 
   background-color: #E8F1FB;
@@ -22,7 +24,7 @@
   align-items: center;
   gap: 0.5rem;
 
-  margin: 1rem 0;
+  margin: 0.5rem 0;
 }
 
 .installationForm .material {
@@ -54,7 +56,63 @@
   font-size: 1.5rem;
 }
 
+/* Retrait */
 
+.removalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+
+  border: 1px solid #d0d7e2;
+  padding: 1.5rem 0.5rem;
+  border-radius: 10px;
+
+  background-color: #E8F1FB;
+
+  margin: 1.5rem 0;
+}
+
+.removalForm .title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0E3A8C;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+
+  margin: 0.5rem 0;
+}
+
+.removalForm .material {
+}
+
+.removalForm .material .title {
+  font-size: 1.5rem;
+  font-weight: 700;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+
+  margin-bottom: 1.7rem;
+}
+
+.removalForm .material .unit {
+  margin: 50px 0;
+  padding: 1rem;
+  border: 1px solid #d0d7e2;
+  border-left: 4px solid #0E3A8C;
+  border-radius: 8px;
+}
+
+.removalForm .material .unit .unitTitle {
+  padding: 0 0.25rem;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
 
 
 

@@ -8,6 +8,8 @@ import { QuantityField, RadioGroup, TextField, toOptions } from '@/features/serv
 import { bindField, useFormUpdater, useInstallationFormContext } from '../../formContext';
 import styles from '../../installationForm.module.css';
 
+import { FaFlag } from "react-icons/fa";
+
 export function FlagsSection() {
   const headingId = useId();
   const { control } = useInstallationFormContext();
@@ -15,8 +17,8 @@ export function FlagsSection() {
   const t = useTranslations('services');
 
   return (
-    <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.materialTitle}>{t('installation.flagsTitle')}</h3>
+    <section aria-labelledby={headingId} className={styles.material}>
+      <h3 id={headingId} className={styles.title}><FaFlag size={25} /> {t('installation.flagsTitle')}</h3>
 
       <Controller
         control={control}
@@ -75,16 +77,18 @@ export function FlagsSection() {
         control={control}
         name="flags.placement"
         render={({ field, fieldState }) => (
-          <TextField
-            label={t('installation.flagsPlacement')}
-            placeholder={t('installation.placementExample')}
-            value={field.value}
-            onChange={field.onChange}
-            onBlur={field.onBlur}
-            inputRef={field.ref}
-            maxLength={TEXT_LIMITS.flagPlacement}
-            error={fieldState.error?.message}
-          />
+          <fieldset className={styles.unit}>
+            <TextField
+              label={t('installation.flagsPlacement')}
+              placeholder={t('installation.placementExample')}
+              value={field.value}
+              onChange={field.onChange}
+              onBlur={field.onBlur}
+              inputRef={field.ref}
+              maxLength={TEXT_LIMITS.flagPlacement}
+              error={fieldState.error?.message}
+            />
+          </fieldset>
         )}
       />
     </section>
