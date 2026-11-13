@@ -9,6 +9,8 @@ import { CheckboxGroup, toOptions } from '@/features/services/components/fields'
 import { useFormUpdater, useInstallationFormContext } from '../../formContext';
 import styles from '../../installationForm.module.css';
 
+import { SiOneplus } from "react-icons/si";
+
 export function AddonsSection() {
   const headingId = useId();
   const t = useTranslations('services');
@@ -28,8 +30,8 @@ export function AddonsSection() {
   };
 
   return (
-    <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.materialTitle}>{t('installation.addonsTitle')}</h3>
+    <section aria-labelledby={headingId} className={styles.material}>
+      <h3 id={headingId} className={styles.title}><SiOneplus  size={34} /> {t('installation.addonsTitle')}</h3>
 
       <CheckboxGroup
         legend={t('installation.addonsLegend')}

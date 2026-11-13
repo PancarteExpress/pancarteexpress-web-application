@@ -5,6 +5,7 @@ import { useTranslations } from 'next-intl';
 import { createPlacedUnit } from '@/features/services/schemas/installation.schema';
 import { QuantityField, TextField } from '@/features/services/components/fields';
 import { bindField, useInstallationFormContext } from '../../formContext';
+import styles from '../../installationForm.module.css';
 
 type PlacedUnitsPath = 'directionals.units';
 
@@ -48,6 +49,7 @@ export function PlacedUnitsFields({ name, quantityLabel, unitLabel, max, maxLeng
           control={control}
           name={`${name}.${index}.placement`}
           render={(props) => (
+            <fieldset className={styles.unit}>
             <TextField
               {...bindField(props)}
               label={unitLabel(index)}
@@ -56,6 +58,7 @@ export function PlacedUnitsFields({ name, quantityLabel, unitLabel, max, maxLeng
               multiline
               rows={1}
             />
+            </fieldset>
           )}
         />
       ))}

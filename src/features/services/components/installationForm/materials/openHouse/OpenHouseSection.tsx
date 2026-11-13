@@ -15,6 +15,8 @@ import { addDays, format, parse } from 'date-fns';
 import { useAppLocale } from '@/shared/hooks/useAppLocale';
 import { formatIsoDay } from '@/features/services/utils/formatDay';
 
+import { FaHouseUser } from "react-icons/fa6";
+
 const defaultEnd = (start: string) => addMinutesClamped(start, OPEN_HOUSE.defaultDurationMinutes);
 
 export function OpenHouseSection() {
@@ -59,8 +61,8 @@ export function OpenHouseSection() {
   };
 
   return (
-    <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.materialTitle}>{t('installation.openHouseTitle')}</h3>
+    <section aria-labelledby={headingId} className={styles.material}>
+      <h3 id={headingId} className={styles.title}><FaHouseUser size={34}/> {t('installation.openHouseTitle')}</h3>
 
       <QuantityField
         label={t('installation.openHouseDirectionalsQuantity')}
@@ -77,6 +79,7 @@ export function OpenHouseSection() {
           control={control}
           name={`openHouse.directionals.${index}.placement`}
           render={(props) => (
+            <fieldset className={styles.unit}>
             <TextField
               {...bindField(props)}
               label={t('installation.directionalPlacement', { number: index + 1 })}
@@ -85,6 +88,7 @@ export function OpenHouseSection() {
               multiline
               rows={1}
             />
+            </fieldset>
           )}
         />
       ))}
@@ -104,9 +108,7 @@ export function OpenHouseSection() {
           />
         )}
       />
-
-      <div>
-        <button
+      <button
           type="button"
           className={styles.toggleButton}
           aria-pressed={openHouse.twoDates}
@@ -123,8 +125,9 @@ export function OpenHouseSection() {
           }}
         >
           {openHouse.twoDates ? t('installation.oneDate') : t('installation.twoDates')}
-        </button>
+      </button>
 
+      <div style={{ display: 'flex', gap:'2rem' }}>
         <Controller
           control={control}
           name="openHouse.dates"
@@ -140,41 +143,41 @@ export function OpenHouseSection() {
             />
           )}
         />
+
+        <div className={styles.timeRow}>
+          <Controller
+            control={control}
+            name="openHouse.startTime"
+            render={(props) => (
+              <TimeField
+                {...bindField(props)}
+                onChange={handleStartChange}
+                label={t('installation.startTime')}
+                minuteStep={TIME_MINUTE_STEP}
+                required
+              />
+            )}
+          />
+          <Controller
+            control={control}
+            name="openHouse.endTime"
+            render={(props) => (
+              <TimeField
+                {...bindField(props)}
+                onChange={(end) => {
+                  props.field.onChange(end);
+                  setEndEdited(true);
+                }}
+                after={openHouse.startTime}
+                label={t('installation.endTime')}
+                minuteStep={TIME_MINUTE_STEP}
+                required
+              />
+            )}
+          />
+        </div>
       </div>
 
-      <div className={styles.timeRow}>
-        <Controller
-          control={control}
-          name="openHouse.startTime"
-          render={(props) => (
-            <TimeField
-              {...bindField(props)}
-              onChange={handleStartChange}
-              label={t('installation.startTime')}
-              minuteStep={TIME_MINUTE_STEP}
-              required
-            />
-          )}
-        />
-        <Controller
-          control={control}
-          name="openHouse.endTime"
-          render={(props) => (
-            <TimeField
-              {...bindField(props)}
-              onChange={(end) => {
-                props.field.onChange(end);
-                setEndEdited(true);
-              }}
-              after={openHouse.startTime}
-              label={t('installation.endTime')}
-              minuteStep={TIME_MINUTE_STEP}
-              required
-            />
-          )}
-        />
-      </div>
-      
       <Controller
         control={control}
         name="openHouse.removeNextMonday"

@@ -6,7 +6,8 @@
   border: 1px solid #d0d7e2;
   padding: 0 0.5rem;
   border-radius: 10px;
-  border-left: 3px solid #0E3A8C;
+
+  background-color: #E8F1FB;
 
   margin: 1.5rem 0;
 }
@@ -30,7 +31,6 @@
 .installationForm .material .title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: #0E3A8C;
 
   display: flex;
   justify-content: center;
@@ -41,7 +41,7 @@
 }
 
 .installationForm .material .unit {
-  margin-bottom: 10px;
+  margin: 50px 0;
   padding: 1rem;
   border: 1px solid #d0d7e2;
   border-left: 4px solid #0E3A8C;
@@ -72,7 +72,10 @@
 
 
 
-
+.dateSelector {
+  display: flex;
+  border: 1px solid red;
+}
 
 
 

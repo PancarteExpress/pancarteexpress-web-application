@@ -9,14 +9,17 @@ import { bindField, useInstallationFormContext } from '../../formContext';
 import { PlacedUnitsFields } from './PlacedUnitsFields';
 import styles from '../../installationForm.module.css';
 
+import { BiSolidDirections } from "react-icons/bi";
+
 export function DirectionalsSection() {
   const headingId = useId();
   const { control } = useInstallationFormContext();
   const t = useTranslations('services');
 
   return (
-    <section aria-labelledby={headingId} className={styles.section}>
-      <h3 id={headingId} className={styles.materialTitle}>{t('installation.directionalsTitle')}</h3>
+    <section aria-labelledby={headingId} className={styles.material}>
+      
+      <h3 id={headingId} className={styles.title}><BiSolidDirections size={34} /> {t('installation.directionalsTitle')}</h3>
 
       <Controller
         control={control}

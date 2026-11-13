@@ -33,7 +33,7 @@ export function AddonAssignmentRow({ index, frameUids }: AddonAssignmentRowProps
   const mentionField = MENTION_FIELDS[entry.addon];
 
   return (
-    <fieldset className={styles.assignment}>
+    <fieldset className={styles.unit}>
       <legend className={styles.unitTitle}>{label}</legend>
 
       {WITH_MODEL.includes(entry.addon) && (
