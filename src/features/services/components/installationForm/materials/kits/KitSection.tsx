@@ -5,7 +5,7 @@ import { Controller, useFieldArray } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { KIT_MODELS, MAX_KITS, TEXT_LIMITS } from '@/features/services/constants/installation';
 import { createKitUnit } from '@/features/services/schemas/installation.schema';
-import { UnitPlacementField } from '../../placementFieldsTEst/unitPlacementField';
+import { UnitPlacementField } from '../../placementFields/unitPlacementField';
 import { QuantityField, RadioGroup, TextField, toOptions } from '@/features/services/components/fields';
 import { bindField, useFormUpdater, useInstallationFormContext } from '../../formContext';
 import styles from '../../installationForm.module.css';

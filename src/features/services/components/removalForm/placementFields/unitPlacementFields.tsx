@@ -5,20 +5,19 @@ import { useTranslations } from 'next-intl';
 import { createRemovalUnit } from '@/features/services/schemas/removal.schema';
 import { QuantityField } from '@/features/services/components/fields';
 import { PlacementPicker, toPlacementErrors } from '@/features/services/components/placement/PlacementPicker';
-import { useRemovalFormContext, useRemovalUpdater } from './formContext';
-import styles from '../installationForm/installationForm.module.css';
+import { useRemovalFormContext, useRemovalUpdater } from '../formContext';
+import styles from '../../installationForm/installationForm.module.css';
 
 type UnitsPath = 'frames.units' | 'addons.units';
 
 interface RemovalUnitsFieldsProps {
   name: UnitsPath;
   quantityLabel: string;
-  /** Ex. « Pancarte », « Ajout » → « Pancarte #1 » */
   unitName: string;
   max: number;
 }
 
-export function RemovalUnitsFields({ name, quantityLabel, unitName, max }: RemovalUnitsFieldsProps) {
+export function UnitPlacementField({ name, quantityLabel, unitName, max }: RemovalUnitsFieldsProps) {
   const { control } = useRemovalFormContext();
   const { fields, append, remove } = useFieldArray({ control, name });
   const t = useTranslations('services');
@@ -57,8 +56,7 @@ function RemovalUnitFields({ name, index, title }: { name: UnitsPath; index: num
   const { errors } = useFormState({ control, name: path });
   const t = useTranslations('services.removal');
 
-  const placementErrors =
-    name === 'frames.units' ? errors.frames?.units?.[index]?.placement : errors.addons?.units?.[index]?.placement;
+  const placementErrors = name === 'frames.units' ? errors.frames?.units?.[index]?.placement : errors.addons?.units?.[index]?.placement;
 
   return (
     <fieldset className={styles.unit}>

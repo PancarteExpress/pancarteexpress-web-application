@@ -12,10 +12,6 @@ import styles from '../installationForm.module.css';
 type Location = (typeof LOCATIONS)[number];
 type PlacementFieldErrors = Parameters<typeof toPlacementErrors>[0];
 
-/* ==========================================================================
-   Emplacements d'un ajout ou de la visite libre, sans pancarte commandée
-   ========================================================================== */
-
 type OwnPlacementsName = `addons.${number}.placements` | 'openHouse.placements';
 
 /** Emplacements à sous-options (accès, fixation, côté, description) */

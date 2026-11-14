@@ -4,7 +4,7 @@ import { useImperativeHandle, useState, type Ref } from 'react';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createEmptyRemovalForm, removalSchema, toRemovalFormValues, type RemovalFormValues, } from '@/features/services/schemas/removal.schema';
-import { RemovalDirectionalsSection, RemovalFlagsSection, RemovalKeyboxSection, RemovalOtherSection, } from './RemovalSimpleSections';
+
 import type { RemovalDetails } from '@/features/services/types/removal';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
 import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
@@ -12,10 +12,15 @@ import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 import styles from '../installationForm/installationForm.module.css';
 import { IoConstructSharp } from "react-icons/io5";
 
-import { RemovalMaterialsSelector } from './RemovalMaterialsSelector';
-import { RemovalFramesSection } from './frames/RemovalFramesSection';
-import { RemovalAddonsSection } from './addons/RemovalAddonsSection';
+import { MaterialsSelector } from './materials/materialsSelector';
 import { useTranslations } from 'next-intl';
+import { FramesSection } from './materials/frames/FramesSection';
+import { AddonsSection } from './materials/addons/AddonsSection';
+import { KeyboxSection } from './materials/keybox/KeyboxSection';
+import { FlagsSection } from './materials/flags/FlagsSection';
+import { DirectionalsSection } from './materials/directionals/DirectionalsSection';
+import { OtherSection } from './materials/other/OtherSection';
+
 
 interface RemovalFormProps {
   handle: Ref<ServiceFormHandle<RemovalDetails>>;
@@ -54,14 +59,14 @@ export function RemovalForm({ handle, initialValues, draft, onAutoSave }: Remova
       <form noValidate className={styles.removalForm} onSubmit={(e) => e.preventDefault()}>
         <h3 className={styles.title}><IoConstructSharp size={24} /> {t('title')}</h3>
 
-        <RemovalMaterialsSelector />
+        <MaterialsSelector />
         
-        {materials.includes('frames') && <RemovalFramesSection />}
-        {materials.includes('addons') && <RemovalAddonsSection />}
-        {materials.includes('keybox') && <RemovalKeyboxSection />}
-        {materials.includes('flags') && <RemovalFlagsSection />}
-        {materials.includes('directional') && <RemovalDirectionalsSection />}
-        {materials.includes('other') && <RemovalOtherSection />}
+        {materials.includes('frames') && <FramesSection />}
+        {materials.includes('addons') && <AddonsSection />}
+        {materials.includes('keybox') && <KeyboxSection />}
+        {materials.includes('flags') && <FlagsSection />}
+        {materials.includes('directional') && <DirectionalsSection />}
+        {materials.includes('other') && <OtherSection />}
       </form>
     </FormProvider>
   );

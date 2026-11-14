@@ -8,7 +8,7 @@ import {
 } from '@/features/services/constants/removal';
 import { createRemovalDirectional, createRemovalUnit } from '@/features/services/schemas/removal.schema';
 import { CheckboxGroup, type ChoiceOption } from '@/features/services/components/fields';
-import { useRemovalFormContext, useRemovalUpdater } from './formContext';
+import { useRemovalFormContext, useRemovalUpdater } from '../formContext';
 
 const IMPLEMENTED: readonly RemovalMaterial[] = IMPLEMENTED_REMOVAL_MATERIALS;
 const isImplemented = (m: RemovalMaterial): m is ImplementedRemovalMaterial => IMPLEMENTED.includes(m);
@@ -17,7 +17,7 @@ const isImplemented = (m: RemovalMaterial): m is ImplementedRemovalMaterial => I
 const partnersOf = (m: RemovalMaterial): RemovalMaterial[] =>
   EXCLUSIVE_REMOVAL_MATERIALS.flatMap(([a, b]) => (a === m ? [b] : b === m ? [a] : []));
 
-export function RemovalMaterialsSelector() {
+export function MaterialsSelector() {
   const { control } = useRemovalFormContext();
   const update = useRemovalUpdater();
   const t = useTranslations('services.removal');

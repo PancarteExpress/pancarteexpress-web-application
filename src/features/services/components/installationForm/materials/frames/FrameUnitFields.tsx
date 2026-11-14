@@ -6,7 +6,7 @@ import { FRAME_MODELS, TEXT_LIMITS } from '@/features/services/constants/install
 import { RadioGroup, TextField, YesNoField, toOptions } from '@/features/services/components/fields';
 import { bindField, useFormUpdater, useInstallationFormContext, type FrameUnitPath } from '../../formContext';
 
-import { UnitPlacementField } from '../../placementFieldsTEst/unitPlacementField';
+import { UnitPlacementField } from '../../placementFields/unitPlacementField';
 import styles from '../../installationForm.module.css';
 
 interface FrameUnitFieldsProps {

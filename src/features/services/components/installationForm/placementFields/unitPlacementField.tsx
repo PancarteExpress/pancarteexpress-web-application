@@ -12,10 +12,6 @@ import styles from '../installationForm.module.css';
 type Location = (typeof LOCATIONS)[number];
 type PlacementFieldErrors = Parameters<typeof toPlacementErrors>[0];
 
-/* ==========================================================================
-   Emplacement d'une unité (pancarte, kit)
-   ========================================================================== */
-
 type UnitPlacementName = `frames.units.${number}.placement` | `kits.units.${number}.placement`;
 
 /** Emplacement propre à une pancarte ou à un kit, en dernier dans ses détails */

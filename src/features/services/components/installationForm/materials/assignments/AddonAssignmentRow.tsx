@@ -6,7 +6,7 @@ import { ADDONS_WITH_MODEL, FRAME_MODELS, TEXT_LIMITS, type Addon } from '@/feat
 import { RadioGroup, TextField, toOptions } from '@/features/services/components/fields';
 import { bindField, useFormUpdater, useInstallationFormContext } from '../../formContext';
 import { TargetsPicker } from './TargetsPicker';
-import { MultiplePlacementFields } from '../../placementFieldsTEst/multiplePlacementFields';
+import { MultiplePlacementFields } from '../../placementFields/multiplePlacementFields';
 import styles from '../../installationForm.module.css';
 
 // Clés i18n du namespace services.installation

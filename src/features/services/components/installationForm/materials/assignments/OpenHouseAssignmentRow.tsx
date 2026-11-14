@@ -4,7 +4,7 @@ import { useFormState, useWatch } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { useFormUpdater, useInstallationFormContext } from '../../formContext';
 import { TargetsPicker } from './TargetsPicker';
-import { MultiplePlacementFields } from '../../placementFieldsTEst/multiplePlacementFields';
+import { MultiplePlacementFields } from '../../placementFields/multiplePlacementFields';
 import styles from '../../installationForm.module.css';
 
 export function OpenHouseAssignmentRow({ frameUids }: { frameUids: string[] }) {

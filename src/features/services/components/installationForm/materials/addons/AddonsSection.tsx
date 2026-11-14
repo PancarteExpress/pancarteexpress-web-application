@@ -21,8 +21,6 @@ export function AddonsSection() {
 
   const { errors } = useFormState({ control, name: 'addons' });
 
-  
-
   // Les entrées existantes sont conservées : seules les nouvelles sont créées
   const handleChange = (next: Addon[]) => {
     const current = getValues('addons');

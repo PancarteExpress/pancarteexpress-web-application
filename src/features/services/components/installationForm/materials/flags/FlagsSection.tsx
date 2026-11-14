@@ -41,14 +41,16 @@ export function FlagsSection() {
                 control={control}
                 name="flags.customMention"
                 render={(p) => (
-                  <TextField
-                    {...bindField(p)}
-                    label={t('installation.flagCustomMention')}
-                    maxLength={TEXT_LIMITS.flagMention}
-                    multiline
-                    rows={2}
-                    required
-                  />
+                  <fieldset className={styles.unit}>
+                    <TextField
+                      {...bindField(p)}
+                      label={t('installation.flagCustomMention')}
+                      maxLength={TEXT_LIMITS.flagMention}
+                      multiline
+                      rows={2}
+                      required
+                    />
+                  </fieldset>
                 )}
               />
             )}
