@@ -14,7 +14,9 @@ import { TextField } from '@/features/services/components/fields/TextField';
 import { toOptions } from '@/features/services/components/fields/types';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
 import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
+
 import styles from '../installationForm/installationForm.module.css';
+import { IoConstructSharp } from "react-icons/io5";
 
 interface CorrectionFormProps {
   handle: Ref<ServiceFormHandle<CorrectionDetails>>;
@@ -48,8 +50,8 @@ export function CorrectionForm({ handle, initialValues, draft, onAutoSave }: Cor
 
   return (
     <form noValidate className={styles.form} onSubmit={(e) => e.preventDefault()}>
-      <section aria-labelledby={headingId} className={styles.section}>
-        <h3 id={headingId} className={styles.sectionTitle}>{t('title')}</h3>
+      <section aria-labelledby={headingId} className={styles.correctionForm}>
+        <h3 id={headingId} className={styles.title}><IoConstructSharp size={24} /> {t('title')}</h3>
 
         <Controller
           control={control}
@@ -79,18 +81,20 @@ export function CorrectionForm({ handle, initialValues, draft, onAutoSave }: Cor
                   control={control}
                   name="explanation"
                   render={({ field: f, fieldState: fs }) => (
-                    <TextField
-                      label={t('explanation')}
-                      value={f.value}
-                      onChange={f.onChange}
-                      onBlur={f.onBlur}
-                      inputRef={f.ref}
-                      maxLength={CORRECTION_TEXT_LIMITS.explanation}
-                      multiline
-                      rows={4}
-                      error={fs.error?.message}
-                      required
-                    />
+                    <fieldset className={styles.unit}>
+                      <TextField
+                        label={t('explanation')}
+                        value={f.value}
+                        onChange={f.onChange}
+                        onBlur={f.onBlur}
+                        inputRef={f.ref}
+                        maxLength={CORRECTION_TEXT_LIMITS.explanation}
+                        multiline
+                        rows={4}
+                        error={fs.error?.message}
+                        required
+                      />
+                    </fieldset>
                   )}
                 />
               )}

@@ -28,6 +28,8 @@ import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 import formStyles from '../installationForm/installationForm.module.css';
 import styles from './deliveryForm.module.css';
 
+import { IoConstructSharp } from "react-icons/io5";
+
 type Values = DeliveryFormValues;
 type SectionProps = {
   control: Control<Values, unknown, DeliveryDetails>;
@@ -110,9 +112,9 @@ export function DeliveryForm({ handle, initialValues, draft, onAutoSave }: Deliv
   const sectionProps: SectionProps = { control, setValue, validate };
 
   return (
-    <form noValidate className={formStyles.form} onSubmit={(e) => e.preventDefault()}>
-      <section aria-labelledby={headingId} className={formStyles.section}>
-        <h3 id={headingId} className={formStyles.sectionTitle}>{t('title')}</h3>
+    <form noValidate className={formStyles.deliveryForm} onSubmit={(e) => e.preventDefault()}>
+      <section aria-labelledby={headingId} className={formStyles.material}>
+        <h3 id={headingId} className={formStyles.title}><IoConstructSharp size={24} /> {t('title')}</h3>
 
         <Controller
           control={control}

@@ -17,6 +17,8 @@ import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
 import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 import styles from '../installationForm/installationForm.module.css';
 
+import { IoConstructSharp } from "react-icons/io5";
+
 interface PickupFormProps {
   handle: Ref<ServiceFormHandle<PickupDetails>>;
   initialValues?: PickupDetails;
@@ -51,9 +53,9 @@ export function PickupForm({ handle, initialValues, draft, onAutoSave }: PickupF
   }), [handleSubmit]);
 
   return (
-    <form noValidate className={styles.form} onSubmit={(e) => e.preventDefault()}>
-      <section aria-labelledby={headingId} className={styles.section}>
-        <h3 id={headingId} className={styles.sectionTitle}>{t('title')}</h3>
+    <form noValidate className={styles.pickupForm} onSubmit={(e) => e.preventDefault()}>
+      <section aria-labelledby={headingId} className={styles.material}>
+        <h3 id={headingId} className={styles.title}><IoConstructSharp size={24} />{t('title')}</h3>
 
         <Controller
           control={control}
