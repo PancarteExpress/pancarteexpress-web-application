@@ -167,19 +167,33 @@ export const useAddressStore = create<AddressStore>()(
       },
 
       clearServicesOf: (requestType) => {
-        set((state) => ({
-          addresses: state.addresses.map((a) => ({
-            ...a,
-            services: a.services.filter((s) => requestTypeOf(s) !== requestType),
-            // Demande résidentielle envoyée au panier : la prochaine repart de « Standard 24 h »
-            scheduleDraft: requestType === 'residential' ? undefined : a.scheduleDraft,
-          })),
-          selectedAddressId: null,
+        set((state) => {
           // Brouillons de ce type de demande : envoyés au panier, ils n'ont plus lieu d'être
-          drafts: Object.fromEntries(
-            Object.entries(state.drafts).map(([id, d]) => [id, keepDrafts(d, (t) => requestTypeOf({ type: t }) !== requestType)]),
-          ),
-        }));
+          const drafts = Object.fromEntries(
+            Object.entries(state.drafts).map(([id, d]) => [
+              id,
+              keepDrafts(d, (t) => requestTypeOf({ type: t }) !== requestType),
+            ]),
+          );
+
+          const addresses = state.addresses
+            .map((a) => ({
+              ...a,
+              services: a.services.filter((s) => requestTypeOf(s) !== requestType),
+              // Demande résidentielle envoyée au panier : la prochaine repart de « Standard 24 h »
+              scheduleDraft: requestType === 'residential' ? undefined : a.scheduleDraft,
+            }))
+            // Adresse sans rien de l'autre type de demande : retirée, l'utilisateur la ressaisira
+            .filter((a) => a.services.length > 0 || Object.keys(drafts[a.id] ?? {}).length > 0);
+
+          // Les brouillons des adresses retirées partent avec elles
+          const kept = new Set(addresses.map((a) => a.id));
+          return {
+            addresses,
+            selectedAddressId: null,
+            drafts: Object.fromEntries(Object.entries(drafts).filter(([id]) => kept.has(id))),
+          };
+        });
       },
 
       setSelectedAddressId: (id) => set({ selectedAddressId: id }),

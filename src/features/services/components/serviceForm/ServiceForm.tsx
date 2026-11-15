@@ -49,6 +49,7 @@ export default function ServiceForm() {
   const [requestType, setRequestType] = useState<RequestType | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(false);
 
   const selectedAddress = addresses.find((a) => a.id === selectedAddressId) ?? null;
   // Services complets : ce qui part au panier
@@ -76,6 +77,7 @@ export default function ServiceForm() {
   const handleRequestTypeChange = (type: RequestType) => {
     setRequestType(type);
     setAddedToCart(false);
+    setEditingAddress(false);
   };
 
   const handleAddToCart = async () => {
@@ -117,6 +119,7 @@ export default function ServiceForm() {
     setRequestType(null);
     setError(null);
     setAddedToCart(true);
+    setEditingAddress(false);
   };
 
   return (
@@ -133,8 +136,9 @@ export default function ServiceForm() {
         />
         {requestType !== null && (
         <>
-        <AddressManager />
-        {selectedAddress && (<>
+        <AddressManager onEditingChange={setEditingAddress} />
+
+        {selectedAddress && !editingAddress && (<>
           <div className={styles.selectedAddress}>
             <label>{t('serviceForm.selectedAddress')}</label>
             <p>{formatAddress(selectedAddress, { terrain: t('address.terrain'), near: t('address.near'), apartment: t('address.apartment') })}</p>
@@ -155,7 +159,7 @@ export default function ServiceForm() {
         )}
       </div>
 
-      {summaryAddresses.length > 0 && (
+      {summaryAddresses.length > 0 && !editingAddress && (
         <>
           <ServicesSummary
             addresses={summaryAddresses}

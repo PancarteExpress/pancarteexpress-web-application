@@ -123,6 +123,18 @@ export function PlacementPicker({ legend, value, onChange, errors = {}, hideLoca
               required
             />
           )}
+          {/* Balcon : même fixation qu'au mur, libellés courts */}
+          {location === 'balcony' && (
+            <RadioGroup
+              legend={t('placement.mounting')}
+              options={toOptions(MOUNTINGS, (m) => t(`balconyMountings.${m}`))}
+              value={value.mounting}
+              onChange={(v) => set('mounting', v)}
+              columns={2}
+              error={errors.mounting}
+              required
+            />
+          )}
           {location === 'window' && (
             <RadioGroup
               legend={t('placement.windowSide')}

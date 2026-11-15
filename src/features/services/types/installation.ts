@@ -11,7 +11,8 @@ export type PlacementAccess =
 export type Placement =
   | { location: 'ground' | 'ramp' }
   | { location: 'wall'; ladder: Ladder; mounting: Mounting }
-  | { location: 'balcony'; access: PlacementAccess }
+  /** mounting null : emplacement enregistré avant l'ajout de la fixation au balcon (novembre 2026) */
+  | { location: 'balcony'; access: PlacementAccess; mounting: Mounting | null }
   | { location: 'window'; access: PlacementAccess; side: WindowSide }
   | { location: 'other'; description: string };
 

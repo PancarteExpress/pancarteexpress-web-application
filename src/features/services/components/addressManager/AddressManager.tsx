@@ -8,10 +8,16 @@ import { useAddresses } from '../../hooks/useAddresses';
 import { ParsedAddress } from '@/shared/types/address';
 import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
 
-export default function AddressManager() {
+interface AddressManagerProps {
+  /** Prévient le parent quand le formulaire d'adresse s'ouvre (ajout, modification) ou se ferme */
+  onEditingChange?: (editing: boolean) => void;
+}
+
+export default function AddressManager({ onEditingChange }: AddressManagerProps) {
   const t = useTranslations('services.addressManager');
 
   const { addresses, selectedAddressId, setSelectedAddressId, addAddress, removeAddress, updateAddress } = useAddresses();
+  
 
   const [typeAddress, setTypeAddress] = useState<"streetAddress" | "terrainAddress" | null>(null);
 
@@ -33,6 +39,7 @@ export default function AddressManager() {
 
   const handleAddNewAddress = () => {
     setAddNewAddress(true);
+    onEditingChange?.(true);
   };
 
   const handleEdit = (addressId: string) => {
@@ -63,6 +70,7 @@ export default function AddressManager() {
     }
 
     setAddNewAddress(true);
+    onEditingChange?.(true);
   };
 
   const handleCancel = () => {
@@ -78,6 +86,7 @@ export default function AddressManager() {
 
     setAddNewAddress(false);
     setEditingAddressId(null);
+    onEditingChange?.(false);
   };
 
   const handleSave = () => {

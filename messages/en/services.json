@@ -151,7 +151,6 @@
     "forRent": "For rent",
     "other": "Other"
   },
-  
   "placement": {
     "access": "Installation access",
     "mounting": "Mounting method",
@@ -163,7 +162,6 @@
     "phoneAppointmentText": "Phone appointment: {contact}",
     "keyboxText": "Keybox: {info}"
   },
-
   "installation": {
     "title": "Installation details",
     "loading": "Loading…",
@@ -269,7 +267,7 @@
   },
   "correction": {
     "kinds": {
-      "straighten": "Straighten material",
+      "straighten": "Straighten frame",
       "explain": "Explain the correction"
     },
     "title": "Correction details",
@@ -399,7 +397,6 @@
       "noPaint": "no paint"
     }
   },
-
   "schedule": {
     "delays": {
       "standard24h": "Standard 24 h*",
@@ -573,5 +570,9 @@
     "invalid": "Please check the order number and email.",
     "networkError": "The search failed. Check your connection and try again.",
     "close": "Close summary"
+  },
+  "balconyMountings": {
+    "vShapeDrilled": "V-shaped",
+    "flatDoubleTape": "Flat"
   }
 }

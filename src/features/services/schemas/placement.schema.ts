@@ -54,6 +54,7 @@ export function validatePlacement(p: PlacementOutput, path: Path, report: Report
       break;
     case 'balcony':
       validateAccess(p, path, report);
+      if (p.mounting === null) report([...path, 'mounting'], 'chooseMounting');
       break;
     case 'window':
       validateAccess(p, path, report);
@@ -86,7 +87,7 @@ export function toPlacement(p: PlacementOutput): Placement {
       return { location, ladder: access, mounting: defined(p.mounting) };
     }
     case 'balcony':
-      return { location, access: toAccess(p) };
+      return { location, access: toAccess(p), mounting: defined(p.mounting) };
     case 'window':
       return { location, access: toAccess(p), side: defined(p.windowSide) };
     case 'other':
@@ -116,7 +117,8 @@ export function fromPlacement(p: Placement): PlacementFormValues {
     case 'wall':
       return { ...empty, location: p.location, access: p.ladder, mounting: p.mounting };
     case 'balcony':
-      return { ...empty, location: p.location, ...fromAccess(p.access) };
+      // Anciens emplacements sans fixation : à choisir à nouveau
+      return { ...empty, location: p.location, mounting: p.mounting ?? null, ...fromAccess(p.access) };
     case 'window':
       return { ...empty, location: p.location, windowSide: p.side, ...fromAccess(p.access) };
     case 'other':

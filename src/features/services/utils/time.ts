@@ -1,6 +1,6 @@
 import { TIME_MINUTE_STEP } from '@/features/services/constants/installation';
-import { addDays, format, isValid, nextMonday, parse } from 'date-fns';
-import { firstBusinessDayFrom } from './holidays';
+import { addDays, format, isValid, parse } from 'date-fns';
+import { removalDateAfter } from '@/lib/calendar/quebecCalendar';
 
 const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/;
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
@@ -30,8 +30,5 @@ export const isNextDay = (first: string, second: string): boolean => isValidIsoD
  * Jour du retrait après une visite libre : le lundi qui suit la dernière date,
  * ou le jour ouvrable suivant si ce lundi est férié. null si aucune date valide.
  */
-export const removalDayAfter = (dates: readonly string[]): string | null => {
-  const last = [...dates].filter(isValidIsoDate).sort().at(-1);
-  if (!last) return null;
-  return format(firstBusinessDayFrom(nextMonday(parse(last, 'yyyy-MM-dd', new Date()))), 'yyyy-MM-dd');
-};
+export const removalDayAfter = (dates: readonly string[]): string | null =>
+  removalDateAfter(dates.filter(isValidIsoDate));

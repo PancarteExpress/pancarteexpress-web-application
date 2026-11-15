@@ -151,7 +151,6 @@
     "forRent": "À louer",
     "other": "Autres"
   },
-  
   "placement": {
     "access": "Accès de l'installation",
     "mounting": "Méthode de fixation",
@@ -163,7 +162,6 @@
     "phoneAppointmentText": "Rendez-vous téléphonique : {contact}",
     "keyboxText": "Boîte à clés : {info}"
   },
-
   "installation": {
     "title": "Détails de l'installation",
     "loading": "Chargement…",
@@ -269,7 +267,7 @@
   },
   "correction": {
     "kinds": {
-      "straighten": "Redressage de matériel",
+      "straighten": "Redressage de pancarte",
       "explain": "Expliquer la correction"
     },
     "title": "Détails de la correction",
@@ -399,7 +397,6 @@
       "noPaint": "sans peinture"
     }
   },
-
   "schedule": {
     "delays": {
       "standard24h": "Standard 24 h*",
@@ -573,5 +570,9 @@
     "invalid": "Vérifiez le numéro de commande et le courriel.",
     "networkError": "La recherche a échoué. Vérifiez votre connexion et réessayez.",
     "close": "Fermer le résumé"
+  },
+  "balconyMountings": {
+    "vShapeDrilled": "En V",
+    "flatDoubleTape": "À plat"
   }
 }

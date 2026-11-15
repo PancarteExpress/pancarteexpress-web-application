@@ -1,15 +1,12 @@
 import 'server-only';
-import type { OrderStatus, Prisma, RequestType, ServiceType } from '@prisma/client';
+import type { OrderStatus, Prisma, ServiceType } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { formatCents } from '@/lib/pricing/money';
 import { sendEmail, INTERNAL_EMAIL } from '@/lib/email/sendEmail';
 import { renderTextEmail } from '@/lib/email/renderTextEmail';
 import { CONTACT } from '@/shared/constants/contact';
-import { formatServiceDelay } from '@/lib/orders/serviceDelay';
-import { LARGE_FORMAT_SERVICES } from '@/features/services/constants/largeFormat';
-import { parseLargeFormatService } from '@/features/services/schemas/largeFormatDomain.schema';
-import { describeLargeFormatService } from '@/features/services/utils/largeFormatText';
 import { buildClientReceipt } from './clientReceipt';
+import { sendServiceAddressEmails } from './serviceAddress.email';
 import { formatAddressNumber } from '@/lib/services/addressNumber';
 
 /* ── Données de la commande ───────────────────────────────────── */
@@ -17,7 +14,6 @@ import { formatAddressNumber } from '@/lib/services/addressNumber';
 const receiptSelect = {
   orderNumber: true,
   locale: true,
-  userId: true,
   internalReceiptSentAt: true,
   clientReceiptSentAt: true,
   firstName: true,
@@ -70,23 +66,9 @@ const SERVICE_LABELS: Record<ServiceType, string> = {
   delivery: 'Livraison de matériel',
 };
 
-const REQUEST_LABELS: Record<RequestType, string> = {
-  residential: 'Résidentielle',
-  commercial: 'Grand format',
-};
-
 /* ── Mise en forme du reçu interne (français) ────────────────── */
 
 const fmt = (cents: number) => formatCents(cents, 'fr');
-
-function formatAddress(address: ReceiptAddress): string {
-  if (address.kind === 'civicAddress') {
-    const apt = address.apartment ? `, app. ${address.apartment}` : '';
-    return `${address.streetNumber ?? ''} ${address.streetName ?? ''}${apt}, ${address.city}`.trim();
-  }
-  const near = address.nearbyAddress ? ` (près du ${address.nearbyAddress})` : '';
-  return `Terrain : ${address.description ?? ''}, ${address.city}${near}`;
-}
 
 function deliveryLines(order: Receipt): string[] {
   if (order.products.length === 0) return [];
@@ -109,30 +91,16 @@ function productLines(order: Receipt): string[] {
   ];
 }
 
-const LARGE_FORMAT_SET: ReadonlySet<string> = new Set(LARGE_FORMAT_SERVICES);
-
-/**
- * Détails d'un service grand format. Ces demandes ne passent pas par OptimoRoute :
- * le courriel est la seule trace détaillée pour l'équipe.
- */
-function largeFormatDetailLines(service: { type: ServiceType; details: Prisma.JsonValue }): string[] {
-  if (!LARGE_FORMAT_SET.has(service.type)) return [];
-  const parsed = parseLargeFormatService(service.type, service.details);
-  if (!parsed) return [`    ${SERVICE_LABELS[service.type]} : détails illisibles (voir la base de données)`];
-  return [`    ${SERVICE_LABELS[service.type]} :`, ...describeLargeFormatService(parsed).map((line) => `      ${line}`)];
-}
-
+/** Un numéro PE par adresse et ses types : le détail complet part dans le courriel de chaque numéro */
 function serviceLines(order: Receipt): string[] {
   if (order.serviceRequests.length === 0) return [];
   return [
     'Services (prix sur soumission) :',
     ...order.serviceRequests.flatMap((request) =>
-      request.addresses.flatMap((address) => [
-        `- ${formatAddressNumber(address.addressNumber)} [${REQUEST_LABELS[request.requestType]}] ${formatAddress(address)} : ` +
-          address.services.map((s) => SERVICE_LABELS[s.type]).join(', '),
-        `    Délai : ${formatServiceDelay(address.delay, address.requestedDate)}`,
-        ...address.services.flatMap(largeFormatDetailLines),
-      ]),
+      request.addresses.map(
+        (address) =>
+          `- ${formatAddressNumber(address.addressNumber)} — ${address.services.map((s) => SERVICE_LABELS[s.type]).join(', ')}`,
+      ),
     ),
   ];
 }
@@ -203,14 +171,10 @@ export async function sendReceipts(orderId: string): Promise<void> {
     }
   }
 
-  // Client connecté : sa commande est dans son tableau de bord, pas de confirmation par courriel.
-  // Marquée comme traitée : le cron ne la relance pas, même si le compte est supprimé ensuite.
-  if (order.userId && !order.clientReceiptSentAt) {
-    await markSent(orderId, 'client');
-    return;
-  }
+  // Un courriel interne détaillé par numéro PE (ne lève jamais)
+  await sendServiceAddressEmails(orderId);
 
-  // Confirmation au client invité : envoyée même si le courriel interne a échoué (la commande est enregistrée)
+  // Confirmation au client, connecté ou invité : envoyée même si le courriel interne a échoué (la commande est enregistrée)
   if (!order.clientReceiptSentAt) {
     try {
       // Dans la langue du checkout (Order.locale)
@@ -256,7 +220,11 @@ export async function retryUnsentReceipts(): Promise<number> {
   const orders = await prisma.order.findMany({
     where: {
       status: { in: RETRY_STATUSES },
-      OR: [{ internalReceiptSentAt: null }, { clientReceiptSentAt: null }],
+      OR: [
+        { internalReceiptSentAt: null },
+        { clientReceiptSentAt: null },
+        { serviceRequests: { some: { addresses: { some: { internalEmailSentAt: null } } } } },
+      ],
       // Laisse le temps à after() de finir (updatedAt change aussi au paiement)
       updatedAt: { lt: new Date(now - HOUR) },
       // Au-delà d'une semaine, une confirmation n'a plus de sens

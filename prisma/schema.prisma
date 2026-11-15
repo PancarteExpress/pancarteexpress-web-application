@@ -181,8 +181,7 @@ model Order {
   paymentIntentId String?   @unique
   paidAt          DateTime?
 
-  // Date d'envoi de chaque courriel de commande ; null = à (r)envoyer par le cron quotidien.
-  // clientReceiptSentAt est aussi rempli, sans envoi, pour un client connecté (commande visible au dashboard)
+  // Date d'envoi de chaque courriel de commande ; null = à (r)envoyer par le cron quotidien
   internalReceiptSentAt DateTime?
   clientReceiptSentAt   DateTime?
 
@@ -257,6 +256,9 @@ model ServiceAddress {
   optimoRouteId    String?
   optimoSyncError  String?
   optimoSyncedAt   DateTime?
+
+  // Courriel interne détaillé de ce numéro PE ; null = à (r)envoyer par le cron quotidien
+  internalEmailSentAt DateTime?
 
   @@index([serviceRequestId])
   @@index([city])

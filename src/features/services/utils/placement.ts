@@ -24,7 +24,7 @@ export function describePlacement(p: Placement, t: ServicesTranslator): string {
     case 'wall':
       return `${location} — ${t(`access.${p.ladder}`)}, ${t(`mountings.${p.mounting}`)}`;
     case 'balcony':
-      return `${location} — ${describeAccess(p.access, t)}`;
+      return `${location} — ${describeAccess(p.access, t)}${p.mounting ? `, ${t(`balconyMountings.${p.mounting}`)}` : ''}`;
     case 'window':
       return `${location} (${t(`windowSides.${p.side}`).toLowerCase()}) — ${describeAccess(p.access, t)}`;
     case 'other':

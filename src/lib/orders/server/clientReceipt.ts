@@ -1,5 +1,6 @@
 import 'server-only';
-import { createTranslator, type AbstractIntlMessages } from 'next-intl';
+import type { AbstractIntlMessages } from 'next-intl';
+import { looseTranslator } from '@/lib/i18n/looseTranslator';
 import type { Locale, ServiceDelay } from '@prisma/client';
 import { formatCents } from '@/lib/pricing/money';
 import { formatServiceDate } from '@/lib/orders/serviceDelay';
@@ -7,10 +8,7 @@ import { CONTACT } from '@/shared/constants/contact';
 import { formatAddressNumber } from '@/lib/services/addressNumber';
 import { LARGE_FORMAT_SERVICES } from '@/features/services/constants/largeFormat';
 import { parseLargeFormatService } from '@/features/services/schemas/largeFormatDomain.schema';
-import {
-  describeLargeFormatServiceTranslated,
-  type ServicesTranslator,
-} from '@/features/services/utils/largeFormatTranslatedText';
+import { describeLargeFormatServiceTranslated } from '@/features/services/utils/largeFormatTranslatedText';
 import frServices from '@/messages/fr/services.json';
 import enServices from '@/messages/en/services.json';
 import frProducts from '@/messages/fr/products.json';
@@ -18,7 +16,7 @@ import enProducts from '@/messages/en/products.json';
 import type { Receipt, ReceiptAddress } from './receipts.email';
 
 /*
- * Confirmation de commande envoyée au client invité, dans la langue de son checkout (Order.locale).
+ * Confirmation de commande envoyée au client (connecté ou invité), dans la langue de son checkout (Order.locale).
  * Le reçu interne, lui, reste en français (receipts.email.ts).
  * Libellés des services et des produits : mêmes traductions que le site (messages/*.json),
  * chargées directement car l'envoi peut venir du webhook Stripe ou du cron, sans requête du client.
@@ -90,17 +88,6 @@ const TEXT = {
 } satisfies Record<Locale, unknown>;
 
 type Text = (typeof TEXT)[Locale];
-
-type LooseTranslator = ServicesTranslator & { has: (key: string) => boolean };
-
-/** Traducteur aux clés libres : elles sont construites à l'exécution (type de service, slug…) */
-function looseTranslator(locale: Locale, messages: AbstractIntlMessages): LooseTranslator {
-  const t = createTranslator({ locale, messages });
-  type Key = Parameters<typeof t>[0];
-  type Values = Parameters<typeof t>[1];
-  const translate = (key: string, values?: Record<string, string | number>) => t(key as Key, values as Values);
-  return Object.assign(translate, { has: (key: string) => t.has(key as Key) });
-}
 
 const LARGE_FORMAT_SET: ReadonlySet<string> = new Set(LARGE_FORMAT_SERVICES);
 

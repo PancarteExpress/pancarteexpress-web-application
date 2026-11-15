@@ -1,8 +1,9 @@
 import { useFormatter, useTranslations } from 'next-intl';
-import type {
-  AddonAssignment, FrameDisplayName, FrameModel, InstallationDetails, KitModel, Placement, UnitTargets,
-} from '@/features/services/types/installation';
-import { describePlacement, type ServicesTranslator } from '@/features/services/utils/placement';
+import type { InstallationDetails } from '@/features/services/types/installation';
+import { describePlacement } from '@/features/services/utils/placement';
+import {
+  describeAddon, describeDisplayName, describeKitModel, describeModel, describePlacements, describeTargets, formatTime,
+} from '@/features/services/utils/installationText';
 import { removalDayAfter } from '@/features/services/utils/time';
 import { formatIsoDay } from '@/features/services/utils/formatDay';
 import { useAppLocale } from '@/shared/hooks/useAppLocale';
@@ -10,56 +11,6 @@ import styles from '../servicesSummary.module.css';
 import {
   Field, Fields, Panel, Pill, Prose, SubSection, TextOrEmpty, UnitCard, UnitGrid, UnitRow, UnitRows,
 } from '../SummaryParts';
-
-/* ---------- Formatage (fonctions pures, t = useTranslations('services')) ---------- */
-
-function describeKitModel(model: KitModel, t: ServicesTranslator): string {
-  const label = t(`kitModels.${model.type}`);
-  return model.type === 'custom' ? t('summary.labelWithDescription', { label, description: model.description }) : label;
-}
-
-function describeModel(model: FrameModel, t: ServicesTranslator): string {
-  const label = t(`frameModels.${model.type}`);
-  return model.type === 'custom' ? t('summary.labelWithDescription', { label, description: model.description }) : label;
-}
-
-function describeDisplayName(name: FrameDisplayName): string {
-  return name.type === 'account' ? name.name : name.names;
-}
-
-function describeAddon(a: AddonAssignment, t: ServicesTranslator): string {
-  switch (a.addon) {
-    case 'other':
-      return t('summary.labelWithDetail', { label: t('addons.other'), detail: a.mention });
-    case 'customNoMention':
-      return a.details
-        ? t('summary.labelWithDetail', { label: t('addons.customNoMention'), detail: a.details })
-        : t('addons.customNoMention');
-    default:
-      return 'model' in a && a.model
-        ? t('summary.labelWithModel', { label: t(`addons.${a.addon}`), model: describeModel(a.model, t) })
-        : t(`addons.${a.addon}`);
-  }
-}
-
-function describeTargets(a: UnitTargets, frameNumbers: Map<string, number>, t: ServicesTranslator): string {
-  const targets = a.frameUids.map((uid) => t('summary.frame', { number: frameNumbers.get(uid) ?? '?' }));
-  if (a.onSiteCount > 0) {
-    targets.push(a.onSiteCount > 1 ? t('summary.onSiteCount', { count: a.onSiteCount }) : t('summary.onSite'));
-  }
-  return targets.join(', ');
-}
-
-/** Emplacements propres (sans pancarte) : un seul = tous au même endroit */
-function describePlacements(placements: Placement[], t: ServicesTranslator): string {
-  return placements.map((p) => describePlacement(p, t)).join(' · ');
-}
-
-/** '13:30' → '13 h 30' (fr) / '13:30' (en) */
-function formatTime(time: string, t: ServicesTranslator): string {
-  const [hours, minutes] = time.split(':');
-  return t('summary.time', { hours, minutes });
-}
 
 /* ---------- Composant ---------- */
 

@@ -31,7 +31,7 @@ export const OPEN_HOUSE = {
   maxDirectionals: 5,
   maxFlags: 2,
   maxDates: 2,
-  defaultStartTime: '09:00',
+  defaultStartTime: '14:00',
   defaultDurationMinutes: 120,
 } as const;
 

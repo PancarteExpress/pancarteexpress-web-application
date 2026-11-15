@@ -147,6 +147,17 @@ describe('createInstallationSchema — emplacement par pancarte', () => {
       .toContain(`${P}.keyboxInfo`);
   });
 
+  it('balcon : exige la fixation, comme au mur', () => {
+    expect(issuePaths(memberSchema.safeParse(withPlacement({ location: 'balcony', access: 'noLadder' }))))
+      .toContain(`${P}.mounting`);
+    const result = memberSchema.safeParse(withPlacement({ location: 'balcony', access: 'noLadder', mounting: 'flatDoubleTape' }));
+    expect(result.success && result.data.frames?.units[0].placement).toEqual({
+      location: 'balcony',
+      access: { type: 'ladder', ladder: 'noLadder' },
+      mounting: 'flatDoubleTape',
+    });
+  });
+
   it('au mur : refuse la boîte à clés', () => {
     expect(issuePaths(memberSchema.safeParse(
       withPlacement({ location: 'wall', access: 'keybox', mounting: 'vShapeDrilled' }),

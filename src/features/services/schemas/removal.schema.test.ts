@@ -54,7 +54,7 @@ describe('removalSchema', () => {
 
   it('aller-retour domaine ⇄ formulaire', () => {
     const first = removalSchema.parse(form([
-      unit({ location: 'balcony', access: 'keybox', keyboxInfo: 'Code 4821' }),
+      unit({ location: 'balcony', access: 'keybox', keyboxInfo: 'Code 4821', mounting: 'flatDoubleTape' }),
       unit({ location: 'window', access: 'phoneAppointment', contact: '514-555-0000', windowSide: 'exterior' }),
     ]));
     expect(removalSchema.parse(toRemovalFormValues(first))).toEqual(first);
@@ -166,7 +166,7 @@ describe('removalSchema — relecture depuis la base', () => {
     ['pancartes : sol, mur, balcon', form([
       unit({ location: 'ground' }),
       unit({ location: 'wall', access: 'smallLadder', mounting: 'flatDoubleTape' }),
-      unit({ location: 'balcony', access: 'keybox', keyboxInfo: 'Code 4821' }),
+      unit({ location: 'balcony', access: 'keybox', keyboxInfo: 'Code 4821', mounting: 'vShapeDrilled' }),
     ])],
     ['pancartes : fenêtre, autre', form([
       unit({ location: 'window', access: 'phoneAppointment', contact: '514-555-0000', windowSide: 'exterior' }),

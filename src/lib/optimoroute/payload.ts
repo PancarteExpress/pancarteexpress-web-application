@@ -1,8 +1,9 @@
+
 import type { AddressKind, ServiceDelay, ServiceType } from '@prisma/client';
 import type { IsoDate } from './calendar';
-import { computeSchedule } from './scheduling';
+import { computeSchedule, type OptimoPriority } from './scheduling';
 import type { OptimoOrderPayload } from './server/client';
-
+ 
 /** Libellés internes pour les chauffeurs (OptimoRoute), toujours en français. */
 const SERVICE_NOTE_LABELS: Record<ServiceType, string> = {
   installation: 'INSTALLATION',
@@ -10,13 +11,15 @@ const SERVICE_NOTE_LABELS: Record<ServiceType, string> = {
   correction: 'CORRECTION',
   pickup: 'RAMASSAGE',
   delivery: 'LIVRAISON',
-
+ 
   // Jamais envoyés à OptimoRoute (grand format exclu de la synchronisation) ; requis par le type
   largeInstallation: 'INSTALLATION GRAND FORMAT',
   largeStoragePickup: 'RAMASSAGE ENTREPOSAGE',
   largeRetrieval: 'RECUP GRAND FORMAT',
 };
-
+ 
+const OPEN_HOUSE_REMOVAL_LABEL = 'RECUP VISITE LIBRE';
+ 
 export type OptimoAddressInput = {
   kind: AddressKind;
   streetNumber: string | null;
@@ -27,7 +30,9 @@ export type OptimoAddressInput = {
   nearbyAddress: string | null;
   city: string;
 };
-
+ 
+type OptimoCustomer = { firstName: string; lastName: string; email: string; phone: string | null };
+ 
 export type OptimoPayloadInput = {
   orderNo: string;
   /** Date de création de la commande : fige la date même lors d'un réessai par le cron. */
@@ -36,12 +41,19 @@ export type OptimoPayloadInput = {
   requestedDate: Date | null;
   address: OptimoAddressInput;
   serviceTypes: ServiceType[];
-  customer: { firstName: string; lastName: string; email: string; phone: string | null };
+  customer: OptimoCustomer;
 };
-
+ 
+export type OpenHouseRemovalInput = {
+  orderNo: string;
+  date: IsoDate;
+  address: OptimoAddressInput;
+  customer: OptimoCustomer;
+};
+ 
 const clean = (parts: Array<string | null | undefined>, sep: string) =>
   parts.map((p) => p?.trim()).filter(Boolean).join(sep);
-
+ 
 /** Adresse envoyée au géocodage d'OptimoRoute. */
 export function formatOptimoAddress(a: OptimoAddressInput): string {
   if (a.kind === 'terrain') return clean([a.nearbyAddress, a.city], ', ');
@@ -49,31 +61,31 @@ export function formatOptimoAddress(a: OptimoAddressInput): string {
   const withApt = a.apartment ? `${street} app. ${a.apartment.trim()}` : street;
   return clean([withApt, a.city, a.postalCode], ', ');
 }
-
+ 
 /** Colonne @db.Date → "YYYY-MM-DD" (Prisma la renvoie à minuit UTC). */
 const dbDateToIso = (d: Date): IsoDate => d.toISOString().slice(0, 10);
-
-export function buildOptimoPayload(input: OptimoPayloadInput): OptimoOrderPayload {
-  const { date, priority } = computeSchedule(
-    input.delay,
-    input.requestedDate ? dbDateToIso(input.requestedDate) : null,
-    input.orderCreatedAt,
-  );
-
-  const { firstName, lastName, email, phone } = input.customer;
+ 
+/** Champs communs à toutes les tâches d'une adresse. */
+function buildTask(
+  orderNo: string,
+  date: IsoDate,
+  priority: OptimoPriority,
+  label: string,
+  addressInput: OptimoAddressInput,
+  customer: OptimoCustomer,
+): OptimoOrderPayload {
+  const { firstName, lastName, email, phone } = customer;
   const fullName = clean([firstName, lastName], ' ').toLocaleUpperCase('fr-CA');
-  const services = [...new Set(input.serviceTypes)].map((t) => SERVICE_NOTE_LABELS[t]).join(' + ');
-  const terrain = input.address.kind === 'terrain' ? input.address.description : null;
-
-  const address = formatOptimoAddress(input.address);
-
+  const terrain = addressInput.kind === 'terrain' ? addressInput.description : null;
+  const address = formatOptimoAddress(addressInput);
+ 
   return {
     operation: 'SYNC',
-    orderNo: input.orderNo,
+    orderNo,
     type: 'T',
     date,
     location: { address, locationName: address, acceptPartialMatch: true },
-    notes: clean([services, fullName, terrain ? `Terrain : ${terrain}` : null], ' — '),
+    notes: clean([label, fullName, terrain ? `Terrain : ${terrain}` : null], ' — '),
     priority,
     email,
     ...(phone ? { phone } : {}),
@@ -81,3 +93,20 @@ export function buildOptimoPayload(input: OptimoPayloadInput): OptimoOrderPayloa
     customField3: lastName,
   };
 }
+ 
+export function buildOptimoPayload(input: OptimoPayloadInput): OptimoOrderPayload {
+  const { date, priority } = computeSchedule(
+    input.delay,
+    input.requestedDate ? dbDateToIso(input.requestedDate) : null,
+    input.orderCreatedAt,
+  );
+  const services = [...new Set(input.serviceTypes)].map((t) => SERVICE_NOTE_LABELS[t]).join(' + ');
+ 
+  return buildTask(input.orderNo, date, priority, services, input.address, input.customer);
+}
+ 
+/** Tâche de retrait de la visite libre, à sa date prévue. */
+export function buildOpenHouseRemovalPayload(input: OpenHouseRemovalInput): OptimoOrderPayload {
+  return buildTask(input.orderNo, input.date, 'M', OPEN_HOUSE_REMOVAL_LABEL, input.address, input.customer);
+}
+ 

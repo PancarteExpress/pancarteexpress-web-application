@@ -2,10 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const prismaMock = vi.hoisted(() => ({ order: { findUnique: vi.fn(), findMany: vi.fn(), update: vi.fn() } }));
 const sendEmail = vi.hoisted(() => vi.fn());
+const sendServiceAddressEmails = vi.hoisted(() => vi.fn());
 
 vi.mock('server-only', () => ({}));
 vi.mock('@/lib/prisma', () => ({ prisma: prismaMock }));
 vi.mock('@/lib/email/sendEmail', () => ({ sendEmail, INTERNAL_EMAIL: 'equipe@pancarte.test' }));
+// Courriels par numéro PE : testés dans serviceAddress.email.test.ts
+vi.mock('./serviceAddress.email', () => ({ sendServiceAddressEmails }));
 
 const { sendReceipts, retryUnsentReceipts } = await import('./receipts.email');
 
@@ -146,7 +149,9 @@ describe('sendReceipts', () => {
     const [internal, client] = sendEmail.mock.calls.map(([options]) => options as { subject: string; text: string });
     expect(internal.text).toContain('Produits :');
     expect(internal.text).toContain('Retrait');
-    expect(internal.text).toContain('- PE-11111 [Résidentielle] 200 Boulevard Lebeau, Montréal : Retrait');
+    // Le reçu de la commande ne liste que le numéro et les types ; le détail part dans le courriel du numéro
+    expect(internal.text).toContain('- PE-11111 — Retrait');
+    expect(internal.text).not.toContain('Boulevard Lebeau');
     expect(client.subject).toBe('Your order #1042 confirmation | Pancarte Express');
     expect(client.text).toContain('Key boxes ×1');
     expect(client.text).toContain('GST: ');
@@ -163,17 +168,19 @@ describe('sendReceipts', () => {
     expect(text).toContain('Total : ');
   });
 
-  it("n'envoie que le reçu interne pour un client connecté (commande visible au dashboard)", async () => {
+  it('envoie aussi la confirmation à un client connecté', async () => {
     prismaMock.order.findUnique.mockResolvedValue({ ...order, userId: 'u1' });
 
     await sendReceipts('o1');
 
-    expect(sendEmail).toHaveBeenCalledTimes(1);
-    expect(sendEmail).toHaveBeenCalledWith(expect.objectContaining({ to: 'equipe@pancarte.test' }));
-    // Marquée comme traitée : le cron ne la relance pas
-    expect(prismaMock.order.update).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { clientReceiptSentAt: expect.any(Date) } }),
-    );
+    expect(sendEmail).toHaveBeenCalledTimes(2);
+    expect(sendEmail).toHaveBeenLastCalledWith(expect.objectContaining({ to: 'ana@example.com' }));
+  });
+
+  it('envoie les courriels détaillés par numéro PE après le reçu interne', async () => {
+    await sendReceipts('o1');
+
+    expect(sendServiceAddressEmails).toHaveBeenCalledWith('o1');
   });
 
   it("n'envoie rien si la commande est introuvable", async () => {

@@ -94,13 +94,16 @@ function InstallationFormInner({ handle, initialValues, draft, onAutoSave, isMem
         
         {materials.includes('frames') && <FramesSection isMember={isMember} accountName={accountName} />}
         {materials.includes('kit') && <KitSection />}
-        {materials.includes('addons') && <AddonsSection />}
-        {materials.includes('openHouse') && <OpenHouseSection />}
         {materials.includes('keybox') && <KeyboxSection />}
         {materials.includes('flags') && <FlagsSection />}
         {materials.includes('directional') && <DirectionalsSection />}
-        {materials.includes('other') && <OtherSection />}
+
+        {materials.includes('addons') && <AddonsSection />}
+        {materials.includes('openHouse') && <OpenHouseSection />}
         <AssignmentsSection />
+        
+        {materials.includes('other') && <OtherSection />}
+        
       </form>
     </FormProvider>
   );

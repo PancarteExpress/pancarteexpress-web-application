@@ -27,6 +27,8 @@ interface Suggestion {
   prediction: google.maps.places.PlacePrediction;
 }
 
+type LegacyComponents = google.maps.GeocoderAddressComponent[];
+
 const MIN_CHARS = 1;
 const DEBOUNCE_MS = 250;
 
@@ -160,7 +162,9 @@ export default function AddressAutocomplete({
 
   const selectSuggestion = async (suggestion: Suggestion) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
+
     const requestId = ++requestIdRef.current;
+
     closeSuggestions();
     onChangeRef.current(suggestion.label);
 
@@ -181,7 +185,17 @@ export default function AddressAutocomplete({
     // Démonté ou nouvelle saisie entre-temps : résultat obsolète
     if (requestId !== requestIdRef.current) return;
 
-    if (!hasRequiredComponents(place)) {
+    // Places incomplet (ex. premise sans street_number) : repli sur le Geocoder
+    const result = hasRequiredComponents(place)
+      ? toPlaceResult(place)
+      : place.formattedAddress
+        ? await geocodeFallback(place.formattedAddress)
+        : null;
+
+    // Nouvel await : revérifier l'obsolescence
+    if (requestId !== requestIdRef.current) return;
+
+    if (!result) {
       hasSelectionRef.current = false;
       onSelectRef.current?.(null);
       setSelectionError('incomplete');
@@ -189,8 +203,8 @@ export default function AddressAutocomplete({
     }
     setSelectionError(null);
 
-    const parsed = parsePlace(toPlaceResult(place));
-    if (place.formattedAddress) onChangeRef.current(place.formattedAddress);
+    const parsed = parsePlace(result);
+    if (result.formatted_address) onChangeRef.current(result.formatted_address);
     hasSelectionRef.current = parsed !== null;
     onSelectRef.current?.(parsed);
   };
@@ -296,4 +310,20 @@ export default function AddressAutocomplete({
       {internalError && <p id={errorId} className={styles.loadError}>{t(internalError)}</p>}
     </div>
   );
+}
+
+function hasRequiredLegacy(components: LegacyComponents | undefined): boolean {
+  const get = (type: string) => components?.find((c) => c.types.includes(type))?.long_name ?? '';
+  return get('street_number') !== '' && get('route') !== '' && POSTAL_CODE_REGEX.test(get('postal_code'));
+}
+
+// Repli : Places renvoie parfois un `premise` sans street_number (ex. grands immeubles)
+async function geocodeFallback(address: string): Promise<google.maps.places.PlaceResult | null> {
+  try {
+    const { results } = await new google.maps.Geocoder().geocode({ address, region: 'ca', language: 'fr' });
+    const match = results.find((r) => hasRequiredLegacy(r.address_components));
+    return match ? { formatted_address: match.formatted_address, address_components: match.address_components } : null;
+  } catch {
+    return null;
+  }
 }

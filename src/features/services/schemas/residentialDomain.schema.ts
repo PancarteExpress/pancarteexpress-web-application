@@ -38,7 +38,8 @@ const accessSchema = z.discriminatedUnion('type', [
 const placementSchema = z.discriminatedUnion('location', [
   z.object({ location: z.literal(['ground', 'ramp']) }),
   z.object({ location: z.literal('wall'), ladder: z.enum(LADDERS), mounting: z.enum(MOUNTINGS) }),
-  z.object({ location: z.literal('balcony'), access: accessSchema }),
+  // Fixation absente des emplacements enregistrés avant son ajout au balcon : null
+  z.object({ location: z.literal('balcony'), access: accessSchema, mounting: z.enum(MOUNTINGS).nullable().default(null) }),
   z.object({ location: z.literal('window'), access: accessSchema, side: z.enum(WINDOW_SIDES) }),
   z.object({ location: z.literal('other'), description: z.string() }),
 ]) satisfies z.ZodType<Placement>;
