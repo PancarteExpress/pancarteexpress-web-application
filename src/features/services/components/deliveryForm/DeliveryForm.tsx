@@ -25,10 +25,15 @@ import { YesNoField } from '@/features/services/components/fields/YesNoField';
 import { toOptions, type ChoiceOption } from '@/features/services/components/fields/types';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
 import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
+
 import formStyles from '../installationForm/installationForm.module.css';
 import styles from './deliveryForm.module.css';
 
 import { IoConstructSharp } from "react-icons/io5";
+import { FaSignHanging } from "react-icons/fa6";
+import { SiOneplus } from "react-icons/si";
+import { FaUnlock } from "react-icons/fa";
+import { HiQuestionMarkCircle } from "react-icons/hi";
 
 type Values = DeliveryFormValues;
 type SectionProps = {
@@ -113,7 +118,7 @@ export function DeliveryForm({ handle, initialValues, draft, onAutoSave }: Deliv
 
   return (
     <form noValidate className={formStyles.deliveryForm} onSubmit={(e) => e.preventDefault()}>
-      <section aria-labelledby={headingId} className={formStyles.material}>
+      
         <h3 id={headingId} className={formStyles.title}><IoConstructSharp size={24} /> {t('title')}</h3>
 
         <Controller
@@ -138,7 +143,6 @@ export function DeliveryForm({ handle, initialValues, draft, onAutoSave }: Deliv
         {materials.includes('keybox') && <KeyboxSection {...sectionProps} />}
         {materials.includes('directional') && <DirectionalsSection {...sectionProps} />}
         {materials.includes('other') && <OthersSection {...sectionProps} />}
-      </section>
     </form>
   );
 }
@@ -167,8 +171,8 @@ function Unit({ legend, onRemove, removeLabel, children }: {
   legend: string; onRemove?: () => void; removeLabel: string; children: React.ReactNode;
 }) {
   return (
-    <fieldset className={styles.unit}>
-      <legend className={styles.unitLegend}>{legend}</legend>
+    <fieldset className={formStyles.unit}>
+      <legend className={formStyles.unitTitle}>{legend}</legend>
       {children}
       {onRemove && (
         <button type="button" className={styles.removeButton} onClick={onRemove}>{removeLabel}</button>
@@ -189,10 +193,13 @@ function FramesSection({ control, setValue, validate }: SectionProps) {
   const { errors } = control._formState;
   const models = frames.map((f) => f.model);
   const options = toOptions(DELIVERY_FRAME_MODELS, (m) => tServices(`frameModels.${m}`));
+  const headingId = useId();
 
   return (
-    <div className={styles.group}>
-      <h4 className={styles.groupTitle}>{t('framesTitle')}</h4>
+    <section aria-labelledby={headingId} className={formStyles.material}>
+
+      <h3 id={headingId} className={formStyles.title}><FaSignHanging size={24} /> {t('framesTitle')}</h3>
+
       {fields.map((field, i) => (
         <Unit
           key={field.id}
@@ -275,7 +282,7 @@ function FramesSection({ control, setValue, validate }: SectionProps) {
         maxLabel={t('maxModels', { max: DELIVERY_LIMITS.frameModels })}
         error={errors.frames?.root?.message ?? errors.frames?.message}
       />
-    </div>
+    </section>
   );
 }
 
@@ -291,10 +298,13 @@ function AddonsSection({ control, setValue, validate }: SectionProps) {
   const chosen = addons.map((a) => a.addon);
   const options = toOptions(DELIVERY_ADDONS, (a) => t(`addons.${a}`));
   const clear = { shouldValidate: validate };
+  const headingId = useId();
 
   return (
-    <div className={styles.group}>
-      <h4 className={styles.groupTitle}>{t('addonsTitle')}</h4>
+    <section aria-labelledby={headingId} className={formStyles.material}>
+
+      <h3 id={headingId} className={formStyles.title}><SiOneplus  size={34} /> {t('addonsTitle')}</h3>
+    
       {fields.map((field, i) => (
         <Unit
           key={field.id}
@@ -382,7 +392,7 @@ function AddonsSection({ control, setValue, validate }: SectionProps) {
         maxLabel={t('maxModels', { max: DELIVERY_LIMITS.addonModels })}
         error={errors.addons?.root?.message ?? errors.addons?.message}
       />
-    </div>
+    </section>
   );
 }
 
@@ -393,10 +403,12 @@ function AddonsSection({ control, setValue, validate }: SectionProps) {
 function KeyboxSection({ control }: SectionProps) {
   const t = useTranslations('services.delivery');
   const tInstallation = useTranslations('services.installation');
+  const headingId = useId();
 
   return (
-    <div className={styles.group}>
-      <h4 className={styles.groupTitle}>{t('keyboxTitle')}</h4>
+    <section aria-labelledby={headingId} className={formStyles.material}>
+
+      <h3 id={headingId} className={formStyles.title}><FaUnlock size={24} /> {t('keyboxTitle')}</h3>
       <Controller
         control={control}
         name="keybox.quantity"
@@ -415,20 +427,22 @@ function KeyboxSection({ control }: SectionProps) {
         control={control}
         name="keybox.code"
         render={({ field: f, fieldState }) => (
-          <TextField
-            label={t('keyboxCode')}
-            value={f.value}
-            onChange={f.onChange}
-            onBlur={f.onBlur}
-            inputRef={f.ref}
-            inputMode="numeric"
-            maxLength={KEYBOX_CODE_MAX_DIGITS}
-            hint={tInstallation('codeHint', { max: KEYBOX_CODE_MAX_DIGITS })}
-            error={fieldState.error?.message}
-          />
+          <fieldset className={formStyles.unit}>
+            <TextField
+              label={t('keyboxCode')}
+              value={f.value}
+              onChange={f.onChange}
+              onBlur={f.onBlur}
+              inputRef={f.ref}
+              inputMode="numeric"
+              maxLength={KEYBOX_CODE_MAX_DIGITS}
+              hint={tInstallation('codeHint', { max: KEYBOX_CODE_MAX_DIGITS })}
+              error={fieldState.error?.message}
+            />
+          </fieldset>
         )}
       />
-    </div>
+    </section>
   );
 }
 
@@ -443,10 +457,12 @@ function DirectionalsSection({ control, setValue, validate }: SectionProps) {
   const { errors } = control._formState;
   const models = directionals.map((d) => d.model);
   const options = toOptions(DELIVERY_DIRECTIONAL_MODELS, (m) => t(`directionalModels.${m}`));
+  const headingId = useId();
 
   return (
-    <div className={styles.group}>
-      <h4 className={styles.groupTitle}>{t('directionalsTitle')}</h4>
+    <section aria-labelledby={headingId} className={formStyles.material}>
+
+      <h3 id={headingId} className={formStyles.title}><FaUnlock size={24} /> {t('directionalsTitle')}</h3>
       {fields.map((field, i) => (
         <Unit
           key={field.id}
@@ -529,7 +545,7 @@ function DirectionalsSection({ control, setValue, validate }: SectionProps) {
         maxLabel={t('maxModels', { max: DELIVERY_LIMITS.directionalModels })}
         error={errors.directionals?.root?.message ?? errors.directionals?.message}
       />
-    </div>
+    </section>
   );
 }
 
@@ -541,10 +557,13 @@ function OthersSection({ control }: SectionProps) {
   const t = useTranslations('services.delivery');
   const { fields, append, remove } = useFieldArray({ control, name: 'others' });
   const { errors } = control._formState;
+  const headingId = useId();
 
   return (
-    <div className={styles.group}>
-      <h4 className={styles.groupTitle}>{t('othersTitle')}</h4>
+    <section aria-labelledby={headingId} className={formStyles.material}>
+
+      <h3 id={headingId} className={formStyles.title}><HiQuestionMarkCircle size={34} /> {t('othersTitle')}</h3>
+   
       {fields.map((field, i) => (
         <Unit
           key={field.id}
@@ -592,6 +611,6 @@ function OthersSection({ control }: SectionProps) {
         maxLabel={t('maxItems', { max: DELIVERY_LIMITS.otherItems })}
         error={errors.others?.root?.message ?? errors.others?.message}
       />
-    </div>
+    </section>
   );
 }

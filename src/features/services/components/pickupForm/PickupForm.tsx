@@ -94,19 +94,21 @@ export function PickupForm({ handle, initialValues, draft, onAutoSave }: PickupF
           control={control}
           name="details"
           render={({ field, fieldState }) => (
-            <TextField
-              label={t('details')}
-              placeholder={t('detailsPlaceholder')}
-              value={field.value}
-              onChange={field.onChange}
-              onBlur={field.onBlur}
-              inputRef={field.ref}
-              maxLength={PICKUP_TEXT_LIMITS.details}
-              multiline
-              rows={4}
-              error={fieldState.error?.message}
-              required={detailsRequired}
-            />
+            <fieldset className={styles.unit}>
+              <TextField
+                label={t('details')}
+                placeholder={t('detailsPlaceholder')}
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                inputRef={field.ref}
+                maxLength={PICKUP_TEXT_LIMITS.details}
+                multiline
+                rows={4}
+                error={fieldState.error?.message}
+                required={detailsRequired}
+              />
+            </fieldset>
           )}
         />
       </section>
