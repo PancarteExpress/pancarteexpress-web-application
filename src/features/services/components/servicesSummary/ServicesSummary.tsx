@@ -52,7 +52,14 @@ export function ServicesSummary({
             <h3 className={styles.addressName}>{formatAddress(address, addressLabels)}</h3>
             <span className={styles.badge}>{address.type === 'address' ? t('address.kindAddress') : t('address.kindTerrain')}</span>
           </header>
-          {showSchedule && <AddressDelay address={address} delayText={delayText} />}
+          {(address.attachments?.length ?? 0) > 0 && (
+            <p className={styles.muted}>
+              {t('attachments.summary', {
+                count: address.attachments?.length ?? 0,
+                names: address.attachments?.map((f) => f.fileName).join(', ') ?? '',
+              })}
+            </p>
+          )}
 
           <ul className={styles.services}>
             {address.services.map((service) => (

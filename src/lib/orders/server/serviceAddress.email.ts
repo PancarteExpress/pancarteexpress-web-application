@@ -5,6 +5,7 @@ import { sendEmail, INTERNAL_EMAIL } from '@/lib/email/sendEmail';
 import { renderTextEmail } from '@/lib/email/renderTextEmail';
 import { servicesTranslator } from '@/lib/i18n/looseTranslator';
 import { formatServiceDelay } from '@/lib/orders/serviceDelay';
+import { SITE_URL } from '@/lib/siteUrl';
 import { formatAddressNumber } from '@/lib/services/addressNumber';
 import { describeServiceDetailsText } from '@/features/services/utils/serviceDetailsText';
 
@@ -28,6 +29,7 @@ const addressSelect = {
   delay: true,
   requestedDate: true,
   services: { orderBy: { id: 'asc' }, select: { type: true, details: true } },
+  attachments: { orderBy: { createdAt: 'asc' }, select: { id: true, fileName: true } },
   serviceRequest: {
     select: {
       requestType: true,
@@ -75,6 +77,10 @@ export function buildServiceAddressEmail(a: EmailAddress) {
         ...(lines ?? ['Détails illisibles : voir la base de données.']),
       ];
     }),
+    // Liens ouverts après connexion à l'espace superAdmin
+    ...(a.attachments.length > 0
+      ? [['PIÈCES JOINTES', ...a.attachments.map((f) => `${f.fileName} : ${SITE_URL}/api/attachments/${f.id}`)]]
+      : []),
   ];
 
   return {

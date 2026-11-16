@@ -3,20 +3,7 @@ import type { AddressKind, ServiceDelay, ServiceType } from '@prisma/client';
 import type { IsoDate } from './calendar';
 import { computeSchedule, type OptimoPriority } from './scheduling';
 import type { OptimoOrderPayload } from './server/client';
- 
-/** Libellés internes pour les chauffeurs (OptimoRoute), toujours en français. */
-const SERVICE_NOTE_LABELS: Record<ServiceType, string> = {
-  installation: 'INSTALLATION',
-  removal: 'RECUP',
-  correction: 'CORRECTION',
-  pickup: 'RAMASSAGE',
-  delivery: 'LIVRAISON',
- 
-  // Jamais envoyés à OptimoRoute (grand format exclu de la synchronisation) ; requis par le type
-  largeInstallation: 'INSTALLATION GRAND FORMAT',
-  largeStoragePickup: 'RAMASSAGE ENTREPOSAGE',
-  largeRetrieval: 'RECUP GRAND FORMAT',
-};
+import { buildServiceNotes } from './notes';
  
 const OPEN_HOUSE_REMOVAL_LABEL = 'RECUP VISITE LIBRE';
  
@@ -100,7 +87,8 @@ export function buildOptimoPayload(input: OptimoPayloadInput): OptimoOrderPayloa
     input.requestedDate ? dbDateToIso(input.requestedDate) : null,
     input.orderCreatedAt,
   );
-  const services = [...new Set(input.serviceTypes)].map((t) => SERVICE_NOTE_LABELS[t]).join(' + ');
+  // Même texte que l'aperçu du formulaire
+  const services = buildServiceNotes(input.serviceTypes);
  
   return buildTask(input.orderNo, date, priority, services, input.address, input.customer);
 }

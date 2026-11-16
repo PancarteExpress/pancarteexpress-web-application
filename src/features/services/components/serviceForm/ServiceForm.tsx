@@ -8,7 +8,7 @@ import dynamic from 'next/dynamic';
 import { inlineLoading } from '@/shared/components/deferredLoading/DeferredLoading';
 import { RadioGroup } from '@/features/services/components/fields/RadioGroup';
 import { toOptions } from '@/features/services/components/fields/types';
-
+import { AttachmentsField } from '../attachments/AttachmentsField';
 import type { CartAddress } from '@/features/cart/types/cart';
 import { createEmptyScheduleForm, createScheduleSchema } from '@/features/services/schemas/schedule.schema';
 
@@ -45,8 +45,10 @@ export default function ServiceForm() {
   const clearDraft = useAddressStore((s) => s.clearDraft);
   const setSelectedAddressId = useAddressStore((s) => s.setSelectedAddressId);
   const requestValidation = useAddressStore((s) => s.requestValidation);
+  const pendingFiles = useAddressStore((s) => s.pendingFiles);
 
-  const [requestType, setRequestType] = useState<RequestType | null>(null);
+  const requestType = useAddressStore((s) => s.requestType);
+  const setRequestType = useAddressStore((s) => s.setRequestType);
   const [error, setError] = useState<string | null>(null);
   const [addedToCart, setAddedToCart] = useState(false);
   const [editingAddress, setEditingAddress] = useState(false);
@@ -85,6 +87,14 @@ export default function ServiceForm() {
       setError(t('serviceForm.requestTypeRequired'));
       return;
     }
+    // Fichiers choisis mais pas envoyés : ils seraient perdus, on ouvre l'adresse concernée
+    const withPendingFiles = summaryAddresses.find((a) => (pendingFiles[a.id]?.length ?? 0) > 0);
+    if (withPendingFiles) {
+      setError(t('serviceForm.pendingAttachments'));
+      setSelectedAddressId(withPendingFiles.id);
+      return;
+    }
+
     // Service incomplet : on ouvre la première adresse concernée et ses formulaires affichent leurs erreurs
     const firstIncomplete = summaryAddresses.find((a) => incomplete[a.id]);
     if (firstIncomplete) {
@@ -147,6 +157,7 @@ export default function ServiceForm() {
           {requestType === 'residential'
             ? <AddressServices key={selectedAddress.id} address={selectedAddress} />
             : <LargeAddressServices key={selectedAddress.id} address={selectedAddress} />}
+            <AttachmentsField key={`attachments-${selectedAddress.id}`} address={selectedAddress} />
          </>)}
         </>
         )}

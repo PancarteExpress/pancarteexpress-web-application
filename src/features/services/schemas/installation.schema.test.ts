@@ -9,6 +9,8 @@ import {
   type AddonEntryFormValues, type FrameUnitFormValues, type InstallationFormValues, type InstallationSchema,
 } from './installation.schema';
 import { expectReadable } from './expectReadable.testUtils';
+import { OPEN_HOUSE } from '../constants/installation';
+import { addMinutesClamped } from '../utils/time';
 
 /* ---------- Helpers ---------- */
 
@@ -369,8 +371,9 @@ describe('createInstallationSchema — visite libre', () => {
     if (!result.success) return;
     expect(result.data.openHouse).toMatchObject({
       dates: ['2026-10-24'],
-      startTime: '09:00',
-      endTime: '11:00',
+      // Valeurs par défaut : le test suit la constante, quelle que soit l'heure choisie
+      startTime: OPEN_HOUSE.defaultStartTime,
+      endTime: addMinutesClamped(OPEN_HOUSE.defaultStartTime, OPEN_HOUSE.defaultDurationMinutes),
       onSiteCount: 1,
       flagCount: 0,
       removeNextMonday: true,

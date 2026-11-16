@@ -39,7 +39,10 @@
     "saveServices": "Enregistrer les services",
     "servicesSaved": "Services enregistrés.",
     "incompleteServices": "Certains services sont incomplets. Complétez-les avant d'ajouter la demande au panier.",
-    "invalidSchedule": "Le délai d'une adresse est invalide. Vérifiez la date précise choisie."
+    "invalidSchedule": "Le délai d'une adresse est invalide. Vérifiez la date précise choisie.",
+    "pendingAttachments": "Des fichiers n'ont pas encore été envoyés. Cliquez sur « Envoyer les fichiers » ou retirez-les avant d'ajouter la demande au panier.",
+    "notesPreview": "Aperçu des notes OptimoRoute",
+    "notesPreviewMonday": "Aperçu des notes du retrait du lundi suivant"
   },
   "addressManager": {
     "selectFromList": "Veuillez sélectionner une adresse dans la liste",
@@ -287,7 +290,7 @@
     "title": "Détails du ramassage",
     "materialsLegend": "Que voulez-vous qu'on ramasse ?",
     "newModelsLegend": "Y a-t-il de nouveaux modèles pour ce ramassage (ex. : changement d'informations, d'agence, etc.) ?",
-    "details": "Détails supplémentaires",
+    "details": "Détails du ramassage",
     "detailsPlaceholder": "Veuillez décrire le matériel à ramasser…"
   },
   "delivery": {
@@ -574,5 +577,22 @@
   "balconyMountings": {
     "vShapeDrilled": "En V",
     "flatDoubleTape": "À plat"
+  },
+  "attachments": {
+    "title": "Pièces jointes",
+    "hint": "Photos, plans ou documents utiles à notre équipe : {max} fichiers maximum, {size} Mo chacun (images, PDF, Word, Excel).",
+    "add": "Ajouter des fichiers",
+    "remove": "Retirer {name}",
+    "uploading": "Envoi de {name}",
+    "uploadFailed": "L'envoi de « {name} » a échoué. Réessayez.",
+    "invalidType": "« {name} » n'est pas d'un type accepté (images, PDF, Word, Excel).",
+    "tooLarge": "« {name} » dépasse {max} Mo.",
+    "tooMany": "{max} fichiers maximum par adresse.",
+    "summary": "{count, plural, one {1 pièce jointe} other {# pièces jointes}} : {names}",
+    "send": "Envoyer {count, plural, one {le fichier} other {les # fichiers}}",
+    "sending": "Envoi en cours…",
+    "pendingStatus": "À envoyer",
+    "sentStatus": "Envoyé",
+    "pendingHint": "Les fichiers « À envoyer » ne sont pas encore joints à la demande, et seront perdus si la page est rechargée."
   }
 }

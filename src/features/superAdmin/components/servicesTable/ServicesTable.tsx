@@ -47,6 +47,7 @@ export function ServicesTable({ clients }: ServicesTableProps) {
                   <th scope="col">{t("servicesTable.address")}</th>
                   <th scope="col">{t("servicesTable.requestedOn")}</th>
                   <th scope="col">{t("servicesTable.delay")}</th>
+                  <th scope="col">{t("servicesTable.attachments")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -58,6 +59,21 @@ export function ServicesTable({ clients }: ServicesTableProps) {
                     <td title={s.address}>{s.address}</td>
                     <td>{formatDate(s.orderedAt, "medium", locale)}</td>
                     <td>{s.delay}</td>
+                    <td>
+                      {s.attachments.length === 0 ? (
+                        "—"
+                      ) : (
+                        <ul className={styles.attachments}>
+                          {s.attachments.map((a) => (
+                            <li key={a.id}>
+                              <a href={`/api/attachments/${a.id}`} target="_blank" rel="noopener noreferrer">
+                                {a.fileName}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

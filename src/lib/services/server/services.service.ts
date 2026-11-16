@@ -22,6 +22,7 @@ const adminServiceSelect = {
       city: true,
       delay: true,
       requestedDate: true,
+      attachments: { select: { id: true, fileName: true }, orderBy: { createdAt: 'asc' } },
       serviceRequest: {
         select: {
           requestType: true,
@@ -47,6 +48,8 @@ type ServiceWithRelations = Prisma.ServiceGetPayload<{ select: typeof adminServi
 
 export interface AdminServiceRow {
   id: string;
+  /** Pièces jointes de l'adresse du service, ouvertes par /api/attachments/[id] */
+  attachments: { id: string; fileName: string }[];
   type: ServiceType;
   status: ServiceStatus;
   price: number | null;
@@ -109,6 +112,7 @@ export async function listServicesForAdmin(): Promise<AdminClientServices[]> {
       orderId: order.id,
       scheduledFor: s.scheduledFor,
       address: formatAddress(s.serviceAddress),
+      attachments: s.serviceAddress.attachments,
       delay: formatServiceDelay(delay, requestedDate),
       requestedDate,
       requestType,

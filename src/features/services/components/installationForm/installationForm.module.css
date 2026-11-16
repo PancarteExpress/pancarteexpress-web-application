@@ -433,3 +433,26 @@
 .ownPlacement {
   margin-bottom: 0.75rem;
 }
+
+/* Aperçu des notes OptimoRoute d'une adresse */
+.notesPreview {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  border: 1px dashed #9aa7b8;
+  border-radius: 8px;
+  background: #fff;
+  font-family: var(--font-text);
+  font-weight: 700;
+  color: #0e3a8c;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.notesPreviewLabel {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #6b7a90;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}

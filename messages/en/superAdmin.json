@@ -89,9 +89,9 @@
     "type": "Type",
     "address": "Address",
     "requestedOn": "Requested on",
-    "delay": "Turnaround"
+    "delay": "Turnaround",
+    "attachments": "Files"
   },
-  
   "accountTypeSelect": {
     "confirmGroupAdmin": "Create a new group with {name} as administrator?",
     "confirmChange": "Change {name} to “{type}”?",

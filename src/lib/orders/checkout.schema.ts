@@ -6,6 +6,9 @@ import { earliestSpecificDate, isBusinessDay, parseIso, todayInMontreal } from '
 import { isValidIsoDate } from '@/features/services/utils/time';
 import { LARGE_FORMAT_SERVICES } from '@/features/services/constants/largeFormat';
 import { parseServiceDetails } from '@/features/services/schemas/serviceDetails.schema';
+import {
+  ATTACHMENT_CONTENT_TYPES, ATTACHMENT_PREFIX, MAX_ATTACHMENT_SIZE, MAX_ATTACHMENTS_PER_ADDRESS,
+} from '@/lib/attachments/constants';
 
 const LARGE_FORMAT_SET: ReadonlySet<string> = new Set(LARGE_FORMAT_SERVICES);
 const isLargeFormatService = (type: string) => LARGE_FORMAT_SET.has(type);
@@ -93,6 +96,19 @@ const serviceSchema = z
     }
   });
 
+/** Pièce jointe déjà envoyée au stockage privé : le serveur revérifie tout ce que le navigateur a contrôlé */
+const attachmentSchema = z.object({
+  pathname: z
+    .string()
+    .max(300)
+    .refine((p) => p.startsWith(ATTACHMENT_PREFIX) && !p.includes('..'), { message: 'invalidAttachment' }),
+  fileName: z.string().trim().min(1).max(255),
+  contentType: z.enum(ATTACHMENT_CONTENT_TYPES),
+  size: z.number().int().positive().max(MAX_ATTACHMENT_SIZE),
+});
+
+const attachmentsSchema = z.array(attachmentSchema).max(MAX_ATTACHMENTS_PER_ADDRESS).default([]);
+
 const servicesSchema = z.array(serviceSchema).min(1, { message: 'noService' }).max(MAX_SERVICES_PER_ADDRESS);
 
 const streetAddressSchema = z.object({
@@ -104,6 +120,7 @@ const streetAddressSchema = z.object({
   postalCode: postalCodeSchema,
   /** Délai de l'adresse : obligatoire en résidentiel, null en grand format */
   schedule: scheduleSchema.nullable(),
+  attachments: attachmentsSchema,
   services: servicesSchema,
 });
 
@@ -114,6 +131,7 @@ const terrainAddressSchema = z.object({
   nearbyAddress: optionalText(300),
   /** Délai de l'adresse : obligatoire en résidentiel, null en grand format */
   schedule: scheduleSchema.nullable(),
+  attachments: attachmentsSchema,
   services: servicesSchema,
 });
 

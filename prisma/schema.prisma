@@ -251,6 +251,7 @@ model ServiceAddress {
   requestedDate DateTime?    @db.Date
 
   services Service[]
+  attachments ServiceAttachment[]
 
   optimoSyncStatus OptimoSyncStatus @default(PENDING)
   optimoRouteId    String?
@@ -347,4 +348,23 @@ enum OptimoSyncStatus {
   PENDING
   SYNCED
   FAILED
+}
+
+/// Pièce jointe d'une adresse de service (photo, plan, document), dans le stockage privé Vercel Blob
+model ServiceAttachment {
+  id               String         @id @default(cuid())
+  serviceAddressId String
+  serviceAddress   ServiceAddress @relation(fields: [serviceAddressId], references: [id], onDelete: Cascade)
+
+  /// Chemin dans le stockage privé (ex. attachments/plan-x7Kq2.pdf)
+  pathname    String @unique
+  /// Nom d'origine du fichier, pour l'affichage
+  fileName    String
+  contentType String
+  /// Taille en octets
+  size        Int
+
+  createdAt DateTime @default(now())
+
+  @@index([serviceAddressId])
 }

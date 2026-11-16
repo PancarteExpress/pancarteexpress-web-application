@@ -39,7 +39,10 @@
     "saveServices": "Save services",
     "servicesSaved": "Services saved.",
     "incompleteServices": "Some services are incomplete. Please complete them before adding the request to the cart.",
-    "invalidSchedule": "An address has an invalid timeframe. Please check the specific date chosen."
+    "invalidSchedule": "An address has an invalid timeframe. Please check the specific date chosen.",
+    "pendingAttachments": "Some files have not been uploaded yet. Click “Upload the files” or remove them before adding the request to the cart.",
+    "notesPreview": "OptimoRoute notes preview",
+    "notesPreviewMonday": "Preview of the following Monday removal notes"
   },
   "addressManager": {
     "selectFromList": "Please select an address from the list",
@@ -287,7 +290,7 @@
     "title": "Pickup details",
     "materialsLegend": "What do you want us to pick up?",
     "newModelsLegend": "Are there new models for this pickup (e.g.: change of information, agency, etc.)?",
-    "details": "Additional details",
+    "details": "Additional pick up details",
     "detailsPlaceholder": "Please describe the material to pick up…"
   },
   "delivery": {
@@ -574,5 +577,22 @@
   "balconyMountings": {
     "vShapeDrilled": "V-shaped",
     "flatDoubleTape": "Flat"
+  },
+  "attachments": {
+    "title": "Attachments",
+    "hint": "Photos, plans or documents useful to our team: {max} files maximum, {size} MB each (images, PDF, Word, Excel).",
+    "add": "Add files",
+    "remove": "Remove {name}",
+    "uploading": "Uploading {name}",
+    "uploadFailed": "The upload of “{name}” failed. Please try again.",
+    "invalidType": "“{name}” is not an accepted file type (images, PDF, Word, Excel).",
+    "tooLarge": "“{name}” exceeds {max} MB.",
+    "tooMany": "{max} files maximum per address.",
+    "summary": "{count, plural, one {1 attachment} other {# attachments}}: {names}",
+    "send": "Upload {count, plural, one {the file} other {the # files}}",
+    "sending": "Uploading…",
+    "pendingStatus": "To upload",
+    "sentStatus": "Uploaded",
+    "pendingHint": "Files marked “To upload” are not attached to the request yet, and will be lost if the page is reloaded."
   }
 }

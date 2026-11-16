@@ -29,6 +29,7 @@ const address = (addressNumber: number) => ({
   city: 'Montréal',
   delay: 'urgent12h' as const,
   requestedDate: null,
+  attachments: [] as { id: string; fileName: string }[],
   services: [
     { type: 'installation' as const, details: asJson(installationDetails) },
     { type: 'removal' as const, details: asJson(removalDetails) },

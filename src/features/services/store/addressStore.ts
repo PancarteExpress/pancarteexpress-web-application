@@ -1,6 +1,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { Address, StreetAddress, TerrainAddress } from '../types/address';
+import { Address, StreetAddress, TerrainAddress, type AttachmentInfo } from '../types/address';
+import type { AttachmentContentType } from '@/lib/attachments/constants';
+
+/** Fichier choisi mais pas encore envoyé au stockage (en mémoire seulement : un File ne se sauvegarde pas) */
+export interface PendingFile {
+  id: string;
+  file: File;
+  contentType: AttachmentContentType;
+}
 import type { RequestType, Service } from '../types/services';
 import type { ScheduleFormValues } from '../schemas/schedule.schema';
 import { upgradeInstallationDetails, upgradeInstallationFormValues } from '../utils/legacyInstallation';
@@ -44,7 +52,7 @@ export interface ServiceDraft<K extends ServiceKey> {
 export type AddressDrafts = { [K in ServiceKey]?: ServiceDraft<K> };
 
 /** Ce qui est gardé dans le navigateur : les données, sans les actions ni la demande d'erreurs */
-type PersistedAddresses = Pick<AddressStore, 'addresses' | 'selectedAddressId' | 'ownerId' | 'drafts'>;
+type PersistedAddresses = Pick<AddressStore, 'addresses' | 'selectedAddressId' | 'ownerId' | 'drafts' | 'requestType'>;
 
 /** Retire des brouillons d'une adresse ceux qui ne passent pas le filtre */
 const keepDrafts = (drafts: AddressDrafts | undefined, keep: (type: ServiceKey) => boolean): AddressDrafts => {
@@ -59,6 +67,8 @@ interface AddressStore {
   addresses: Address[];
   selectedAddressId: string | null;
   ownerId: string | null;
+  requestType: RequestType | null;
+  setRequestType: (requestType: RequestType | null) => void;
   syncOwner: (userId: string | null) => void;
   addAddress: (address: StreetAddress | TerrainAddress) => string;
   removeAddress: (id: string) => void;
@@ -69,8 +79,13 @@ interface AddressStore {
   clearAddresses: () => void;
   clearServicesOf: (requestType: RequestType) => void;
   setSelectedAddressId: (id: string | null) => void;
-  /** Délai résidentiel de l'adresse, tel que saisi */
   setAddressSchedule: (addressId: string, schedule: ScheduleFormValues) => void;
+  addAttachment: (addressId: string, attachment: AttachmentInfo) => void;
+  removeAttachment: (addressId: string, pathname: string) => void;
+  /** Fichiers en attente d'envoi, par adresse (non sauvegardés : perdus au rechargement) */
+  pendingFiles: Record<string, PendingFile[]>;
+  addPendingFiles: (addressId: string, files: PendingFile[]) => void;
+  removePendingFile: (addressId: string, id: string) => void;
   
   saveService: (addressId: string, service: ServiceInput) => void;
 
@@ -91,15 +106,17 @@ export const useAddressStore = create<AddressStore>()(
       addresses: [],
       selectedAddressId: null,
       ownerId: null,
+      requestType: null,
       drafts: {},
       validationRequest: 0,
+      pendingFiles: {},
 
       // NOUVEAU : même règle que le panier
       syncOwner: (userId) =>
         set((state) => {
           if (state.ownerId === userId) return state;
           if (state.ownerId === null) return { ownerId: userId };
-          return { addresses: [], selectedAddressId: null, ownerId: userId, drafts: {} };
+          return { addresses: [], selectedAddressId: null, ownerId: userId, drafts: {}, requestType: null };
         }),
 
       addAddress: (address) => {
@@ -119,10 +136,13 @@ export const useAddressStore = create<AddressStore>()(
         set((state) => {
           const drafts = { ...state.drafts };
           delete drafts[id];
+          const pendingFiles = { ...state.pendingFiles };
+          delete pendingFiles[id];
           return {
             addresses: state.addresses.filter((addr) => addr.id !== id),
             selectedAddressId: state.selectedAddressId === id ? null : state.selectedAddressId,
             drafts,
+            pendingFiles,
           };
         });
       },
@@ -182,6 +202,7 @@ export const useAddressStore = create<AddressStore>()(
               services: a.services.filter((s) => requestTypeOf(s) !== requestType),
               // Demande résidentielle envoyée au panier : la prochaine repart de « Standard 24 h »
               scheduleDraft: requestType === 'residential' ? undefined : a.scheduleDraft,
+              attachments: undefined,
             }))
             // Adresse sans rien de l'autre type de demande : retirée, l'utilisateur la ressaisira
             .filter((a) => a.services.length > 0 || Object.keys(drafts[a.id] ?? {}).length > 0);
@@ -197,13 +218,43 @@ export const useAddressStore = create<AddressStore>()(
       },
 
       setSelectedAddressId: (id) => set({ selectedAddressId: id }),
+      setRequestType: (requestType) => set({ requestType }),
 
       setAddressSchedule: (addressId, schedule) =>
         set((state) => ({
           addresses: state.addresses.map((a) => (a.id === addressId ? { ...a, scheduleDraft: schedule } : a)),
         })),
 
-            saveService: (addressId, service) => {
+      addAttachment: (addressId, attachment) =>
+        set((state) => ({
+          addresses: state.addresses.map((a) =>
+            a.id === addressId ? { ...a, attachments: [...(a.attachments ?? []), attachment] } : a,
+          ),
+        })),
+
+      addPendingFiles: (addressId, files) =>
+        set((state) => ({
+          pendingFiles: { ...state.pendingFiles, [addressId]: [...(state.pendingFiles[addressId] ?? []), ...files] },
+        })),
+
+      removePendingFile: (addressId, id) =>
+        set((state) => ({
+          pendingFiles: {
+            ...state.pendingFiles,
+            [addressId]: (state.pendingFiles[addressId] ?? []).filter((f) => f.id !== id),
+          },
+        })),
+
+      removeAttachment: (addressId, pathname) =>
+        set((state) => ({
+          addresses: state.addresses.map((a) =>
+            a.id === addressId
+              ? { ...a, attachments: (a.attachments ?? []).filter((f) => f.pathname !== pathname) }
+              : a,
+          ),
+        })),
+
+      saveService: (addressId, service) => {
         set((state) => ({
           addresses: state.addresses.map((addr) => {
             if (addr.id !== addressId) return addr;
@@ -237,8 +288,8 @@ export const useAddressStore = create<AddressStore>()(
     {
       name: 'address-storage',
       // La demande d'affichage des erreurs ne survit pas à un rechargement
-      partialize: ({ addresses, selectedAddressId, ownerId, drafts }): PersistedAddresses =>
-        ({ addresses, selectedAddressId, ownerId, drafts }),
+      partialize: ({ addresses, selectedAddressId, ownerId, drafts, requestType }): PersistedAddresses =>
+        ({ addresses, selectedAddressId, ownerId, drafts, requestType }),
       version: STORAGE_VERSION,
 
       // Brouillons sauvegardés avant (version 0) : conservés, considérés comme invités
@@ -281,6 +332,7 @@ export const useAddressStore = create<AddressStore>()(
           selectedAddressId: state.selectedAddressId ?? null,
           ownerId: state.ownerId ?? null,
           drafts: state.drafts ?? {},
+          requestType: state.requestType ?? null,
         };
       },
 

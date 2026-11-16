@@ -44,7 +44,8 @@ describe('buildOptimoPayload', () => {
   it('date figée sur la création de la commande, notes regroupées', () => {
     const p = buildOptimoPayload({ ...base, address: civic, serviceTypes: ['removal', 'installation', 'removal'] });
     expect(p).toMatchObject({ orderNo: '42-1', type: 'T', operation: 'SYNC', date: '2026-11-09', priority: 'M' });
-    expect(p.notes).toBe('RECUP + INSTALLATION — ÉLISE TREMBLAY');
+    // Ordre des notes : l'installation avant la récupération
+    expect(p.notes).toBe('INSTALLATION + RECUP — ÉLISE TREMBLAY');
     expect(p).not.toHaveProperty('phone');
   });
 

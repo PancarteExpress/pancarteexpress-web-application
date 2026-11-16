@@ -172,6 +172,19 @@ const toServiceRequestCreate = (item: ServiceRequestItem): Prisma.ServiceRequest
             description: address.description,
             nearbyAddress: address.nearbyAddress ?? null,
           }),
+      // Pièces jointes déjà dans le stockage privé : on enregistre leur fiche
+      ...(address.attachments.length > 0
+        ? {
+            attachments: {
+              create: address.attachments.map((a) => ({
+                pathname: a.pathname,
+                fileName: a.fileName,
+                contentType: a.contentType,
+                size: a.size,
+              })),
+            },
+          }
+        : {}),
       services: {
         create: address.services.map((service) => ({
           type: service.type,

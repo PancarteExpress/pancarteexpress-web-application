@@ -89,7 +89,8 @@
     "type": "Type",
     "address": "Adresse",
     "requestedOn": "Demandé le",
-    "delay": "Délai"
+    "delay": "Délai",
+    "attachments": "Fichiers"
   },
   "accountTypeSelect": {
     "confirmGroupAdmin": "Créer un nouveau groupe avec {name} comme administrateur ?",
