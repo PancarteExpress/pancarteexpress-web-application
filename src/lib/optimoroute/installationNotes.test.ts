@@ -5,7 +5,7 @@ import { buildInstallationNotes, buildOpenHouseRemovalNotes } from './installati
 const ACCOUNT = 'Natasha Fournier';
 
 const empty: InstallationDetails = {
-  frames: null, kits: null, addons: null, openHouse: null, keybox: null, flags: null, directionals: null, otherNeeds: null,
+  pickupAddress: null, frames: null, kits: null, addons: null, openHouse: null, keybox: null, flags: null, directionals: null, otherNeeds: null,
 };
 
 const frame = (uid: string, o: Partial<FrameUnit> = {}): FrameUnit => ({
@@ -16,7 +16,7 @@ const frame = (uid: string, o: Partial<FrameUnit> = {}): FrameUnit => ({
   ...o,
 });
 
-const frames = (...units: FrameUnit[]) => ({ pickupAddress: null, units });
+const frames = (...units: FrameUnit[]) => ({ units });
 
 const window: Placement = {
   location: 'window', side: 'interior', access: { type: 'phoneAppointment', contact: '514-123-4567' },
@@ -32,7 +32,7 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
       directionals: { mention: 'forSale', units: [{ uid: 'd1', placement: 'Ste Catherine et St-Pierre' }] },
     }, ACCOUNT);
     expect(notes).toBe(
-      'KIT STEPHANY (NATASHA FOURNIER) + AJOUT PERSO + BAC1234 (SUR LA RAMPE) + DIRECTIONNELLE **À VENDRE** [Ste Catherine et St-Pierre]',
+      'KIT STEPHANY (NATASHA FOURNIER) + AJOUT PERSO **AU SOL** + BAC1234 (SUR LA RAMPE) + DIRECTIONNELLE **À VENDRE** [Ste Catherine et St-Pierre]',
     );
   });
 
@@ -83,7 +83,7 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
       ],
     }, ACCOUNT);
     expect(notes).toBe(
-      'KIT STEPHANY (NATASHA FOURNIER) + AJOUT À VENDRE + AJOUT 2e ÉTAGE + 1x AJOUT 2e ÉTAGE [PANCARTE DÉJÀ SUR PLACE]',
+      'KIT STEPHANY (NATASHA FOURNIER) + AJOUT À VENDRE + AJOUT 2e ÉTAGE **AU SOL** + 1x AJOUT 2e ÉTAGE [PANCARTE DÉJÀ SUR PLACE]',
     );
   });
 
@@ -97,11 +97,11 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
       },
     }, ACCOUNT);
     expect(notes).toBe(
-      'KIT NATASHA FOURNIER + AJOUT VISITE LIBRE SAMEDI 14h00-16h00 + 2x AJOUT VISITE LIBRE SAMEDI 14h00-16h00 [PANCARTE DÉJÀ SUR PLACE]',
+      'KIT NATASHA FOURNIER + AJOUT VISITE LIBRE SAMEDI 14h00-16h00 **AU SOL** + 2x AJOUT VISITE LIBRE SAMEDI 14h00-16h00 [PANCARTE DÉJÀ SUR PLACE]',
     );
   });
 
-  it('ajouts sans pancarte commandée : nom du compte après le premier, au sol rien', () => {
+  it('ajouts sans pancarte commandée : nom du compte après le premier, au sol affiché', () => {
     const onSite = { frameUids: [], placements: [{ location: 'ground' as const }] };
     const notes = buildInstallationNotes({
       ...empty,
@@ -111,7 +111,7 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
         { addon: 'secondFloor', quantity: 1, onSiteCount: 1, ...onSite },
       ],
     }, 'Cristian Fermin Lopez');
-    expect(notes).toBe('AJOUT À VENDRE CRISTIAN FERMIN LOPEZ + AJOUT REZ-DE-CHAUSSÉE + AJOUT 2e ÉTAGE');
+    expect(notes).toBe('AJOUT À VENDRE CRISTIAN FERMIN LOPEZ **AU SOL** + AJOUT REZ-DE-CHAUSSÉE **AU SOL** + AJOUT 2e ÉTAGE **AU SOL**');
   });
 
   it('ajouts sans pancarte commandée : quantité à partir de 2, emplacements', () => {
@@ -134,7 +134,7 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
       { location: 'window', side: 'exterior', access: { type: 'ladder', ladder: 'smallLadder' } },
       '**FENÊTRE EXTÉRIEUR AVEC ÉCHELLE 6-12 PI**',
     ],
-    [{ location: 'other', description: 'Derrière la haie' }, '(DERRIÈRE LA HAIE)'],
+    [{ location: 'other', description: 'Derrière la haie' }, '[Derrière la haie]'],
   ] satisfies [Placement, string][])('emplacement %o', (placement, expected) => {
     const notes = buildInstallationNotes({ ...empty, frames: frames(frame('f1', { placement })) }, ACCOUNT);
     expect(notes).toBe(`KIT NATASHA FOURNIER ${expected}`);
@@ -145,10 +145,10 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
       ...empty,
       kits: { units: [{ uid: 'k1', model: { type: 'shortPost36' }, placement: { location: 'ground' } }] },
     }, 'Cristian Fermin Lopez');
-    expect(notes).toBe('POTEAU 36" CRISTIAN FERMIN LOPEZ');
+    expect(notes).toBe('POTEAU 36" CRISTIAN FERMIN LOPEZ **AU SOL**');
   });
 
-  it('kit spécifique, emplacement « Autres » tel que saisi ; fenêtre ignorée', () => {
+  it('kit spécifique : description entre parenthèses, « Autres » entre crochets ; fenêtre ignorée', () => {
     const notes = buildInstallationNotes({
       ...empty,
       kits: {
@@ -160,7 +160,7 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
       },
     }, 'Cristian Fermin Lopez');
     expect(notes).toBe(
-      'POTEAU SPÉCIFIQUE CRISTIAN FERMIN LOPEZ (Ce kit va 6 pieds sous terre) + 2x POTEAU 48"',
+      'POTEAU SPÉCIFIQUE CRISTIAN FERMIN LOPEZ (Noir étoilé) [Ce kit va 6 pieds sous terre] + 2x POTEAU 48"',
     );
   });
 
@@ -238,6 +238,27 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
   it('autres : MATÉRIEL {TEXTE} {COMPTE}', () => {
     const notes = buildInstallationNotes({ ...empty, otherNeeds: 'un precision tres precise' }, 'Cristian Fermin Lopez');
     expect(notes).toBe('MATÉRIEL UN PRECISION TRES PRECISE CRISTIAN FERMIN LOPEZ');
+  });
+
+  it('ordre des pancartes : rendez-vous, puis « Autres », puis boîte à clés', () => {
+    const notes = buildInstallationNotes({
+      ...empty,
+      frames: frames(
+        frame('f1', { placement: { location: 'window', side: 'exterior', access: { type: 'keybox', info: 'Le code est 1234' } } }),
+        frame('f2', {
+          model: { type: 'prestige' },
+          placement: { location: 'balcony', access: { type: 'phoneAppointment', contact: '438 722 3922' }, mounting: 'vShapeDrilled' },
+        }),
+        frame('f3', { model: { type: 'custom', description: 'iPhone' }, placement: { location: 'other', description: 'La pancarte se trouve dans le ciel' } }),
+        frame('f4'),
+      ),
+    }, ACCOUNT);
+    expect(notes).toBe(
+      'KIT NATASHA FOURNIER **PRESTIGE** **BALCON AVEC RDV - EN V** (438 722 3922) '
+      + '+ KIT NATASHA FOURNIER **IPHONE** [La pancarte se trouve dans le ciel] '
+      + '+ KIT NATASHA FOURNIER **AU SOL** '
+      + '+ KIT NATASHA FOURNIER **FENÊTRE EXTÉRIEUR VIA BAC** (Le code est 1234)',
+    );
   });
 
   it('plusieurs directionnelles : quantité et emplacements', () => {

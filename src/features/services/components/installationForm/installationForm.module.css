@@ -456,3 +456,8 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
+
+/* Invités : question du ramassage, sous les services, au-dessus des détails de l'installation */
+.pickupQuestion {
+  margin: 1rem 0;
+}

@@ -30,7 +30,6 @@ const ADDON_LABELS = {
   sold: 'VENDU',
   forRent: 'À LOUER',
   rented: 'LOUÉ',
-  openHouse: 'VISITE LIBRE',
 } as const;
 
 /** 20x AJOUT À VENDRE ; 10x PERSO (modèle tel que saisi) ; 5x AJOUT {MENTION SAISIE} */
@@ -40,6 +39,9 @@ function addonModelNote(a: DeliveryAddonItem): string {
       return `${a.quantity}x PERSO${a.model?.trim() ? ` (${a.model.trim()})` : ''}`;
     case 'other':
       return `${a.quantity}x AJOUT ${upper(a.mention)}`;
+    case 'openHouse':
+      // Heures telles que saisies, si elles sont précisées
+      return `${a.quantity}x AJOUT VISITE LIBRE${a.hours?.trim() ? ` (${a.hours.trim()})` : ''}`;
     default:
       return `${a.quantity}x AJOUT ${ADDON_LABELS[a.addon]}`;
   }
@@ -54,10 +56,10 @@ function addonsNote(addons: DeliveryDetails['addons'], account: string | null): 
   return `LIVRER ${total}x ${total > 1 ? 'AJOUTS' : 'AJOUT'} (${models})${name}: [${addons.map(addonModelNote).join(', ')}]`;
 }
 
-/** LIVRER 3x BAC{CODE} {COMPTE}: */
+/** LIVRER 3x BAC{CODE} {COMPTE} */
 function keyboxNote(keybox: DeliveryDetails['keybox'], account: string | null): string | null {
   if (!keybox) return null;
-  const name = account ? ` ${upper(account)}:` : '';
+  const name = account ? ` ${upper(account)}` : '';
   return `LIVRER ${keybox.quantity}x BAC${keybox.code ?? ''}${name}`;
 }
 

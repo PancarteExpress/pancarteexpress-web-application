@@ -33,6 +33,8 @@ const addonFormSchema = z.object({
   addon: z.enum(DELIVERY_ADDONS).nullable(),
   mention: text(DELIVERY_TEXT_LIMITS.addonMention),
   customModel: text(DELIVERY_TEXT_LIMITS.customAddonModel),
+  /** Heures de la visite libre : facultatives */
+  openHouseHours: text(DELIVERY_TEXT_LIMITS.openHouseHours),
   quantity: quantity(DELIVERY_LIMITS.addonQuantity),
 });
 
@@ -166,6 +168,8 @@ function toAddon(a: FormOutput['addons'][number]): DeliveryAddonItem {
       return { addon, mention: a.mention, quantity: a.quantity };
     case 'customNoMention':
       return { addon, model: a.customModel || null, quantity: a.quantity };
+    case 'openHouse':
+      return { addon, hours: a.openHouseHours || null, quantity: a.quantity };
     default:
       return { addon, quantity: a.quantity };
   }
@@ -193,7 +197,7 @@ export const createDeliveryFrame = (): FrameFormValues => ({
 });
 
 export const createDeliveryAddon = (): AddonFormValues => ({
-  uid: crypto.randomUUID(), addon: null, mention: '', customModel: '', quantity: 1,
+  uid: crypto.randomUUID(), addon: null, mention: '', customModel: '', openHouseHours: '', quantity: 1,
 });
 
 /** « Non » présélectionné pour les poteaux */
@@ -241,6 +245,7 @@ export function toDeliveryFormValues(d: DeliveryDetails): DeliveryFormValues {
       addon: a.addon,
       mention: a.addon === 'other' ? a.mention : '',
       customModel: a.addon === 'customNoMention' ? a.model ?? '' : '',
+      openHouseHours: a.addon === 'openHouse' ? a.hours ?? '' : '',
       quantity: a.quantity,
     })) ?? empty.addons,
     keybox: d.keybox ? { quantity: d.keybox.quantity, code: d.keybox.code ?? '' } : empty.keybox,

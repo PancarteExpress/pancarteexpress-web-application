@@ -16,11 +16,15 @@ type FrameModelType = NonNullable<InstallationFormValues['frames']['units'][numb
 const hasModel = (addon: Addon): addon is AddonWithModel => (ADDONS_WITH_MODEL as readonly string[]).includes(addon);
 
 /** Emplacement complet, sinon null : il apparaîtra dans les notes une fois rempli */
-export function completePlacement(p: PlacementFormValues): Placement | null {
+export function completePlacement(
+  p: PlacementFormValues,
+  /** Mêmes options que la validation (ex. côté de la fenêtre facultatif au retrait) */
+  options?: { windowSideOptional?: boolean; mountingOptional?: boolean },
+): Placement | null {
   let complete = true;
   validatePlacement(p, [], () => {
     complete = false;
-  });
+  }, options);
   return complete ? toPlacement(p) : null;
 }
 
@@ -46,7 +50,7 @@ function targets(t: { quantity: number; frameUids: string[]; onSite: boolean }):
 }
 
 const ownPlacements = (placements: PlacementFormValues[], hasFrames: boolean): Placement[] | null =>
-  hasFrames ? null : placements.map(completePlacement).filter((p): p is Placement => p !== null);
+  hasFrames ? null : placements.map((p) => completePlacement(p)).filter((p): p is Placement => p !== null);
 
 /** Installation telle que saisie jusqu'ici ; les parties incomplètes sont ignorées */
 export function installationPreviewDetails(v: InstallationFormValues, accountName: string | null): InstallationDetails {
@@ -71,9 +75,10 @@ export function installationPreviewDetails(v: InstallationFormValues, accountNam
     : [];
 
   return {
+    // Ramassage : pas dans les notes pour l'instant
+    pickupAddress: null,
     frames: hasFrames
       ? {
-          pickupAddress: null,
           units: v.frames.units.map((u) => ({
             uid: u.uid,
             model: frameModel(u.model, u.modelDescription),

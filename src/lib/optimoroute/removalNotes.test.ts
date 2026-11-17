@@ -3,7 +3,7 @@ import type { RemovalDetails } from '@/features/services/types/removal';
 import { buildRemovalNotes } from './removalNotes';
 
 const empty: RemovalDetails = {
-  frames: null, addons: null, keybox: null, flags: null, directionals: null, otherDetails: null,
+  afterRemoval: null, frames: null, addons: null, keybox: null, flags: null, directionals: null, otherDetails: null,
 };
 
 describe('buildRemovalNotes — pancartes', () => {
@@ -26,9 +26,25 @@ describe('buildRemovalNotes — pancartes', () => {
       },
     }, 'Cristian Fermin Lopez');
     expect(notes).toBe(
-      '3x RECUP CRISTIAN FERMIN LOPEZ [**FENÊTRE AVEC RDV** (Pour la prise de rendez-vous veuillez appeler au 438 722 3922) '
+      '3x RECUP CRISTIAN FERMIN LOPEZ [**FENÊTRE INTÉRIEUR AVEC RDV** (Pour la prise de rendez-vous veuillez appeler au 438 722 3922) '
       + '/ Cette pancarte se trouve a coter du mur bleu / Au sol]',
     );
+  });
+
+  it('fenêtre sans côté (facultatif au retrait) : FENÊTRE seul', () => {
+    const notes = buildRemovalNotes({
+      ...empty,
+      frames: { units: [{ uid: 'f1', placement: { location: 'window', side: null, access: { type: 'ladder', ladder: 'noLadder' } } }] },
+    }, null);
+    expect(notes).toBe('RECUP [**FENÊTRE SANS ÉCHELLE**]');
+  });
+
+  it('mur sans fixation (facultative au retrait) : MUR {ÉCHELLE}', () => {
+    const notes = buildRemovalNotes({
+      ...empty,
+      frames: { units: [{ uid: 'f1', placement: { location: 'wall', ladder: 'smallLadder', mounting: null } }] },
+    }, null);
+    expect(notes).toBe('RECUP [**MUR ÉCHELLE 6-12**]');
   });
 
   it('une seule pancarte, sur rampe', () => {
@@ -50,7 +66,7 @@ describe('buildRemovalNotes — pancartes', () => {
     }, 'Cristian Fermin Lopez');
     expect(notes).toBe(
       "3x RECUP AJOUT PRÉCIS (voici la précision pour les ajouts à retirer : l'ajout avec un étoile) CRISTIAN FERMIN LOPEZ "
-      + '[**BALCON VIA BAC** (le code est 111111) / **FENÊTRE ÉCHELLE 6-12** / **MUR EN V SANS ÉCHELLE**]',
+      + '[**BALCON VIA BAC** (le code est 111111) / **FENÊTRE EXTÉRIEUR ÉCHELLE 6-12** / **MUR EN V SANS ÉCHELLE**]',
     );
   });
 

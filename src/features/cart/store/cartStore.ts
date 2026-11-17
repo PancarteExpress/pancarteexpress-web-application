@@ -13,7 +13,7 @@ import { upgradeInstallationDetails } from '@/features/services/utils/legacyInst
 import { MAX_QUANTITY } from '@/lib/orders/constants';
 
 const STORAGE_KEY = 'pancarte-cart';
-const STORAGE_VERSION = 7;
+const STORAGE_VERSION = 8;
 
 const clampQuantity = (q: number): number =>
   Number.isFinite(q) ? Math.min(MAX_QUANTITY, Math.max(1, Math.trunc(q))) : 1;
@@ -39,7 +39,7 @@ const withAddressSchedules = (items: CartItem[]): CartItem[] =>
     return next;
   });
 
-/** v7 : emplacement par élément de l'installation ; l'ancien emplacement unique est reporté sur chacun */
+/** v7 : emplacement par élément ; v8 : ramassage déplacé vers l'installation (upgradeInstallationDetails fait les deux) */
 const withInstallationPlacements = (items: CartItem[]): CartItem[] =>
   items.map((item) =>
     item.kind !== 'serviceRequest'
@@ -187,6 +187,10 @@ export const useCartStore = create<CartState>()(
             items: withInstallationPlacements(withAddressSchedules(version < 4 ? stripLegacyInstallations(items) : items)),
             ownerId: typeof p?.ownerId === 'string' ? p.ownerId : null,
           };
+        }
+        // v7 : question du ramassage déplacée des pancartes vers l'installation (même conversion)
+        if (version === 7) {
+          return { items: withInstallationPlacements(items), ownerId: typeof p?.ownerId === 'string' ? p.ownerId : null };
         }
         if (version !== STORAGE_VERSION) return { items: [], ownerId: null };
         return persisted as PersistedCart;

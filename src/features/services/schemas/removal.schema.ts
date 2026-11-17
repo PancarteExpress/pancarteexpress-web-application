@@ -1,15 +1,15 @@
 import * as z from 'zod';
 import {
-  EXCLUSIVE_REMOVAL_MATERIALS, IMPLEMENTED_REMOVAL_MATERIALS, MAX_REMOVAL_ADDONS, MAX_REMOVAL_DIRECTIONALS,
+  AFTER_REMOVAL_CHOICES, EXCLUSIVE_REMOVAL_MATERIALS, IMPLEMENTED_REMOVAL_MATERIALS, MAX_REMOVAL_ADDONS, MAX_REMOVAL_DIRECTIONALS,
   MAX_REMOVAL_FLAGS, MAX_REMOVAL_FRAMES, MAX_REMOVAL_KEYBOXES, REMOVAL_TEXT_LIMITS,
   type ImplementedRemovalMaterial, type RemovalMaterial,
 } from '../constants/removal';
 import { FLAG_MENTIONS, SIGN_MENTIONS, TEXT_LIMITS } from '../constants/installation';
-import type { RemovalDetails, RemovalUnit } from '../types/removal';
+import type { AfterRemoval, RemovalDetails, RemovalUnit } from '../types/removal';
 import {
   createDefaultPlacement, fromPlacement, placementFormSchema, toPlacement, validatePlacement,
 } from './placement.schema';
-import { defined, keyboxCode, text, type Path, type Report } from './shared';
+import { keyboxCode, text, type Path, type Report } from './shared';
 import { issueMessage } from '@/shared/utils/issueMessage';
 
 /* ---------- Forme du formulaire ---------- */
@@ -23,6 +23,10 @@ const removalUnitFormSchema = z.object({
 
 const removalFormSchema = z.object({
   materials: z.array(z.enum(IMPLEMENTED_REMOVAL_MATERIALS)),
+  /** Invités : que faire du matériel retiré (question posée sous les services) */
+  afterRemoval: z.enum(AFTER_REMOVAL_CHOICES).nullable(),
+  deliveryAddress: z.string().trim(),
+  dropOff: text(REMOVAL_TEXT_LIMITS.dropOff),
   frames: z.object({
     units: z.array(removalUnitFormSchema).max(MAX_REMOVAL_FRAMES, `Maximum ${MAX_REMOVAL_FRAMES} pancartes`),
   }),
@@ -59,14 +63,20 @@ type UnitOutput = z.output<typeof removalUnitFormSchema>;
 function validateUnits(units: UnitOutput[], path: Path, emptyMessage: string, report: Report) {
   if (units.length === 0) report(path, emptyMessage);
   // Un emplacement par unité, validé indépendamment
-  units.forEach((u, i) => validatePlacement(u.placement, [...path, i, 'placement'], report));
+  units.forEach((u, i) => validatePlacement(u.placement, [...path, i, 'placement'], report, { windowSideOptional: true, mountingOptional: true }));
 }
 
 /* ---------- Schéma public ---------- */
 
-export const removalSchema = removalFormSchema
+/** Le schéma dépend du statut : seuls les invités répondent à la question sur le matériel retiré */
+export const createRemovalSchema = ({ isMember }: { isMember: boolean }) => removalFormSchema
   .superRefine((v, ctx) => {
     const report: Report = (path, message) => ctx.addIssue({ code: 'custom', path, message });
+
+    if (!isMember) {
+      if (v.afterRemoval === null) report(['afterRemoval'], 'chooseAfterRemoval');
+      else if (v.afterRemoval === 'deliver' && !v.deliveryAddress) report(['deliveryAddress'], 'deliveryAddressRequired');
+    }
     const selected: readonly RemovalMaterial[] = v.materials;
     const has = (m: ImplementedRemovalMaterial) => v.materials.includes(m);
 
@@ -82,18 +92,19 @@ export const removalSchema = removalFormSchema
     if (has('addons')) validateUnits(v.addons.units, ['addons', 'units'], 'addonsUnitsRequired', report);
     if (has('keybox') && !v.keybox.code) report(['keybox', 'code'], 'removalKeyboxCodeRequired');
     if (has('flags')) {
-      if (v.flags.mention === null) report(['flags', 'mention'], 'chooseFlagMention');
-      else if (v.flags.mention === 'other' && !v.flags.customMention) {
+      // Mention facultative au retrait ; « Autres » exige quand même son texte
+      if (v.flags.mention === 'other' && !v.flags.customMention) {
         report(['flags', 'customMention'], 'flagMentionRequired');
       }
     }
     if (has('directional')) {
-      if (v.directionals.mention === null) report(['directionals', 'mention'], 'chooseDirectionalMention');
+      // Mention facultative au retrait
       if (v.directionals.units.length === 0) report(['directionals', 'units'], 'directionalsRequired');
     }
     if (has('other') && !v.otherDetails) report(['otherDetails'], 'removalDetailsRequired');
   })
   .transform((v: FormOutput): RemovalDetails => ({
+    afterRemoval: isMember ? null : toAfterRemoval(v),
     frames: v.materials.includes('frames') ? { units: v.frames.units.map(toUnit) } : null,
     addons: v.materials.includes('addons')
       ? { units: v.addons.units.map(toUnit), details: v.addons.details || null }
@@ -102,19 +113,36 @@ export const removalSchema = removalFormSchema
     flags: v.materials.includes('flags') ? toFlags(v.flags) : null,
     directionals: v.materials.includes('directional')
       ? {
-          mention: defined(v.directionals.mention),
+          mention: v.directionals.mention,
           units: v.directionals.units.map((u) => ({ uid: u.uid, placement: u.placement })),
         }
       : null,
     otherDetails: v.materials.includes('other') ? v.otherDetails : null,
   }));
 
+/** Version membre : le formulaire membre est terminé, il n'a pas cette question */
+export const removalSchema = createRemovalSchema({ isMember: true });
+
+function toAfterRemoval(v: FormOutput): AfterRemoval | null {
+  const dropOff = v.dropOff || null;
+  switch (v.afterRemoval) {
+    case 'deliver':
+      return { choice: 'deliver', address: v.deliveryAddress, dropOff };
+    case 'leaveOnSite':
+      return { choice: 'leaveOnSite', dropOff };
+    case 'storage':
+      return { choice: 'storage' };
+    default:
+      return null;
+  }
+}
+
 const toUnit = (u: UnitOutput): RemovalUnit => ({ uid: u.uid, placement: toPlacement(u.placement) });
 
 function toFlags(f: FormOutput['flags']): NonNullable<RemovalDetails['flags']> {
-  const mention = defined(f.mention);
   const base = { quantity: f.quantity, placement: f.placement };
-  return mention === 'other' ? { ...base, mention, customMention: f.customMention } : { ...base, mention };
+  // Mention facultative au retrait : null si elle n'est pas choisie
+  return f.mention === 'other' ? { ...base, mention: 'other', customMention: f.customMention } : { ...base, mention: f.mention };
 }
 
 /* ---------- Types et valeurs initiales ---------- */
@@ -132,6 +160,9 @@ export const createRemovalUnit = (): RemovalUnitFormValues => ({
 
 export const createEmptyRemovalForm = (): RemovalFormValues => ({
   materials: [],
+  afterRemoval: null,
+  deliveryAddress: '',
+  dropOff: '',
   frames: { units: [] },
   addons: { units: [], details: '' },
   keybox: { quantity: 1, code: '', placement: '' },
@@ -156,8 +187,12 @@ export function toRemovalFormValues(details: RemovalDetails): RemovalFormValues 
   if (details.directionals) materials.push('directional');
   if (details.otherDetails) materials.push('other');
 
+  const after = details.afterRemoval ?? null;
   return {
     materials,
+    afterRemoval: after?.choice ?? null,
+    deliveryAddress: after?.choice === 'deliver' ? after.address : '',
+    dropOff: after && after.choice !== 'storage' ? after.dropOff ?? '' : '',
     frames: details.frames ? { units: details.frames.units.map(fromUnit) } : empty.frames,
     addons: details.addons
       ? { units: details.addons.units.map(fromUnit), details: details.addons.details ?? '' }

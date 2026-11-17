@@ -1,14 +1,12 @@
 'use client';
 
 import { useId } from 'react';
-import { Controller, useFieldArray } from 'react-hook-form';
+import { useFieldArray } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
-import { useIssueMessage } from '@/shared/hooks/useIssueMessage';
-import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
 import { MAX_FRAMES } from '@/features/services/constants/installation';
 import { createFrameUnit } from '@/features/services/schemas/installation.schema';
-import { Notice, QuantityField, YesNoField } from '@/features/services/components/fields';
-import { bindField, useFormUpdater, useInstallationFormContext } from '../../formContext';
+import { QuantityField } from '@/features/services/components/fields';
+import { useFormUpdater, useInstallationFormContext } from '../../formContext';
 import { FrameUnitFields } from './FrameUnitFields';
 
 import { FaSignHanging } from "react-icons/fa6";
@@ -55,8 +53,6 @@ export function FramesSection({ isMember, accountName }: FramesSectionProps) {
       <h3 id={headingId} className={styles.title}><FaSignHanging size={24} /> {t('installation.framesTitle')}</h3>
 
       <div style={{margin : '10px 0' }}>
-        {!isMember && <PickupFields />}
-
         <QuantityField
           label={t('installation.framesQuantity')}
           value={fields.length}
@@ -71,61 +67,5 @@ export function FramesSection({ isMember, accountName }: FramesSectionProps) {
         ))}
       </div>
     </section>
-  );
-}
-
-function PickupFields() {
-  const addressId = useId();
-  const t = useTranslations('services');
-  const translateError = useIssueMessage('services.errors');
-  const { control } = useInstallationFormContext();
-  const update = useFormUpdater();
-
-  return (
-    <Controller
-      control={control}
-      name="frames.pickup"
-      render={(props) => (
-        <>
-          <YesNoField
-            {...bindField(props)}
-            onChange={(value) => {
-              props.field.onChange(value);
-              if (!value) update('frames.pickupAddress', '');
-            }}
-            legend={t('installation.pickupLegend')}
-            required
-          />
-
-          {props.field.value === true && (
-            <Controller
-              control={control}
-              name="frames.pickupAddress"
-              render={({ field, fieldState }) => {
-                const errorId = `${addressId}-error`;
-                return (
-                <div className={styles.pickup}>
-                  <Notice>{t('installation.pickupFee')}</Notice>
-                  <label htmlFor={addressId} className={styles.label}>
-                    {t('installation.pickupAddress')} <span aria-hidden="true" className={styles.required}>*</span>
-                  </label>
-                  <AddressAutocomplete 
-                    id={addressId} 
-                    value={field.value} 
-                    onChange={field.onChange}
-                    onBlur={field.onBlur}
-                    inputRef={field.ref} 
-                    aria-invalid={Boolean(fieldState.error) || undefined}
-                    aria-describedby={fieldState.error ? errorId : undefined}
-                  />
-                  {fieldState.error && <p id={errorId} className={styles.error}>{translateError(fieldState.error.message)}</p>}
-                </div>
-                );
-              }}
-            />
-          )}
-        </>
-      )}
-    />
   );
 }

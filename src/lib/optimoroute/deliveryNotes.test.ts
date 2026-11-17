@@ -33,7 +33,7 @@ describe('buildDeliveryNotes — pancartes', () => {
         { addon: 'forSale', quantity: 20 },
         { addon: 'customNoMention', model: "c'es le modele avec des etoiles par dessus", quantity: 10 },
         { addon: 'other', mention: "c'es le modele avec des cercles par dessus", quantity: 5 },
-        { addon: 'openHouse', quantity: 3 },
+        { addon: 'openHouse', hours: null, quantity: 3 },
         { addon: 'rented', quantity: 1 },
       ],
     }, 'Cristian Fermin Lopez');
@@ -41,6 +41,11 @@ describe('buildDeliveryNotes — pancartes', () => {
       "LIVRER 39x AJOUTS (5 modèles) CRISTIAN FERMIN LOPEZ: [20x AJOUT À VENDRE, 10x PERSO (c'es le modele avec des etoiles par dessus), "
       + "5x AJOUT C'ES LE MODELE AVEC DES CERCLES PAR DESSUS, 3x AJOUT VISITE LIBRE, 1x AJOUT LOUÉ]",
     );
+  });
+
+  it('visite libre : heures entre parenthèses si elles sont précisées', () => {
+    const notes = buildDeliveryNotes({ ...empty, addons: [{ addon: 'openHouse', hours: 'Samedi 14 h à 16 h', quantity: 3 }] }, null);
+    expect(notes).toBe('LIVRER 3x AJOUTS (1 modèle): [3x AJOUT VISITE LIBRE (Samedi 14 h à 16 h)]');
   });
 
   it('pancartes puis ajouts : le nom du compte une seule fois', () => {
@@ -54,9 +59,9 @@ describe('buildDeliveryNotes — pancartes', () => {
     );
   });
 
-  it('boîtes à clés : LIVRER 3x BAC{CODE} {COMPTE}:', () => {
+  it('boîtes à clés : LIVRER 3x BAC{CODE} {COMPTE}', () => {
     expect(buildDeliveryNotes({ ...empty, keybox: { quantity: 3, code: '111111' } }, 'Cristian Fermin Lopez'))
-      .toBe('LIVRER 3x BAC111111 CRISTIAN FERMIN LOPEZ:');
+      .toBe('LIVRER 3x BAC111111 CRISTIAN FERMIN LOPEZ');
   });
 
   it('directionnelles : ton exemple', () => {

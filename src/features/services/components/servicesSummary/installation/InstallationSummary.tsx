@@ -8,14 +8,12 @@ import { removalDayAfter } from '@/features/services/utils/time';
 import { formatIsoDay } from '@/features/services/utils/formatDay';
 import { useAppLocale } from '@/shared/hooks/useAppLocale';
 import styles from '../servicesSummary.module.css';
-import {
-  Field, Fields, Panel, Pill, Prose, SubSection, TextOrEmpty, UnitCard, UnitGrid, UnitRow, UnitRows,
-} from '../SummaryParts';
+import { Field, Fields, Panel, Pill, Prose, SubSection, TextOrEmpty, UnitCard, UnitGrid, UnitRow, UnitRows } from '../SummaryParts';
 
 /* ---------- Composant ---------- */
 
 export function InstallationSummary({ details }: { details: InstallationDetails }) {
-  const { frames, kits, addons, openHouse, keybox, flags, directionals, otherNeeds } = details;
+  const { pickupAddress, frames, kits, addons, openHouse, keybox, flags, directionals, otherNeeds } = details;
   const t = useTranslations('services');
   const formatter = useFormatter();
   const locale = useAppLocale();
@@ -28,6 +26,15 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
 
   return (
     <div className={styles.installation}>
+      {/* Invités : matériel à aller chercher à une autre adresse (null : non requis, ou membre) */}
+      {pickupAddress && (
+        <SubSection title={t('summary.materialPickup')}>
+          <Fields>
+            <Field label={t('summary.pickupAddress')} wide>{pickupAddress}</Field>
+          </Fields>
+        </SubSection>
+      )}
+
       {frames && (
         <SubSection title={t('summary.frames', { count: frames.units.length })} note={t('summary.kitIncluded')}>
           <UnitGrid>

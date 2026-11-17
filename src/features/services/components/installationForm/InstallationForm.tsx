@@ -7,6 +7,7 @@ import { FormProvider, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createEmptyInstallationForm, createInstallationSchema, toInstallationFormValues, type InstallationFormValues, } from '../../schemas/installation.schema';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
+import { PickupQuestion } from './PickupQuestion';
 import { useAutoSave, type AutoSaveHandler } from '../serviceForm/useAutoSave';
 import type { InstallationDetails } from '../../types/installation';
 import { getFullName } from '@/shared/utils/displayName';
@@ -87,9 +88,11 @@ function InstallationFormInner({ handle, initialValues, draft, onAutoSave, isMem
 
   return (
     <FormProvider {...methods}>
+      {/* Invités : question posée une fois, juste sous les services */}
+      
       <form noValidate className={styles.installationForm} onSubmit={(e) => e.preventDefault()}>
         <h3 className={styles.title}><IoConstructSharp size={24} /> {t('title')}</h3>
-
+        {!isMember && <PickupQuestion />}
         <MaterialsSelector />
         
         {materials.includes('frames') && <FramesSection isMember={isMember} accountName={accountName} />}

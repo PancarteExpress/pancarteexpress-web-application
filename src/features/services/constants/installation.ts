@@ -63,6 +63,7 @@ export const KIT_MODELS = [
 export type KitModelType = (typeof KIT_MODELS)[number];
 
 export const LOCATIONS = ['ground', 'ramp', 'window', 'wall', 'balcony', 'other'] as const;
+export const KIT_LOCATIONS = ['ground', 'ramp', 'other'] as const satisfies readonly (typeof LOCATIONS)[number][];
 export type Location = (typeof LOCATIONS)[number];
 
 export const WINDOW_SIDES = ['interior', 'exterior'] as const;

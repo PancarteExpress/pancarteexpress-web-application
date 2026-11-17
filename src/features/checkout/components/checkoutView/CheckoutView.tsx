@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useRef, useState, type ChangeEvent } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -46,6 +47,27 @@ function CheckoutForm() {
   const { data: session, status } = useSession();
   const isAuthenticated = status === 'authenticated';
   const { items, hasHydrated, clear } = useCart();
+  const router = useRouter();
+
+  // Invité qui demande l'entreposage du matériel retiré : il doit ouvrir un compte après sa commande
+  const needsAccountForStorage =
+    !isAuthenticated &&
+    items.some((item) =>
+      item.kind === 'serviceRequest' &&
+      item.addresses.some((a) => a.services.some((s) => s.type === 'removal' && s.afterRemoval?.choice === 'storage')),
+    );
+
+  /** Commande confirmée : confirmation sur place, ou inscription (avec le numéro) si l'entreposage est demandé */
+  const completeOrder = (mode: 'submitted' | 'payment', orderNumber: number) => {
+    // Lu avant de vider le panier : il n'y aura plus d'items ensuite
+    const redirectToRegister = needsAccountForStorage;
+    clear();
+    if (redirectToRegister) {
+      router.push(`/${locale}/register?storageOrder=${orderNumber}`);
+      return;
+    }
+    setConfirmation({ mode, orderNumber });
+  };
 
   const hasProducts = items.some((i) => i.kind === 'product');
   const requiresPayment = hasProducts;
@@ -134,8 +156,7 @@ function CheckoutForm() {
       const response = await submitCheckout(payload);
 
       if (response.mode === 'submitted') {
-        setConfirmation({ mode: 'submitted', orderNumber: response.orderNumber });
-        clear();
+        completeOrder('submitted', response.orderNumber);
         return;
       }
 
@@ -150,8 +171,7 @@ function CheckoutForm() {
         return;
       }
 
-      setConfirmation({ mode: 'payment', orderNumber: response.orderNumber });
-      clear();
+      completeOrder('payment', response.orderNumber);
     } catch (error) {
       setSubmitError(submitErrorMessage(error instanceof CheckoutApiError ? error.code : 'serverError'));
     }

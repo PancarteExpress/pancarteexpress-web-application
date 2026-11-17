@@ -22,11 +22,12 @@ export function describePlacement(p: Placement, t: ServicesTranslator): string {
     case 'ramp':
       return location;
     case 'wall':
-      return `${location} — ${t(`access.${p.ladder}`)}, ${t(`mountings.${p.mounting}`)}`;
+      // Fixation facultative au retrait : affichée seulement si elle est précisée
+      return `${location} — ${t(`access.${p.ladder}`)}${p.mounting ? `, ${t(`mountings.${p.mounting}`)}` : ''}`;
     case 'balcony':
       return `${location} — ${describeAccess(p.access, t)}${p.mounting ? `, ${t(`balconyMountings.${p.mounting}`)}` : ''}`;
     case 'window':
-      return `${location} (${t(`windowSides.${p.side}`).toLowerCase()}) — ${describeAccess(p.access, t)}`;
+      return `${location}${p.side ? ` (${t(`windowSides.${p.side}`).toLowerCase()})` : ''} — ${describeAccess(p.access, t)}`;
     case 'other':
       return `${location} — ${p.description}`;
   }

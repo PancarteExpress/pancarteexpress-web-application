@@ -129,11 +129,11 @@ export function accessNote(access: PlacementAccess): { label: string; detail: st
   }
 }
 
-/** Emplacement d'une pancarte ou d'un ajout, entre doubles étoiles. Au sol : rien. */
+/** Emplacement d'une pancarte ou d'un ajout, entre doubles étoiles */
 export function placementNote(p: Placement): string | null {
   switch (p.location) {
     case 'ground':
-      return null;
+      return '**AU SOL**';
     case 'ramp':
       return '**SUR RAMPE**';
     case 'window': {
@@ -142,7 +142,7 @@ export function placementNote(p: Placement): string | null {
       return `**FENÊTRE ${side}${label}**${detail ? ` (${detail})` : ''}`;
     }
     case 'wall':
-      return `**MUR${LADDER_NOTE_LABELS[p.ladder]} - ${MOUNTING_NOTE_LABELS[p.mounting]}**`;
+      return `**MUR${LADDER_NOTE_LABELS[p.ladder]}${p.mounting ? ` - ${MOUNTING_NOTE_LABELS[p.mounting]}` : ''}**`;
     case 'balcony': {
       const { label, detail } = accessNote(p.access);
       // Fixation absente des balcons enregistrés avant son ajout
@@ -150,8 +150,8 @@ export function placementNote(p: Placement): string | null {
       return `**BALCON${label}${mounting}**${detail ? ` (${detail})` : ''}`;
     }
     case 'other':
-      // Description libre : entre parenthèses, pas entre étoiles
-      return `(${upper(p.description)})`;
+      // Description libre : entre crochets, telle que saisie
+      return `[${p.description.trim()}]`;
   }
 }
 
@@ -179,9 +179,23 @@ function frameEntry(unit: FrameUnit, addons: readonly AddonEntry[], accountName:
 }
 
 /** Pancartes identiques regroupées : 2x KIT … + 2x AJOUT … **EMPLACEMENT** */
+/**
+ * Ordre des pancartes dans les notes : rendez-vous d'abord, puis « Autres », puis le reste,
+ * et l'accès par boîte à clés en dernier. Dans un même groupe, l'ordre du formulaire est gardé.
+ */
+function placementPriority(p: Placement): number {
+  const access = p.location === 'window' || p.location === 'balcony' ? p.access.type : null;
+  if (access === 'phoneAppointment') return 0;
+  if (p.location === 'other') return 1;
+  if (access === 'keybox') return 3;
+  return 2;
+}
+
 function framesNotes(units: readonly FrameUnit[], addons: readonly AddonEntry[], accountName: string | null): string[] {
   const groups = new Map<string, { entry: FrameEntry; count: number }>();
-  for (const [index, unit] of units.entries()) {
+  // Tri stable : l'ordre du formulaire est conservé à priorité égale
+  const ordered = [...units].sort((a, b) => placementPriority(a.placement) - placementPriority(b.placement));
+  for (const [index, unit] of ordered.entries()) {
     // Le nom du compte n'apparaît qu'une fois : sur la première pancarte
     const entry = frameEntry(unit, addons, index === 0 ? accountName : null);
     const key = JSON.stringify(entry);
@@ -222,28 +236,35 @@ function standaloneAddonNotes(addons: readonly AddonEntry[], hasFrames: boolean,
 }
 
 /**
- * Emplacement d'un kit : seuls la rampe et « Autres » apparaissent (fenêtre, mur et balcon sont ignorés).
- * « Autres » garde la description telle que saisie.
+ * Emplacement d'un kit : au sol, rampe et « Autres » (fenêtre, mur et balcon sont ignorés).
+ * « Autres » : la description telle que saisie, entre crochets.
  */
 function kitPlacementNote(p: Placement): string | null {
   switch (p.location) {
+    case 'ground':
+      return '**AU SOL**';
     case 'ramp':
       return '**SUR RAMPE**';
     case 'other':
-      return `(${p.description.trim()})`;
+      return `[${p.description.trim()}]`;
     default:
       return null;
   }
 }
 
-/** Kits (ancrage et poteau) sans pancarte : POTEAU {MODÈLE} {COMPTE} ; les kits identiques sont regroupés */
+/**
+ * Kits (ancrage et poteau) sans pancarte : POTEAU {MODÈLE} {COMPTE} (description du poteau spécifique) [emplacement « Autres »].
+ * Les kits identiques sont regroupés.
+ */
 function kitsNotes(units: readonly KitUnit[], accountName: string | null): string[] {
   const groups = new Map<string, number>();
   for (const [index, unit] of units.entries()) {
     const placement = kitPlacementNote(unit.placement);
     // Le nom du compte n'apparaît qu'une fois : sur le premier kit
     const name = index === 0 && accountName ? upper(accountName) : '';
-    const note = ['POTEAU', KIT_MODEL_NOTE_LABELS[unit.model.type], name, placement ?? '']
+    // Poteau spécifique : sa description telle que saisie, entre parenthèses
+    const description = unit.model.type === 'custom' && unit.model.description.trim() ? `(${unit.model.description.trim()})` : '';
+    const note = ['POTEAU', KIT_MODEL_NOTE_LABELS[unit.model.type], name, description, placement ?? '']
       .filter(Boolean)
       .join(' ');
     groups.set(note, (groups.get(note) ?? 0) + 1);

@@ -27,7 +27,9 @@ const frame = (overrides: Partial<FrameUnitFormValues> = {}): FrameUnitFormValue
 const form = (overrides: Partial<InstallationFormValues> = {}): InstallationFormValues => ({
   ...createEmptyInstallationForm(),
   materials: ['frames'],
-  frames: { pickup: false, pickupAddress: '', units: [frame()] },
+  // Invités : réponse « Non » au ramassage par défaut
+  pickup: false,
+  frames: { units: [frame()] },
   ...overrides,
 });
 
@@ -60,7 +62,7 @@ describe('createInstallationSchema — pancartes (membre)', () => {
 
   it('exige le modèle et la réponse sur le nom', () => {
     const result = memberSchema.safeParse(form({
-      frames: { pickup: false, pickupAddress: '', units: [frame({ model: null, useAccountName: null })] },
+      frames: { units: [frame({ model: null, useAccountName: null })] },
     }));
     expect(issuePaths(result)).toEqual(
       expect.arrayContaining(['frames.units.0.model', 'frames.units.0.useAccountName']),
@@ -69,13 +71,13 @@ describe('createInstallationSchema — pancartes (membre)', () => {
 
   it('exige la description d\'un modèle particulier', () => {
     const result = memberSchema.safeParse(form({
-      frames: { pickup: false, pickupAddress: '', units: [frame({ model: 'custom' })] },
+      frames: { units: [frame({ model: 'custom' })] },
     }));
     expect(issuePaths(result)).toContain('frames.units.0.modelDescription');
   });
 
   it('ignore la question du ramassage', () => {
-    const result = memberSchema.safeParse(form({ frames: { pickup: null, pickupAddress: '', units: [frame()] } }));
+    const result = memberSchema.safeParse(form({ pickup: null }));
     expect(result.success).toBe(true);
   });
 });
@@ -83,7 +85,7 @@ describe('createInstallationSchema — pancartes (membre)', () => {
 describe('createInstallationSchema — pancartes (non-membre)', () => {
   it('ne demande ni modèle ni nom, et les met à null', () => {
     const result = guestSchema.safeParse(form({
-      frames: { pickup: false, pickupAddress: '', units: [frame({ model: null, useAccountName: null })] },
+      frames: { units: [frame({ model: null, useAccountName: null })] },
     }));
 
     expect(result.success).toBe(true);
@@ -92,20 +94,21 @@ describe('createInstallationSchema — pancartes (non-membre)', () => {
   });
 
   it('exige une réponse au ramassage, puis l\'adresse si Oui', () => {
-    expect(issuePaths(guestSchema.safeParse(form({
-      frames: { pickup: null, pickupAddress: '', units: [frame()] },
-    })))).toContain('frames.pickup');
+    expect(issuePaths(guestSchema.safeParse(form({ pickup: null })))).toContain('pickup');
+    // Espaces seulement → vide après trim
+    expect(issuePaths(guestSchema.safeParse(form({ pickup: true, pickupAddress: '   ' })))).toContain('pickupAddress');
+  });
 
-    expect(issuePaths(guestSchema.safeParse(form({
-      frames: { pickup: true, pickupAddress: '   ', units: [frame()] }, // espaces seulement → vide après trim
-    })))).toContain('frames.pickupAddress');
+  it('la question du ramassage vaut aussi sans pancarte (kit seul)', () => {
+    expect(issuePaths(guestSchema.safeParse(form({ materials: ['kit'], pickup: null, kits: { units: [createKitUnit()] } }))))
+      .toContain('pickup');
   });
 });
 
 describe('createInstallationSchema — emplacement par pancarte', () => {
   const P = 'frames.units.0.placement';
   const withPlacement = (placement: Partial<FrameUnitFormValues['placement']>) =>
-    form({ frames: { pickup: false, pickupAddress: '', units: [frame({ placement: { ...createEmptyPlacement(), ...placement } })] } });
+    form({ frames: { units: [frame({ placement: { ...createEmptyPlacement(), ...placement } })] } });
 
   it('exige un emplacement pour chaque pancarte', () => {
     expect(issuePaths(memberSchema.safeParse(withPlacement({ location: null })))).toContain(`${P}.location`);
@@ -201,7 +204,7 @@ describe('createInstallationSchema — emplacements des ajouts sans pancarte', (
     const unit = frame();
     const result = memberSchema.safeParse(form({
       materials: ['frames', 'addons'],
-      frames: { pickup: false, pickupAddress: '', units: [unit] },
+      frames: { units: [unit] },
       addons: [{ ...createAddonEntry('forSale'), frameUids: [unit.uid], placements: [] }],
     }));
     expect(result.success && result.data.addons?.[0].placements).toBeNull();
@@ -215,7 +218,7 @@ describe('createInstallationSchema — ajouts', () => {
     form({
       materials: withFrames ? ['frames', 'addons'] : ['addons'],
       frames: withFrames
-        ? { pickup: false, pickupAddress: '', units: [unit] }
+        ? { units: [unit] }
         : createEmptyInstallationForm().frames,
       addons,
     });
@@ -475,7 +478,7 @@ describe('toInstallationFormValues — aller-retour', () => {
 
     expectRoundTrip(memberSchema, form({
       materials: ['frames', 'addons'],
-      frames: { pickup: false, pickupAddress: '', units },
+      frames: { units },
       addons: [
         { ...createAddonEntry('other'), mention: 'Vue sur le fleuve', quantity: 1, frameUids: [units[0].uid], onSite: false },
         { ...createAddonEntry('secondFloor'), quantity: 3, frameUids: [units[1].uid], onSite: true },
@@ -494,17 +497,15 @@ describe('toInstallationFormValues — aller-retour', () => {
     { location: 'other', description: 'Derrière la haie' },
   ] satisfies Partial<FrameUnitFormValues['placement']>[])('emplacement $location ($access)', (placement) => {
     expectRoundTrip(memberSchema, form({
-      frames: { pickup: false, pickupAddress: '', units: [frame({ placement: { ...createEmptyPlacement(), ...placement } })] },
+      frames: { units: [frame({ placement: { ...createEmptyPlacement(), ...placement } })] },
     }));
   });
 
   it('non-membre : ramassage conservé', () => {
     expectRoundTrip(guestSchema, form({
-      frames: {
-        pickup: true,
-        pickupAddress: '123 rue Principale, Montréal',
-        units: [frame({ model: null, useAccountName: null })],
-      },
+      pickup: true,
+      pickupAddress: '123 rue Principale, Montréal',
+      frames: { units: [frame({ model: null, useAccountName: null })] },
     }));
   });
 
@@ -533,7 +534,7 @@ describe('toInstallationFormValues — aller-retour', () => {
     const unit = frame();
     expectRoundTrip(memberSchema, form({
       materials: ['frames', 'openHouse'],
-      frames: { pickup: false, pickupAddress: '', units: [unit] },
+      frames: { units: [unit] },
       openHouse: {
         ...createEmptyOpenHouse(),
         quantity: 2,

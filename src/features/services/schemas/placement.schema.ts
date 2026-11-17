@@ -42,7 +42,10 @@ function validateAccess(p: PlacementOutput, path: Path, report: Report) {
   }
 }
 
-export function validatePlacement(p: PlacementOutput, path: Path, report: Report) {
+/** Options du retrait : côté de la fenêtre et fixation au mur facultatifs */
+export function validatePlacement(
+  p: PlacementOutput, path: Path, report: Report, { windowSideOptional = false, mountingOptional = false } = {},
+) {
   if (p.location === null) return report([...path, 'location'], 'chooseLocation');
 
   switch (p.location) {
@@ -50,7 +53,7 @@ export function validatePlacement(p: PlacementOutput, path: Path, report: Report
       if (p.access === null || !isLadder(p.access)) {
         report([...path, 'access'], 'chooseLadder');
       }
-      if (p.mounting === null) report([...path, 'mounting'], 'chooseMounting');
+      if (p.mounting === null && !mountingOptional) report([...path, 'mounting'], 'chooseMounting');
       break;
     case 'balcony':
       validateAccess(p, path, report);
@@ -58,7 +61,7 @@ export function validatePlacement(p: PlacementOutput, path: Path, report: Report
       break;
     case 'window':
       validateAccess(p, path, report);
-      if (p.windowSide === null) report([...path, 'windowSide'], 'chooseWindowSide');
+      if (p.windowSide === null && !windowSideOptional) report([...path, 'windowSide'], 'chooseWindowSide');
       break;
     case 'other':
       if (!p.description) report([...path, 'description'], 'describeLocation');
@@ -84,12 +87,12 @@ export function toPlacement(p: PlacementOutput): Placement {
     case 'wall': {
       const access = defined(p.access);
       if (!isLadder(access)) throw new Error('Invariant violé : accès mural');
-      return { location, ladder: access, mounting: defined(p.mounting) };
+      return { location, ladder: access, mounting: p.mounting };
     }
     case 'balcony':
       return { location, access: toAccess(p), mounting: defined(p.mounting) };
     case 'window':
-      return { location, access: toAccess(p), side: defined(p.windowSide) };
+      return { location, access: toAccess(p), side: p.windowSide };
     case 'other':
       return { location, description: p.description };
   }

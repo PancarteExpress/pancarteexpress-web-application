@@ -266,7 +266,21 @@
     "addonsDetailsPlaceholder": "Please specify which addon to remove if there are several…",
     "framesTitle": "Sign removal details",
     "framesQuantity": "How many signs do you want removed?",
-    "frameUnit": "Sign"
+    "frameUnit": "Sign",
+    "afterRemoval": {
+      "legend": "What should we do with the removed material?",
+      "choices": {
+        "deliver": "Deliver it to another address",
+        "leaveOnSite": "Leave the material on site",
+        "storage": "Open an account so we can store it"
+      },
+      "deliveryTitle": "What is the delivery address?",
+      "deliveryFee": "An additional fee based on the travel distance will apply.",
+      "deliveryAddress": "Delivery address",
+      "dropOff": "Where would you like us to leave the material? (optional)",
+      "dropOffPlaceholder": "Description…",
+      "storageMessage": "To store your material, you need an account. Your request will be sent to our team, then you will be taken to account creation."
+    }
   },
   "correction": {
     "kinds": {
@@ -344,7 +358,8 @@
     "removeModel": "Remove this model",
     "removeItem": "Remove this item",
     "maxModels": "{max} models maximum",
-    "maxItems": "{max} items maximum"
+    "maxItems": "{max} items maximum",
+    "openHouseHours": "Please specify the open house hours (optional)"
   },
   "largeFormat": {
     "locations": {
@@ -489,7 +504,13 @@
     "withPoles": "Posts",
     "combination": "Combination",
     "incomplete": "Incomplete",
-    "dateToSpecify": "Specific date to choose"
+    "dateToSpecify": "Specific date to choose",
+    "afterRemoval": "Removed material",
+    "afterRemovalChoice": "What to do with the material",
+    "deliveryAddress": "Delivery address",
+    "dropOff": "Material drop-off",
+    "materialPickup": "Pickup of the material to install",
+    "pickupAddress": "Pickup address"
   },
   "errors": {
     "required": "This field is required",
@@ -556,7 +577,9 @@
     "tooManyModels": "{max} models maximum",
     "choosePlacement": "Choose at least one location",
     "tooManyPlacements": "{max, plural, one {Only one location allowed} other {# locations maximum}}",
-    "duplicatePlacement": "Each location can only be chosen once"
+    "duplicatePlacement": "Each location can only be chosen once",
+    "chooseAfterRemoval": "Please tell us what to do with the removed material.",
+    "deliveryAddressRequired": "Enter the delivery address."
   },
   "lookup": {
     "title": "Already submitted a request?",

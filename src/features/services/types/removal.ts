@@ -12,7 +12,19 @@ export interface RemovalUnit {
   placement: Placement;
 }
 
+/**
+ * Invités : que faire du matériel retiré.
+ * - deliver : le livrer à une autre adresse ; leaveOnSite : le laisser sur place ;
+ * - storage : l'entreposer, après l'ouverture d'un compte (l'invité est ensuite dirigé vers l'inscription).
+ */
+export type AfterRemoval =
+  | { choice: 'deliver'; address: string; dropOff: string | null }
+  | { choice: 'leaveOnSite'; dropOff: string | null }
+  | { choice: 'storage' };
+
 export interface RemovalDetails {
+  /** null : membre, ou retrait enregistré avant cette question */
+  afterRemoval: AfterRemoval | null;
   frames: { units: RemovalUnit[] } | null;
   addons: {
     units: RemovalUnit[];

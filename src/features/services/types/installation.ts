@@ -10,10 +10,11 @@ export type PlacementAccess =
 
 export type Placement =
   | { location: 'ground' | 'ramp' }
-  | { location: 'wall'; ladder: Ladder; mounting: Mounting }
+  /** mounting null : non précisée (facultative au retrait) */
+  | { location: 'wall'; ladder: Ladder; mounting: Mounting | null }
   /** mounting null : emplacement enregistré avant l'ajout de la fixation au balcon (novembre 2026) */
   | { location: 'balcony'; access: PlacementAccess; mounting: Mounting | null }
-  | { location: 'window'; access: PlacementAccess; side: WindowSide }
+  | { location: 'window'; access: PlacementAccess; side: WindowSide | null }
   | { location: 'other'; description: string };
 
 export type FrameModel =
@@ -34,8 +35,6 @@ export interface FrameUnit {
 }
 
 export interface FramesDetails {
-  /** null = membre, ou ramassage non requis */
-  pickupAddress: string | null;
   units: FrameUnit[];
 }
 
@@ -100,6 +99,8 @@ export interface DirectionalsDetails {
 }
 
 export interface InstallationDetails {
+  /** Adresse où aller chercher le matériel à installer (invités) ; null = membre, ou ramassage non requis */
+  pickupAddress: string | null;
   frames: FramesDetails | null;
   kits: KitsDetails | null;
   addons: AddonAssignment[] | null;

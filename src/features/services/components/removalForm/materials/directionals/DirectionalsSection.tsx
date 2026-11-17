@@ -40,7 +40,6 @@ export function DirectionalsSection() {
             {...bindRemovalField(props)}
             legend={t('installation.directionalMentionLegend')}
             options={toOptions(SIGN_MENTIONS, (m) => t(`mentions.${m}`))}
-            required
             />
         )}
         />

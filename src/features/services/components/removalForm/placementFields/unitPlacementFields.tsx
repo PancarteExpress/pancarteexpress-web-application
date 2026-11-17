@@ -66,6 +66,8 @@ function RemovalUnitFields({ name, index, title }: { name: UnitsPath; index: num
         value={placement}
         onChange={(next) => update(path, next)}
         errors={toPlacementErrors(placementErrors)}
+        windowSideOptional
+        mountingOptional
       />
     </fieldset>
   );

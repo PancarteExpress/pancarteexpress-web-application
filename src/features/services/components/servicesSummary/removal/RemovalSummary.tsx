@@ -5,12 +5,29 @@ import styles from '../servicesSummary.module.css';
 import { Field, Fields, Prose, SubSection, TextOrEmpty, UnitCard, UnitGrid } from '../SummaryParts';
 
 export function RemovalSummary({ details }: { details: RemovalDetails }) {
-  const { frames, addons, keybox, flags, directionals, otherDetails } = details;
+  const { afterRemoval, frames, addons, keybox, flags, directionals, otherDetails } = details;
   const t = useTranslations('services');
   const notSpecified = t('common.notSpecified');
 
   return (
     <div className={styles.installation}>
+      {/* Invités : que faire du matériel retiré (null pour un membre ou un ancien retrait) */}
+      {afterRemoval && (
+        <SubSection title={t('summary.afterRemoval')}>
+          <Fields>
+            <Field label={t('summary.afterRemovalChoice')} wide>
+              {t(`removal.afterRemoval.choices.${afterRemoval.choice}`)}
+            </Field>
+            {afterRemoval.choice === 'deliver' && (
+              <Field label={t('summary.deliveryAddress')} wide>{afterRemoval.address}</Field>
+            )}
+            {afterRemoval.choice !== 'storage' && afterRemoval.dropOff && (
+              <Field label={t('summary.dropOff')} wide>{afterRemoval.dropOff}</Field>
+            )}
+          </Fields>
+        </SubSection>
+      )}
+
       {frames && (
         <SubSection title={t('summary.framesToRemove', { count: frames.units.length })} note={t('summary.addonsIncluded')}>
           <UnitGrid>

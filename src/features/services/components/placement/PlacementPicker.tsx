@@ -33,9 +33,13 @@ interface PlacementPickerProps {
   errors?: PlacementErrors;
   /** N'affiche que les sous-options : l'emplacement est choisi ailleurs (cases à cocher) */
   hideLocation?: boolean;
+  locations?: readonly (typeof LOCATIONS)[number][];
+  windowSideOptional?: boolean;
+  /** La fixation au mur est facultative (retrait) */
+  mountingOptional?: boolean;
 }
 
-export function PlacementPicker({ legend, value, onChange, errors = {}, hideLocation = false }: PlacementPickerProps) {
+export function PlacementPicker({ legend, value, onChange, errors = {}, hideLocation = false, locations = LOCATIONS, windowSideOptional = false, mountingOptional = false }: PlacementPickerProps) {
   const t = useTranslations('services');
   const accessLabel = (a: AccessChoice) => t(`access.${a}`);
   // Mur : échelles seulement
@@ -60,7 +64,7 @@ export function PlacementPicker({ legend, value, onChange, errors = {}, hideLoca
       {!hideLocation && (
         <RadioGroup
           legend={legend}
-          options={toOptions(LOCATIONS, (l) => t(`locations.${l}`))}
+          options={toOptions(locations, (l) => t(`locations.${l}`))}
           value={location}
           // Nouvel emplacement : toutes les sous-options repartent de zéro
           onChange={(next) => onChange({ ...createEmptyPlacement(), location: next })}
@@ -86,7 +90,7 @@ export function PlacementPicker({ legend, value, onChange, errors = {}, hideLoca
             onChange={(v) => set('mounting', v)}
             columns={2}
             error={errors.mounting}
-            required
+            required={!mountingOptional}
           />
         </div>
       )}
@@ -143,7 +147,7 @@ export function PlacementPicker({ legend, value, onChange, errors = {}, hideLoca
               onChange={(v) => set('windowSide', v)}
               columns={2}
               error={errors.windowSide}
-              required
+              required={!windowSideOptional}
             />
           )}
         </div>

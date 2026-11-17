@@ -13,7 +13,9 @@ export type DeliveryFrame = Model<FrameModelType> & {
 };
 
 export type DeliveryAddonItem = { quantity: number } & (
-  | { addon: Exclude<DeliveryAddon, 'other' | 'customNoMention'> }
+  | { addon: Exclude<DeliveryAddon, 'other' | 'customNoMention' | 'openHouse'> }
+  /** Heures de la visite libre : facultatives */
+  | { addon: 'openHouse'; hours: string | null }
   | { addon: 'other'; mention: string }
   /** Modèle de l'ajout personnalisé : facultatif */
   | { addon: 'customNoMention'; model: string | null }

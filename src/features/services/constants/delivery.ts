@@ -38,4 +38,6 @@ export const DELIVERY_TEXT_LIMITS = {
   addonMention: 50,
   customAddonModel: 50,
   otherDescription: 50,
+  /** Heures de la visite libre (ajout « Visite libre ») : facultatives */
+  openHouseHours: 100,
 } as const;

@@ -45,6 +45,7 @@ export function DeliverySummary({ details }: { details: DeliveryDetails }) {
               const title =
                 a.addon === 'other' ? t('summary.labelWithDetail', { label, detail: a.mention })
                 : a.addon === 'customNoMention' && a.model ? t('summary.labelWithModel', { label, model: a.model })
+                : a.addon === 'openHouse' && a.hours ? t('summary.labelWithModel', { label, model: a.hours })
                 : label;
               return (
                 <UnitCard key={i} title={title}>

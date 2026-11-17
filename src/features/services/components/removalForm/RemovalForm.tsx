@@ -3,7 +3,9 @@
 import { useImperativeHandle, useState, type Ref } from 'react';
 import { FormProvider, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createEmptyRemovalForm, removalSchema, toRemovalFormValues, type RemovalFormValues, } from '@/features/services/schemas/removal.schema';
+import { useSession } from 'next-auth/react';
+import { createEmptyRemovalForm, createRemovalSchema, toRemovalFormValues, type RemovalFormValues, } from '@/features/services/schemas/removal.schema';
+import { AfterRemovalQuestion } from './AfterRemovalQuestion';
 
 import type { RemovalDetails } from '@/features/services/types/removal';
 import type { ServiceFormHandle } from '../serviceForm/serviceFormHandle';
@@ -30,19 +32,28 @@ interface RemovalFormProps {
   onAutoSave: AutoSaveHandler<RemovalFormValues, RemovalDetails>;
 }
 
-export function RemovalForm({ handle, initialValues, draft, onAutoSave }: RemovalFormProps) {
+export function RemovalForm(props: RemovalFormProps) {
+  const { status } = useSession();
+  const t = useTranslations('services.installation');
+  // Le schéma dépend du statut : on attend la session avant de monter le formulaire
+  if (status === 'loading') return <p aria-busy="true">{t('loading')}</p>;
+  return <RemovalFormInner key={status} {...props} isMember={status === 'authenticated'} />;
+}
+
+function RemovalFormInner({ handle, initialValues, draft, onAutoSave, isMember }: RemovalFormProps & { isMember: boolean }) {
   const t = useTranslations('services.removal');
+  const [schema] = useState(() => createRemovalSchema({ isMember }));
   // Calculé une seule fois : useForm ne lit defaultValues qu'au montage
   const [defaultValues] = useState(() =>
     draft ?? (initialValues ? toRemovalFormValues(initialValues) : createEmptyRemovalForm()),
   );
 
   const methods = useForm<RemovalFormValues, unknown, RemovalDetails>({
-    resolver: zodResolver(removalSchema),
+    resolver: zodResolver(schema),
     defaultValues,
     shouldFocusError: true,
   });
-  useAutoSave(methods.watch, methods.getValues, removalSchema, onAutoSave);
+  useAutoSave(methods.watch, methods.getValues, schema, onAutoSave);
 
   const materials = useWatch({ control: methods.control, name: 'materials' });
   const { handleSubmit } = methods;
@@ -56,6 +67,8 @@ export function RemovalForm({ handle, initialValues, draft, onAutoSave }: Remova
 
   return (
     <FormProvider {...methods}>
+      
+      
       <form noValidate className={styles.removalForm} onSubmit={(e) => e.preventDefault()}>
         <h3 className={styles.title}><IoConstructSharp size={24} /> {t('title')}</h3>
 
@@ -67,6 +80,9 @@ export function RemovalForm({ handle, initialValues, draft, onAutoSave }: Remova
         {materials.includes('flags') && <FlagsSection />}
         {materials.includes('directional') && <DirectionalsSection />}
         {materials.includes('other') && <OtherSection />}
+
+        {/* Invités : question posée une fois, juste sous les services */}
+        {!isMember && <AfterRemovalQuestion />}
       </form>
     </FormProvider>
   );

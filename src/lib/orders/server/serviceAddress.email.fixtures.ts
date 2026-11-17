@@ -4,8 +4,8 @@ import type { RemovalDetails } from '@/features/services/types/removal';
 /* Détails de services valides (domaine), pour les tests des courriels par numéro PE */
 
 export const installationDetails: InstallationDetails = {
+  pickupAddress: null,
   frames: {
-    pickupAddress: null,
     units: [
       {
         uid: 'f1',
@@ -39,6 +39,7 @@ export const installationDetails: InstallationDetails = {
 };
 
 export const removalDetails: RemovalDetails = {
+  afterRemoval: null,
   frames: { units: [{ uid: 'r1', placement: { location: 'ground' } }] },
   addons: null,
   keybox: { quantity: 1, code: '9999', placement: '' },

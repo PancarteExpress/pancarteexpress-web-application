@@ -1,96 +1,75 @@
 {
-    "title": "Become a member",
-    "accountTitle": "Create your account",
-
-    "_commentPackagesView": "--------------- Packages View ---------------",
-
-    "package1Title": "Non-member",
-    "package2Title": "Team plan",
-    "package3Title": "Individual plan",
-
-    "packagesCurrency": "CAD/year",
-    "packagesPerYear": "per year",
-
-    "notMemberPrice": "Per-trip rate",
-    "soloPrice": "Special per-trip rate",
-    "groupPrice": "Best per-trip rate",
-    
-    "notMemberStorage": "Storage",
-    "groupStorage": "Unlimited sign storage",
-    "bigFormatStorage": "Large-format storage",
-    "soloStorage": "Storage for up to 10 signs",
-
-    "inventoryManagement": "Maintenance and management of your inventory (lockboxes, open house signs, flags)",
-    "inventoryAlerts": "Alerts for low inventory or damaged equipment",
-    "promoCode": "Promo code with our printing partners",
-
-    "notMemberBilling": "Per-order invoicing",
-    "memberBilling": "Monthly invoicing",
-
-    "notMemberPayment": "Payment by credit card",
-    "memberPayment": "Payment by credit card or Interac",
-
-    "installation24h": "24-hour installation (excluding weekends)",
-    "emergency": "Emergency service",
-    "confirmationPhoto": "Confirmation photo",
-
-    "idealForGroup": "Ideal for broker teams",
-    "idealForSolo": "Ideal for solo brokers",
-
-    "selectPackage": "Select this plan",
-
-    "_commentRegisterView": " --------------- Register Form View ---------------",
-
-    "btnPackages": "Back to package details",
-
-    "formTitle": "Create your broker account",
-    "formPackageGroup": "You're about to join a team of brokers",
-    "formPackageSolo": "You're about to create your broker account",
-
-    "formBtnSolo": "Individual plan",
-    "formBtnGroup": "Team plan",
-
-    "registerWithGoogle": "Sign up with Google",
-
-    "formFirstName": "First name",
-    "formLastName": "Last name",
-    "formPhoneNumber": "Phone",
-    "formCompanyName": "Agency name",
-    "formEmail": "Email",
-    "formPassword": "Password",
-    "formConfirmPassword": "Confirm password",
-
-    "verificationCodeSent": "A verification code has been sent to <bold>{email}</bold>",
-    "verificationCode": "Verification code",
-
-    "tryingToCreateAccount": "Creating your account…",
-    "lastStepToCreateAccount": "One last step before creating your account",
-
-    "register": "Sign up",
-    "confirmVerificationCode": "Confirm verification code",
-
-    "accountCreatedSuccessfully": "Your account has been created successfully!",
-
-    "alreadyMember": "Already a member?",
-    "connect": "Log in",
-    "pickup": {
-        "legend": "Should we pick up your material?",
-        "atAddress": "Yes, at a specific address",
-        "atWarehouse": "No, the material will be dropped off at the warehouse",
-        "addressLabel": "Full address where the material should be picked up",
-        "receptionDate": "When will we receive the material?",
-        "dateHint": "Weekends and statutory holidays are not available.",
-        "notes": "Other details?"
-    },
-    "completeProfile": {
-        "title": "Complete your profile",
-        "subtitle": "Tell us how to collect your material before continuing.",
-        "save": "Save"
-    },
-    "pickupEdit": {
-        "loadError": "Unable to load the pickup information.",
-        "updated": "Pickup updated",
-        "loading": "Loading…",
-        "save": "Save pickup"
-    }
+  "title": "Become a member",
+  "accountTitle": "Create your account",
+  "_commentPackagesView": "--------------- Packages View ---------------",
+  "package1Title": "Non-member",
+  "package2Title": "Team plan",
+  "package3Title": "Individual plan",
+  "packagesCurrency": "CAD/year",
+  "packagesPerYear": "per year",
+  "notMemberPrice": "Per-trip rate",
+  "soloPrice": "Special per-trip rate",
+  "groupPrice": "Best per-trip rate",
+  "notMemberStorage": "Storage",
+  "groupStorage": "Unlimited sign storage",
+  "bigFormatStorage": "Large-format storage",
+  "soloStorage": "Storage for up to 10 signs",
+  "inventoryManagement": "Maintenance and management of your inventory (lockboxes, open house signs, flags)",
+  "inventoryAlerts": "Alerts for low inventory or damaged equipment",
+  "promoCode": "Promo code with our printing partners",
+  "notMemberBilling": "Per-order invoicing",
+  "memberBilling": "Monthly invoicing",
+  "notMemberPayment": "Payment by credit card",
+  "memberPayment": "Payment by credit card or Interac",
+  "installation24h": "24-hour installation (excluding weekends)",
+  "emergency": "Emergency service",
+  "confirmationPhoto": "Confirmation photo",
+  "idealForGroup": "Ideal for broker teams",
+  "idealForSolo": "Ideal for solo brokers",
+  "selectPackage": "Select this plan",
+  "_commentRegisterView": " --------------- Register Form View ---------------",
+  "btnPackages": "Back to package details",
+  "formTitle": "Create your broker account",
+  "formPackageGroup": "You're about to join a team of brokers",
+  "formPackageSolo": "You're about to create your broker account",
+  "formBtnSolo": "Individual plan",
+  "formBtnGroup": "Team plan",
+  "registerWithGoogle": "Sign up with Google",
+  "formFirstName": "First name",
+  "formLastName": "Last name",
+  "formPhoneNumber": "Phone",
+  "formCompanyName": "Agency name",
+  "formEmail": "Email",
+  "formPassword": "Password",
+  "formConfirmPassword": "Confirm password",
+  "verificationCodeSent": "A verification code has been sent to <bold>{email}</bold>",
+  "verificationCode": "Verification code",
+  "tryingToCreateAccount": "Creating your account…",
+  "lastStepToCreateAccount": "One last step before creating your account",
+  "register": "Sign up",
+  "confirmVerificationCode": "Confirm verification code",
+  "accountCreatedSuccessfully": "Your account has been created successfully!",
+  "alreadyMember": "Already a member?",
+  "connect": "Log in",
+  "pickup": {
+    "legend": "Should we pick up your material?",
+    "atAddress": "Yes, at a specific address",
+    "atWarehouse": "No, the material will be dropped off at the warehouse",
+    "addressLabel": "Full address where the material should be picked up",
+    "receptionDate": "When will we receive the material?",
+    "dateHint": "Weekends and statutory holidays are not available.",
+    "notes": "Other details?"
+  },
+  "completeProfile": {
+    "title": "Complete your profile",
+    "subtitle": "Tell us how to collect your material before continuing.",
+    "save": "Save"
+  },
+  "pickupEdit": {
+    "loadError": "Unable to load the pickup information.",
+    "updated": "Pickup updated",
+    "loading": "Loading…",
+    "save": "Save pickup"
+  },
+  "storageOrderNotice": "Your request no. <strong>{number}</strong> has been sent. Now create your account so we can store your material."
 }

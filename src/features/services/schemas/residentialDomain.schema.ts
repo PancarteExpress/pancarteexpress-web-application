@@ -37,7 +37,7 @@ const accessSchema = z.discriminatedUnion('type', [
 
 const placementSchema = z.discriminatedUnion('location', [
   z.object({ location: z.literal(['ground', 'ramp']) }),
-  z.object({ location: z.literal('wall'), ladder: z.enum(LADDERS), mounting: z.enum(MOUNTINGS) }),
+  z.object({ location: z.literal('wall'), ladder: z.enum(LADDERS), mounting: z.enum(MOUNTINGS).nullable() }),
   // Fixation absente des emplacements enregistrés avant son ajout au balcon : null
   z.object({ location: z.literal('balcony'), access: accessSchema, mounting: z.enum(MOUNTINGS).nullable().default(null) }),
   z.object({ location: z.literal('window'), access: accessSchema, side: z.enum(WINDOW_SIDES) }),
@@ -83,8 +83,8 @@ const openHouseSchema = z.object({
 
 /** Les anciennes installations (emplacement unique) sont converties avant validation */
 export const installationDetailsSchema = z.preprocess(upgradeInstallationDetails, z.object({
+  pickupAddress: z.string().nullable().default(null),
   frames: absent(z.object({
-    pickupAddress: z.string().nullable(),
     units: z.array(z.object({
       uid,
       model: frameModelSchema.nullable(),
@@ -118,6 +118,12 @@ export const installationDetailsSchema = z.preprocess(upgradeInstallationDetails
 const removalUnit = z.object({ uid, placement: placementSchema });
 
 export const removalDetailsSchema = z.object({
+  // Invités ; absent des retraits enregistrés avant cette question : null
+  afterRemoval: z.discriminatedUnion('choice', [
+    z.object({ choice: z.literal('deliver'), address: z.string().min(1), dropOff: z.string().nullable() }),
+    z.object({ choice: z.literal('leaveOnSite'), dropOff: z.string().nullable() }),
+    z.object({ choice: z.literal('storage') }),
+  ]).nullable().default(null),
   frames: absent(z.object({ units: z.array(removalUnit).min(1) })),
   addons: absent(z.object({ units: z.array(removalUnit).min(1), details: z.string().nullable() })),
   keybox: absent(z.object({ quantity: z.number().int().min(1), code: z.string().min(1), placement: z.string() })),
@@ -175,7 +181,9 @@ const deliveryFrame = z.union([
 ]);
 
 const deliveryAddon = z.union([
-  z.object({ addon: z.enum(DELIVERY_ADDONS).exclude(['other', 'customNoMention']), quantity: deliveryQuantity }),
+  z.object({ addon: z.enum(DELIVERY_ADDONS).exclude(['other', 'customNoMention', 'openHouse']), quantity: deliveryQuantity }),
+  // Heures absentes des livraisons enregistrées avant ce champ : null
+  z.object({ addon: z.literal('openHouse'), hours: z.string().nullable().default(null), quantity: deliveryQuantity }),
   z.object({ addon: z.literal('other'), mention: z.string(), quantity: deliveryQuantity }),
   z.object({ addon: z.literal('customNoMention'), model: z.string().nullable(), quantity: deliveryQuantity }),
 ]);

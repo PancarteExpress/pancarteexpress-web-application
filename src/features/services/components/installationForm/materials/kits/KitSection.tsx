@@ -3,7 +3,7 @@
 import { useId } from 'react';
 import { Controller, useFieldArray } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
-import { KIT_MODELS, MAX_KITS, TEXT_LIMITS } from '@/features/services/constants/installation';
+import { KIT_LOCATIONS, KIT_MODELS, MAX_KITS, TEXT_LIMITS } from '@/features/services/constants/installation';
 import { createKitUnit } from '@/features/services/schemas/installation.schema';
 import { UnitPlacementField } from '../../placementFields/unitPlacementField';
 import { QuantityField, RadioGroup, TextField, toOptions } from '@/features/services/components/fields';
@@ -94,7 +94,7 @@ function KitUnitFields({ index }: { index: number }) {
       />
 
       {/* Emplacement propre à ce kit, en dernier */}
-      <UnitPlacementField name={`${base}.placement`} />
+      <UnitPlacementField name={`${base}.placement`} locations={KIT_LOCATIONS} />
     </fieldset>
   );
 }

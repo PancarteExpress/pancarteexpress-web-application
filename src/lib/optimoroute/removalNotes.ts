@@ -37,7 +37,8 @@ function removalAccess(access: PlacementAccess): { label: string; detail: string
 
 /**
  * Emplacement d'un élément à retirer : plus court qu'à l'installation.
- * Fenêtre sans côté, balcon sans fixation, « Autres » tel que saisi, « Au sol » en toutes lettres.
+ * Côté de la fenêtre seulement s'il est choisi (facultatif), balcon sans fixation, « Autres » tel que saisi,
+ * « Au sol » en toutes lettres.
  */
 function removalPlacementNote(p: Placement): string {
   switch (p.location) {
@@ -48,11 +49,13 @@ function removalPlacementNote(p: Placement): string {
     case 'window':
     case 'balcony': {
       const { label, detail } = removalAccess(p.access);
+      const side = p.location === 'window' && p.side ? ` ${p.side === 'interior' ? 'INTÉRIEUR' : 'EXTÉRIEUR'}` : '';
       const place = p.location === 'window' ? 'FENÊTRE' : 'BALCON';
-      return `**${place} ${label}**${detail ? ` (${detail})` : ''}`;
+      return `**${place}${side} ${label}**${detail ? ` (${detail})` : ''}`;
     }
     case 'wall':
-      return `**MUR ${REMOVAL_MOUNTING_LABELS[p.mounting]} ${REMOVAL_LADDER_LABELS[p.ladder]}**`;
+      // Fixation facultative au retrait : omise si elle n'est pas précisée
+      return `**MUR${p.mounting ? ` ${REMOVAL_MOUNTING_LABELS[p.mounting]}` : ''} ${REMOVAL_LADDER_LABELS[p.ladder]}**`;
     case 'other':
       return p.description.trim();
   }

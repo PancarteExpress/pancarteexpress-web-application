@@ -326,6 +326,7 @@ function AddonsSection({ control, setValue, validate }: SectionProps) {
                   // Chaque type d'ajout n'a que son propre champ texte
                   if (addon !== 'other') setValue(`addons.${i}.mention`, '', clear);
                   if (addon !== 'customNoMention') setValue(`addons.${i}.customModel`, '', clear);
+                  if (addon !== 'openHouse') setValue(`addons.${i}.openHouseHours`, '', clear);
                 }}
                 inputRef={f.ref}
                 error={fieldState.error?.message}
@@ -347,6 +348,23 @@ function AddonsSection({ control, setValue, validate }: SectionProps) {
                   maxLength={DELIVERY_TEXT_LIMITS.addonMention}
                   error={fieldState.error?.message}
                   required
+                />
+              )}
+            />
+          )}
+          {addons[i]?.addon === 'openHouse' && (
+            <Controller
+              control={control}
+              name={`addons.${i}.openHouseHours`}
+              render={({ field: f, fieldState }) => (
+                <TextField
+                  label={t('openHouseHours')}
+                  value={f.value}
+                  onChange={f.onChange}
+                  onBlur={f.onBlur}
+                  inputRef={f.ref}
+                  maxLength={DELIVERY_TEXT_LIMITS.openHouseHours}
+                  error={fieldState.error?.message}
                 />
               )}
             />

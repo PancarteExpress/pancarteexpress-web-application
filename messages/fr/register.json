@@ -1,96 +1,75 @@
 {
-    "title": "Devenir membre",
-    "accountTitle": "Créer votre compte",
-
-    "_commentPackagesView": "--------------- Packages View ---------------",
-
-    "package1Title": "Non-membre",
-    "package2Title": "Forfait équipe",
-    "package3Title": "Forfait individuel",
-
-    "packagesCurrency": "CAD/an",
-    "packagesPerYear": "par année",
-
-    "notMemberPrice": "Tarif par déplacement",
-    "soloPrice": "Tarif préférentiel par déplacement",
-    "groupPrice": "Meilleur tarif par déplacement",
-
-    "notMemberStorage": "Entreposage",
-    "groupStorage": "Entreposage illimité de pancartes",
-    "bigFormatStorage": "Entreposage grand format",
-    "soloStorage": "Entreposage jusqu'à 10 pancartes",
-
-    "inventoryManagement": "Entretien et gestion de votre inventaire (boîtes à clés, visites libres, drapeaux)",
-    "inventoryAlerts": "Alertes en cas d'inventaire bas ou de matériel endommagé",
-    "promoCode": "Code promotionnel chez nos partenaires imprimeurs",
-
-    "notMemberBilling": "Facturation à la commande",
-    "memberBilling": "Facturation mensuelle",
-
-    "notMemberPayment": "Paiement par carte de crédit",
-    "memberPayment": "Paiement par carte de crédit ou Interac",
-
-    "installation24h": "Installation en 24 h (sauf la fin de semaine)",
-    "emergency": "Service d'urgence",
-    "confirmationPhoto": "Photo de confirmation",
-    
-    "idealForGroup": "Idéal pour les équipes de courtiers",
-    "idealForSolo": "Idéal pour les courtiers qui travaillent seuls",
-
-    "selectPackage": "Sélectionner ce forfait",
-    
-    "_commentRegisterView": " --------------- Register Form View ---------------",
-
-    "btnPackages": "Revenir à la description des forfaits",
-
-    "formTitle": "Créez votre espace courtier",
-    "formPackageGroup": "Vous vous apprêtez à rejoindre une équipe de courtiers",
-    "formPackageSolo": "Vous vous apprêtez à créer votre espace courtier",
-
-    "formBtnSolo": "Forfait individuel",
-    "formBtnGroup": "Forfait équipe",
-
-    "registerWithGoogle": "S'inscrire avec Google",
-
-    "formFirstName": "Prénom",
-    "formLastName": "Nom",
-    "formPhoneNumber": "Téléphone",
-    "formCompanyName": "Nom de l'agence",
-    "formEmail": "Courriel",
-    "formPassword": "Mot de passe",
-    "formConfirmPassword": "Confirmer le mot de passe",
-
-    "verificationCodeSent": "Un code de vérification a été envoyé à <bold>{email}</bold>",
-    "verificationCode": "Code de vérification",
-
-    "tryingToCreateAccount": "Création du compte en cours…",
-    "lastStepToCreateAccount": "Plus qu'une étape avant la création de votre compte",
-
-    "register": "S'inscrire",
-    "confirmVerificationCode": "Confirmer le code de vérification",
-
-    "accountCreatedSuccessfully": "Votre compte a été créé avec succès !",
-
-    "alreadyMember": "Déjà membre ?",
-    "connect": "Se connecter",
-    "pickup": {
-        "legend": "Devons-nous ramasser votre matériel ?",
-        "atAddress": "Oui, à une adresse particulière",
-        "atWarehouse": "Non, le matériel sera déposé à l'entrepôt",
-        "addressLabel": "Adresse complète de l'endroit où ramasser le matériel",
-        "receptionDate": "Quand recevrons-nous le matériel ?",
-        "dateHint": "Les fins de semaine et les jours fériés ne sont pas disponibles.",
-        "notes": "Autres détails ?"
-    },
-    "completeProfile": {
-        "title": "Complétez votre profil",
-        "subtitle": "Indiquez comment récupérer votre matériel avant de continuer.",
-        "save": "Enregistrer"
-    },
-    "pickupEdit": {
-        "loadError": "Impossible de charger le ramassage.",
-        "updated": "Ramassage mis à jour",
-        "loading": "Chargement…",
-        "save": "Enregistrer le ramassage"
-    }
+  "title": "Devenir membre",
+  "accountTitle": "Créer votre compte",
+  "_commentPackagesView": "--------------- Packages View ---------------",
+  "package1Title": "Non-membre",
+  "package2Title": "Forfait équipe",
+  "package3Title": "Forfait individuel",
+  "packagesCurrency": "CAD/an",
+  "packagesPerYear": "par année",
+  "notMemberPrice": "Tarif par déplacement",
+  "soloPrice": "Tarif préférentiel par déplacement",
+  "groupPrice": "Meilleur tarif par déplacement",
+  "notMemberStorage": "Entreposage",
+  "groupStorage": "Entreposage illimité de pancartes",
+  "bigFormatStorage": "Entreposage grand format",
+  "soloStorage": "Entreposage jusqu'à 10 pancartes",
+  "inventoryManagement": "Entretien et gestion de votre inventaire (boîtes à clés, visites libres, drapeaux)",
+  "inventoryAlerts": "Alertes en cas d'inventaire bas ou de matériel endommagé",
+  "promoCode": "Code promotionnel chez nos partenaires imprimeurs",
+  "notMemberBilling": "Facturation à la commande",
+  "memberBilling": "Facturation mensuelle",
+  "notMemberPayment": "Paiement par carte de crédit",
+  "memberPayment": "Paiement par carte de crédit ou Interac",
+  "installation24h": "Installation en 24 h (sauf la fin de semaine)",
+  "emergency": "Service d'urgence",
+  "confirmationPhoto": "Photo de confirmation",
+  "idealForGroup": "Idéal pour les équipes de courtiers",
+  "idealForSolo": "Idéal pour les courtiers qui travaillent seuls",
+  "selectPackage": "Sélectionner ce forfait",
+  "_commentRegisterView": " --------------- Register Form View ---------------",
+  "btnPackages": "Revenir à la description des forfaits",
+  "formTitle": "Créez votre espace courtier",
+  "formPackageGroup": "Vous vous apprêtez à rejoindre une équipe de courtiers",
+  "formPackageSolo": "Vous vous apprêtez à créer votre espace courtier",
+  "formBtnSolo": "Forfait individuel",
+  "formBtnGroup": "Forfait équipe",
+  "registerWithGoogle": "S'inscrire avec Google",
+  "formFirstName": "Prénom",
+  "formLastName": "Nom",
+  "formPhoneNumber": "Téléphone",
+  "formCompanyName": "Nom de l'agence",
+  "formEmail": "Courriel",
+  "formPassword": "Mot de passe",
+  "formConfirmPassword": "Confirmer le mot de passe",
+  "verificationCodeSent": "Un code de vérification a été envoyé à <bold>{email}</bold>",
+  "verificationCode": "Code de vérification",
+  "tryingToCreateAccount": "Création du compte en cours…",
+  "lastStepToCreateAccount": "Plus qu'une étape avant la création de votre compte",
+  "register": "S'inscrire",
+  "confirmVerificationCode": "Confirmer le code de vérification",
+  "accountCreatedSuccessfully": "Votre compte a été créé avec succès !",
+  "alreadyMember": "Déjà membre ?",
+  "connect": "Se connecter",
+  "pickup": {
+    "legend": "Devons-nous ramasser votre matériel ?",
+    "atAddress": "Oui, à une adresse particulière",
+    "atWarehouse": "Non, le matériel sera déposé à l'entrepôt",
+    "addressLabel": "Adresse complète de l'endroit où ramasser le matériel",
+    "receptionDate": "Quand recevrons-nous le matériel ?",
+    "dateHint": "Les fins de semaine et les jours fériés ne sont pas disponibles.",
+    "notes": "Autres détails ?"
+  },
+  "completeProfile": {
+    "title": "Complétez votre profil",
+    "subtitle": "Indiquez comment récupérer votre matériel avant de continuer.",
+    "save": "Enregistrer"
+  },
+  "pickupEdit": {
+    "loadError": "Impossible de charger le ramassage.",
+    "updated": "Ramassage mis à jour",
+    "loading": "Chargement…",
+    "save": "Enregistrer le ramassage"
+  },
+  "storageOrderNotice": "Votre demande n° <strong>{number}</strong> a bien été envoyée. Créez maintenant votre compte pour que nous puissions entreposer votre matériel."
 }

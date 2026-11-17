@@ -1,6 +1,6 @@
 import * as z from 'zod';
 import {
-  ADDONS, ADDONS_WITH_MODEL, FLAG_MENTIONS, FRAME_MODELS, IMPLEMENTED_MATERIALS, KIT_MODELS,
+  ADDONS, ADDONS_WITH_MODEL, FLAG_MENTIONS, FRAME_MODELS, IMPLEMENTED_MATERIALS, KIT_LOCATIONS, KIT_MODELS,
   MAX_ADDONS, MAX_DIRECTIONALS, MAX_FLAGS, MAX_FRAMES, MAX_KITS, OPEN_HOUSE, SIGN_MENTIONS, TEXT_LIMITS,
   type Addon, type AddonWithModel, type FrameModelType, type ImplementedMaterial,
 } from '../constants/installation';
@@ -93,9 +93,10 @@ const openHouseFormSchema = z.object({
 
 const installationFormSchema = z.object({
   materials: z.array(z.enum(IMPLEMENTED_MATERIALS)),
+  /** Invités : aller chercher le matériel à installer à une autre adresse ? (question posée une fois, sous les services) */
+  pickup: z.boolean().nullable(),
+  pickupAddress: z.string().trim(),
   frames: z.object({
-    pickup: z.boolean().nullable(),
-    pickupAddress: z.string().trim(),
     units: z.array(frameUnitFormSchema).max(MAX_FRAMES, `Maximum ${MAX_FRAMES} pancartes`),
   }),
   kits: z.object({
@@ -156,6 +157,9 @@ function validateFrameUnit(u: FrameUnitOutput, path: Path, session: SessionConte
 function validateKitUnit(k: KitUnitOutput, path: Path, report: Report) {
   if (k.model === null) report([...path, 'model'], 'chooseKitModel');
   else if (k.model === 'custom' && !k.description) report([...path, 'description'], 'describePole');
+  if (k.placement.location !== null && !(KIT_LOCATIONS as readonly string[]).includes(k.placement.location)) {
+    report([...path, 'placement', 'location'], 'chooseLocation');
+  }
   validatePlacement(k.placement, [...path, 'placement'], report);
 }
 
@@ -330,13 +334,13 @@ export function createInstallationSchema(session: SessionContext) {
 
       if (v.materials.length === 0) report(['materials'], 'selectInstallItem');
 
+      // Invités : la question du ramassage vaut pour toute l'installation
+      if (!isMember) {
+        if (v.pickup === null) report(['pickup'], REQUIRED);
+        else if (v.pickup && !v.pickupAddress) report(['pickupAddress'], "Indiquez l'adresse de ramassage");
+      }
+
       if (hasFrames) {
-        if (!isMember) {
-          if (v.frames.pickup === null) report(['frames', 'pickup'], REQUIRED);
-          else if (v.frames.pickup && !v.frames.pickupAddress) {
-            report(['frames', 'pickupAddress'], "Indiquez l'adresse de ramassage");
-          }
-        }
         if (v.frames.units.length === 0) report(['frames', 'units'], 'framesRequired');
         v.frames.units.forEach((u, i) => validateFrameUnit(u, ['frames', 'units', i], session, report));
       }
@@ -379,12 +383,8 @@ export function createInstallationSchema(session: SessionContext) {
       const hasFrames = has('frames');
 
       return {
-        frames: hasFrames
-          ? {
-              pickupAddress: !isMember && v.frames.pickup ? v.frames.pickupAddress : null,
-              units: v.frames.units.map((u) => toFrameUnit(u, session)),
-            }
-          : null,
+        pickupAddress: !isMember && v.pickup ? v.pickupAddress : null,
+        frames: hasFrames ? { units: v.frames.units.map((u) => toFrameUnit(u, session)) } : null,
         kits: has('kit') && !hasFrames ? { units: v.kits.units.map(toKitUnit) } : null,
         addons: has('addons') ? v.addons.map((a) => toAddonAssignment(a, hasFrames)) : null,
         openHouse: has('openHouse') ? toOpenHouse(v.openHouse, hasFrames) : null,
@@ -458,7 +458,9 @@ export const createEmptyOpenHouse = (): OpenHouseFormValues => ({
 
 export const createEmptyInstallationForm = (): InstallationFormValues => ({
   materials: [],
-  frames: { pickup: null, pickupAddress: '', units: [] },
+  pickup: null,
+  pickupAddress: '',
+  frames: { units: [] },
   kits: { units: [] },
   addons: [],
   openHouse: createEmptyOpenHouse(),
@@ -549,13 +551,9 @@ export function toInstallationFormValues(details: InstallationDetails): Installa
 
   return {
     materials,
-    frames: details.frames
-      ? {
-          pickup: details.frames.pickupAddress !== null,
-          pickupAddress: details.frames.pickupAddress ?? '',
-          units: details.frames.units.map(fromFrameUnit),
-        }
-      : empty.frames,
+    pickup: details.pickupAddress !== null,
+    pickupAddress: details.pickupAddress ?? '',
+    frames: details.frames ? { units: details.frames.units.map(fromFrameUnit) } : empty.frames,
     kits: details.kits ? { units: details.kits.units.map(fromKitUnit) } : empty.kits,
     addons: details.addons?.map(fromAddon) ?? [],
     openHouse: details.openHouse ? fromOpenHouse(details.openHouse) : empty.openHouse,

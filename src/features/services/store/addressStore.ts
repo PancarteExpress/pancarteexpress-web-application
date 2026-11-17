@@ -24,7 +24,7 @@ import type {
 /** Service sans id : le store l'attribue (ou conserve celui du service existant) */
 type ServiceInput = Service extends infer S ? (S extends unknown ? Omit<S, 'id'> : never) : never;
 
-const STORAGE_VERSION = 5;
+const STORAGE_VERSION = 8;
 
 export type ServiceKey = Service['type'];
 
@@ -322,6 +322,74 @@ export const useAddressStore = create<AddressStore>()(
                 id,
                 d.installation
                   ? { ...d, installation: { ...d.installation, values: upgradeInstallationFormValues(d.installation.values) as InstallationFormValues } }
+                  : d,
+              ]),
+            ),
+          };
+        }
+        // v6 : heures de la visite libre dans les ajouts à livrer ; les anciens brouillons reçoivent un champ vide
+        if (version < 6) {
+          state = {
+            ...state,
+            drafts: Object.fromEntries(
+              Object.entries(state.drafts ?? {}).map(([id, d]) => [
+                id,
+                d.delivery
+                  ? {
+                      ...d,
+                      delivery: {
+                        ...d.delivery,
+                        values: {
+                          ...d.delivery.values,
+                          addons: (d.delivery.values.addons ?? []).map((a) => ({ ...a, openHouseHours: a.openHouseHours ?? '' })),
+                        },
+                      },
+                    }
+                  : d,
+              ]),
+            ),
+          };
+        }
+        // v7 : question du ramassage déplacée des pancartes vers l'installation
+        if (version < 7) {
+          state = {
+            ...state,
+            addresses: (state.addresses ?? []).map((a) => ({
+              ...a,
+              services: (a.services ?? []).map((s) =>
+                s.type === 'installation' ? (upgradeInstallationDetails(s) as Service) : s,
+              ),
+            })),
+            drafts: Object.fromEntries(
+              Object.entries(state.drafts ?? {}).map(([id, d]) => [
+                id,
+                d.installation
+                  ? { ...d, installation: { ...d.installation, values: upgradeInstallationFormValues(d.installation.values) as InstallationFormValues } }
+                  : d,
+              ]),
+            ),
+          };
+        }
+        // v8 : question des invités sur le matériel retiré ; les anciens brouillons de retrait reçoivent des champs vides
+        if (version < 8) {
+          state = {
+            ...state,
+            drafts: Object.fromEntries(
+              Object.entries(state.drafts ?? {}).map(([id, d]) => [
+                id,
+                d.removal
+                  ? {
+                      ...d,
+                      removal: {
+                        ...d.removal,
+                        values: {
+                          ...d.removal.values,
+                          afterRemoval: d.removal.values.afterRemoval ?? null,
+                          deliveryAddress: d.removal.values.deliveryAddress ?? '',
+                          dropOff: d.removal.values.dropOff ?? '',
+                        },
+                      },
+                    }
                   : d,
               ]),
             ),

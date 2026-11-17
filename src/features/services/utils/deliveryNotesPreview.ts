@@ -19,6 +19,7 @@ export function deliveryPreviewDetails(v: DeliveryFormValues): DeliveryDetails {
       ? v.addons.flatMap((a): DeliveryAddonItem[] => {
           if (a.addon === null) return [];
           if (a.addon === 'other') return [{ addon: 'other', mention: a.mention, quantity: a.quantity }];
+          if (a.addon === 'openHouse') return [{ addon: 'openHouse', hours: a.openHouseHours.trim() || null, quantity: a.quantity }];
           if (a.addon === 'customNoMention') {
             return [{ addon: 'customNoMention', model: a.customModel.trim() || null, quantity: a.quantity }];
           }

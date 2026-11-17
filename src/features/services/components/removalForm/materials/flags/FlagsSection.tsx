@@ -36,7 +36,6 @@ export function FlagsSection() {
                     }}
                     legend={t('installation.flagMentionLegend')}
                     options={toOptions(FLAG_MENTIONS, (m) => t(`mentions.${m}`))}
-                    required
                 />
                 {props.field.value === 'other' && (
                     <Controller

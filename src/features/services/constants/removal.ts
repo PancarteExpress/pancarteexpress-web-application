@@ -21,4 +21,10 @@ export const REMOVAL_TEXT_LIMITS = {
   flagsPlacement: 50,
   directionalPlacement: 50,
   otherDetails: 100,
+  /** Invités : où déposer le matériel retiré (facultatif) */
+  dropOff: 250,
 } as const;
+
+/** Invités : que faire du matériel retiré */
+export const AFTER_REMOVAL_CHOICES = ['deliver', 'leaveOnSite', 'storage'] as const;
+export type AfterRemovalChoice = (typeof AFTER_REMOVAL_CHOICES)[number];

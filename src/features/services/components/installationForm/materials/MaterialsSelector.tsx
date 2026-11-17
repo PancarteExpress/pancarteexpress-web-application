@@ -40,11 +40,7 @@ export function MaterialsSelector() {
           const materials = nextHasFrames ? selected.filter((m) => m !== 'kit') : selected;
 
           if (nextHasFrames !== hasFrames) {
-            update('frames', {
-              pickup: null,
-              pickupAddress: '',
-              units: nextHasFrames ? [createFrameUnit()] : [],
-            });
+            update('frames', { units: nextHasFrames ? [createFrameUnit()] : [] });
             if (!nextHasFrames) {
               update('addons', getValues('addons').map((a) => ({ ...a, frameUids: [] })));
               update('openHouse.frameUids', []);

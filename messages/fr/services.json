@@ -266,7 +266,21 @@
     "addonsDetailsPlaceholder": "Veuillez préciser l'ajout à retirer s'il y en a plusieurs…",
     "framesTitle": "Détails du retrait de pancartes",
     "framesQuantity": "Combien de pancartes voulez-vous retirer ?",
-    "frameUnit": "Pancarte"
+    "frameUnit": "Pancarte",
+    "afterRemoval": {
+      "legend": "Que doit-on faire avec le matériel retiré ?",
+      "choices": {
+        "deliver": "Le livrer à une autre adresse",
+        "leaveOnSite": "Laisser le matériel sur place",
+        "storage": "Ouverture de compte pour qu'on l'entrepose"
+      },
+      "deliveryTitle": "Quelle est l'adresse de livraison ?",
+      "deliveryFee": "Un montant supplémentaire basé sur la distance du déplacement sera appliqué.",
+      "deliveryAddress": "Adresse de livraison",
+      "dropOff": "Où voulez-vous qu'on dépose le matériel ? (optionnel)",
+      "dropOffPlaceholder": "Description…",
+      "storageMessage": "Pour que nous entreposions votre matériel, vous devez avoir un compte. Votre demande sera envoyée à notre équipe, puis vous serez dirigé vers la création de votre compte."
+    }
   },
   "correction": {
     "kinds": {
@@ -344,7 +358,8 @@
     "removeModel": "Retirer ce modèle",
     "removeItem": "Retirer ce matériel",
     "maxModels": "{max} modèles maximum",
-    "maxItems": "{max} matériels maximum"
+    "maxItems": "{max} matériels maximum",
+    "openHouseHours": "Veuillez préciser les heures de la visite libre (optionnel)"
   },
   "largeFormat": {
     "locations": {
@@ -489,7 +504,13 @@
     "withPoles": "Poteaux",
     "combination": "Combinaison",
     "incomplete": "Incomplet",
-    "dateToSpecify": "Date précise à choisir"
+    "dateToSpecify": "Date précise à choisir",
+    "afterRemoval": "Matériel retiré",
+    "afterRemovalChoice": "Que faire du matériel",
+    "deliveryAddress": "Adresse de livraison",
+    "dropOff": "Dépôt du matériel",
+    "materialPickup": "Ramassage du matériel à installer",
+    "pickupAddress": "Adresse de ramassage"
   },
   "errors": {
     "required": "Ce champ est requis",
@@ -556,7 +577,9 @@
     "tooManyModels": "{max} modèles maximum",
     "choosePlacement": "Choisissez au moins un emplacement",
     "tooManyPlacements": "{max, plural, one {Un seul emplacement possible} other {# emplacements maximum}}",
-    "duplicatePlacement": "Chaque emplacement ne peut être choisi qu’une fois"
+    "duplicatePlacement": "Chaque emplacement ne peut être choisi qu’une fois",
+    "chooseAfterRemoval": "Veuillez indiquer ce que nous devons faire avec le matériel retiré.",
+    "deliveryAddressRequired": "Indiquez l'adresse de livraison."
   },
   "lookup": {
     "title": "Vous avez déjà fait une demande ?",

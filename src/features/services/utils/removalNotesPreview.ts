@@ -2,18 +2,24 @@ import type { RemovalFormValues } from '../schemas/removal.schema';
 import type { RemovalDetails } from '../types/removal';
 import { completePlacement } from './installationNotesPreview';
 
+/** Au retrait, le côté de la fenêtre est facultatif : même règle que la validation */
+const removalPlacement = (p: Parameters<typeof completePlacement>[0]) =>
+  completePlacement(p, { windowSideOptional: true, mountingOptional: true }) ?? { location: 'ground' as const };
+
 /**
  * Retrait tel que saisi jusqu'ici, pour l'aperçu des notes à chaque clic.
  * Un emplacement de pancarte ou d'ajout incomplet compte comme « Au sol » ; une mention non choisie est omise.
  */
 export function removalPreviewDetails(v: RemovalFormValues): RemovalDetails {
   return {
+    // Invités : pas dans les notes pour l'instant
+    afterRemoval: null,
     frames: v.materials.includes('frames')
-      ? { units: v.frames.units.map((u) => ({ uid: u.uid, placement: completePlacement(u.placement) ?? { location: 'ground' } })) }
+      ? { units: v.frames.units.map((u) => ({ uid: u.uid, placement: removalPlacement(u.placement) })) }
       : null,
     addons: v.materials.includes('addons')
       ? {
-          units: v.addons.units.map((u) => ({ uid: u.uid, placement: completePlacement(u.placement) ?? { location: 'ground' } })),
+          units: v.addons.units.map((u) => ({ uid: u.uid, placement: removalPlacement(u.placement) })),
           details: v.addons.details.trim() || null,
         }
       : null,

@@ -37,12 +37,15 @@ const indent = (lines: string[], depth = 1) => lines.map((line) => `${INDENT.rep
 /** Titre de sous-section, suivi de ses lignes indentées */
 const block = (title: string, lines: string[]) => [title, ...indent(lines)];
 
-function installationText({ frames, kits, addons, openHouse, keybox, flags, directionals, otherNeeds }: InstallationDetails, c: TextContext): string[] {
+function installationText({ pickupAddress, frames, kits, addons, openHouse, keybox, flags, directionals, otherNeeds }: InstallationDetails, c: TextContext): string[] {
   const { t, pair, orEmpty } = c;
   const frameNumbers = new Map(frames?.units.map((u, i) => [u.uid, i + 1]) ?? []);
   const formatDate = (iso: string) => formatIsoDay(iso, c.locale);
   const list = (items: string[]) => new Intl.ListFormat(`${c.locale}-CA`, { type: 'conjunction' }).format(items);
   const lines: string[] = [];
+
+  // Invités : matériel à aller chercher à une autre adresse (null : non requis, ou membre)
+  if (pickupAddress) lines.push(...block(t('summary.materialPickup'), [pair(t('summary.pickupAddress'), pickupAddress)]));
 
   if (frames) {
     lines.push(
@@ -152,9 +155,20 @@ function installationText({ frames, kits, addons, openHouse, keybox, flags, dire
   return lines;
 }
 
-function removalText({ frames, addons, keybox, flags, directionals, otherDetails }: RemovalDetails, c: TextContext): string[] {
+function removalText({ afterRemoval, frames, addons, keybox, flags, directionals, otherDetails }: RemovalDetails, c: TextContext): string[] {
   const { t, pair, orEmpty } = c;
   const lines: string[] = [];
+
+  // Invités : que faire du matériel retiré (null pour un membre ou un ancien retrait)
+  if (afterRemoval) {
+    lines.push(
+      ...block(t('summary.afterRemoval'), [
+        pair(t('summary.afterRemovalChoice'), t(`removal.afterRemoval.choices.${afterRemoval.choice}`)),
+        ...(afterRemoval.choice === 'deliver' ? [pair(t('summary.deliveryAddress'), afterRemoval.address)] : []),
+        ...(afterRemoval.choice !== 'storage' && afterRemoval.dropOff ? [pair(t('summary.dropOff'), afterRemoval.dropOff)] : []),
+      ]),
+    );
+  }
 
   if (frames) {
     lines.push(

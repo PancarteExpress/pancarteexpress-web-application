@@ -2,7 +2,7 @@
 
 import { get, useFormState, useWatch } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
-import { LOCATIONS } from '@/features/services/constants/installation';
+import type { LOCATIONS } from '@/features/services/constants/installation';
 import { createEmptyPlacement, type PlacementFormValues } from '@/features/services/schemas/placement.schema';
 import { CheckboxGroup, Notice, toOptions } from '@/features/services/components/fields';
 import { PlacementPicker, toPlacementErrors } from '@/features/services/components/placement/PlacementPicker';
@@ -14,8 +14,14 @@ type PlacementFieldErrors = Parameters<typeof toPlacementErrors>[0];
 
 type UnitPlacementName = `frames.units.${number}.placement` | `kits.units.${number}.placement`;
 
+interface UnitPlacementFieldProps {
+  name: UnitPlacementName;
+  /** Emplacements proposés (tous par défaut) */
+  locations?: readonly (typeof LOCATIONS)[number][];
+}
+
 /** Emplacement propre à une pancarte ou à un kit, en dernier dans ses détails */
-export function UnitPlacementField({ name }: { name: UnitPlacementName }) {
+export function UnitPlacementField({ name, locations }: UnitPlacementFieldProps) {
   const t = useTranslations('services.installation');
   const { control } = useInstallationFormContext();
   const update = useFormUpdater();
@@ -29,6 +35,7 @@ export function UnitPlacementField({ name }: { name: UnitPlacementName }) {
       value={value}
       onChange={(next) => update(name, next)}
       errors={toPlacementErrors(fieldErrors)}
+      locations={locations}
     />
   );
 }

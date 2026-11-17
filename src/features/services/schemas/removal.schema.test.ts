@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createEmptyPlacement, type PlacementFormValues } from './placement.schema';
 import {
+  createRemovalSchema,
   createEmptyRemovalForm, createRemovalDirectional, createRemovalUnit, removalSchema, toRemovalFormValues,
   type RemovalFormValues, type RemovalUnitFormValues,
 } from './removal.schema';
@@ -47,9 +48,14 @@ describe('removalSchema', () => {
     expect(paths).toEqual(['frames.units.1.placement.location']);
   });
 
-  it('applique les règles de l\'emplacement partagé (fenêtre)', () => {
+  it('fenêtre : le côté est facultatif au retrait', () => {
     const paths = issuePaths(removalSchema.safeParse(form([unit({ location: 'window', access: 'noLadder' })])));
-    expect(paths).toContain('frames.units.0.placement.windowSide');
+    expect(paths).not.toContain('frames.units.0.placement.windowSide');
+  });
+
+  it('fenêtre : les autres règles de l\'emplacement partagé s\'appliquent toujours (accès exigé)', () => {
+    const paths = issuePaths(removalSchema.safeParse(form([unit({ location: 'window' })])));
+    expect(paths).toContain('frames.units.0.placement.access');
   });
 
   it('aller-retour domaine ⇄ formulaire', () => {
@@ -122,8 +128,9 @@ describe('removalSchema — boîtes à clés, drapeaux, directionnelles, autres'
   const flags = (o: Partial<RemovalFormValues['flags']> = {}): RemovalFormValues['flags'] =>
     ({ mention: 'sold', customMention: '', quantity: 1, placement: '', ...o });
 
-  it('drapeaux : mention requise, 2 maximum, emplacement facultatif', () => {
-    expect(issuePaths(removalSchema.safeParse(only(['flags'])))).toContain('flags.mention');
+  it('drapeaux : mention facultative, 2 maximum, emplacement facultatif', () => {
+    const withoutMention = removalSchema.safeParse(only(['flags']));
+    expect(withoutMention.success && withoutMention.data.flags?.mention).toBeNull();
     expect(removalSchema.safeParse(only(['flags'], { flags: flags() })).success).toBe(true);
     expect(issuePaths(removalSchema.safeParse(only(['flags'], { flags: flags({ quantity: 3 }) }))))
       .toContain('flags.quantity');
@@ -136,9 +143,11 @@ describe('removalSchema — boîtes à clés, drapeaux, directionnelles, autres'
     expect(result.success && result.data.flags).toEqual({ mention: 'other', customMention: 'Prix réduit', quantity: 1, placement: '' });
   });
 
-  it('directionnelles : mention requise, au moins une, emplacements facultatifs', () => {
-    expect(issuePaths(removalSchema.safeParse(only(['directional']))))
-      .toEqual(expect.arrayContaining(['directionals.mention', 'directionals.units']));
+  it('directionnelles : mention facultative, au moins une, emplacements facultatifs', () => {
+    expect(issuePaths(removalSchema.safeParse(only(['directional'])))).toEqual(['directionals.units']);
+    expect(removalSchema.safeParse(only(['directional'], {
+      directionals: { mention: null, units: [createRemovalDirectional()] },
+    })).success).toBe(true);
     expect(removalSchema.safeParse(only(['directional'], {
       directionals: { mention: 'forRent', units: [createRemovalDirectional()] },
     })).success).toBe(true);
@@ -198,5 +207,38 @@ describe('removalDetailsSchema — retraits enregistrés avant la question de la
     });
     expect(result.success && result.data.flags?.mention).toBeNull();
     expect(result.success && result.data.directionals?.mention).toBeNull();
+  });
+});
+
+describe('createRemovalSchema — invités : que faire du matériel retiré', () => {
+  const guest = createRemovalSchema({ isMember: false });
+  const base = (overrides: Partial<RemovalFormValues> = {}): RemovalFormValues => ({
+    ...createEmptyRemovalForm(),
+    materials: ['other'],
+    otherDetails: 'Support mural',
+    ...overrides,
+  });
+  const paths = (r: ReturnType<typeof guest.safeParse>) => (r.success ? [] : r.error.issues.map((i) => i.path.join('.')));
+
+  it('exige un choix', () => {
+    expect(paths(guest.safeParse(base()))).toContain('afterRemoval');
+  });
+
+  it('livraison : adresse obligatoire, dépôt facultatif', () => {
+    expect(paths(guest.safeParse(base({ afterRemoval: 'deliver' })))).toContain('deliveryAddress');
+    const r = guest.safeParse(base({ afterRemoval: 'deliver', deliveryAddress: '123 rue Principale', dropOff: '' }));
+    expect(r.success && r.data.afterRemoval).toEqual({ choice: 'deliver', address: '123 rue Principale', dropOff: null });
+  });
+
+  it('laisser sur place et entreposage', () => {
+    const left = guest.safeParse(base({ afterRemoval: 'leaveOnSite', dropOff: 'Dans le garage' }));
+    expect(left.success && left.data.afterRemoval).toEqual({ choice: 'leaveOnSite', dropOff: 'Dans le garage' });
+    const stored = guest.safeParse(base({ afterRemoval: 'storage' }));
+    expect(stored.success && stored.data.afterRemoval).toEqual({ choice: 'storage' });
+  });
+
+  it('membre : question ignorée, afterRemoval null', () => {
+    const r = removalSchema.safeParse(base());
+    expect(r.success && r.data.afterRemoval).toBeNull();
   });
 });
