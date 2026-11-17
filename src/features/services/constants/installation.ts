@@ -2,6 +2,9 @@ export const SERVICE_CHOICES = ['installation', 'removal', 'correction', 'delive
 export type ServiceType = (typeof SERVICE_CHOICES)[number];
 export const IMPLEMENTED_SERVICES = ['installation', 'removal', 'correction', 'pickup', 'delivery'] as const satisfies readonly ServiceType[];
 
+/** Services réservés aux membres : visibles pour un invité, mais un clic affiche un message plutôt que de les cocher */
+export const MEMBERS_ONLY_SERVICES: readonly ServiceType[] = ['delivery', 'pickup'];
+
 export const MATERIALS = [
   'frames', 
   'kit', 

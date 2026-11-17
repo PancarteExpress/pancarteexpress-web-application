@@ -42,7 +42,8 @@
     "invalidSchedule": "An address has an invalid timeframe. Please check the specific date chosen.",
     "pendingAttachments": "Some files have not been uploaded yet. Click “Upload the files” or remove them before adding the request to the cart.",
     "notesPreview": "OptimoRoute notes preview",
-    "notesPreviewMonday": "Preview of the following Monday removal notes"
+    "notesPreviewMonday": "Preview of the following Monday removal notes",
+    "membersOnly": "Material delivery and pickup are reserved for members. <register>Create your account</register> or <login>log in</login> to access them."
   },
   "addressManager": {
     "selectFromList": "Please select an address from the list",

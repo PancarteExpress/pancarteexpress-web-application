@@ -1,9 +1,10 @@
 'use client';
 
-import { useRef } from 'react';
-import { useTranslations } from 'next-intl';
-import { IMPLEMENTED_SERVICES, SERVICE_CHOICES, type ServiceType } from '@/features/services/constants/installation';
-import { CheckboxGroup, type ChoiceOption } from '@/features/services/components/fields';
+import { useRef, useState } from 'react';
+import Link from 'next/link';
+import { useLocale, useTranslations } from 'next-intl';
+import { IMPLEMENTED_SERVICES, MEMBERS_ONLY_SERVICES, SERVICE_CHOICES, type ServiceType } from '@/features/services/constants/installation';
+import { CheckboxGroup, Notice, type ChoiceOption } from '@/features/services/components/fields';
 
 import { useAddressStore } from '@/features/services/store/addressStore';
 import type { Address } from '@/features/services/types/address';
@@ -45,7 +46,11 @@ const IMPLEMENTED: readonly ServiceType[] = IMPLEMENTED_SERVICES;
 export function AddressServices({ address }: { address: Address }) {
   const t = useTranslations('services');
   const saveService = useAddressStore((s) => s.saveService);
-  const { data: session } = useSession();
+  const { data: session, status: sessionStatus } = useSession();
+  const locale = useLocale();
+  const isGuest = sessionStatus === 'unauthenticated';
+  // Invité qui a cliqué sur un service réservé aux membres
+  const [membersOnlyNotice, setMembersOnlyNotice] = useState(false);
   // Aperçu des notes OptimoRoute : affiché à tous pendant la mise au point de la nomenclature
   const setAddressSchedule = useAddressStore((s) => s.setAddressSchedule);
 
@@ -109,9 +114,23 @@ export function AddressServices({ address }: { address: Address }) {
         legend={t('serviceForm.servicesLegend')}
         options={serviceOptions}
         value={selected}
-        onChange={handleServicesChange}
+        onChange={(next) => {
+          // Invité : un service réservé aux membres n'est pas coché, un message l'invite à devenir membre
+          const blocked = isGuest && next.some((s) => MEMBERS_ONLY_SERVICES.includes(s) && !selected.includes(s));
+          setMembersOnlyNotice(blocked);
+          if (!blocked) handleServicesChange(next);
+        }}
         hint={IMPLEMENTED.length < SERVICE_CHOICES.length ? t('serviceForm.otherServicesSoon') : undefined}
       />
+
+      {membersOnlyNotice && (
+        <Notice>
+          {t.rich('serviceForm.membersOnly', {
+            register: (chunks) => <Link href={`/${locale}/register`}>{chunks}</Link>,
+            login: (chunks) => <Link href={`/${locale}/login`}>{chunks}</Link>,
+          })}
+        </Notice>
+      )}
       
       {/* Clé stable par type : le formulaire n'est pas recréé quand le service reçoit son id */}
       {selected.includes('installation') && (

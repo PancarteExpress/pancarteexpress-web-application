@@ -42,7 +42,8 @@
     "invalidSchedule": "Le délai d'une adresse est invalide. Vérifiez la date précise choisie.",
     "pendingAttachments": "Des fichiers n'ont pas encore été envoyés. Cliquez sur « Envoyer les fichiers » ou retirez-les avant d'ajouter la demande au panier.",
     "notesPreview": "Aperçu des notes OptimoRoute",
-    "notesPreviewMonday": "Aperçu des notes du retrait du lundi suivant"
+    "notesPreviewMonday": "Aperçu des notes du retrait du lundi suivant",
+    "membersOnly": "La livraison et le ramassage de matériel sont réservés aux membres. <register>Créez votre compte</register> ou <login>connectez-vous</login> pour y accéder."
   },
   "addressManager": {
     "selectFromList": "Veuillez sélectionner une adresse dans la liste",
