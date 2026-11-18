@@ -234,7 +234,10 @@
     "ownPlacementsHint": "Un seul emplacement : tous les ajouts seront installés au même endroit.",
     "placementsSpread": "{count} ajouts pour {places} emplacements : notre équipe les répartira entre ces emplacements.",
     "onSiteAssumption": "{choices} choix de pancartes pour {quantity} ajouts « {label} » : nous considérons que {extra, plural, one {l'ajout restant sera aussi installé} other {les # ajouts restants seront aussi installés}} sur une pancarte déjà sur place.",
-    "flagsPlacement": "Veuillez indiquer l'emplacement des drapeaux (optionnel)"
+    "flagsPlacement": "Veuillez indiquer l'emplacement des drapeaux (optionnel)",
+    "guestDisplayName": "Quels sont le(s) nom(s) affiché(s) sur la pancarte ?",
+    "guestFlagMentionLegend": "Veuillez saisir la mention du drapeau",
+    "guestDirectionalMentionLegend": "Veuillez saisir la mention de la directionnelle"
   },
   "removal": {
     "title": "Détails du retrait",
@@ -506,12 +509,12 @@
     "combination": "Combinaison",
     "incomplete": "Incomplet",
     "dateToSpecify": "Date précise à choisir",
+    "materialPickup": "Ramassage du matériel à installer",
+    "pickupAddress": "Adresse de ramassage",
     "afterRemoval": "Matériel retiré",
     "afterRemovalChoice": "Que faire du matériel",
     "deliveryAddress": "Adresse de livraison",
-    "dropOff": "Dépôt du matériel",
-    "materialPickup": "Ramassage du matériel à installer",
-    "pickupAddress": "Adresse de ramassage"
+    "dropOff": "Dépôt du matériel"
   },
   "errors": {
     "required": "Ce champ est requis",
@@ -579,6 +582,7 @@
     "choosePlacement": "Choisissez au moins un emplacement",
     "tooManyPlacements": "{max, plural, one {Un seul emplacement possible} other {# emplacements maximum}}",
     "duplicatePlacement": "Chaque emplacement ne peut être choisi qu’une fois",
+    "directionalMentionRequired": "Veuillez préciser la mention de la directionnelle.",
     "chooseAfterRemoval": "Veuillez indiquer ce que nous devons faire avec le matériel retiré.",
     "deliveryAddressRequired": "Indiquez l'adresse de livraison."
   },
@@ -618,5 +622,9 @@
     "pendingStatus": "À envoyer",
     "sentStatus": "Envoyé",
     "pendingHint": "Les fichiers « À envoyer » ne sont pas encore joints à la demande, et seront perdus si la page est rechargée."
+  },
+  "emails": {
+    "memberClient": "Ce client possède un compte membre",
+    "guestClient": "Ce client est un invité"
   }
 }

@@ -109,7 +109,11 @@ export const installationDetailsSchema = z.preprocess(upgradeInstallationDetails
   openHouse: absent(openHouseSchema),
   keybox: absent(z.object({ code: z.string().min(1), placement: z.string() })),
   flags: absent(flagsSchema),
-  directionals: absent(z.object({ mention: z.enum(SIGN_MENTIONS), units: z.array(placedUnit).min(1) })),
+  directionals: absent(z.union([
+    z.object({ mention: z.enum(SIGN_MENTIONS), units: z.array(placedUnit).min(1) }),
+    // Invités : mention saisie librement
+    z.object({ mention: z.literal('other'), customMention: z.string(), units: z.array(placedUnit).min(1) }),
+  ])),
   otherNeeds: absent(z.string()),
 })) satisfies z.ZodType<InstallationDetails>;
 

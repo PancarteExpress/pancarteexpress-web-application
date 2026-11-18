@@ -88,18 +88,18 @@ function InstallationFormInner({ handle, initialValues, draft, onAutoSave, isMem
 
   return (
     <FormProvider {...methods}>
-      {/* Invités : question posée une fois, juste sous les services */}
-      
       <form noValidate className={styles.installationForm} onSubmit={(e) => e.preventDefault()}>
         <h3 className={styles.title}><IoConstructSharp size={24} /> {t('title')}</h3>
+        {/* Invités : juste sous le titre, quels que soient les matériels choisis */}
         {!isMember && <PickupQuestion />}
-        <MaterialsSelector />
+
+        <MaterialsSelector isMember={isMember} />
         
         {materials.includes('frames') && <FramesSection isMember={isMember} accountName={accountName} />}
         {materials.includes('kit') && <KitSection />}
         {materials.includes('keybox') && <KeyboxSection />}
-        {materials.includes('flags') && <FlagsSection />}
-        {materials.includes('directional') && <DirectionalsSection />}
+        {materials.includes('flags') && <FlagsSection isMember={isMember} />}
+        {materials.includes('directional') && <DirectionalsSection isMember={isMember} />}
 
         {materials.includes('addons') && <AddonsSection />}
         {materials.includes('openHouse') && <OpenHouseSection />}

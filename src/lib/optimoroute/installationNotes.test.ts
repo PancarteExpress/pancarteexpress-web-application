@@ -261,6 +261,14 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
     );
   });
 
+  it('directionnelles d\'un invité : mention saisie, en majuscules', () => {
+    const notes = buildInstallationNotes({
+      ...empty,
+      directionals: { mention: 'other', customMention: 'Portes ouvertes', units: [{ uid: 'd1', placement: 'Coin A' }] },
+    }, null);
+    expect(notes).toBe('DIRECTIONNELLE **PORTES OUVERTES** [Coin A]');
+  });
+
   it('plusieurs directionnelles : quantité et emplacements', () => {
     const notes = buildInstallationNotes({
       ...empty,

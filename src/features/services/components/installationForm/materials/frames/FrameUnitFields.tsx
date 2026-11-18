@@ -25,7 +25,7 @@ export function FrameUnitFields({ index, isMember, accountName }: FrameUnitField
     <fieldset className={styles.unit}>
         <legend className={styles.unitTitle}>{t('installation.frameUnitTitle', { number: index + 1 })}</legend>
 
-        {isMember && (
+        {/* Modèle : même question pour un membre et un invité */}
         <Controller
             control={control}
             name={`${base}.model`}
@@ -58,9 +58,26 @@ export function FrameUnitFields({ index, isMember, accountName }: FrameUnitField
                 )}
             </>
             )}
-        />)}
+        />
 
-      {accountName && (
+      {/* Invités : pas de compte, le nom affiché est toujours saisi */}
+      {!isMember && (
+        <Controller
+          control={control}
+          name={`${base}.displayName`}
+          render={(p) => (
+            <TextField
+              {...bindField(p)}
+              label={t('installation.guestDisplayName')}
+              maxLength={TEXT_LIMITS.displayName}
+              multiline
+              required
+            />
+          )}
+        />
+      )}
+
+      {isMember && accountName && (
         <Controller
           control={control}
           name={`${base}.useAccountName`}

@@ -282,11 +282,13 @@ function directionalsNote(
   accountName: string | null,
 ): string | null {
   if (!directionals) return null;
-  const { mention, units } = directionals;
+  const { units } = directionals;
   const count = units.length;
+  // Invités : mention saisie librement, en majuscules
+  const mention = directionals.mention === 'other' ? upper(directionals.customMention) : SIGN_MENTION_NOTE_LABELS[directionals.mention];
   const head = [
     `${quantityPrefix(count)}${count > 1 ? 'DIRECTIONNELLES' : 'DIRECTIONNELLE'}`,
-    `**${SIGN_MENTION_NOTE_LABELS[mention]}**`,
+    mention ? `**${mention}**` : '',
     accountName ? upper(accountName) : '',
   ].filter(Boolean).join(' ');
 

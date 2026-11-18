@@ -24,7 +24,7 @@ import type {
 /** Service sans id : le store l'attribue (ou conserve celui du service existant) */
 type ServiceInput = Service extends infer S ? (S extends unknown ? Omit<S, 'id'> : never) : never;
 
-const STORAGE_VERSION = 8;
+const STORAGE_VERSION = 9;
 
 export type ServiceKey = Service['type'];
 
@@ -371,7 +371,8 @@ export const useAddressStore = create<AddressStore>()(
           };
         }
         // v8 : question des invités sur le matériel retiré ; les anciens brouillons de retrait reçoivent des champs vides
-        if (version < 8) {
+        // v9 : même conversion, relancée pour les brouillons de retrait créés pendant le retrait temporaire de cette question
+        if (version < 9) {
           state = {
             ...state,
             drafts: Object.fromEntries(

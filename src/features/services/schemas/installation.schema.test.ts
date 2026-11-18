@@ -83,14 +83,21 @@ describe('createInstallationSchema — pancartes (membre)', () => {
 });
 
 describe('createInstallationSchema — pancartes (non-membre)', () => {
-  it('ne demande ni modèle ni nom, et les met à null', () => {
-    const result = guestSchema.safeParse(form({
-      frames: { units: [frame({ model: null, useAccountName: null })] },
-    }));
+  it('exige le modèle et le nom affiché', () => {
+    expect(issuePaths(guestSchema.safeParse(form({ frames: { units: [frame({ model: null })] } }))))
+      .toEqual(expect.arrayContaining(['frames.units.0.model', 'frames.units.0.displayName']));
+  });
 
+  it('enregistre le modèle et le nom saisi', () => {
+    const result = guestSchema.safeParse(form({
+      frames: { units: [frame({ model: 'prestige', useAccountName: null, displayName: 'Ana Roy et Luc Roy' })] },
+    }));
     expect(result.success).toBe(true);
     if (!result.success) return;
-    expect(result.data.frames?.units[0]).toMatchObject({ model: null, displayName: null });
+    expect(result.data.frames?.units[0]).toMatchObject({
+      model: { type: 'prestige' },
+      displayName: { type: 'custom', names: 'Ana Roy et Luc Roy' },
+    });
   });
 
   it('exige une réponse au ramassage, puis l\'adresse si Oui', () => {
@@ -99,9 +106,16 @@ describe('createInstallationSchema — pancartes (non-membre)', () => {
     expect(issuePaths(guestSchema.safeParse(form({ pickup: true, pickupAddress: '   ' })))).toContain('pickupAddress');
   });
 
-  it('la question du ramassage vaut aussi sans pancarte (kit seul)', () => {
-    expect(issuePaths(guestSchema.safeParse(form({ materials: ['kit'], pickup: null, kits: { units: [createKitUnit()] } }))))
+  it('la question du ramassage vaut aussi sans pancarte', () => {
+    expect(issuePaths(guestSchema.safeParse(form({ materials: ['keybox'], pickup: null, keybox: { code: '1234', placement: '' } }))))
       .toContain('pickup');
+  });
+
+  it('kit seul : ignoré pour un invité (non proposé)', () => {
+    const onlyKit = guestSchema.safeParse(form({ materials: ['kit'], kits: { units: [createKitUnit()] } }));
+    expect(issuePaths(onlyKit)).toContain('materials');
+    const withKeybox = guestSchema.safeParse(form({ materials: ['kit', 'keybox'], kits: { units: [createKitUnit()] }, keybox: { code: '1234', placement: '' } }));
+    expect(withKeybox.success && withKeybox.data.kits).toBeNull();
   });
 });
 
@@ -450,6 +464,21 @@ describe('createInstallationSchema — boîte à clés, drapeaux, directionnelle
     })))).toContain('flags.customMention');
   });
 
+  it('invités : mention des drapeaux et des directionnelles saisie librement', () => {
+    expect(issuePaths(guestSchema.safeParse(only(['flags', 'directional'], {
+      directionals: { mention: null, customMention: '', units: [placed('')] },
+    })))).toEqual(expect.arrayContaining(['flags.customMention', 'directionals.customMention']));
+
+    const result = guestSchema.safeParse(only(['flags', 'directional'], {
+      flags: { mention: null, customMention: 'Prix réduit', quantity: 2, placement: '' },
+      directionals: { mention: null, customMention: 'Portes ouvertes', units: [placed('')] },
+    }));
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data.flags).toMatchObject({ mention: 'other', customMention: 'Prix réduit', quantity: 2 });
+    expect(result.data.directionals).toMatchObject({ mention: 'other', customMention: 'Portes ouvertes' });
+  });
+
   it('directionnelles : mention requise, emplacement facultatif', () => {
     const paths = issuePaths(memberSchema.safeParse(only(['directional'], {
       directionals: { mention: null, units: [placed('')] },
@@ -505,7 +534,7 @@ describe('toInstallationFormValues — aller-retour', () => {
     expectRoundTrip(guestSchema, form({
       pickup: true,
       pickupAddress: '123 rue Principale, Montréal',
-      frames: { units: [frame({ model: null, useAccountName: null })] },
+      frames: { units: [frame({ useAccountName: false, displayName: 'Ana Roy' })] },
     }));
   });
 

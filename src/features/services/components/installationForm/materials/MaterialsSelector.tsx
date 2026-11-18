@@ -12,7 +12,8 @@ const BUNDLED: readonly Material[] = FRAME_BUNDLED_MATERIALS;
 
 const isImplemented = (m: Material): m is ImplementedMaterial => IMPLEMENTED.includes(m);
 
-export function MaterialsSelector() {
+/** isMember : le kit seul n'est proposé qu'aux membres */
+export function MaterialsSelector({ isMember }: { isMember: boolean }) {
   const { control, getValues } = useInstallationFormContext();
   const update = useFormUpdater();
   const t = useTranslations('services');
@@ -22,10 +23,11 @@ export function MaterialsSelector() {
       control={control}
       name="materials"
       render={(props) => {
-        const current = props.field.value;
+        // Invités : pas de kit (un ancien brouillon qui en contient un le perd ici)
+        const current = isMember ? props.field.value : props.field.value.filter((m) => m !== 'kit');
         const hasFrames = current.includes('frames');
 
-        const options = MATERIALS.map((m): ChoiceOption<Material> => ({
+        const options = MATERIALS.filter((m) => isMember || m !== 'kit').map((m): ChoiceOption<Material> => ({
           value: m,
           label: t(`materials.${m}`),
           locked: hasFrames && BUNDLED.includes(m),
@@ -34,7 +36,7 @@ export function MaterialsSelector() {
 
         // Effets de bord déclenchés au clic, pas dans un useEffect
         const handleChange = (next: Material[]) => {
-          const selected = next.filter(isImplemented);
+          const selected = next.filter(isImplemented).filter((m) => isMember || m !== 'kit');
           const nextHasFrames = selected.includes('frames');
           // Avec des pancartes, le kit est inclus : le kit seul et ses détails sont retirés
           const materials = nextHasFrames ? selected.filter((m) => m !== 'kit') : selected;
@@ -61,7 +63,7 @@ export function MaterialsSelector() {
           if (toggled('keybox')) update('keybox', { code: '', placement: '' });
           if (toggled('flags')) update('flags', { mention: null, customMention: '', quantity: 1, placement: '' });
           if (toggled('directional')) {
-            update('directionals', { mention: null, units: isOn('directional') ? [createPlacedUnit()] : [] });
+            update('directionals', { mention: null, customMention: '', units: isOn('directional') ? [createPlacedUnit()] : [] });
           }
           if (toggled('other')) update('otherNeeds', '');
 
@@ -72,12 +74,14 @@ export function MaterialsSelector() {
           <>
             <CheckboxGroup
               {...bindField(props)}
+              value={current}
               onChange={handleChange}
               legend={t('installation.materialsLegend')}
               options={options}
               required
             />
-            {hasFrames && (
+            {/* Kit inclus avec les pancartes : seuls les membres voient le kit */}
+            {isMember && hasFrames && (
               <Notice variant="warning">
                 {t('installation.kitIncluded')}
               </Notice>

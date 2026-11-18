@@ -1,9 +1,9 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
-import { IMPLEMENTED_SERVICES, MEMBERS_ONLY_SERVICES, SERVICE_CHOICES, type ServiceType } from '@/features/services/constants/installation';
+import { IMPLEMENTED_SERVICES, SERVICE_CHOICES, type ServiceType } from '@/features/services/constants/installation';
 import { CheckboxGroup, Notice, type ChoiceOption } from '@/features/services/components/fields';
 
 import { useAddressStore } from '@/features/services/store/addressStore';
@@ -48,9 +48,16 @@ export function AddressServices({ address }: { address: Address }) {
   const saveService = useAddressStore((s) => s.saveService);
   const { data: session, status: sessionStatus } = useSession();
   const locale = useLocale();
+  // Livraison et ramassage : réservés aux membres ; un invité voit un message à la place des questions
   const isGuest = sessionStatus === 'unauthenticated';
-  // Invité qui a cliqué sur un service réservé aux membres
-  const [membersOnlyNotice, setMembersOnlyNotice] = useState(false);
+  const membersOnlyNotice = (
+    <Notice>
+      {t.rich('serviceForm.membersOnly', {
+        register: (chunks) => <Link href={`/${locale}/register`}>{chunks}</Link>,
+        login: (chunks) => <Link href={`/${locale}/login`}>{chunks}</Link>,
+      })}
+    </Notice>
+  );
   // Aperçu des notes OptimoRoute : affiché à tous pendant la mise au point de la nomenclature
   const setAddressSchedule = useAddressStore((s) => s.setAddressSchedule);
 
@@ -114,23 +121,10 @@ export function AddressServices({ address }: { address: Address }) {
         legend={t('serviceForm.servicesLegend')}
         options={serviceOptions}
         value={selected}
-        onChange={(next) => {
-          // Invité : un service réservé aux membres n'est pas coché, un message l'invite à devenir membre
-          const blocked = isGuest && next.some((s) => MEMBERS_ONLY_SERVICES.includes(s) && !selected.includes(s));
-          setMembersOnlyNotice(blocked);
-          if (!blocked) handleServicesChange(next);
-        }}
+        onChange={handleServicesChange}
         hint={IMPLEMENTED.length < SERVICE_CHOICES.length ? t('serviceForm.otherServicesSoon') : undefined}
       />
 
-      {membersOnlyNotice && (
-        <Notice>
-          {t.rich('serviceForm.membersOnly', {
-            register: (chunks) => <Link href={`/${locale}/register`}>{chunks}</Link>,
-            login: (chunks) => <Link href={`/${locale}/login`}>{chunks}</Link>,
-          })}
-        </Notice>
-      )}
       
       {/* Clé stable par type : le formulaire n'est pas recréé quand le service reçoit son id */}
       {selected.includes('installation') && (
@@ -172,7 +166,7 @@ export function AddressServices({ address }: { address: Address }) {
         />
       )}
 
-      {selected.includes('pickup') && (
+      {selected.includes('pickup') && (isGuest ? membersOnlyNotice : (
         <PickupForm
           key="pickup"
           handle={pickupRef}
@@ -183,9 +177,10 @@ export function AddressServices({ address }: { address: Address }) {
             if (details) saveService(address.id, { type: 'pickup', ...details });
           }}
         />
-      )}
+      ))}
 
-      {selected.includes('delivery') && (
+      {/* Invité : un seul message pour la livraison et le ramassage (déjà affiché avec le ramassage) */}
+      {selected.includes('delivery') && (isGuest ? (!selected.includes('pickup') && membersOnlyNotice) : (
         <DeliveryForm
           key="delivery"
           handle={deliveryRef}
@@ -196,7 +191,7 @@ export function AddressServices({ address }: { address: Address }) {
             if (details) saveService(address.id, { type: 'delivery', ...details });
           }}
         />
-      )}
+      ))}
 
 
       {/* Aperçu des notes OptimoRoute : même texte que l'envoi réel */}
@@ -215,14 +210,14 @@ export function AddressServices({ address }: { address: Address }) {
                 : { type },
               ),
               previewAccountName,
-            ).replaceAll(' + ', '\n+ ')}
+            )}
           </p>
 
           {/* Visite libre avec retrait le lundi suivant : tâche à part, avec sa propre note */}
           {selected.includes('installation') && previewMondayRemoval && (
             <p className={styles.notesPreview}>
               <span className={styles.notesPreviewLabel}>{t('serviceForm.notesPreviewMonday')}</span>
-              {previewMondayRemoval.replaceAll(' + ', '\n+ ')}
+              {previewMondayRemoval}
             </p>
           )}
         </div>

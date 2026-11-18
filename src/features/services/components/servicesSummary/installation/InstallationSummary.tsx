@@ -155,7 +155,7 @@ export function InstallationSummary({ details }: { details: InstallationDetails 
       {directionals && (
         <SubSection
           title={t('summary.directionals', { count: directionals.units.length })}
-          note={t(`mentions.${directionals.mention}`)}
+          note={directionals.mention === 'other' ? directionals.customMention : t(`mentions.${directionals.mention}`)}
         >
           <UnitGrid>
             {directionals.units.map((u, i) => (

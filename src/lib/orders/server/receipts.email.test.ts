@@ -168,6 +168,17 @@ describe('sendReceipts', () => {
     expect(text).toContain('Total : ');
   });
 
+  it('courriel interne : indique si le client est membre ou invité', async () => {
+    await sendReceipts('o1');
+    const guest = (sendEmail.mock.calls[0][0] as { text: string }).text;
+    expect(guest).toContain('Ce client est un invité');
+
+    sendEmail.mockClear();
+    prismaMock.order.findUnique.mockResolvedValue({ ...order, userId: 'u1' });
+    await sendReceipts('o1');
+    expect((sendEmail.mock.calls[0][0] as { text: string }).text).toContain('Ce client possède un compte membre');
+  });
+
   it('envoie aussi la confirmation à un client connecté', async () => {
     prismaMock.order.findUnique.mockResolvedValue({ ...order, userId: 'u1' });
 

@@ -445,7 +445,6 @@
   font-weight: 700;
   color: #0e3a8c;
   overflow-wrap: anywhere;
-  white-space: pre-line;
 }
 
 .notesPreviewLabel {
@@ -457,7 +456,3 @@
   text-transform: uppercase;
 }
 
-/* Invités : question du ramassage, sous les services, au-dessus des détails de l'installation */
-.pickupQuestion {
-  margin: 1rem 0;
-}

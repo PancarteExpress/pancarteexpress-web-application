@@ -93,7 +93,7 @@ const openHouseFormSchema = z.object({
 
 const installationFormSchema = z.object({
   materials: z.array(z.enum(IMPLEMENTED_MATERIALS)),
-  /** Invités : aller chercher le matériel à installer à une autre adresse ? (question posée une fois, sous les services) */
+  /** Invités : aller chercher le matériel à installer à une autre adresse ? (sous le titre de l'installation) */
   pickup: z.boolean().nullable(),
   pickupAddress: z.string().trim(),
   frames: z.object({
@@ -116,6 +116,8 @@ const installationFormSchema = z.object({
   }),
   directionals: z.object({
     mention: z.enum(SIGN_MENTIONS).nullable(),
+    /** Invités : mention saisie librement ; absente des anciens brouillons, d'où la valeur par défaut */
+    customMention: text(TEXT_LIMITS.directionalMention).default(''),
     units: z
       .array(placedUnitFormSchema(TEXT_LIMITS.directionalPlacement))
       .max(MAX_DIRECTIONALS, `Maximum ${MAX_DIRECTIONALS} directionnelles`),
@@ -137,14 +139,16 @@ type PlacementOutput = FrameUnitOutput['placement'];
    ========================================================================== */
 
 function validateFrameUnit(u: FrameUnitOutput, path: Path, session: SessionContext, report: Report) {
-  if (session.isMember) {
-    if (u.model === null) report([...path, 'model'], 'chooseModel');
-    else if (u.model === 'custom' && !u.modelDescription) {
-      report([...path, 'modelDescription'], 'describeModel');
-    }
+  // Modèle : exigé pour tous
+  if (u.model === null) report([...path, 'model'], 'chooseModel');
+  else if (u.model === 'custom' && !u.modelDescription) {
+    report([...path, 'modelDescription'], 'describeModel');
   }
 
-  if (session.accountName !== null) {
+  // Invités : le nom affiché est toujours saisi
+  if (!session.isMember) {
+    if (!u.displayName) report([...path, 'displayName'], 'displayNameRequired');
+  } else if (session.accountName !== null) {
     if (u.useAccountName === null) report([...path, 'useAccountName'], REQUIRED);
     else if (!u.useAccountName && !u.displayName) {
       report([...path, 'displayName'], 'displayNameRequired');
@@ -245,14 +249,12 @@ function validateOpenHouse(
    ========================================================================== */
 
 function toFrameUnit(u: FrameUnitOutput, { isMember, accountName }: SessionContext): FrameUnit {
-  const model = isMember ? defined(u.model) : null;
   return {
     uid: u.uid,
-    model:
-      model === null ? null
-      : toFrameModel(model, u.modelDescription),
+    model: toFrameModel(defined(u.model), u.modelDescription),
     displayName:
-      accountName === null ? null
+      !isMember ? { type: 'custom', names: u.displayName }
+      : accountName === null ? null
       : u.useAccountName ? { type: 'account', name: accountName }
       : { type: 'custom', names: u.displayName },
     placement: toPlacement(u.placement),
@@ -328,13 +330,14 @@ export function createInstallationSchema(session: SessionContext) {
   return installationFormSchema
     .superRefine((v, ctx) => {
       const report: Report = (path, message) => ctx.addIssue({ code: 'custom', path, message });
-      const has = (m: ImplementedMaterial) => v.materials.includes(m);
+      // Invités : le kit seul n'est pas proposé ; s'il reste dans un ancien brouillon, il est ignoré
+      const has = (m: ImplementedMaterial) => v.materials.includes(m) && (isMember || m !== 'kit');
       const hasFrames = has('frames');
       const validFrameUids = new Set(hasFrames ? v.frames.units.map((u) => u.uid) : []);
 
-      if (v.materials.length === 0) report(['materials'], 'selectInstallItem');
+      if (!v.materials.some((m) => has(m))) report(['materials'], 'selectInstallItem');
 
-      // Invités : la question du ramassage vaut pour toute l'installation
+      // Invités : la question vaut pour toute l'installation
       if (!isMember) {
         if (v.pickup === null) report(['pickup'], REQUIRED);
         else if (v.pickup && !v.pickupAddress) report(['pickupAddress'], "Indiquez l'adresse de ramassage");
@@ -362,7 +365,10 @@ export function createInstallationSchema(session: SessionContext) {
 
       if (has('keybox') && !v.keybox.code) report(['keybox', 'code'], 'keyboxCodeRequired');
 
-      if (has('flags')) {
+      // Invités : la mention des drapeaux et des directionnelles est saisie librement
+      if (has('flags') && !isMember) {
+        if (!v.flags.customMention) report(['flags', 'customMention'], 'flagMentionRequired');
+      } else if (has('flags')) {
         if (v.flags.mention === null) report(['flags', 'mention'], 'chooseFlagMention');
         else if (v.flags.mention === 'other' && !v.flags.customMention) {
           report(['flags', 'customMention'], 'flagMentionRequired');
@@ -370,7 +376,9 @@ export function createInstallationSchema(session: SessionContext) {
       }
 
       if (has('directional')) {
-        if (v.directionals.mention === null) {
+        if (!isMember) {
+          if (!v.directionals.customMention) report(['directionals', 'customMention'], 'directionalMentionRequired');
+        } else if (v.directionals.mention === null) {
           report(['directionals', 'mention'], 'chooseDirectionalMention');
         }
         validatePlacedUnits(v.directionals.units, ['directionals', 'units'], 'directionalsRequired', report);
@@ -379,7 +387,7 @@ export function createInstallationSchema(session: SessionContext) {
       if (has('other') && !v.otherNeeds) report(['otherNeeds'], 'describeNeed');
     })
     .transform((v: FormOutput): InstallationDetails => {
-      const has = (m: ImplementedMaterial) => v.materials.includes(m);
+      const has = (m: ImplementedMaterial) => v.materials.includes(m) && (isMember || m !== 'kit');
       const hasFrames = has('frames');
 
       return {
@@ -389,9 +397,15 @@ export function createInstallationSchema(session: SessionContext) {
         addons: has('addons') ? v.addons.map((a) => toAddonAssignment(a, hasFrames)) : null,
         openHouse: has('openHouse') ? toOpenHouse(v.openHouse, hasFrames) : null,
         keybox: has('keybox') ? { code: v.keybox.code, placement: v.keybox.placement } : null,
-        flags: has('flags') ? toFlags(v.flags) : null,
+        flags: has('flags')
+          ? isMember
+            ? toFlags(v.flags)
+            : { mention: 'other', customMention: v.flags.customMention, quantity: v.flags.quantity, placement: v.flags.placement }
+          : null,
         directionals: has('directional')
-          ? { mention: defined(v.directionals.mention), units: v.directionals.units.map(toPlacedUnit) }
+          ? isMember
+            ? { mention: defined(v.directionals.mention), units: v.directionals.units.map(toPlacedUnit) }
+            : { mention: 'other', customMention: v.directionals.customMention, units: v.directionals.units.map(toPlacedUnit) }
           : null,
         otherNeeds: has('other') ? v.otherNeeds : null,
       };
@@ -466,7 +480,7 @@ export const createEmptyInstallationForm = (): InstallationFormValues => ({
   openHouse: createEmptyOpenHouse(),
   keybox: { code: '', placement: '' },
   flags: { mention: null, customMention: '', quantity: 1, placement: '' },
-  directionals: { mention: null, units: [] },
+  directionals: { mention: null, customMention: '', units: [] },
   otherNeeds: '',
 });
 
@@ -569,7 +583,11 @@ export function toInstallationFormValues(details: InstallationDetails): Installa
         }
       : empty.flags,
     directionals: details.directionals
-      ? { mention: details.directionals.mention, units: details.directionals.units.map(fromPlacedUnit) }
+      ? {
+          mention: details.directionals.mention === 'other' ? null : details.directionals.mention,
+          customMention: details.directionals.mention === 'other' ? details.directionals.customMention : '',
+          units: details.directionals.units.map(fromPlacedUnit),
+        }
       : empty.directionals,
     otherNeeds: details.otherNeeds ?? '',
   };

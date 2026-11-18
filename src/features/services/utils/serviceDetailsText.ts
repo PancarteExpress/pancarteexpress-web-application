@@ -145,7 +145,7 @@ function installationText({ pickupAddress, frames, kits, addons, openHouse, keyb
   if (directionals) {
     lines.push(
       ...block(
-        `${t('summary.directionals', { count: directionals.units.length })} — ${t(`mentions.${directionals.mention}`)}`,
+        `${t('summary.directionals', { count: directionals.units.length })} — ${directionals.mention === 'other' ? directionals.customMention : t(`mentions.${directionals.mention}`)}`,
         directionals.units.map((u, i) => pair(t('summary.directional', { number: i + 1 }), orEmpty(u.placement))),
       ),
     );
@@ -169,6 +169,7 @@ function removalText({ afterRemoval, frames, addons, keybox, flags, directionals
       ]),
     );
   }
+
 
   if (frames) {
     lines.push(

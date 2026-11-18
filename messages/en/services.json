@@ -234,7 +234,10 @@
     "ownPlacementsHint": "A single location: all addons will be installed in the same place.",
     "placementsSpread": "{count} addons for {places} locations: our team will distribute them among these locations.",
     "onSiteAssumption": "{choices} sign choices for {quantity} “{label}” addons: we will assume {extra, plural, one {the remaining addon will also be installed} other {the # remaining addons will also be installed}} on a sign already on site.",
-    "flagsPlacement": "Please indicate the location of the flags (optional)"
+    "flagsPlacement": "Please indicate the location of the flags (optional)",
+    "guestDisplayName": "What name(s) appear on the sign?",
+    "guestFlagMentionLegend": "Please enter the flag text",
+    "guestDirectionalMentionLegend": "Please enter the directional sign text"
   },
   "removal": {
     "title": "Removal details",
@@ -506,12 +509,12 @@
     "combination": "Combination",
     "incomplete": "Incomplete",
     "dateToSpecify": "Specific date to choose",
+    "materialPickup": "Pickup of the material to install",
+    "pickupAddress": "Pickup address",
     "afterRemoval": "Removed material",
     "afterRemovalChoice": "What to do with the material",
     "deliveryAddress": "Delivery address",
-    "dropOff": "Material drop-off",
-    "materialPickup": "Pickup of the material to install",
-    "pickupAddress": "Pickup address"
+    "dropOff": "Material drop-off"
   },
   "errors": {
     "required": "This field is required",
@@ -579,6 +582,7 @@
     "choosePlacement": "Choose at least one location",
     "tooManyPlacements": "{max, plural, one {Only one location allowed} other {# locations maximum}}",
     "duplicatePlacement": "Each location can only be chosen once",
+    "directionalMentionRequired": "Please specify the directional sign's wording.",
     "chooseAfterRemoval": "Please tell us what to do with the removed material.",
     "deliveryAddressRequired": "Enter the delivery address."
   },
@@ -618,5 +622,9 @@
     "pendingStatus": "To upload",
     "sentStatus": "Uploaded",
     "pendingHint": "Files marked “To upload” are not attached to the request yet, and will be lost if the page is reloaded."
+  },
+  "emails": {
+    "memberClient": "This client has a member account",
+    "guestClient": "This client is a guest"
   }
 }

@@ -36,7 +36,9 @@ function frameModel(model: FrameModelType | null, description: string): FrameMod
 }
 
 function displayName(useAccountName: boolean | null, names: string, accountName: string | null): FrameDisplayName | null {
-  if (useAccountName === true) return accountName ? { type: 'account', name: accountName } : null;
+  // Invités (pas de compte) : le nom saisi
+  if (accountName === null) return names.trim() ? { type: 'custom', names } : null;
+  if (useAccountName === true) return { type: 'account', name: accountName };
   if (useAccountName === false) return names.trim() ? { type: 'custom', names } : null;
   return null;
 }
@@ -116,13 +118,18 @@ export function installationPreviewDetails(v: InstallationFormValues, accountNam
       : null,
     keybox: has('keybox') ? { code: v.keybox.code, placement: v.keybox.placement } : null,
     flags:
-      has('flags') && v.flags.mention !== null
+      // Invités : mention saisie librement
+      has('flags') && accountName === null
+        ? { mention: 'other', customMention: v.flags.customMention, quantity: v.flags.quantity, placement: v.flags.placement }
+        : has('flags') && v.flags.mention !== null
         ? v.flags.mention === 'other'
           ? { mention: 'other', customMention: v.flags.customMention, quantity: v.flags.quantity, placement: v.flags.placement }
           : { mention: v.flags.mention, quantity: v.flags.quantity, placement: v.flags.placement }
         : null,
     directionals:
-      has('directional') && v.directionals.mention !== null
+      has('directional') && accountName === null
+        ? { mention: 'other', customMention: v.directionals.customMention ?? '', units: v.directionals.units }
+        : has('directional') && v.directionals.mention !== null
         ? { mention: v.directionals.mention, units: v.directionals.units }
         : null,
     otherNeeds: has('other') && v.otherNeeds.trim() ? v.otherNeeds : null,

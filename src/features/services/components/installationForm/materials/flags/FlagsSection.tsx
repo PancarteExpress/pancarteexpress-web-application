@@ -10,7 +10,8 @@ import styles from '../../installationForm.module.css';
 
 import { FaFlag } from "react-icons/fa";
 
-export function FlagsSection() {
+/** isMember : les invités saisissent la mention plutôt que de la choisir */
+export function FlagsSection({ isMember }: { isMember: boolean }) {
   const headingId = useId();
   const { control } = useInstallationFormContext();
   const update = useFormUpdater();
@@ -20,43 +21,60 @@ export function FlagsSection() {
     <section aria-labelledby={headingId} className={styles.material}>
       <h3 id={headingId} className={styles.title}><FaFlag size={25} /> {t('installation.flagsTitle')}</h3>
 
-      <Controller
-        control={control}
-        name="flags.mention"
-        render={(props) => (
-          <>
-            <RadioGroup
+      {isMember ? (
+        <Controller
+          control={control}
+          name="flags.mention"
+          render={(props) => (
+            <>
+              <RadioGroup
+                {...bindField(props)}
+                onChange={(value) => {
+                  props.field.onChange(value);
+                  if (value !== 'other') update('flags.customMention', '');
+                }}
+                legend={t('installation.flagMentionLegend')}
+                options={toOptions(FLAG_MENTIONS, (m) => t(`mentions.${m}`))}
+                columns={3}
+                required
+              />
+              {props.field.value === 'other' && (
+                <Controller
+                  control={control}
+                  name="flags.customMention"
+                  render={(p) => (
+                    <fieldset className={styles.unit}>
+                      <TextField
+                        {...bindField(p)}
+                        label={t('installation.flagCustomMention')}
+                        maxLength={TEXT_LIMITS.flagMention}
+                        multiline
+                        rows={2}
+                        required
+                      />
+                    </fieldset>
+                  )}
+                />
+              )}
+            </>
+          )}
+        />
+      ) : (
+        <Controller
+          control={control}
+          name="flags.customMention"
+          render={(props) => (
+            <TextField
               {...bindField(props)}
-              onChange={(value) => {
-                props.field.onChange(value);
-                if (value !== 'other') update('flags.customMention', '');
-              }}
-              legend={t('installation.flagMentionLegend')}
-              options={toOptions(FLAG_MENTIONS, (m) => t(`mentions.${m}`))}
-              columns={3}
+              label={t('installation.guestFlagMentionLegend')}
+              maxLength={TEXT_LIMITS.flagMention}
+              multiline
+              rows={2}
               required
             />
-            {props.field.value === 'other' && (
-              <Controller
-                control={control}
-                name="flags.customMention"
-                render={(p) => (
-                  <fieldset className={styles.unit}>
-                    <TextField
-                      {...bindField(p)}
-                      label={t('installation.flagCustomMention')}
-                      maxLength={TEXT_LIMITS.flagMention}
-                      multiline
-                      rows={2}
-                      required
-                    />
-                  </fieldset>
-                )}
-              />
-            )}
-          </>
-        )}
-      />
+          )}
+        />
+      )}
 
       <Controller
         control={control}

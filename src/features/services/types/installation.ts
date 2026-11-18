@@ -93,10 +93,11 @@ export type FlagsDetails = { quantity: number; placement: string } & (
   | { mention: 'other'; customMention: string }
 );
 
-export interface DirectionalsDetails {
-  mention: SignMention;
-  units: PlacedUnit[];
-}
+/** Mention choisie (membres) ou saisie librement (invités : mention 'other') */
+export type DirectionalsDetails = { units: PlacedUnit[] } & (
+  | { mention: SignMention }
+  | { mention: 'other'; customMention: string }
+);
 
 export interface InstallationDetails {
   /** Adresse où aller chercher le matériel à installer (invités) ; null = membre, ou ramassage non requis */

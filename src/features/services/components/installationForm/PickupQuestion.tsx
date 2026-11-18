@@ -11,7 +11,7 @@ import styles from './installationForm.module.css';
 
 /**
  * Invités : aller chercher le matériel à installer (pancartes, ancrages, poteaux) à une autre adresse ?
- * Posée une seule fois, juste sous les services, au-dessus des détails de l'installation.
+ * Posée une fois, juste sous le titre « Détails de l'installation ».
  */
 export function PickupQuestion() {
   const addressId = useId();
@@ -21,7 +21,6 @@ export function PickupQuestion() {
   const update = useFormUpdater();
 
   return (
-    <div className={styles.pickupQuestion}>
     <Controller
       control={control}
       name="pickup"
@@ -67,6 +66,5 @@ export function PickupQuestion() {
         </>
       )}
     />
-    </div>
   );
 }

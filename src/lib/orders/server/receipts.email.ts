@@ -8,11 +8,14 @@ import { CONTACT } from '@/shared/constants/contact';
 import { buildClientReceipt } from './clientReceipt';
 import { sendServiceAddressEmails } from './serviceAddress.email';
 import { formatAddressNumber } from '@/lib/services/addressNumber';
+import { servicesTranslator } from '@/lib/i18n/looseTranslator';
 
 /* ── Données de la commande ───────────────────────────────────── */
 
 const receiptSelect = {
   orderNumber: true,
+  // Client connecté (membre) ou invité
+  userId: true,
   locale: true,
   internalReceiptSentAt: true,
   clientReceiptSentAt: true,
@@ -140,9 +143,12 @@ export async function sendReceipts(orderId: string): Promise<void> {
 
   const paymentLine = order.paidAt ? 'Paiement : reçu' : 'Paiement : non payé en ligne';
 
+  // Courriel interne : toujours en français, pour l'équipe
+  const t = servicesTranslator('fr');
   const internalSections = [
     [
-      `Commande n° ${order.orderNumber}`,
+      // Le numéro est déjà dans le titre : on indique plutôt le type de client
+      order.userId ? t('emails.memberClient') : t('emails.guestClient'),
       paymentLine,
       '',
       `Client : ${order.firstName} ${order.lastName}`,
