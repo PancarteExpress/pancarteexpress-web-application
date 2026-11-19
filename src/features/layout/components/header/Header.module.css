@@ -125,7 +125,8 @@
 }
 
 .bottomHeader .container .logo {
-    height: 100px;
+    width: 300px;   /* la taille voulue */
+    height: auto;   /* garde les proportions */
 }
 
 .bottomHeader .container .infos {

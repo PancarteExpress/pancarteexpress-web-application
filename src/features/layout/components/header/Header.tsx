@@ -51,7 +51,7 @@ export default function Header() {
 
             <div className={styles.bottomHeader}>
                 <div className={styles.container}>
-                    <Image src="/header/Logo_PancarteExpress.svg" className={styles.logo} loading="eager" alt={t('logoAlt')} width={300} height={100} />
+                    <Image src="/header/Logo_PancarteExpress_Final_FR_vecteur.svg" className={styles.logo} loading="eager" alt={t('logoAlt')} width={696} height={225}/>
 
                     <div className={styles.infos}>
                         <div className={styles.schedule}>
