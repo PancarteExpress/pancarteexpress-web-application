@@ -49,17 +49,16 @@
     gap: 5px;
     text-decoration: none;
     
-    color: white !important;
-    font-weight: 700 !important;
-    font-size: 1rem !important;
-    
+    color: white ;
+    font-weight: 700 ;
+    font-size: 1rem ;
 }
 
 @media (max-width: 1000px) {
     .topHeader .container .contactInfo a  {
         background-color: white;
-        color: #0E4D98 !important;
-        border: 1px solid #0E4D98 !important;
+        color: #0E4D98;
+        border: 1px solid #0E4D98;
         border-radius: 10px;
         padding: 2px 5px;
     }
@@ -203,9 +202,6 @@
 }
 
 @media (max-width: 1000px) {
-    .bottomHeader .container .toggleResponsiveNav {
-        display: block;
-    }
     .navbar {
         display: none;
     }
@@ -221,10 +217,19 @@
     white-space: nowrap;
     text-decoration: none;
    
+    color: black;
     font-weight: 700;
     font-size: 15px;
     text-transform: uppercase;
     gap: 10px;
+}
+
+.navbar .links .navItem.active {
+    color: #0E4D98;
+}
+
+.navbar .lastLink .navItem.active {
+    box-shadow: 0px 0px 17px #0E4D9A;
 }
 
 .navbar .links .navItem:nth-child(1),
@@ -243,7 +248,7 @@
     flex: 2;
     background-color: #0E4D9A;
     font-weight: 900;
-    color: white !important;
+    color: white;
     border-radius: 10px;
 }
 
@@ -298,6 +303,10 @@
     color: black;
     padding: 0 30px;
     font-weight: 700;
+}
+
+.responsiveNav .responsiveNavbar .navItem.active {
+    color: #0E4D98;
 }
 
 .responsiveNav .responsiveNavbar .navItem:last-child {

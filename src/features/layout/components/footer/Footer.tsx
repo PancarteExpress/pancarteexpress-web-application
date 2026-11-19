@@ -1,9 +1,7 @@
-"use client";
-
-// Utils
-import Link from "next/link";
 import styles from "./Footer.module.css";
+
 import Image from "next/image";
+
 import { useTranslations } from 'next-intl';
 import { CONTACT, mailtoHref, telHref } from "@/shared/constants/contact";
 
@@ -52,8 +50,8 @@ export default function Footer() {
 
             <div className={styles.partners}>
                 <h3>{t('partners')}</h3>
-                <Link href="https://superimpression.com/fr_CA/" target="_blank" rel="noopener noreferrer"><Image src="/footer/1-partenaire.png" alt={t('logoAlt')} className={styles.logo} width={229} height={65} /></Link>
-                <Link href="https://www.toutpourlecourtier.com/" target="_blank" rel="noopener noreferrer"><Image src="/footer/2-partenaire.png" alt={t('logoAlt')} className={styles.logo} width={138} height={58} /></Link>
+                <a href="https://superimpression.com/fr_CA/" target="_blank" rel="noopener noreferrer"><Image src="/footer/1-partenaire.png" alt='superimpression' className={styles.logo} width={229} height={65} /></a>
+                <a href="https://www.toutpourlecourtier.com/" target="_blank" rel="noopener noreferrer"><Image src="/footer/2-partenaire.png" alt='toutpourlecourtier' className={styles.logo} width={138} height={58} /></a>
             </div>
             <div className={styles.whitespace}></div>
         </div>

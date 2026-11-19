@@ -3,7 +3,7 @@ import { useAuthStore } from "../store/authStore";
 import { useCallback, useEffect } from "react";
 import type { LoginInput, RegisterInput } from "@/lib/auth/auth.schema";
 import type { UserRole } from "@prisma/client";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { readErrorCode } from "@/lib/errors/appError";
 
@@ -12,6 +12,7 @@ export function useAuth() {
   const { data: session, status } = useSession();
   const params = useParams<{ locale: string }>();
   const tErrors = useTranslations("errors");
+  const router = useRouter();
 
   useEffect(() => {
     if (session?.user && session.user.email) {
@@ -104,8 +105,10 @@ export function useAuth() {
 
   const logout = useCallback(async () => {
     logoutStore();
-    await nextAuthSignOut({ callbackUrl: `/${params.locale}` });
-  }, [logoutStore, params.locale]);
+    await nextAuthSignOut({ redirect: false });
+    router.push(`/${params.locale}`);
+    router.refresh();
+  }, [logoutStore, params.locale, router]);
 
   return {
     login,

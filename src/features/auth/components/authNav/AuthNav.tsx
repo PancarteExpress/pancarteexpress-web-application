@@ -1,44 +1,46 @@
 "use client";
 
-import Link from "next/link";
 import { useAuth } from "../../hooks/useAuth";
-import styles from "./AuthNav.module.css"
-import { useTranslations } from 'next-intl';
+import styles from "./AuthNav.module.css";
+import { useTranslations } from "next-intl";
+import { LocalLink } from "@/shared/components/LocalLink";
 
-interface LoginFormProps {
-  locale: string;
+interface AuthNavProps {
+  onNavigate?: () => void;
 }
 
-export function AuthNav({ locale }: LoginFormProps) {
-
-  const t = useTranslations('header');
+export function AuthNav({ onNavigate }: AuthNavProps) {
+  const t = useTranslations("header");
   const { isAuthenticated, user, logout, isLoading } = useAuth();
 
   if (isLoading) {
-    return <div className="text-sm text-gray-500">{t('loading')}</div>;
+    return <div className="text-sm text-gray-500">{t("loading")}</div>;
   }
 
   if (isAuthenticated && user) {
     return (
       <div className={styles.mainContainer}>
-        <Link href={`/${locale}/dashboard`}>
+        <LocalLink href="/dashboard" onClick={onNavigate} className={styles.navItem}>
           {t('myAccount')}
-        </Link>
-        <button onClick={() => logout()}>
-          {t('logout')}
-        </button> 
+        </LocalLink>
+        
+        {/* Using button becaus it's an action, not only a redirection */}
+        <button onClick={() => {onNavigate?.(); logout();}} >
+          {t("logout")}
+        </button>
       </div>
     );
   }
 
   return (
     <div className={styles.mainContainer}>
-      <Link href={`/${locale}/register`}>
-        {t('becomeMember')}
-      </Link>
-      <Link href={`/${locale}/login`}>
-        {t('connection')}
-      </Link>
+      <LocalLink href="/register" onClick={onNavigate} className={styles.navItem}>
+        {t("becomeMember")}
+      </LocalLink>
+
+      <LocalLink href="/login" onClick={onNavigate} className={styles.navItem}>
+        {t("connection")}
+      </LocalLink>
     </div>
   );
 }

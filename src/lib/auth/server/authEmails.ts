@@ -10,7 +10,7 @@ import CodeEmail from '@/lib/email/templates/CodeEmail';
 import WelcomeEmail from '@/lib/email/templates/WelcomeEmail';
 import { renderTextEmail } from '@/lib/email/renderTextEmail';
 
-const NEXTAUTH_URL = process.env.NEXTAUTH_URL ?? 'https://pancarteexpress.com';
+import { SITE_URL } from '@/lib/siteUrl';
 
 export type AccountProvider = 'credentials' | 'google';
 
@@ -168,7 +168,7 @@ async function sendWelcomeEmail(
   pickup: PickupCreateData | undefined,
 ): Promise<void> {
   const t = WELCOME_TEMPLATES[locale];
-  const dashboardUrl = `${NEXTAUTH_URL}/${locale}/dashboard`;
+  const dashboardUrl = `${SITE_URL}/${locale}/dashboard`;
   const pickupDetails = clientPickupLines(pickup, locale);
   const pickupText = pickupDetails.length > 0 ? `${t.pickupTitle}\n${pickupDetails.join('\n')}\n\n` : '';
   try {

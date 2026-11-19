@@ -1,50 +1,42 @@
 "use client";
 
-// Utils
 import styles from './Header.module.css';
+
 import Image from "next/image";
-import Link from "next/link";
+import LanguageSwitcher from '@/shared/components/languageSwitcher/LanguageSwitcher';
+
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
-// Translater
+import { AuthNav } from '@/features/auth/components/authNav/AuthNav';
+import { LocalLink } from '@/shared/components/LocalLink';
+import { CONTACT, mailtoHref, telHref } from "@/shared/constants/contact";
 
-// React icons
 import { FaPhoneAlt } from "react-icons/fa";
 import { MdMail } from "react-icons/md";
 import { IoMenuOutline } from "react-icons/io5";
 import { IoCartOutline } from "react-icons/io5";
 import { FaPaperPlane } from "react-icons/fa";
 import { IoClose } from "react-icons/io5";
-import LanguageSwitcher from '@/shared/components/languageSwitcher/LanguageSwitcher';
-import { LocalLink } from '@/shared/components/LocalLink';
-import { AuthNav } from '@/features/auth/components/authNav/AuthNav';
-import { useTranslations } from 'next-intl';
-import { CONTACT, mailtoHref, telHref } from "@/shared/constants/contact";
-import { useAppLocale } from '@/shared/hooks/useAppLocale';
-
 
 export default function Header() {
 
     const t = useTranslations('header');
-    const locale = useAppLocale(); // pour les redirections
-
-    // Toggle de responsive Navbar
     const [isOpen, setIsOpen] = useState(false);
-
-    // Get the current pathname
+    const closeMenu = () => setIsOpen(false);
 
     return (
         <header>
             <div className={styles.topHeader}>
                 <div className={styles.container}>
                     <div className={styles.contactInfo}>
-                        <Link href={telHref(CONTACT.mainPhone)}><FaPhoneAlt size={15}/> {CONTACT.mainPhone}</Link>
-                        <Link href={mailtoHref(CONTACT.infoEmail)}><MdMail size={20} /> {CONTACT.infoEmail}</Link>
+                        <a href={telHref(CONTACT.mainPhone)}><FaPhoneAlt size={15}/> {CONTACT.mainPhone}</a>
+                        <a href={mailtoHref(CONTACT.infoEmail)}><MdMail size={20} /> {CONTACT.infoEmail}</a>
                         <LanguageSwitcher />
                     </div>
 
                     <div className={styles.account}>
-                        <AuthNav locale={locale} />
+                        <AuthNav />
                     </div>
                 </div>
             </div>
@@ -72,16 +64,16 @@ export default function Header() {
 
                     <div className={styles.navbar}>
                         <div className={styles.links}>
-                            <LocalLink href="/" className={styles.navItem}>{t('navbarHome')}</LocalLink>
-                            <LocalLink href="/residential" className={styles.navItem}>{t('navbarResidential')}</LocalLink>
-                            <LocalLink href="/bigFormat" className={styles.navItem}>{t('navbarBigFormat')}</LocalLink>
-                            <LocalLink href="/shop" className={styles.navItem}>{t('navbarShop')}</LocalLink>
-                            <LocalLink href="/contact" className={styles.navItem}>{t('navbarContact')}</LocalLink>
-                            <LocalLink href="/cart" className={styles.navItem}><IoCartOutline size={22} /></LocalLink>
+                            <LocalLink href="/" className={styles.navItem} activeClassName={styles.active}>{t('navbarHome')}</LocalLink>
+                            <LocalLink href="/residential" className={styles.navItem} activeClassName={styles.active}>{t('navbarResidential')}</LocalLink>
+                            <LocalLink href="/bigFormat" className={styles.navItem} activeClassName={styles.active}>{t('navbarBigFormat')}</LocalLink>
+                            <LocalLink href="/shop" className={styles.navItem} activeClassName={styles.active}>{t('navbarShop')}</LocalLink>
+                            <LocalLink href="/contact" className={styles.navItem} activeClassName={styles.active}>{t('navbarContact')}</LocalLink>
+                            <LocalLink href="/cart" className={styles.navItem} activeClassName={styles.active}><IoCartOutline size={22} /></LocalLink>
                         </div>
                         
                         <div className={styles.lastLink}>
-                            <LocalLink href="/services" className={styles.navItem}><FaPaperPlane />{t('navbarServices')}</LocalLink>
+                            <LocalLink href="/services" className={styles.navItem} activeClassName={styles.active}><FaPaperPlane />{t('navbarServices')}</LocalLink>
                         </div>
                     </div>
 
@@ -99,15 +91,15 @@ export default function Header() {
                 </div>
 
                 <div className={styles.responsiveNavbar} >
-                    <LocalLink href="/" className={styles.navItem}>{t('navbarHome')}</LocalLink>
-                    <LocalLink href="/residential" className={styles.navItem}>{t('navbarResidential')}</LocalLink>
-                    <LocalLink href="/bigFormat" className={styles.navItem}>{t('navbarBigFormat')}</LocalLink>
-                    <LocalLink href="/shop" className={styles.navItem}>{t('navbarShop')}</LocalLink>
-                    <LocalLink href="/contact" className={styles.navItem}>{t('navbarContact')}</LocalLink>
-                    <LocalLink href="/cart" className={styles.navItem}><IoCartOutline size={22} /></LocalLink>
-                    <LocalLink href="/services" className={styles.navItem}><FaPaperPlane />{t('navbarServices')}</LocalLink>
+                    <LocalLink href="/" onClick={closeMenu} className={styles.navItem} activeClassName={styles.active}>{t('navbarHome')}</LocalLink>
+                    <LocalLink href="/residential" onClick={closeMenu} className={styles.navItem} activeClassName={styles.active}>{t('navbarResidential')}</LocalLink>
+                    <LocalLink href="/bigFormat" onClick={closeMenu} className={styles.navItem} activeClassName={styles.active}>{t('navbarBigFormat')}</LocalLink>
+                    <LocalLink href="/shop" onClick={closeMenu} className={styles.navItem} activeClassName={styles.active}>{t('navbarShop')}</LocalLink>
+                    <LocalLink href="/contact" onClick={closeMenu} className={styles.navItem} activeClassName={styles.active}>{t('navbarContact')}</LocalLink>
+                    <LocalLink href="/cart" onClick={closeMenu} className={styles.navItem} activeClassName={styles.active}><IoCartOutline size={22} /></LocalLink>
+                    <LocalLink href="/services" onClick={closeMenu} className={styles.navItem} activeClassName={styles.active}><FaPaperPlane />{t('navbarServices')}</LocalLink>
                     
-                    <AuthNav locale={locale} />
+                    <AuthNav onNavigate={closeMenu} />
                 </div>
             </div>
         </header>
