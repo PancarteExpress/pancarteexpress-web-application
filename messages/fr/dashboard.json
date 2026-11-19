@@ -21,7 +21,12 @@
     "allMembers": "Tous les membres"
   },
   "serviceOrders": {
-    "statuses": { "TO_SCHEDULE": "À planifier", "SCHEDULED": "Planifié", "COMPLETED": "Terminé", "CANCELLED": "Annulé" },
+    "statuses": {
+      "TO_SCHEDULE": "À planifier",
+      "SCHEDULED": "Planifié",
+      "COMPLETED": "Terminé",
+      "CANCELLED": "Annulé"
+    },
     "scheduledFor": "Prévu le {date}",
     "completedAt": "Réalisé le {date}",
     "order": "Commande",
@@ -81,8 +86,7 @@
     "username": "Nom d'utilisateur",
     "language": "Langue",
     "languageFr": "Français",
-    "languageEn": "English"
+    "languageEn": "English",
+    "billingAddress": "Adresse de facturation"
   }
-
-  
 }

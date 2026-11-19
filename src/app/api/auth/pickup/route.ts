@@ -12,8 +12,11 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const pickup = await prisma.pickupInfo.findUnique({ where: { userId } });
-  return NextResponse.json({ pickup });
+  const [pickup, user] = await Promise.all([
+    prisma.pickupInfo.findUnique({ where: { userId } }),
+    prisma.user.findUnique({ where: { id: userId }, select: { billingAddress: true } }),
+  ]);
+  return NextResponse.json({ pickup, billingAddress: user?.billingAddress ?? null });
 }
 
 export async function PUT(request: Request) {

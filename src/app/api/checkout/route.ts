@@ -39,6 +39,14 @@ export async function POST(request: Request) {
     );
   }
 
+  // Un invité doit aussi donner son adresse de facturation
+  if (!user && !parsed.data.contact.billingAddress) {
+    return NextResponse.json(
+      { error: 'validationFailed', issues: [{ path: 'contact.billingAddress', message: 'required' }] },
+      { status: 400 },
+    );
+  }
+
   try {
     const result = await createOrder(parsed.data, user);
     return NextResponse.json(result, { status: 201 });

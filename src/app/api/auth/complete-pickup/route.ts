@@ -2,7 +2,7 @@ import { after, NextResponse } from "next/server";
 
 import { auth } from "@/app/auth";
 import { prisma } from "@/lib/prisma";
-import { pickupSchema } from "@/lib/auth/auth.schema";
+import { completeProfileSchema } from "@/lib/auth/auth.schema";
 import { toPickupCreateInput } from "@/lib/auth/server/pickup";
 import { sendAccountCreatedEmails } from "@/lib/auth/server/authEmails";
 import { errorResponse } from "@/lib/errors/server/toClientError";
@@ -16,7 +16,7 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const data = pickupSchema.parse(body);
+    const data = completeProfileSchema.parse(body);
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -40,7 +40,7 @@ export async function POST(request: Request) {
 
     await prisma.$transaction([
       prisma.pickupInfo.create({ data: { userId, ...pickup } }),
-      prisma.user.update({ where: { id: userId }, data: { needsPickupInfo: false } }),
+      prisma.user.update({ where: { id: userId }, data: { needsPickupInfo: false, billingAddress: data.billingAddress } }),
     ]);
 
     // Inscription Google : bienvenue et notification interne attendaient le ramassage pour être complètes
@@ -56,6 +56,7 @@ export async function POST(request: Request) {
           locale: user.locale,
           groupStatus,
           companyName: user.companyName ?? undefined,
+          billingAddress: data.billingAddress,
           pickup,
         }),
       );

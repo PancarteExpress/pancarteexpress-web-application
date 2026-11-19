@@ -35,6 +35,9 @@ const TEXT = {
     greeting: (name: string) => `Bonjour ${name},`,
     thanks: (n: number) => `Merci pour votre commande n° ${n}. En voici le récapitulatif.`,
     delivery: 'Livraison',
+    companyName: 'Entreprise',
+    billingAddress: 'Adresse de facturation',
+    additionalInfo: 'Informations supplémentaires',
     pickup: 'Ramassage',
     products: 'Produits :',
     subtotal: 'Sous-total',
@@ -63,6 +66,9 @@ const TEXT = {
     greeting: (name: string) => `Hello ${name},`,
     thanks: (n: number) => `Thank you for your order #${n}. Here is your summary.`,
     delivery: 'Delivery',
+    companyName: 'Company',
+    billingAddress: 'Billing address',
+    additionalInfo: 'Additional information',
     pickup: 'Pickup',
     products: 'Products:',
     subtotal: 'Subtotal',
@@ -172,6 +178,12 @@ export function buildClientReceipt(order: Receipt): ClientReceipt {
     title: l.title,
     sections: [
       [l.greeting(order.firstName), '', l.thanks(order.orderNumber)],
+      // Invités : rappel des informations de facturation saisies
+      [
+        ...(order.companyName ? [`${l.companyName}${l.colon}${order.companyName}`] : []),
+        ...(order.billingAddress ? [`${l.billingAddress}${l.colon}${order.billingAddress}`] : []),
+        ...(order.additionalInfo ? [`${l.additionalInfo}${l.colon}${order.additionalInfo}`] : []),
+      ],
       delivery,
       products,
       services,

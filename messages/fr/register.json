@@ -71,5 +71,6 @@
     "loading": "Chargement…",
     "save": "Enregistrer le ramassage"
   },
-  "storageOrderNotice": "Votre demande n° <strong>{number}</strong> a bien été envoyée. Créez maintenant votre compte pour que nous puissions entreposer votre matériel."
+  "storageOrderNotice": "Votre demande n° <strong>{number}</strong> a bien été envoyée. Créez maintenant votre compte pour que nous puissions entreposer votre matériel.",
+  "formBillingAddress": "Adresse de facturation"
 }

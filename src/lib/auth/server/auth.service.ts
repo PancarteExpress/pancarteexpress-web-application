@@ -115,7 +115,8 @@ export const authService = {
     companyName: string | undefined,
     groupStatus: "SOLO" | "PENDING",
     locale: EmailLocale = "fr",
-    pickup?: PickupCreateData
+    pickup?: PickupCreateData,
+    billingAddress?: string,
   ) {
     await assertValidCode(email, code, "EMAIL_VERIFICATION");
 
@@ -129,6 +130,7 @@ export const authService = {
           lastName,
           phoneNumber,
           companyName,
+          billingAddress,
           password: hashedPassword,
           emailVerified: new Date(),
           groupStatus,
@@ -155,6 +157,7 @@ export const authService = {
       groupStatus,
       phoneNumber,
       companyName,
+      billingAddress,
       pickup,
     });
 
@@ -188,6 +191,8 @@ export const authService = {
         locale: input.locale,
         phoneNumber: input.phoneNumber,
         companyName: input.companyName,
+        // Absente : inchangée ; vide : retirée
+        billingAddress: input.billingAddress === undefined ? undefined : input.billingAddress || null,
       },
       select: publicUserSelect,
     }).catch((e: unknown) => {

@@ -41,6 +41,7 @@ interface AccountCreatedInput {
   /** Absents à l'inscription Google (pas de formulaire) */
   phoneNumber?: string;
   companyName?: string;
+  billingAddress?: string;
   pickup?: PickupCreateData;
 }
 
@@ -206,6 +207,7 @@ export async function sendNewAccountNotification({
   groupStatus,
   phoneNumber,
   companyName,
+  billingAddress,
   pickup,
 }: AccountCreatedInput): Promise<void> {
   const sections = [
@@ -214,6 +216,7 @@ export async function sendNewAccountNotification({
       `Courriel : ${email}`,
       ...(phoneNumber ? [`Téléphone : ${phoneNumber}`] : []),
       `Entreprise : ${companyName || '—'}`,
+      ...(billingAddress ? [`Adresse de facturation : ${billingAddress}`] : []),
     ],
     [
       `Forfait : ${groupStatus === 'PENDING' ? "Groupe (en attente d'ajout à une équipe)" : 'Solo'}`,

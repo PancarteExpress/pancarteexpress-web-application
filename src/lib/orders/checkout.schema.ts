@@ -1,3 +1,4 @@
+import { GUEST_INFO_LIMITS } from './guestInfo';
 import * as z from 'zod';
 import { format } from 'date-fns';
 import { MAX_QUANTITY, REQUEST_TYPES, SERVICE_DELAYS } from '@/lib/orders/constants';
@@ -53,6 +54,10 @@ export const checkoutContactSchema = z.object({
   lastName: requiredText(100),
   email: z.string().trim().toLowerCase().max(254).email({ message: 'invalidEmail' }),
   phone: z.string().trim().regex(/^[\d\s()+.-]{10,20}$/, { message: 'invalidPhone' }).optional(),
+  // Invités : l'adresse de facturation est exigée par la route
+  companyName: optionalText(GUEST_INFO_LIMITS.companyName),
+  billingAddress: optionalText(GUEST_INFO_LIMITS.billingAddress),
+  additionalInfo: optionalText(GUEST_INFO_LIMITS.additionalInfo),
 });
 
 export const shippingAddressSchema = z.object({

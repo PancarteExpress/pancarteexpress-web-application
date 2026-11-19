@@ -29,6 +29,7 @@ describe("passwordSchema", () => {
         password: "abc",
         confirmPassword: "abc",
         phoneNumber: "5145550000",
+        billingAddress: "123 rue Principale, Montréal",
       }).success,
     ).toBe(false);
     expect(

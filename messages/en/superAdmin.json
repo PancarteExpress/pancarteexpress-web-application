@@ -90,7 +90,10 @@
     "address": "Address",
     "requestedOn": "Requested on",
     "delay": "Turnaround",
-    "attachments": "Files"
+    "attachments": "Files",
+    "companyName": "Company",
+    "billingAddress": "Billing",
+    "additionalInfo": "Additional info"
   },
   "accountTypeSelect": {
     "confirmGroupAdmin": "Create a new group with {name} as administrator?",

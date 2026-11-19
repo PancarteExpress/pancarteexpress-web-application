@@ -21,7 +21,12 @@
     "allMembers": "All members"
   },
   "serviceOrders": {
-    "statuses": { "TO_SCHEDULE": "To schedule", "SCHEDULED": "Scheduled", "COMPLETED": "Completed", "CANCELLED": "Cancelled" },
+    "statuses": {
+      "TO_SCHEDULE": "To schedule",
+      "SCHEDULED": "Scheduled",
+      "COMPLETED": "Completed",
+      "CANCELLED": "Cancelled"
+    },
     "scheduledFor": "Scheduled for {date}",
     "completedAt": "Completed on {date}",
     "order": "Order",
@@ -81,6 +86,7 @@
     "username": "Username",
     "language": "Language",
     "languageFr": "Français",
-    "languageEn": "English"
+    "languageEn": "English",
+    "billingAddress": "Billing address"
   }
 }

@@ -1,4 +1,5 @@
 import * as z from 'zod';
+import { GUEST_INFO_LIMITS } from '@/lib/orders/guestInfo';
 
 // Messages : clés i18n du namespace checkout.errors, traduites à l'affichage
 
@@ -15,6 +16,10 @@ export const checkoutSchema = z
         lastName: z.string().trim().min(1, 'lastNameRequired'),
         email: z.string().trim().toLowerCase().email('emailInvalid'),
         phone: z.string().trim().refine((v) => v === '' || /^[\d\s()+.-]{10,20}$/.test(v), 'phoneInvalid'),
+        // Invités : l'adresse de facturation est exigée au moment de l'envoi
+        companyName: z.string().trim().max(GUEST_INFO_LIMITS.companyName, 'tooLong'),
+        billingAddress: z.string().trim().max(GUEST_INFO_LIMITS.billingAddress, 'tooLong'),
+        additionalInfo: z.string().trim().max(GUEST_INFO_LIMITS.additionalInfo, 'tooLong'),
         deliveryMode: z.enum(['pickup', 'delivery']),
         shippingAddress: shippingAddressSchema.nullable(),
     })

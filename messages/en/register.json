@@ -71,5 +71,6 @@
     "loading": "Loading…",
     "save": "Save pickup"
   },
-  "storageOrderNotice": "Your request no. <strong>{number}</strong> has been sent. Now create your account so we can store your material."
+  "storageOrderNotice": "Your request no. <strong>{number}</strong> has been sent. Now create your account so we can store your material.",
+  "formBillingAddress": "Billing address"
 }

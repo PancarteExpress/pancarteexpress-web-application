@@ -81,6 +81,10 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
         // Connecté : le courriel du compte fait foi, pas celui du formulaire
         email: user?.email ?? payload.contact.email,
         phone, // NOUVEAU
+        // Invités seulement : les membres ont ces informations dans leur compte
+        companyName: user ? null : payload.contact.companyName || null,
+        billingAddress: user ? null : payload.contact.billingAddress || null,
+        additionalInfo: user ? null : payload.contact.additionalInfo || null,
         deliveryMode: payload.fulfillment?.method ?? null,
         deliveryStreet: shipping?.street ?? null,
         deliveryCity: shipping?.city ?? null,

@@ -27,7 +27,9 @@
     "shippingAddressRequired": "Please select a shipping address from the list",
     "postalCodeMissing": "Incomplete address: postal code missing",
     "cardIncomplete": "Please complete your card information",
-    "paymentModuleUnavailable": "A payment is required, but the payment module is unavailable. Please reload the page."
+    "paymentModuleUnavailable": "A payment is required, but the payment module is unavailable. Please reload the page.",
+    "billingAddressRequired": "The billing address is required",
+    "tooLong": "This field is too long"
   },
   "submitErrors": {
     "validationFailed": "Some information is invalid. Please check the form.",
@@ -52,5 +54,8 @@
   },
   "sending": "Sending…",
   "viewOrders": "View my orders",
-  "backToShop": "Back to the shop"
+  "backToShop": "Back to the shop",
+  "companyName": "Company name (optional)",
+  "billingAddress": "Billing address",
+  "additionalInfo": "Additional information (optional)"
 }

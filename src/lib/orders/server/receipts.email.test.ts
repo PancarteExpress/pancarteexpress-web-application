@@ -22,6 +22,9 @@ const order = {
   lastName: 'Roy',
   email: 'ana@example.com',
   phone: null,
+  companyName: null as string | null,
+  billingAddress: null as string | null,
+  additionalInfo: null as string | null,
   paidAt: new Date(),
   deliveryMode: 'PICKUP',
   deliveryStreet: null,
@@ -177,6 +180,18 @@ describe('sendReceipts', () => {
     prismaMock.order.findUnique.mockResolvedValue({ ...order, userId: 'u1' });
     await sendReceipts('o1');
     expect((sendEmail.mock.calls[0][0] as { text: string }).text).toContain('Ce client possède un compte membre');
+  });
+
+  it('invité : facturation dans le courriel interne et la confirmation', async () => {
+    prismaMock.order.findUnique.mockResolvedValue({
+      ...order, companyName: 'Immo Roy', billingAddress: '123 rue Principale, Montréal', additionalInfo: 'Appeler avant',
+    });
+    await sendReceipts('o1');
+    const internal = (sendEmail.mock.calls[0][0] as { text: string }).text;
+    expect(internal).toContain('Entreprise : Immo Roy');
+    expect(internal).toContain('Adresse de facturation : 123 rue Principale, Montréal');
+    expect(internal).toContain('Informations supplémentaires : Appeler avant');
+    expect((sendEmail.mock.calls[1][0] as { text: string }).text).toContain('123 rue Principale, Montréal');
   });
 
   it('envoie aussi la confirmation à un client connecté', async () => {

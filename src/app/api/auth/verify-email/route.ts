@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
       validatedData.companyName,
       validatedData.groupStatus,
       validatedData.locale,
-      pickup
+      pickup,
+      validatedData.billingAddress,
     );
 
     return NextResponse.json(

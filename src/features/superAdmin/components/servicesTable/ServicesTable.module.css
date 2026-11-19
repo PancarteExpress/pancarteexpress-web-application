@@ -107,3 +107,23 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Invités : informations de facturation, sous l'en-tête du client */
+.guestInfo {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.25rem 0.75rem;
+  margin: 0 0 0.75rem;
+  font-size: 0.875rem;
+}
+
+.guestInfo dt {
+  font-weight: 700;
+  color: #5f7fa8;
+}
+
+.guestInfo dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}

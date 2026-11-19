@@ -35,6 +35,9 @@ const adminServiceSelect = {
               firstName: true,
               lastName: true,
               email: true,
+              companyName: true,
+              billingAddress: true,
+              additionalInfo: true,
               user: { select: { firstName: true, lastName: true, email: true } },
             },
           },
@@ -63,6 +66,10 @@ export interface AdminServiceRow {
   orderNumber: number;
   addressNumber: number;
   orderedAt: Date;
+  /** Invités : informations de facturation de la commande */
+  companyName: string | null;
+  billingAddress: string | null;
+  additionalInfo: string | null;
 }
 
 export interface AdminClientServices {
@@ -119,6 +126,9 @@ export async function listServicesForAdmin(): Promise<AdminClientServices[]> {
       orderNumber: order.orderNumber,
       addressNumber: s.serviceAddress.addressNumber,
       orderedAt: order.createdAt,
+      companyName: order.companyName,
+      billingAddress: order.billingAddress,
+      additionalInfo: order.additionalInfo,
     });
 
     clients.set(key, client);

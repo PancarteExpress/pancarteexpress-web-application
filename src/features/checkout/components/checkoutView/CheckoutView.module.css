@@ -280,3 +280,23 @@
     transition: background .15s;
     box-sizing: border-box;
 }
+/* Invités : informations supplémentaires, même apparence que les champs */
+.mainContainer .container .form .section .formGroup textarea {
+    padding: 9px 12px;
+    border: 1px solid #C5D8EF;
+    border-radius: 10px;
+    font-family: var(--font-text), sans-serif;
+    background: #F8FAFD;
+    outline: none;
+    resize: vertical;
+}
+
+.mainContainer .container .form .section .formGroup textarea:focus {
+    border-color: #0E4D9A;
+    background: white;
+}
+
+/* Espace entre les champs pleine largeur des invités */
+.mainContainer .container .form .section > .formGroup {
+    margin-top: 10px;
+}

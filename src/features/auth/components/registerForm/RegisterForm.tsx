@@ -2,6 +2,7 @@
 
 import styles from './RegisterForm.module.css';
 import { useForm, FormProvider } from "react-hook-form";
+import { BillingAddressField } from "../billingAddressField/BillingAddressField";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, verifyCodeSchema, type RegisterInput, type RegisterPlan } from "@/lib/auth/auth.schema";
 import { useAuth } from "../../hooks/useAuth";
@@ -68,6 +69,7 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
           password: registeredData.password,
           phoneNumber: registeredData.phoneNumber,
           companyName: registeredData.companyName,
+          billingAddress: registeredData.billingAddress,
           groupStatus: plan === 'group' ? 'PENDING' : 'SOLO',
           locale,
           pickupMode: registeredData.pickupMode,
@@ -170,6 +172,9 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
               <input id="registerConfirmPassword" type="password" autoComplete="new-password" {...register("confirmPassword")} className="w-full px-3 py-2 border rounded" disabled={isLoading} />
             </div>
           </div>
+
+          {/* Adresse de facturation : forfaits solo et équipe */}
+          <BillingAddressField />
 
           <PickupFields />
 

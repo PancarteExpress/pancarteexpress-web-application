@@ -69,6 +69,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       locale: currentLocale,
       phoneNumber: "",
       companyName: "",
+      billingAddress: "",
       pickupAddress: "",
       pickupCity: "",
       pickupPostalCode: "",
@@ -97,8 +98,12 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
     let cancelled = false;
     fetch("/api/auth/pickup")
       .then((res) => res.json())
-      .then((body: { pickup: { address: string | null; city: string | null; postalCode: string | null } | null }) => {
+      .then((body: {
+        pickup: { address: string | null; city: string | null; postalCode: string | null } | null;
+        billingAddress?: string | null;
+      }) => {
         if (cancelled) return;
+        setProfileFieldValue("billingAddress", body.billingAddress ?? "");
         setProfileFieldValue("pickupAddress", body.pickup?.address ?? "");
         setProfileFieldValue("pickupCity", body.pickup?.city ?? "");
         setProfileFieldValue("pickupPostalCode", body.pickup?.postalCode ?? "");
@@ -320,6 +325,28 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
                   )}
                 />
               </div>
+            </div>
+
+            {/* Adresse de facturation, sur toute la largeur */}
+            <div className={styles.inputs}>
+              <label htmlFor="billingAddress" className="block text-sm font-medium">{t("billingAddress")}</label>
+              <Controller
+                control={controlProfile}
+                name="billingAddress"
+                render={({ field }) => (
+                  <AddressAutocomplete
+                    id="billingAddress"
+                    value={field.value ?? ""}
+                    inputRef={field.ref}
+                    onChange={field.onChange}
+                    onBlur={field.onBlur}
+                    aria-invalid={!!profileErrors.billingAddress}
+                  />
+                )}
+              />
+              {profileErrors.billingAddress && (
+                <span className="text-red-500 text-sm">{tv(profileErrors.billingAddress.message)}</span>
+              )}
             </div>
 
             <div className={styles.accountStatus}>

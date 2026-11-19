@@ -27,7 +27,9 @@
     "shippingAddressRequired": "Veuillez sélectionner une adresse de livraison dans la liste",
     "postalCodeMissing": "Adresse incomplète : code postal manquant",
     "cardIncomplete": "Veuillez compléter les informations de votre carte",
-    "paymentModuleUnavailable": "Un paiement est requis, mais le module de paiement est indisponible. Rechargez la page."
+    "paymentModuleUnavailable": "Un paiement est requis, mais le module de paiement est indisponible. Rechargez la page.",
+    "billingAddressRequired": "L'adresse de facturation est requise",
+    "tooLong": "Ce champ est trop long"
   },
   "submitErrors": {
     "validationFailed": "Certaines informations sont invalides. Vérifiez le formulaire.",
@@ -52,5 +54,8 @@
   },
   "sending": "Envoi en cours…",
   "viewOrders": "Voir mes commandes",
-  "backToShop": "Retour à la boutique"
+  "backToShop": "Retour à la boutique",
+  "companyName": "Nom de l'entreprise (optionnel)",
+  "billingAddress": "Adresse de facturation",
+  "additionalInfo": "Informations supplémentaires (optionnel)"
 }

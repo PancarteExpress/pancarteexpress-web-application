@@ -10,6 +10,7 @@ import { useSession } from 'next-auth/react';
 import { Elements } from '@stripe/react-stripe-js';
 import { FaRegCheckCircle } from 'react-icons/fa';
 import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
+import { GUEST_INFO_LIMITS } from '@/lib/orders/guestInfo';
 import type { ParsedAddress } from '@/shared/types/address';
 import { useCart } from '@/features/cart/hooks/useCart';
 import { formatCents } from '@/lib/pricing/money';
@@ -90,6 +91,9 @@ function CheckoutForm() {
       lastName: '',
       email: '',
       phone: '',
+      companyName: '',
+      billingAddress: '',
+      additionalInfo: '',
       deliveryMode: 'pickup',
       shippingAddress: null,
     },
@@ -100,6 +104,9 @@ function CheckoutForm() {
             lastName: session.user.lastName ?? '',
             email: session.user.email ?? '',
             phone: '', // connecté : le serveur prend le téléphone du compte
+            companyName: '',
+            billingAddress: '',
+            additionalInfo: '',
             deliveryMode: 'pickup',
             shippingAddress: null,
           }
@@ -135,6 +142,11 @@ function CheckoutForm() {
     // Un invité doit laisser un téléphone
     if (!isAuthenticated && !data.phone) {
       setError('phone', { message: 'phoneRequired' });
+      return;
+    }
+    // Et son adresse de facturation
+    if (!isAuthenticated && !data.billingAddress) {
+      setError('billingAddress', { message: 'billingAddressRequired' });
       return;
     }
 
@@ -183,6 +195,9 @@ function CheckoutForm() {
       errors.lastName?.message ||
       errors.email?.message ||
       errors.phone?.message ||
+      errors.companyName?.message ||
+      errors.billingAddress?.message ||
+      errors.additionalInfo?.message ||
       errors.shippingAddress?.message,
     ) ||
     cardError ||
@@ -264,6 +279,49 @@ function CheckoutForm() {
                 </div>
               )}
             </div>
+
+            {/* Invités : facturation, chaque champ sur toute la largeur */}
+            {!isAuthenticated && (
+              <>
+                <div className={styles.formGroup}>
+                  <label htmlFor="companyName">{t('companyName')}</label>
+                  <input
+                    id="companyName"
+                    autoComplete="organization"
+                    maxLength={GUEST_INFO_LIMITS.companyName}
+                    {...register('companyName')}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="billingAddress">{t('billingAddress')}</label>
+                  <Controller
+                    name="billingAddress"
+                    control={control}
+                    render={({ field }) => (
+                      <AddressAutocomplete
+                        id="billingAddress"
+                        value={field.value}
+                        onChange={field.onChange}
+                        onBlur={field.onBlur}
+                        inputRef={field.ref}
+                        aria-invalid={Boolean(errors.billingAddress) || undefined}
+                      />
+                    )}
+                  />
+                </div>
+
+                <div className={styles.formGroup}>
+                  <label htmlFor="additionalInfo">{t('additionalInfo')}</label>
+                  <textarea
+                    id="additionalInfo"
+                    rows={4}
+                    maxLength={GUEST_INFO_LIMITS.additionalInfo}
+                    {...register('additionalInfo')}
+                  />
+                </div>
+              </>
+            )}
           </div>
 
           {requiresPayment && (

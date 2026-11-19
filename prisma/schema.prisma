@@ -22,6 +22,8 @@ model User {
   lastName    String?
   phoneNumber String?
   companyName String?
+  /** Adresse de facturation saisie à l'inscription */
+  billingAddress String?
   needsPickupInfo Boolean    @default(false)
   pickupInfo  PickupInfo?
 
@@ -157,6 +159,11 @@ model Order {
   lastName  String
   email     String
   phone     String?
+
+  // Invités seulement (les membres ont ces informations dans leur compte)
+  companyName    String?
+  billingAddress String?
+  additionalInfo String?
 
   // Qui doit payer les services, figé à la création selon le mode du groupe à ce moment.
   // Sert au suivi manuel de la facturation. null = invité.

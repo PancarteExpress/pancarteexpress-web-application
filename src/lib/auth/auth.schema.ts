@@ -33,6 +33,9 @@ export const storeGroupStatusSchema = z.object({
   groupStatus: signupGroupStatusSchema,
 });
 
+// Adresse de facturation : demandée à l'inscription (forfaits solo et équipe)
+export const billingAddressSchema = z.string().trim().min(1, "billingAddressRequired").max(300);
+
 export const pickupFieldsSchema = z.object({
   pickupMode: z.enum(["address", "warehouse"]),
   pickupAddress: z.string().optional(),
@@ -70,8 +73,14 @@ export function applyPickupRules(data: PickupFieldsInput, ctx: z.RefinementCtx) 
   }
 }
 
-// Utilisé par la page de complétion (Google)
+// Utilisé par la page de modification du ramassage
 export const pickupSchema = pickupFieldsSchema.superRefine(applyPickupRules);
+
+// Page de complétion (inscription Google) : adresse de facturation et ramassage
+export const completeProfileSchema = pickupFieldsSchema
+  .extend({ billingAddress: billingAddressSchema })
+  .superRefine(applyPickupRules);
+export type CompleteProfileInput = z.infer<typeof completeProfileSchema>;
 
 export const registerSchema = z
   .object({
@@ -82,6 +91,7 @@ export const registerSchema = z
     confirmPassword: z.string(),
     phoneNumber: phoneSchema,
     companyName: z.string().optional(),
+    billingAddress: billingAddressSchema,
     locale: localeSchema,
     ...pickupFieldsSchema.shape
   })
@@ -105,6 +115,7 @@ export const verifyEmailSchema = z.object({
   password: passwordSchema,
   phoneNumber: phoneSchema,
   companyName: z.string().optional(),
+  billingAddress: billingAddressSchema,
   groupStatus: signupGroupStatusSchema,
   locale: localeSchema,
 }).extend(pickupFieldsSchema.shape)
@@ -136,6 +147,8 @@ export const updateProfileSchema = z.object({
   locale: z.enum(["fr", "en"]),
   phoneNumber: phoneSchema.optional(),
   companyName: z.string().optional(),
+  // Facultative ici : les comptes créés avant cette question n'en ont pas
+  billingAddress: z.string().trim().max(300).optional(),
   groupStatus: z.enum(["SOLO", "PENDING", "JOINED"]).optional(),
   pickupAddress: z.string().optional(),
   pickupCity: z.string().optional(),

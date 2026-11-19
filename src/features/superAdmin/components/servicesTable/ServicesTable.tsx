@@ -29,6 +29,19 @@ export function ServicesTable({ clients }: ServicesTableProps) {
             </span>
           </header>
 
+          {/* Invités : facturation de leur commande la plus récente qui en a */}
+          {(() => {
+            const billing = client.services.find((s) => s.billingAddress || s.companyName || s.additionalInfo);
+            if (!billing) return null;
+            return (
+              <dl className={styles.guestInfo}>
+                {billing.companyName && (<><dt>{t("servicesTable.companyName")}</dt><dd>{billing.companyName}</dd></>)}
+                {billing.billingAddress && (<><dt>{t("servicesTable.billingAddress")}</dt><dd>{billing.billingAddress}</dd></>)}
+                {billing.additionalInfo && (<><dt>{t("servicesTable.additionalInfo")}</dt><dd>{billing.additionalInfo}</dd></>)}
+              </dl>
+            );
+          })()}
+
           <div className={styles.wrapper}>
             <table className={styles.table}>
               <colgroup>

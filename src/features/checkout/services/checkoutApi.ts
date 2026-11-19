@@ -28,6 +28,9 @@ export function buildCheckoutPayload(
       lastName: form.lastName,
       email: form.email,
       phone: form.phone || undefined,
+      companyName: form.companyName || undefined,
+      billingAddress: form.billingAddress || undefined,
+      additionalInfo: form.additionalInfo || undefined,
     },
     // L'API refuse un mode de réception quand il n'y a que des services
     fulfillment: !hasProducts

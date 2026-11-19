@@ -6,7 +6,8 @@ import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
 import { isAppErrorCode } from "@/lib/errors/appError";
-import { pickupSchema, type PickupFieldsInput } from "@/lib/auth/auth.schema";
+import { completeProfileSchema, type CompleteProfileInput } from "@/lib/auth/auth.schema";
+import { BillingAddressField } from "../billingAddressField/BillingAddressField";
 import { PickupFields } from "../pickupFields/PickupFields";
 import styles from "@/features/auth/components/registerForm/RegisterForm.module.css";
 
@@ -16,12 +17,12 @@ export default function CompleteProfileForm({ locale }: { locale: string }) {
   const tErrors = useTranslations("errors");
   const [serverError, setServerError] = useState<string | null>(null);
 
-  const form = useForm<PickupFieldsInput>({
-    resolver: zodResolver(pickupSchema),
-    defaultValues: { pickupMode: "address" },
+  const form = useForm<CompleteProfileInput>({
+    resolver: zodResolver(completeProfileSchema),
+    defaultValues: { pickupMode: "address", billingAddress: "" },
   });
 
-  const onSubmit = async (data: PickupFieldsInput) => {
+  const onSubmit = async (data: CompleteProfileInput) => {
     setServerError(null);
     const res = await fetch("/api/auth/complete-pickup", {
       method: "POST",
@@ -47,6 +48,7 @@ export default function CompleteProfileForm({ locale }: { locale: string }) {
       <p>{t("subtitle")}</p>
       <FormProvider {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
+          <BillingAddressField />
           <PickupFields />
           {serverError && <div className={styles.error}>{serverError}</div>}
           <button type="submit" disabled={form.formState.isSubmitting} className={styles.btnConnection}>
