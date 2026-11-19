@@ -153,20 +153,19 @@
 
   background-color: inherit;
   border-radius: 10px;
+  overflow: hidden;
 }
 
 .membershipContainer .advantages .logoContainer {
   display: flex;
   align-items: center;
   justify-content: center;
-min-width: 150px;
+  min-width: 150px;
   flex: 1;
 }
 
 .membershipContainer .advantages .logoContainer .memberLogo {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;   /* ← garde les proportions */
+  object-fit: contain;
 }
 
 .membershipContainer .advantages .advantagesList {
@@ -184,7 +183,7 @@ min-width: 150px;
 
 }
 
-.membershipContainer .advantages .advantagesList h1 {
+.membershipContainer .advantages .advantagesList h2 {
   font-family: var(--font-home), sans-serif;
   font-weight: 700;
   font-size: clamp(0.8rem, 2vw, 1rem);
@@ -241,6 +240,7 @@ min-width: 150px;
   text-align: center;
   display: inline-block;
   border-radius: 10px;
+  flex: 1;
 }
 
 .membershipContainer .advantages .buttonContainer .becomeMemberButton:hover {

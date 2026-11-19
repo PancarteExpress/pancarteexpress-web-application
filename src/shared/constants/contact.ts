@@ -6,7 +6,7 @@ export const CONTACT = {
   accountingPhone: "450-543-0769",
   /** Cellulaire, page contact */
   mobilePhone: "438-543-0912",
-  infoEmail: "info@pancarteexpress.com",
+  infoEmail: "pancarteexpress@gmail.com",
   commercialEmail: "structureframd@gmail.com",
   accountingEmail: "stephany@pancarteexpress.com",
   /** Adresse de l'entrepôt (page contact, ramassage) */

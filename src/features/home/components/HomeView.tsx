@@ -1,24 +1,19 @@
 "use client";
 
-// Utils
-import Link from "next/link";
 import styles from "./HomeView.module.css";
-import Image from "next/image";
-import { useState } from "react";
 
-// React icons
+import Image from "next/image";
+
+import { useState } from "react";
+import { motion } from "framer-motion";
+import { useTranslations } from 'next-intl';
+import { useAppLocale } from '@/shared/hooks/useAppLocale';
+import { LocalLink } from "@/shared/components/LocalLink";
+
 import { FaPaperPlane } from "react-icons/fa";
 import { IoIosCheckmark } from "react-icons/io";
 import { IoIosArrowDropleft } from "react-icons/io";
 import { IoIosArrowDropright } from "react-icons/io";
-
-// Framer motion
-import { motion } from "framer-motion";
-
-// Translater
-import { useTranslations } from 'next-intl';
-import { useAppLocale } from '@/shared/hooks/useAppLocale';
-
 
 const TESTIMONIALS = [
   { key: 'chantalProvost', name: 'Chantal Provost, Proprio Direct' },
@@ -29,16 +24,21 @@ const TESTIMONIALS = [
   { key: 'jamesHe', name: 'James He, RE/MAX' },
 ] as const;
 
+const HERO_TAGS = {
+  fr: ['h3', 'h1', 'h2', 'h2'],
+  en: ['h3', 'h2', 'h2', 'h1'],
+} as const;
+
 export default function Home() {
 
   const t = useTranslations('home');
   const locale = useAppLocale();
 
-  // Un seul index : la carte de droite est toujours la suivante
+  const fadeDown = { initial: { opacity: 0, y: -20 }, animate: { opacity: 1, y: 0 } };
+
   const [index, setIndex] = useState(0);
   const count = TESTIMONIALS.length;
   const visible = [TESTIMONIALS[index], TESTIMONIALS[(index + 1) % count]];
-
   const next = () => setIndex((i) => (i + 1) % count);
   const prev = () => setIndex((i) => (i - 1 + count) % count);
 
@@ -47,25 +47,22 @@ export default function Home() {
       <div className={styles.homeHero}>
         <div className={styles.leftContent}>
           <div className={styles.heroText}>
-            {locale === 'fr' && <>
-            <motion.h3 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>{t('heroText1')}</motion.h3>
-            <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>{t('heroText2')}</motion.h1>
-            <motion.h2 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>{t('heroText3')}</motion.h2>
-            <motion.h2 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>{t('heroText4')}</motion.h2></>}
-            
-            {locale === 'en' && <>
-            <motion.h3 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>{t('heroText1')}</motion.h3>
-            <motion.h2 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.2 }}>{t('heroText2')}</motion.h2>
-            <motion.h2 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>{t('heroText3')}</motion.h2>
-            <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.4 }}>{t('heroText4')}</motion.h1></>}
-            
+            {HERO_TAGS[locale].map((tag, i) => {
+              const MotionTag = motion[tag];
+              return (
+                <MotionTag key={i} {...fadeDown} transition={{ duration: 0.5, delay: i * 0.2 }}>
+                  {t(`heroText${i + 1}`)}
+                </MotionTag>
+              );
+            })}
+
             <br />
             <br />
             
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.8 }}>
-              <Link href={`/${locale}/services`} className={styles.demandeButton}>
+              <LocalLink  href='/services' className={styles.demandeButton}>
                 <FaPaperPlane className={styles.demandeButtonLogo}/> {t('heroButtonService')}
-              </Link>
+              </LocalLink >
             </motion.div>
           </div>
         </div>
@@ -78,11 +75,11 @@ export default function Home() {
       <div className={styles.membershipContainer}>
         <div className={styles.advantages}>
           <div className={styles.logoContainer}>
-            <Image src="/home/membership.jpg" alt={t('imageAlt')} className={styles.memberLogo} width={287} height={197} priority/>
+            <Image src="/home/membership.jpg" alt="" className={styles.memberLogo} width={287} height={197}/>
           </div>
 
           <div className={styles.advantagesList}>
-            <h1>{t('memberAdvantagesTitle')}</h1>
+            <h2>{t('memberAdvantagesTitle')}</h2>
             
             <div className={styles.listItem}>
               <ul>
@@ -97,10 +94,10 @@ export default function Home() {
             </div>
           </div>
 
-          <div className={styles.buttonContainer}>
-            <Link href={`/${locale}/register`} className={styles.becomeMemberButton}>
+          <div className={styles.buttonContainer}>            
+            <LocalLink href='/register' className={styles.becomeMemberButton}>
               {t('memberButtonBecomeMember')}
-            </Link>
+            </LocalLink>
           </div>
         </div>
       </div>
@@ -108,7 +105,7 @@ export default function Home() {
       <div className={styles.aboutcontainer}>
         
         <div className={styles.about}>
-          <h1><span>Pancarte Express</span> {t('aboutTitle')}</h1>
+          <h2><span>Pancarte Express</span> {t('aboutTitle')}</h2>
           <p>
             {t('aboutParagraph1')}
             <br/>
@@ -116,28 +113,28 @@ export default function Home() {
             {t('aboutParagraph2')}
           </p>
           <div className={styles.contactContainer}>
-            <Link href={`/${locale}/contact`} className={styles.contactButton}>
+            <LocalLink href='/contact' className={styles.contactButton}>
               <FaPaperPlane className={styles.contactButtonLogo}/> {t('aboutContactButton')}
-            </Link>
+            </LocalLink>
           </div>
         </div>
 
         <div className={styles.examples}>
           <div className={styles.exampleItem}>
             <div className={styles.logo}>
-              <Image src="/home/pancarte-rampe.png" alt={t('imageAlt')} className={styles.logoPancarte} width={94} height={94} priority/>
+              <Image src="/home/pancarte-rampe.png" alt="" className={styles.logoPancarte} width={94} height={94}/>
             </div>
             <div className={styles.texte}>{t('aboutTableText1')}<br /><span className={styles.bold}>{t('aboutTableBold1')}</span></div>
           </div>
            <div className={styles.exampleItem}>
             <div className={styles.logo}>
-              <Image src="/home/pancarte-structure.png" alt={t('imageAlt')} className={styles.logoPancarte} width={94} height={94} priority/>
+              <Image src="/home/pancarte-structure.png" alt="" className={styles.logoPancarte} width={94} height={94}/>
             </div>
             <div className={styles.texte}>{t('aboutTableText2')}<br /><span className={styles.bold}>{t('aboutTableBold2')}</span></div>
           </div>
            <div className={styles.exampleItem}>
             <div className={styles.logo}>
-              <Image src="/home/pancarte-mur.png" alt={t('imageAlt')} className={styles.logoPancarte} width={94} height={94} priority/>
+              <Image src="/home/pancarte-mur.png" alt="" className={styles.logoPancarte} width={94} height={94}/>
             </div>
             <div className={styles.texte}>{t('aboutTableText3')}<br /><span className={styles.bold}>{t('aboutTableBold3')}</span></div>
           </div>

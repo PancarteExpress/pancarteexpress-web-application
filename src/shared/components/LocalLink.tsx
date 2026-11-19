@@ -7,7 +7,7 @@ import type { ComponentProps } from 'react';
 import { getActivePath } from '../utils/pathname';
 
 type LocalLinkProps = Omit<ComponentProps<typeof Link>, 'href'> & {
-  href: string;
+  href: `/${string}`;
   activeClassName?: string;
 };
 
