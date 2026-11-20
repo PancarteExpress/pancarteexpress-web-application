@@ -53,15 +53,17 @@
 
 .mainContainer .redirections .buttons a {
     border: 3px solid #D8E8F8;
-    padding: 10px;
+    padding: 5px;
     color: #0E3A8C;
     background-color: #F8FAFD;
-    font-weight: 800;
+    font-weight: 700;
     font-size: 1.2rem;
     border-radius: 10px;
     text-decoration: none;
+    text-align: center;
+    width: 100%;
+    padding: 5px 20px;
 }
-
 
 .mainContainer .grid {
     display: grid;

@@ -1,9 +1,9 @@
-import Image from 'next/image';
-import { useTranslations } from 'next-intl';
 import styles from './ResidentialView.module.css';
-import Link from 'next/link';
-import { useAppLocale } from '@/shared/hooks/useAppLocale';
 
+import Image from 'next/image';
+
+import { useTranslations } from 'next-intl';
+import { LocalLink } from '@/shared/components/LocalLink';
 
 // L'ordre définit aussi les images : image1.jpg / logo1.png, etc.
 const INSTALLATION_KEYS = [
@@ -20,7 +20,6 @@ const INSTALLATION_KEYS = [
 
 export default function Residential() {
   const t = useTranslations('residential');
-   const locale = useAppLocale();
 
   return (
     <div className={styles.mainContainer}>
@@ -35,8 +34,8 @@ export default function Residential() {
 
       <div className={styles.redirections}>
           <div className={styles.buttons}>
-              <Link href={`/${locale}/shop`} className={styles.link}>{t('shopRedirection')}</Link>
-              <Link href={`/${locale}/services`} className={styles.link}>{t('servicesRedirection')}</Link>
+              <LocalLink href="/shop" className={styles.link}>{t('shopRedirection')}</LocalLink>
+              <LocalLink href="/services" className={styles.link}>{t('servicesRedirection')}</LocalLink>
           </div>
       </div>
 

@@ -1,6 +1,7 @@
 import 'server-only';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
+import { CONFIRMED_ORDER_WHERE } from '@/lib/orders/constants';
 
 const userOrderSelect = {
   id: true,
@@ -48,7 +49,7 @@ export type UserOrder = Prisma.OrderGetPayload<{ select: typeof userOrderSelect 
 /** Toutes les commandes du client (produits et services), les plus récentes en premier */
 export function getUserOrders(userId: string): Promise<UserOrder[]> {
   return prisma.order.findMany({
-    where: { userId },
+    where: { userId, ...CONFIRMED_ORDER_WHERE },
     select: userOrderSelect,
     orderBy: { createdAt: 'desc' },
   });
@@ -67,6 +68,7 @@ type TeamMember = { id: string; joinedAt: Date | null };
 /** Une condition par membre : seulement ses commandes passées depuis son entrée dans le groupe */
 export function teamOrdersWhere(members: TeamMember[]): Prisma.OrderWhereInput {
   return {
+    ...CONFIRMED_ORDER_WHERE,
     OR: members.flatMap(({ id, joinedAt }) =>
       joinedAt ? [{ userId: id, createdAt: { gte: joinedAt } }] : [],
     ),

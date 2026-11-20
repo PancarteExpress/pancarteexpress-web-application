@@ -1,5 +1,6 @@
 import "server-only";
 import type { Prisma, RequestType, ServiceStatus, ServiceType } from "@prisma/client";
+import { CONFIRMED_ORDER_WHERE } from '@/lib/orders/constants';
 import { prisma } from "@/lib/prisma";
 import { formatServiceDelay } from "@/lib/orders/serviceDelay";
 import { getDisplayName } from "@/shared/utils/displayName";
@@ -91,6 +92,7 @@ function formatAddress(a: ServiceWithRelations["serviceAddress"]): string {
 
 export async function listServicesForAdmin(): Promise<AdminClientServices[]> {
   const services = await prisma.service.findMany({
+    where: { serviceAddress: { serviceRequest: { order: CONFIRMED_ORDER_WHERE } } },
     orderBy: { serviceAddress: { serviceRequest: { order: { createdAt: "desc" } } } },
     select: adminServiceSelect,
   });

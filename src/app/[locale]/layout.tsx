@@ -8,6 +8,7 @@ import { SessionProvider } from 'next-auth/react';
 import { notFound } from 'next/navigation';
 import { hasLocale } from 'next-intl';
 import { LOCALES } from '@/shared/constants/locales';
+import { SITE_URL } from '@/lib/siteUrl';
 
 import Header from '@/features/layout/components/header/Header';
 import StorageOwnerSync from '@/features/layout/components/storageOwnerSync/StorageOwnerSync';
@@ -24,7 +25,11 @@ const poppins = Poppins({
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'metadata' });
-  return { description: t('description') };
+
+  return {
+    metadataBase: new URL(SITE_URL),
+    description: t('description'),
+  };
 }
 
 export default async function LocaleLayout({

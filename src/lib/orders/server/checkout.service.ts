@@ -120,7 +120,7 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
     return { mode: 'submitted', orderNumber: order.orderNumber, total: order.total };
   }
 
-  return attachPaymentIntent(order, payload.contact.email);
+  return attachPaymentIntent(order, user?.email ?? payload.contact.email);
 }
 
 /* ── Produits ─────────────────────────────────────────────────── */

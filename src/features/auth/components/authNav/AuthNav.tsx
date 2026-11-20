@@ -1,7 +1,8 @@
 "use client";
 
-import { useAuth } from "../../hooks/useAuth";
 import styles from "./AuthNav.module.css";
+
+import { useAuth } from "../../hooks/useAuth";
 import { useTranslations } from "next-intl";
 import { LocalLink } from "@/shared/components/LocalLink";
 

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
-import { isCategorySlug, type CategorySlug } from '@/lib/catalog/categories';
+import { parseCategory } from '@/lib/catalog/categories';
 import ShopView from '@/features/shop/components/ShopView';
 
 interface Props {
@@ -8,18 +8,28 @@ interface Props {
   searchParams: Promise<{ category?: string | string[] }>;
 }
 
-export async function generateMetadata({ params }: Pick<Props, 'params'>): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: Props): Promise<Metadata> {
   const { locale } = await params;
+  const activeCategory = parseCategory((await searchParams).category);
   const t = await getTranslations({ locale, namespace: 'shop' });
-  return { title: t('title') };
+
+  const path = activeCategory ? `/shop?category=${activeCategory}` : '/shop';
+
+  return {
+    title: activeCategory ? `${t(`categories.${activeCategory}`)} | ${t('title')}` : t('title'),
+    alternates: {
+      canonical: `/${locale}${path}`,
+      languages: {
+        fr: `/fr${path}`,
+        en: `/en${path}`,
+      },
+    },
+  };
 }
 
-export default async function ShopPage({ searchParams }: Pick<Props, 'searchParams'>) {
-  const { category } = await searchParams;
-
+export default async function ShopPage({ searchParams }: Props) {
   // Catégorie inconnue dans l'URL : on affiche tout plutôt qu'une erreur
-  const raw = Array.isArray(category) ? category[0] : category;
-  const activeCategory: CategorySlug | null = raw && isCategorySlug(raw) ? raw : null;
+  const activeCategory = parseCategory((await searchParams).category);
 
   return <ShopView activeCategory={activeCategory} />;
 }

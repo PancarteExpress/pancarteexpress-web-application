@@ -3,8 +3,6 @@ import type Stripe from 'stripe';
 import { stripe } from '@/lib/stripe/server';
 import { handlePaymentFailed, handlePaymentSucceeded } from '@/lib/orders/server/payment.service';
 
-
-
 export async function POST(request: Request) {
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 

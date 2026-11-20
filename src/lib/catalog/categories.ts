@@ -3,5 +3,10 @@ export const CATEGORY_SLUGS = ['poles', 'anchors', 'keyboxes', 'hardware', 'bigF
 
 export type CategorySlug = (typeof CATEGORY_SLUGS)[number];
 
-export const isCategorySlug = (value: string): value is CategorySlug =>
-  (CATEGORY_SLUGS as readonly string[]).includes(value);
+export const isCategorySlug = (value: string): value is CategorySlug => (CATEGORY_SLUGS as readonly string[]).includes(value);
+
+/** Lit ?category= depuis l'URL : renvoie un slug valide, ou null si absent ou inconnu */
+export function parseCategory(value: string | string[] | undefined): CategorySlug | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  return raw && isCategorySlug(raw) ? raw : null;
+}

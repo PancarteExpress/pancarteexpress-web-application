@@ -8,6 +8,7 @@ import { formatServiceDelay } from '@/lib/orders/serviceDelay';
 import { SITE_URL } from '@/lib/siteUrl';
 import { formatAddressNumber } from '@/lib/services/addressNumber';
 import { describeServiceDetailsText } from '@/features/services/utils/serviceDetailsText';
+import { CONFIRMED_ORDER_WHERE } from '@/lib/orders/constants';
 
 /*
  * Courriel interne par numéro PE (une adresse de service), avec le détail complet de chacun
@@ -98,7 +99,10 @@ export async function sendServiceAddressEmails(orderId: string): Promise<void> {
   let addresses: EmailAddress[];
   try {
     addresses = await prisma.serviceAddress.findMany({
-      where: { serviceRequest: { orderId }, internalEmailSentAt: null },
+      where: {
+        serviceRequest: { orderId, order: CONFIRMED_ORDER_WHERE },
+        internalEmailSentAt: null,
+      },
       orderBy: { addressNumber: 'asc' },
       select: addressSelect,
     });

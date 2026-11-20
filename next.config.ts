@@ -4,8 +4,7 @@ const withNextIntl = createNextIntlPlugin('./src/i18n.ts');
 
 const nextConfig = {
   reactStrictMode: true,
-  allowedDevOrigins: ['192.168.18.13'],
-  // Le logo des courriels est lu sur disque par sendEmail : il doit être inclus dans les fonctions serverless
+  allowedDevOrigins: ['192.168.18.13', '10.0.0.49'],
   outputFileTracingIncludes: {
     '/**': ['./public/email/logo.png'],
   },

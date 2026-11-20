@@ -18,6 +18,6 @@ describe("telHref", () => {
 
 describe("mailtoHref", () => {
   it("pointe vers l'adresse affichée", () => {
-    expect(mailtoHref(CONTACT.infoEmail)).toBe("mailto:info@pancarteexpress.com");
+    expect(mailtoHref(CONTACT.infoEmail)).toBe("mailto:pancarteexpress@gmail.com");
   });
 });

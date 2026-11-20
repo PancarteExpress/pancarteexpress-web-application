@@ -3,6 +3,7 @@ import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { useAppLocale } from '@/shared/hooks/useAppLocale';
 import styles from './BigFormatView.module.css';
+import { LocalLink } from '@/shared/components/LocalLink';
 
 type SectionKey =
   | 'rigidDisplay'
@@ -56,12 +57,12 @@ export default function BigFormat() {
 
       <div className={styles.redirections}>
         <div className={styles.buttons}>
-          <Link href={{ pathname: `/${locale}/shop`, query: { category: 'bigFormatStructure' } }} className={styles.link}>
+          <LocalLink href="/shop?category=bigFormatStructure" className={styles.link}>
             {t('shopRedirection')}
-          </Link>
-          <Link href={`/${locale}/services`} className={styles.link}>
+          </LocalLink>
+          <LocalLink href="/services" className={styles.link}>
             {t('servicesRedirection')}
-          </Link>
+          </LocalLink>
         </div>
       </div>
 

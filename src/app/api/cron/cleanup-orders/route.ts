@@ -22,7 +22,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    const result = await cleanupAbandonedOrders();
+    const result = await cleanupAbandonedOrders().catch((error: unknown) => {
+      console.error('[cron] Nettoyage des commandes en échec', error);
+      return { cleanupFailed: true };
+    });
     // Indépendant du nettoyage : un échec OptimoRoute ne doit pas faire échouer le cron
     const optimoRetried = await retryFailedOptimoSyncs().catch((error: unknown) => {
       console.error('[cron] Réessai OptimoRoute en échec', error);
