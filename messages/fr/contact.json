@@ -30,5 +30,7 @@
         "greeting": "Bonjour,",
         "body": "Merci d'avoir communiqué avec Pancarte Express. Notre équipe vous répondra dans les plus brefs délais.",
         "urgent": "Pour une demande urgente, appelez-nous au {phone}."
-    }
+    },
+
+    "rateLimitFeedback": "Vous avez envoyé plusieurs demandes en peu de temps. Veuillez réessayer dans quelques minutes ou nous appeler directement ({phone})."
 }

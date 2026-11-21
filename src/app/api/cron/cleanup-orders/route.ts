@@ -4,6 +4,7 @@ import { cleanupAbandonedOrders } from '@/lib/orders/server/cleanup.service';
 import { retryFailedOptimoSyncs } from '@/lib/optimoroute/server/syncOrder';
 import { retryUnsentReceipts } from '@/lib/orders/server/receipts.email';
 import { notifyEffectiveServiceBlocks } from '@/lib/users/server/serviceBlock.emails';
+import { prisma } from '@/lib/prisma';
 
 function isAuthorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
@@ -39,8 +40,16 @@ export async function GET(request: Request) {
       console.error('[cron] Courriels de blocage effectif en échec', error);
       return 0;
     });
-    console.info('[cleanup] Terminé', { ...result, optimoRetried, receiptsRetried, blockNoticesSent });
-    return NextResponse.json({ ...result, optimoRetried, receiptsRetried, blockNoticesSent });
+    const contactAttemptsDeleted = await prisma.contactAttempt
+      .deleteMany({ where: { createdAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } } })
+      .then((r) => r.count)
+      .catch((error: unknown) => {
+        console.error('[cron] Nettoyage des tentatives de contact en échec', error);
+        return 0;
+      });
+    const summary = { ...result, optimoRetried, receiptsRetried, blockNoticesSent, contactAttemptsDeleted };
+    console.info('[cleanup] Terminé', summary);
+    return NextResponse.json(summary);
   } catch (error) {
     console.error('[cleanup] Échec', error);
     return NextResponse.json({ error: 'cleanupFailed' }, { status: 500 });

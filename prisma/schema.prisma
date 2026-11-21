@@ -375,3 +375,13 @@ model ServiceAttachment {
 
   @@index([serviceAddressId])
 }
+
+/// Tentatives d'envoi du formulaire de contact, pour limiter le nombre d'envois par IP.
+/// L'IP est hachée : aucune adresse en clair n'est conservée. Nettoyé par le cron quotidien.
+model ContactAttempt {
+  id        String   @id @default(cuid())
+  ipHash    String
+  createdAt DateTime @default(now())
+
+  @@index([ipHash, createdAt])
+}

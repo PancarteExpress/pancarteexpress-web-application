@@ -29,5 +29,7 @@
         "greeting": "Hello,",
         "body": "Thank you for contacting Pancarte Express. Our team will get back to you as soon as possible.",
         "urgent": "For an urgent request, call us at {phone}."
-    }
+    },
+
+    "rateLimitFeedback": "You've sent several requests in a short time. Please try again in a few minutes or call us directly ({phone})."
 }

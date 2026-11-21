@@ -1,22 +1,9 @@
 .mainContainer {
-  /*margin: 0 auto;
-  padding: 50px 0;
-  width: 60%;
-
-  display: flex;
-  gap: 10px;*/
-
     display: flex;
     flex-direction: column;
     align-items: center;
-
     padding: 0 20px;
-
 }
-
-/*@media (max-width: 1650px) { .mainContainer { width: 80%; } }
-@media (max-width: 1300px) { .mainContainer { width: 95%; } }
-@media (max-width: 1000px) { .mainContainer { flex-direction: column; padding: 0; } }*/
 
 .mainContainer .hero {
     width: 100%;
@@ -26,131 +13,77 @@
     padding-bottom: 20px;
     
     display: flex;
-    text-align: center;
+    text-align: left;
     align-items: center;
     flex-direction: column;
     gap: 15px;
 
     color: white;
     border-radius: 10px;
-
 }
 
-@media (max-width: 1000px) { .mainContainer .hero  {padding: 20px 0;} }
+@media (max-width: 1000px) { .mainContainer .hero { padding: 20px 0; } }
 
-
-.mainContainer .hero .contacts {
-    display: flex;
-    
+.mainContainer .hero .contactsContainer {
+    display: grid;
+    grid-template-columns: repeat(4, auto);
     gap: 20px;
+    margin: 0 50px;
 }
 
+@media (max-width: 1400px) { .mainContainer .hero .contactsContainer  { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 800px)  { .mainContainer .hero .contactsContainer  { grid-template-columns: repeat(1, 1fr); } }
 
-.mainContainer .hero .contacts .responsiveContact {
-    font-size: 1rem;
-}
-
-.mainContainer .hero .contacts .responsiveContact,
-.mainContainer .hero .contacts .contact {
-    flex: 1;
-
+.mainContainer .hero .contactsContainer .responsiveContact,
+.mainContainer .hero .contactsContainer .contact {
     display: flex;
     align-items: center;
-    
     gap: 10px;
-    
 }
 
-.mainContainer .hero .contacts .responsiveContact .infos,
-.mainContainer .hero .contacts .contact .infos {
+@media (max-width: 1000px) { .mainContainer .hero .contactsContainer .responsiveContact { display: none; } }
+
+.mainContainer .hero .contactsContainer .responsiveContact .infos,
+.mainContainer .hero .contactsContainer .contact .infos {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: left;
 }
 
-.mainContainer .hero .contacts .responsiveContact .infos .contactLabel,
-.mainContainer .hero .contacts .contact .infos .contactLabel {
+.mainContainer .hero .contactsContainer .responsiveContact .infos .contactLabel,
+.mainContainer .hero .contactsContainer .contact .infos .contactLabel {
     color: #D8E8F8;
     text-align: left;
     white-space: nowrap;
 }
 
-.mainContainer .hero .contacts .responsiveContact .infos .contactLabel {
-    font-size: 0.9rem;
+.mainContainer .hero .contactsContainer .responsiveContact .infos .contactLabel,
+.mainContainer .hero .contactsContainer .contact .infos .contactLabel {
+    font-size: 0.8rem;
 }
 
-.mainContainer .hero .contacts .responsiveContact .infos .contactValue {
-    font-size: 0.9rem;
-}
-
-.mainContainer .hero .contacts .contact .infos .contactLabel {
+.mainContainer .hero .contactsContainer .responsiveContact .infos .contactValue,
+.mainContainer .hero .contactsContainer .contact .infos .contactValue {
     font-size: 1rem;
 }
 
-.mainContainer .hero .contacts .contact .infos .contactValue {
-    font-size: 0.7rem;
-}
-
-.mainContainer .about {
-    flex: 1;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-
-    padding-top: 50px;
-    
-}
-
-@media (max-width: 1000px) { .mainContainer .about { padding-top: 0; align-items: flex-start; } }
-
-.mainContainer .hero label {
-    font-family: var(--font-title), sans-serif;
+.mainContainer .hero .contactsContainer .responsiveContact .infos label,
+.mainContainer .hero .contactsContainer .contact .infos label {
     font-weight: 900;
     font-size: 1.5rem;
     letter-spacing: .06em;
-    text-transform: uppercase;
     flex: 1;
 }
 
-.mainContainer .hero p {
-    text-transform: uppercase;
-    font-weight: 700;
-    font-size: 0.8rem;
-    line-height: 1.7rem;
-    color: #D8E8F8;
+.mainContainer .hero .contactsContainer .responsiveContact .infos a,
+.mainContainer .hero .contactsContainer .contact .infos a {
+    font-weight: 900;
+    font-size: 1.5rem;
+    letter-spacing: .06em;
+    flex: 1;
+    color: white;
+    text-decoration: none;
 }
-
-
-.mainContainer .about .contact {
-    width: 60%;
-    margin-top: 10px;
-
-    display: flex;
-
-}
-
-.mainContainer .about .imageContainer {  
-    
-    padding: 10px;
-
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-}
-
-.mainContainer .about .infos {
-
-    display: flex;
-    flex-direction: column;
-
-    gap: 3px;
-}
-
-.mainContainer .about .infos label:first-child {
-    font-weight: 700;
-}   
 
 .mainContainer .contactForm {
     width: 40%;
@@ -159,11 +92,19 @@
     margin: 30px 0;
 }
 
-@media (max-width: 1000px) { .mainContainer .contactForm {  margin-top: 10px; } }
+@media (max-width: 1650px) { .mainContainer .contactForm { width: 80%; } }
+
+@media (max-width: 1300px) { .mainContainer .contactForm { width: 95%; } }
 
 .mainContainer .contactForm .header {
     padding: 20px 24px;
     border-bottom: 3px solid #EEF4FB;
+}
+
+.mainContainer .contactForm .header .formTitle {
+    font-family: var(--font-text), sans-serif;
+    font-weight: 900;
+    letter-spacing: .03em;
 }
 
 .mainContainer .contactForm .formBody {
@@ -173,21 +114,13 @@
     gap: 16px;
 }
 
-.mainContainer .contactForm .formBody h2 {
-    font-family: var(--font-text), sans-serif;
-    font-weight: 900;
-    color: #5F7FA8;
-    text-transform: uppercase;
-    letter-spacing: .05em;
-}
-
 .mainContainer .contactForm .formBody .row {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
 
-@media (max-width: 1400px)  { .mainContainer .contactForm .formBody .row { grid-template-columns: 1fr; } }
+@media (max-width: 800px)  { .mainContainer .contactForm .formBody .row { grid-template-columns: 1fr; } }
 
 .mainContainer .contactForm .formBody .rowFull {
     grid-template-columns: 1fr;
@@ -200,7 +133,6 @@
 }
 
 .mainContainer .contactForm .formBody .row .field label {
-    font-family: var(--font-text), sans-serif;
     font-weight: 700;
     color: #5F7FA8;
     text-transform: capitalize;
@@ -212,7 +144,6 @@
     padding: 9px 12px;
     border: 1px solid #C5D8EF;
     border-radius: 10px;
-    font-family: var(--font-text), sans-serif;
     background: #F8FAFD;
     outline: none;
 }
@@ -243,6 +174,35 @@
     color: #A8C4E8;
 }
 
+/* Texte saisi (toujours) */
+.field input,
+.field textarea {
+  color: #092E5B;
+  font-weight: 500;
+  font-family: var(--font-text), sans-serif;
+  font-size: 1rem;
+}
+
+/* Champ rempli */
+.field input:not(:placeholder-shown),
+.field textarea:not(:placeholder-shown) {
+  border-color: #0E4D9A;
+  background-color: #F3F7FC;
+}
+
+/* Champ en cours d'édition */
+.field input:focus,
+.field textarea:focus {
+  outline: none;
+  border-color: #0E4D9A;
+  box-shadow: 0 0 0 3px rgba(14, 77, 154, 0.15);
+}
+
+.field input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px #F3F7FC inset;
+  -webkit-text-fill-color: #092E5B;
+}
+
 .req {
     color: #C62828;
 }
@@ -254,7 +214,6 @@
     text-align: center;
     font-weight: 700;
     color: #C62828;
-    
 }
 
 .mainContainer .contactForm .formBody .sendingMessage {
@@ -285,4 +244,13 @@
     text-align: center;
     font-weight: 700;
     font-size: 1.1rem;
+}
+
+/* Hors écran plutôt que display: none : certains robots ignorent les champs masqués */
+.honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
 }
