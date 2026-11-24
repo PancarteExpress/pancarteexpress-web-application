@@ -1,16 +1,15 @@
 "use client";
 
 import styles from './LoginForm.module.css';
+import { useEffect, useState } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslations } from 'next-intl';
 import { loginSchema, type LoginInput } from "@/lib/auth/auth.schema";
 import { useAuth } from "../../hooks/useAuth";
-
-import Link from "next/link";
 import { useAuthStore } from '../../store/authStore';
-import { useState } from 'react';
-import { useTranslations } from 'next-intl';
 import { useIssueMessage } from '@/shared/hooks/useIssueMessage';
+import { LocalLink } from '@/shared/components/LocalLink';
 
 interface LoginFormProps {
   locale: string;
@@ -19,14 +18,18 @@ interface LoginFormProps {
 export function LoginForm({ locale }: LoginFormProps) {
   const t = useTranslations('login');
   const tv = useIssueMessage('errors.validation');
-
   const { login } = useAuth();
 
   const error = useAuthStore((state) => state.error);
   const isLoading = useAuthStore((state) => state.isLoading);
-  const [success, setSuccess] = useState<boolean>(false);
+  const [success, setSuccess] = useState(false);
 
   const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({ resolver: zodResolver(loginSchema) });
+
+  // Erreur laissée par une autre page (ex. l'inscription) : ne pas l'afficher ici
+  useEffect(() => {
+    useAuthStore.getState().clearError();
+  }, []);
 
   const onSubmit = async (data: LoginInput) => {
     const result = await login(data);
@@ -34,63 +37,62 @@ export function LoginForm({ locale }: LoginFormProps) {
       setSuccess(true);
       setTimeout(() => {
         window.location.replace(`/${locale}/dashboard`);
-      }, 1000);  // 1 seconde
+      }, 1000);
     }
   };
 
+  // Première erreur, quel que soit le champ (avant : les champs vides n'affichaient rien)
+  const firstFieldError = Object.values(errors).find((e) => e?.message)?.message;
+  const errorMessage = tv(firstFieldError) || error;
+
+  // Un seul message à la fois : le plus pertinent gagne
+  const feedback =
+    success ? { className: styles.success, role: 'status', text: t('connectedSuccessfully') }
+    : isLoading ? { className: styles.loading, role: 'status', text: t('tryingToConnect') }
+    : errorMessage ? { className: styles.error, role: 'alert', text: errorMessage }
+    : null;
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className={styles.mainContainer}>
+    <form onSubmit={handleSubmit(onSubmit)} className={styles.mainContainer} noValidate>
       <div className={styles.inputs}>
         <label htmlFor="loginId" className="block text-sm font-medium mb-1">{t('formId')}</label>
         <input
+          id="loginId"
+          type="text"
           autoComplete="username"
           autoCapitalize="none"
           spellCheck={false}
-          id="loginId"
-          type="text"
+          aria-invalid={Boolean(errors.identifier) || undefined}
           {...register("identifier")}
-          className="w-full px-3 py-2 border rounded"
-          disabled={isLoading}
+          disabled={isLoading || success}
         />
       </div>
 
       <div className={styles.inputs}>
         <label htmlFor="loginPassword" className="block text-sm font-medium mb-1">{t('formPassword')}</label>
         <input
-          autoComplete="current-password"
           id="loginPassword"
           type="password"
+          autoComplete="current-password"
+          aria-invalid={Boolean(errors.password) || undefined}
           {...register("password")}
-          className="w-full px-3 py-2 border rounded"
-          disabled={isLoading}
+          disabled={isLoading || success}
         />
       </div>
 
       <div className={styles.forgotPassword}>
-        <Link href={`/${locale}/forgot-password`}>
-          {t('formForgotPassword')}
-        </Link>
+        <LocalLink href="/forgot-password">{t('formForgotPassword')}</LocalLink>
       </div>
 
-      {isLoading &&
-      <div className={styles.loading}>
-        {t('tryingToConnect')}
-      </div>}
+      {feedback && (
+        <div className={feedback.className} role={feedback.role}>
+          {feedback.text}
+        </div>
+      )}
 
-      {(errors.root || error) &&
-      <div className={styles.error}>
-        {error || tv(errors.root?.message)}
-      </div>}
-      
-      {success &&
-      <div className={styles.success}>
-        {t('connectedSuccessfully')}
-      </div>}
-
-      <button type="submit" disabled={isLoading} className={styles.btnConnection}>
+      <button type="submit" disabled={isLoading || success} className={styles.btnConnection}>
         {t('connectionBtn')}
       </button>
-
     </form>
   );
 }

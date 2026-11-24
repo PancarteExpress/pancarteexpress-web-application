@@ -1,13 +1,15 @@
-// src/features/auth/components/loginCredentials/LoginCredentials.tsx
 'use client';
 
 import styles from './LoginCredentials.module.css';
-import Link from "next/link";
+
+import { useTranslations } from 'next-intl';
+
 import { GoogleLoginButton } from "../googleLoginButton/GoogleLoginButton";
 import { LoginForm } from '../loginForm/LoginForm';
-import { FaHouseChimney } from 'react-icons/fa6';
-import { useTranslations } from 'next-intl';
 import { LoginErrorMessage } from '../loginErrorMessage/LoginErrorMessage';
+
+import { FaHouseChimney } from 'react-icons/fa6';
+import { LocalLink } from '@/shared/components/LocalLink';
 
 interface LoginCredentialsProps {
   locale: string;
@@ -18,23 +20,20 @@ export default function LoginCredentials({ locale }: LoginCredentialsProps) {
 
   return (
     <div className={styles.credentials}>
-
         <div className={styles.header}>
           <FaHouseChimney size={30} style={{color: "#0E4D9A"}}/>
-          <label>{t('loginTitle')}</label>
+          <h1>{t('loginTitle')}</h1>
         </div>
         
-        <LoginErrorMessage locale={locale} />
+        <LoginErrorMessage />
         <GoogleLoginButton locale={locale} intent="login" />
         
         <LoginForm locale={locale} />
         
-        <p style={{ color: '#7691B4', fontWeight: '700'}}>
+        <div className={styles.registerRedirection}>
           {t('notRegisteredYet')}{" "}
-          <Link href={`/${locale}/register`} style={{ textDecoration: 'none', color: '#0E4D9A', fontWeight: '700' }}>
-            {t('createAccount')}
-          </Link>
-        </p>
+          <LocalLink href="/register" className={styles.registerLink}>{t('createAccount')}</LocalLink>
+        </div>
       </div>
   );
 }

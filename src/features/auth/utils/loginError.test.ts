@@ -25,15 +25,20 @@ describe('getLoginErrorKey', () => {
     expect(en[key!]).toEqual(expect.any(String));
   });
 
-  it('ignore un code absent ou inconnu', () => {
+  it('aucun code → aucun message', () => {
     expect(getLoginErrorKey(null)).toBeNull();
     expect(getLoginErrorKey('')).toBeNull();
-    expect(getLoginErrorKey('inconnu')).toBeNull();
+  });
+
+  it('code inconnu → message générique (jamais le texte de l’URL)', () => {
+    expect(getLoginErrorKey('inconnu')).toBe('errorGeneric');
+    expect(getLoginErrorKey('OAuthSignin')).toBe('errorGeneric');
   });
 
   it("ignore les propriétés héritées d'Object, que l'URL permet de demander", () => {
-    expect(getLoginErrorKey('constructor')).toBeNull();
-    expect(getLoginErrorKey('toString')).toBeNull();
-    expect(getLoginErrorKey('__proto__')).toBeNull();
+    // Message générique, et non la fonction héritée : hasOwn empêche de remonter au prototype
+    expect(getLoginErrorKey('constructor')).toBe('errorGeneric');
+    expect(getLoginErrorKey('toString')).toBe('errorGeneric');
+    expect(getLoginErrorKey('__proto__')).toBe('errorGeneric');
   });
 });

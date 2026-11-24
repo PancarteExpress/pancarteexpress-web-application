@@ -55,8 +55,12 @@ export function useAuth() {
         });
 
         if (result?.error) {
-          // Auth.js : CredentialsSignin = identifiants refusés ; tout autre code (Configuration…) reste interne
-          const errorMessage = tErrors(result.error === "CredentialsSignin" ? "invalidCredentials" : "serverError");
+          // Auth.js : code personnalisé (trop d'essais), CredentialsSignin (identifiants refusés), sinon erreur interne
+          const errorKey =
+            result.code === "tooManyRequests" ? "tooManyRequests"
+            : result.error === "CredentialsSignin" ? "invalidCredentials"
+            : "serverError";
+          const errorMessage = tErrors(errorKey);
           setError(errorMessage);
           return { success: false, error: errorMessage };
         }

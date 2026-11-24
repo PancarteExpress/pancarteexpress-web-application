@@ -14,8 +14,10 @@ const LOGIN_ERROR_KEYS = {
 
 export type LoginErrorKey = (typeof LOGIN_ERROR_KEYS)[keyof typeof LOGIN_ERROR_KEYS];
 
-/** @returns la clé i18n du namespace "login", ou null si le code est absent ou inconnu */
+/** @returns la clé i18n du namespace "login" ; message générique pour un code inconnu, null si aucun code */
 export function getLoginErrorKey(error: string | null): LoginErrorKey | null {
-  if (!error || !Object.hasOwn(LOGIN_ERROR_KEYS, error)) return null;
-  return LOGIN_ERROR_KEYS[error as keyof typeof LOGIN_ERROR_KEYS];
+  if (!error) return null;
+  return Object.hasOwn(LOGIN_ERROR_KEYS, error)
+    ? LOGIN_ERROR_KEYS[error as keyof typeof LOGIN_ERROR_KEYS]
+    : 'errorGeneric';
 }

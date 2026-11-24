@@ -1,6 +1,3 @@
-// src/features/auth/components/loginView/LoginView.tsx
-'use client';
-
 import styles from './LoginView.module.css';
 import LoginCredentials from '../loginCredentials/LoginCredentials';
 

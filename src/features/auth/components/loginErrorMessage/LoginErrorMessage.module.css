@@ -1,0 +1,29 @@
+.message {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border-radius: 10px;
+  padding: 5px 10px;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+
+  min-height: 90px;
+  justify-content: center;
+}
+
+.message p {
+  margin: 0;
+  font-weight: 700;
+  color: rgb(150, 98, 1);
+}
+
+.message a {
+  border-radius: 10px;
+  background-color: #FFA500;
+  color: white;
+  font-weight: 600;
+  padding: 4px 10px;
+  text-decoration: none;
+}

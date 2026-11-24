@@ -1,4 +1,5 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
+import { emailKey, ipKey, isRateLimited, LIMITS } from "@/lib/rateLimit/server/rateLimit";
 import Credentials from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { hashPassword } from "@/lib/auth/server/password";
@@ -11,7 +12,13 @@ import { cookies } from "next/headers";
 import type { EmailLocale } from "@/lib/auth/server/authEmails";
 import { authIntentSchema, loginSchema, signupGroupStatusSchema } from "@/lib/auth/auth.schema";
 
+// Trop d'essais : Auth.js transmet ce code au client (result.code), distinct de « identifiants invalides »
+class TooManyLoginAttempts extends CredentialsSignin {
+  code = "tooManyRequests";
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  
   providers: [
     Google({
       clientId: process.env.GOOGLE_ID!,
@@ -27,6 +34,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const parsed = loginSchema.safeParse(credentials);
         if (!parsed.success) return null;
         const { identifier, password } = parsed.data;
+
+        // Limite les essais : empêche de deviner un mot de passe en les essayant un par un
+        if (await isRateLimited("login", [
+          { key: emailKey(identifier), limit: LIMITS.loginIdentifier },
+          { key: await ipKey(), limit: LIMITS.loginIp },
+        ])) {
+          throw new TooManyLoginAttempts();
+        }
 
         // « @ » : courriel ; sinon nom d'utilisateur repris de WordPress
         const user = await prisma.user.findUnique({

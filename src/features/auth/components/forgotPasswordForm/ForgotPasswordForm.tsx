@@ -1,21 +1,25 @@
 "use client";
 
+import styles from './ForgotPasswordForm.module.css';
+
+import * as z from "zod";
 import { useForm } from "react-hook-form";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { forgotPasswordSchema, resetPasswordSchema, verifyCodeSchema, type ResetPasswordInput } from "@/lib/auth/auth.schema";
-import { useState } from "react";
-import Link from "next/link";
-import * as z from "zod";
-import { useTranslations } from "next-intl";
 import { readErrorCode } from "@/lib/errors/appError";
 import { useIssueMessage } from "@/shared/hooks/useIssueMessage";
+import { LocalLink } from "@/shared/components/LocalLink";
 
-import styles from './ForgotPasswordForm.module.css';
 import { FaUnlockKeyhole } from "react-icons/fa6";
 
 interface ForgotPasswordFormProps {
   locale: string;
 }
+
+type Step = "email" | "code" | "reset";
 
 const emailSchema = forgotPasswordSchema.pick({ email: true });
 
@@ -26,27 +30,24 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
   const tErrors = useTranslations("errors");
   const t = useTranslations("login.forgotPassword");
   const tv = useIssueMessage("errors.validation");
-  const [step, setStep] = useState<"email" | "code" | "reset">("email");
+  const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [isDone, setIsDone] = useState(false);
 
-  // Step 1: Email
-  const emailForm = useForm<EmailFormInput>({
-    resolver: zodResolver(emailSchema),
-  });
+  const emailForm = useForm<EmailFormInput>({ resolver: zodResolver(emailSchema) });
+  const codeForm = useForm<VerifyCodeInput>({ resolver: zodResolver(verifyCodeSchema) });
+  const resetForm = useForm<ResetPasswordInput>({ resolver: zodResolver(resetPasswordSchema) });
 
-  // Step 2: Code
-  const codeForm = useForm<VerifyCodeInput>({
-    resolver: zodResolver(verifyCodeSchema),
-  });
-
-  // Step 3: Reset Password
-  const resetForm = useForm<ResetPasswordInput>({
-    resolver: zodResolver(resetPasswordSchema),
-  });
+  // Changer d'étape efface les messages de l'étape précédente
+  const goToStep = (next: Step, successMessage: string | null = null) => {
+    setError(null);
+    setSuccess(successMessage);
+    setStep(next);
+  };
 
   const handleEmailSubmit = async (data: EmailFormInput) => {
     try {
@@ -65,8 +66,8 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
       }
 
       setEmail(data.email);
-      setStep("code");
-      setSuccess(t("codeSent"));
+      codeForm.reset();
+      goToStep("code", t("codeSent"));
     } catch {
       setError(tErrors("serverError"));
     } finally {
@@ -86,14 +87,15 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
       });
 
       if (!res.ok) {
+        setSuccess(null);
         setError(tErrors(await readErrorCode(res)));
         return;
       }
 
       setCode(data.code);
-      setStep("reset");
-      setSuccess(null);
+      goToStep("reset");
     } catch {
+      setSuccess(null);
       setError(tErrors("serverError"));
     } finally {
       setIsLoading(false);
@@ -116,8 +118,9 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
         return;
       }
 
+      setIsDone(true);
       setSuccess(t("resetSuccess"));
-      setTimeout(() => window.location.href = `/${locale}/login`, 2000);
+      setTimeout(() => window.location.replace(`/${locale}/login`), 2000);
     } catch {
       setError(tErrors("serverError"));
     } finally {
@@ -125,23 +128,33 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
     }
   };
 
+  const codeError = error || tv(codeForm.formState.errors.code?.message);
+  const resetError =
+    tv(resetForm.formState.errors.password?.message) ||
+    tv(resetForm.formState.errors.confirmPassword?.message) ||
+    error;
+
   return (
     <div className={styles.mainContainer}>
       <div className={styles.credentials}>
-        
+
         {/* Step 1: Email */}
         {step === "email" && (<>
         <div className={styles.header}>
           <FaUnlockKeyhole size={30} style={{color: "#0E4D9A"}}/>
           <label>{t("emailPrompt")}</label>
         </div>
-        
-        <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)}>
+
+        <form onSubmit={emailForm.handleSubmit(handleEmailSubmit)} noValidate>
           <div className={styles.inputs}>
-            <label className="block text-sm font-medium">{t("email")}</label>
+            <label htmlFor="forgot-email" className="block text-sm font-medium">{t("email")}</label>
             <input
+              id="forgot-email"
               {...emailForm.register("email")}
               type="email"
+              autoComplete="email"
+              autoFocus
+              disabled={isLoading}
             />
           </div>
 
@@ -155,9 +168,9 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
           </button>
 
           <div style={{ marginTop: '20px', textAlign: 'center' }}>
-            <Link href={`/${locale}/login`} style={{ textDecoration: 'none', color: '#0E4D9A', fontWeight: '700' }}>
+            <LocalLink href="/login" style={{ textDecoration: 'none', color: '#0E4D9A', fontWeight: '700' }}>
               {t("backToLogin")}
-            </Link>
+            </LocalLink>
           </div>
         </form>
         </>
@@ -174,33 +187,35 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
             })}
           </label>
         </div>
-        
-        <form onSubmit={codeForm.handleSubmit(handleCodeSubmit)} >
 
+        <form onSubmit={codeForm.handleSubmit(handleCodeSubmit)} noValidate>
           <div className={styles.inputs}>
-            <label className="block text-sm font-medium">{t("code")}</label>
+            <label htmlFor="forgot-code" className="block text-sm font-medium">{t("code")}</label>
             <input
+              id="forgot-code"
               {...codeForm.register("code")}
               type="text"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              autoFocus
               maxLength={6}
               placeholder="000000"
+              disabled={isLoading}
               className="w-full px-3 py-2 border rounded text-center text-2xl tracking-widest"
             />
           </div>
 
-          {(codeForm.formState.errors.code || error) &&
-          <div className={styles.error}>
-            {error || tv(codeForm.formState.errors.code?.message)}
-          </div>}
-
-          {success && <div className={styles.codeSent}>{success}</div>}
+          {/* Un seul message à la fois : l'erreur passe avant le succès */}
+          {codeError
+            ? <div className={styles.error}>{codeError}</div>
+            : success && <div className={styles.codeSent}>{success}</div>}
 
           <button type="submit" disabled={isLoading} className={styles.bouton}>
             {isLoading ? t("verifying") : t("verifyCode")}
           </button>
 
           <div style={{ marginTop: '20px', textAlign: 'center' }}>
-            <button type="button" onClick={() => setStep("email")} style={{ all: 'unset', textDecoration: 'none', color: '#0E4D9A', fontWeight: '700', cursor: 'pointer' }}>
+            <button type="button" onClick={() => goToStep("email")} disabled={isLoading} style={{ all: 'unset', textDecoration: 'none', color: '#0E4D9A', fontWeight: '700', cursor: 'pointer' }}>
               {t("backToSendCode")}
             </button>
           </div>
@@ -215,35 +230,37 @@ export function ForgotPasswordForm({ locale }: ForgotPasswordFormProps) {
           <label>{t("newPasswordPrompt")}</label>
         </div>
 
-        <form onSubmit={resetForm.handleSubmit(handleResetSubmit)} className="space-y-4">
+        <form onSubmit={resetForm.handleSubmit(handleResetSubmit)} className="space-y-4" noValidate>
           <div className={styles.inputs}>
-            <label className="block text-sm font-medium">{t("newPassword")}</label>
+            <label htmlFor="forgot-password" className="block text-sm font-medium">{t("newPassword")}</label>
             <input
+              id="forgot-password"
               {...resetForm.register("password")}
               type="password"
               autoComplete="new-password"
+              autoFocus
+              disabled={isLoading || isDone}
               className="w-full px-3 py-2 border rounded"
             />
           </div>
 
           <div className={styles.inputs}>
-            <label className="block text-sm font-medium">{t("confirmPassword")}</label>
+            <label htmlFor="forgot-confirm-password" className="block text-sm font-medium">{t("confirmPassword")}</label>
             <input
+              id="forgot-confirm-password"
               {...resetForm.register("confirmPassword")}
               type="password"
               autoComplete="new-password"
+              disabled={isLoading || isDone}
               className="w-full px-3 py-2 border rounded"
             />
           </div>
 
-          {(resetForm.formState.errors.password ||resetForm.formState.errors.confirmPassword || error) &&
-          <div className={styles.error}>
-            {tv(resetForm.formState.errors.password?.message) || tv(resetForm.formState.errors.confirmPassword?.message) || error}
-          </div>}
+          {resetError
+            ? <div className={styles.error}>{resetError}</div>
+            : success && <div className={styles.codeSent}>{success}</div>}
 
-          {success && <div className={styles.codeSent}>{success}</div>}
-
-           <button type="submit" disabled={isLoading} className={styles.bouton}>
+          <button type="submit" disabled={isLoading || isDone} className={styles.bouton}>
             {isLoading ? t("resetting") : t("resetPassword")}
           </button>
         </form>
