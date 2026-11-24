@@ -1,4 +1,5 @@
 {
+  "metaTitle": "Administration",
   "sidebarTitle": "Super Admin",
   "nav": {
     "users": "Utilisateurs",
@@ -93,7 +94,18 @@
     "attachments": "Fichiers",
     "companyName": "Entreprise",
     "billingAddress": "Facturation",
-    "additionalInfo": "Infos supplémentaires"
+    "additionalInfo": "Infos supplémentaires",
+    "status": "Statut"
+  },
+  "serviceStatuses": {
+    "TO_SCHEDULE": "À planifier",
+    "SCHEDULED": "Planifié",
+    "COMPLETED": "Terminé",
+    "CANCELLED": "Annulé"
+  },
+  "serviceStatusSelect": {
+    "confirm": "Passer {label} à « {status} » ?",
+    "ariaLabel": "Statut de {label}"
   },
   "accountTypeSelect": {
     "confirmGroupAdmin": "Créer un nouveau groupe avec {name} comme administrateur ?",
@@ -101,10 +113,10 @@
     "ariaLabel": "Type de compte de {name}"
   },
   "deleteUser": {
-    "confirm": "Supprimer {name} ? Cette action est irréversible. Un courriel d'au revoir lui sera envoyé.",
+    "confirm": "Supprimer {name} ? Cette action est irréversible. Ses commandes seront conservées dans l'historique et un courriel d'au revoir lui sera envoyé.",
+    "successorText": "{name} est administrateur de son groupe. Choisissez qui le remplace. Ses commandes seront conservées dans l'historique.",
     "ariaLabel": "Supprimer {name}",
     "title": "Supprimer {name}",
-    "successorText": "{name} est administrateur de son groupe. Choisissez qui le remplace.",
     "newAdmin": "Nouvel administrateur",
     "cancel": "Annuler",
     "deleting": "Suppression…",

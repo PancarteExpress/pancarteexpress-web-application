@@ -11,6 +11,7 @@ import {
 } from "@/lib/users/accountType";
 import { sendAccountDeletedEmail } from "@/lib/users/server/accountDeleted.email";
 import { notifyAccountTypeChanges, type AccountTypeChange } from "@/lib/users/server/accountType.emails";
+import { CONFIRMED_ORDER_WHERE } from "@/lib/orders/constants";
 
 export async function deleteUserAction(
   userId: string,
@@ -29,6 +30,23 @@ export async function deleteUserAction(
       });
       if (!target) throw new ActionError("Utilisateur introuvable.");
       if (target.role === "superAdmin") throw new ActionError("Impossible de supprimer un superAdmin.");
+      
+      // Services encore en cours dont il est le client ou le payeur : on attend qu'ils soient terminés
+      const openServices = await tx.service.count({
+        where: {
+          status: { notIn: ["COMPLETED", "CANCELLED"] },
+          serviceAddress: {
+            serviceRequest: {
+              order: { ...CONFIRMED_ORDER_WHERE, OR: [{ userId }, { billedToId: userId }] },
+            },
+          },
+        },
+      });
+      if (openServices > 0) {
+        throw new ActionError(
+          `Ce compte a ${openServices} service(s) en cours (à planifier ou planifiés). Attendez qu'ils soient terminés ou annulés avant de le supprimer.`,
+        );
+      }
 
       let emptyGroupId: string | null = null;
       let promotedAdmin: AccountTypeChange | null = null;

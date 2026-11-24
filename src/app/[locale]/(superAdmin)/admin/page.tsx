@@ -1,13 +1,20 @@
-
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { AdminDashboard } from "@/features/superAdmin/components/superAdminDashboard/SuperAdminDashboard";
 import { requireRolePage } from "@/lib/auth/guard";
 import { listGroupsForAdmin } from "@/lib/groups/server/groups.service";
 import { listServicesForAdmin } from "@/lib/services/server/services.service";
 import { listUsersForAdmin } from "@/lib/users/server/user.service";
 
-
 interface AdminPageProps {
   params: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({ params }: AdminPageProps): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "superAdmin" });
+
+  return { title: t("metaTitle") };
 }
 
 export default async function AdminPage({ params }: AdminPageProps) {

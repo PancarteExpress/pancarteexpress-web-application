@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 const prismaMock = vi.hoisted(() => ({
   user: { findUnique: vi.fn(), count: vi.fn(), updateMany: vi.fn(), update: vi.fn(), delete: vi.fn() },
   group: { create: vi.fn(), delete: vi.fn() },
+  service: { count: vi.fn() },
   $transaction: vi.fn(),
 }));
 const authMock = vi.hoisted(() => vi.fn());
@@ -27,6 +28,7 @@ beforeEach(() => {
   vi.clearAllMocks();
   authMock.mockResolvedValue({ user: { id: "sa", role: "superAdmin" } });
   prismaMock.$transaction.mockImplementation(async (fn: (tx: typeof prismaMock) => Promise<unknown>) => fn(prismaMock));
+  prismaMock.service.count.mockResolvedValue(0);
 });
 
 describe("deleteUserAction", () => {
@@ -49,6 +51,17 @@ describe("deleteUserAction", () => {
     prismaMock.user.findUnique.mockResolvedValue({ role: "superAdmin", groupId: null });
 
     await expect(deleteUserAction("u2")).resolves.toEqual({ ok: false, error: "Impossible de supprimer un superAdmin." });
+    expect(prismaMock.user.delete).not.toHaveBeenCalled();
+  });
+
+  it("refuse la suppression si le compte a des services en cours", async () => {
+    prismaMock.user.findUnique.mockResolvedValue({ role: "user", groupId: null });
+    prismaMock.service.count.mockResolvedValue(2);
+
+    await expect(deleteUserAction("u2")).resolves.toEqual({
+      ok: false,
+      error: "Ce compte a 2 service(s) en cours (à planifier ou planifiés). Attendez qu'ils soient terminés ou annulés avant de le supprimer.",
+    });
     expect(prismaMock.user.delete).not.toHaveBeenCalled();
   });
 

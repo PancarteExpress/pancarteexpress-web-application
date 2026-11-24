@@ -1,6 +1,7 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { CONFIRMED_ORDER_WHERE } from "@/lib/orders/constants";
 
 // Liste blanche : seuls ces champs sortent de la base (jamais le mot de passe)
 const adminUserSelect = {
@@ -16,7 +17,7 @@ const adminUserSelect = {
   createdAt: true,
   serviceBlockStartsAt: true,
   group: { select: { id: true, name: true, billingMode: true } },
-  _count: { select: { orders: true } },
+  _count: { select: { orders: { where: CONFIRMED_ORDER_WHERE } } },
 } satisfies Prisma.UserSelect;
 
 export type AdminUserRow = Prisma.UserGetPayload<{ select: typeof adminUserSelect }>;

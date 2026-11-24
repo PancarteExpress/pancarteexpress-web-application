@@ -1,4 +1,5 @@
 {
+  "metaTitle": "Administration",
   "sidebarTitle": "Super Admin",
   "nav": {
     "users": "Users",
@@ -93,7 +94,18 @@
     "attachments": "Files",
     "companyName": "Company",
     "billingAddress": "Billing",
-    "additionalInfo": "Additional info"
+    "additionalInfo": "Additional info",
+    "status": "Status"
+  },
+  "serviceStatuses": {
+    "TO_SCHEDULE": "To schedule",
+    "SCHEDULED": "Scheduled",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled"
+  },
+  "serviceStatusSelect": {
+    "confirm": "Change {label} to “{status}”?",
+    "ariaLabel": "Status of {label}"
   },
   "accountTypeSelect": {
     "confirmGroupAdmin": "Create a new group with {name} as administrator?",
@@ -101,10 +113,10 @@
     "ariaLabel": "Account type of {name}"
   },
   "deleteUser": {
-    "confirm": "Delete {name}? This action cannot be undone. A goodbye email will be sent.",
+    "confirm": "Delete {name}? This cannot be undone. Their orders will be kept in the history and a goodbye email will be sent to them.",
+    "successorText": "{name} is the administrator of their group. Choose who will replace them. Their orders will be kept in the history.",
     "ariaLabel": "Delete {name}",
     "title": "Delete {name}",
-    "successorText": "{name} is the administrator of their group. Choose who will replace them.",
     "newAdmin": "New administrator",
     "cancel": "Cancel",
     "deleting": "Deleting…",

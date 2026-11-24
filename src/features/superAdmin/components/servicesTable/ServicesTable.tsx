@@ -4,6 +4,7 @@ import styles from "./ServicesTable.module.css";
 import { formatDate } from "@/shared/utils/date";
 import { useAppLocale } from "@/shared/hooks/useAppLocale";
 import { formatAddressNumber } from "@/lib/services/addressNumber";
+import { ServiceStatusSelect } from "./ServiceStatusSelect";
 
 interface ServicesTableProps {
   clients: AdminClientServices[];
@@ -50,7 +51,9 @@ export function ServicesTable({ clients }: ServicesTableProps) {
                 <col className={styles.colType} />
                 <col className={styles.colAddress} />
                 <col className={styles.colDate} />
-                {/*<col className={styles.colStatus} />*/}
+                <col />
+                <col />
+                <col className={styles.colStatus} />
               </colgroup>
               <thead>
                 <tr>
@@ -61,6 +64,7 @@ export function ServicesTable({ clients }: ServicesTableProps) {
                   <th scope="col">{t("servicesTable.requestedOn")}</th>
                   <th scope="col">{t("servicesTable.delay")}</th>
                   <th scope="col">{t("servicesTable.attachments")}</th>
+                  <th scope="col">{t("servicesTable.status")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -86,6 +90,14 @@ export function ServicesTable({ clients }: ServicesTableProps) {
                           ))}
                         </ul>
                       )}
+                    </td>
+                    <td>
+                      <ServiceStatusSelect
+                        serviceId={s.id}
+                        label={`${formatAddressNumber(s.addressNumber)} · ${t(`serviceTypes.${s.type}`)}`}
+                        status={s.status}
+                        className={styles.statusSelect}
+                      />
                     </td>
                   </tr>
                 ))}

@@ -45,7 +45,9 @@
 .colType    { width: 10%; }
 .colAddress { width: 50%; }
 .colDate    { width: 30%; }
-/*.colStatus  { width: 12%; }*/
+.colStatus { width: 12%; }
+
+.statusSelect { width: 100%; }
 
 .mono { font-family: "JetBrains Mono", monospace; }
 
