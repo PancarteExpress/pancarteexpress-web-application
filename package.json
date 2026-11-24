@@ -11,7 +11,8 @@
     "postinstall": "prisma generate",
     "test": "vitest",
     "test:run": "vitest run",
-    "email": "email dev --dir src/lib/email/templates --port 3001"
+    "email": "email dev --dir src/lib/email/templates --port 3001",
+    "stripe:listen": "stripe listen --events payment_intent.succeeded,payment_intent.payment_failed --forward-to localhost:3000/api/webhooks/stripe"
   },
   "prisma": {
     "seed": "node prisma/seed.ts"

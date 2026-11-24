@@ -1,13 +1,24 @@
 .filter {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 20px;
   margin: 8px 0;
-  font-family: var(--font-text);
   font-size: 14px;
+  padding: 0 20px;
+}
+
+.filter span {
+  font-weight: 700;
+  font-size: 1rem;
 }
 
 .filter select {
-  padding: 6px 8px;
-  max-width: 100%;
+  cursor: pointer;
+  padding: 5px 10px;
+  text-align: center;
+  background-color: #D8E8F8;
+  color: #0E4D9A;
+  font-weight: 700;
+  border: 1px solid #0E4D9A;
+  border-radius: 10px;
 }

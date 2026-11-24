@@ -21,6 +21,8 @@ export function MemberEmailSearch({ selected, onChange }: Props) {
   const [results, setResults] = useState<UserSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
+  const [searchedQuery, setSearchedQuery] = useState<string | null>(null);
+
   useEffect(() => {
     const q = query.trim().toLowerCase();
     if (q.length < MIN_CHARS) {
@@ -34,9 +36,15 @@ export function MemberEmailSearch({ selected, onChange }: Props) {
       setIsSearching(true);
       try {
         const users = await searchUsersByEmailAction(q);
-        if (!cancelled) setResults(users);
+        if (!cancelled) {
+          setResults(users);
+          setSearchedQuery(q);
+        }
       } catch {
-        if (!cancelled) setResults([]);
+        if (!cancelled) {
+          setResults([]);
+          setSearchedQuery(q);
+        }
       } finally {
         if (!cancelled) setIsSearching(false);
       }
@@ -84,7 +92,7 @@ export function MemberEmailSearch({ selected, onChange }: Props) {
 
         {isSearching && <p className={styles.search}>{t('searching')}</p>}
 
-        {!isSearching && query.trim().length >= MIN_CHARS && visibleResults.length === 0 && (
+        {!isSearching && searchedQuery === query.trim().toLowerCase() && visibleResults.length === 0 && (
           <p className={styles.notFound}>{t('notFound')}</p>
         )}
 

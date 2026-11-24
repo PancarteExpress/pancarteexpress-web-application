@@ -53,12 +53,6 @@ export default function ServiceOrders({ orders, title, toolbar }: Props) {
     <div className={styles.mainContainer}>
       <h3 className={styles.title}>{title ?? tDashboard('serviceRequests')}</h3>
 
-      <div className={styles.header}>
-        <div>
-          <span>{t('order')}</span>
-        </div>
-      </div>
-
       {toolbar}
 
       {orders.length === 0 ? (
@@ -126,8 +120,6 @@ export default function ServiceOrders({ orders, title, toolbar }: Props) {
                             <div key={s.id} className={styles.service}>
                               <p className={styles.serviceHeader}>
                                 <strong>{t(`serviceTypes.${s.type}`)}</strong>
-                                {' · '}{t(`statuses.${s.status}`)}
-                                {s.status !== 'CANCELLED' && <>{' · '}{formatServicePrice(s.price)}</>}
                               </p>
                               {s.completedAt ? (
                                 <p className={styles.serviceDate}>{t('completedAt', { date: formatDateTime(s.completedAt) })}</p>

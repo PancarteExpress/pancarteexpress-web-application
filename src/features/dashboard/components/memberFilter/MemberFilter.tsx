@@ -16,7 +16,7 @@ export function MemberFilter({ members, value, onChange }: Props) {
   const t = useTranslations('dashboard.memberFilter');
   return (
     <label className={styles.filter}>
-      <span>{t('member')}</span>
+      <span>{t('filter')}</span>
       <select value={value} onChange={(e) => onChange(e.target.value)}>
         <option value="">{t('allMembers')}</option>
         {members.map((m) => {

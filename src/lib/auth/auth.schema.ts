@@ -70,10 +70,6 @@ export function applyPickupRules(data: PickupFieldsInput, ctx: z.RefinementCtx) 
   }
 }
 
-// Utilisé par la page de modification du ramassage
-export const pickupSchema = pickupFieldsSchema.superRefine(applyPickupRules);
-
-// Page de complétion (inscription Google) : adresse de facturation et ramassage
 // Page de complétion (inscription Google) : Google ne fournit ni téléphone ni agence
 export const completeProfileSchema = pickupFieldsSchema
   .extend({

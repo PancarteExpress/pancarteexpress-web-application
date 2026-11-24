@@ -18,7 +18,7 @@
   "myServiceRequests": "My orders requests",
   "teamServiceRequests": "Team orders requests",
   "memberFilter": {
-    "member": "Member",
+    "filter": "Filter",
     "allMembers": "All members"
   },
   "serviceOrders": {

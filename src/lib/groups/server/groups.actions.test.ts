@@ -92,7 +92,7 @@ describe("addGroupMembersAction", () => {
 
     await expect(addGroupMembersAction({ memberIds: ["solo"] })).resolves.toEqual({
       ok: false,
-      error: "Un ou plusieurs coéquipiers ne sont plus disponibles",
+      error: "memberUnavailable",
     });
   });
 });
