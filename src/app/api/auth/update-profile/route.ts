@@ -4,12 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { updateProfileSchema } from "@/lib/auth/auth.schema";
 import { authService } from "@/lib/auth/server/auth.service";
 import { errorResponse } from "@/lib/errors/server/toClientError";
+import { AppError } from "@/lib/errors/appError";
 
 export async function POST(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return errorResponse(new AppError("unauthorized"), "update-profile");
   }
 
   try {
@@ -38,10 +39,6 @@ export async function POST(request: Request) {
           receptionDate: null,
           notes: null,
         },
-      });
-      await prisma.user.update({
-        where: { id: userId },
-        data: { needsPickupInfo: false },
       });
     }
 

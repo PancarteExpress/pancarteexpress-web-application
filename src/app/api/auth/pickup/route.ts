@@ -4,12 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { pickupSchema } from "@/lib/auth/auth.schema";
 import { toPickupCreateInput } from "@/lib/auth/server/pickup";
 import { errorResponse } from "@/lib/errors/server/toClientError";
+import { AppError } from "@/lib/errors/appError";
 
 export async function GET() {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return errorResponse(new AppError("unauthorized"), "pickup");
   }
 
   const [pickup, user] = await Promise.all([
@@ -23,7 +24,7 @@ export async function PUT(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return errorResponse(new AppError("unauthorized"), "pickup");
   }
 
   try {
@@ -31,17 +32,11 @@ export async function PUT(request: Request) {
     const data = pickupSchema.parse(body);
     const pickup = toPickupCreateInput(data);
 
-    const [saved] = await prisma.$transaction([
-      prisma.pickupInfo.upsert({
-        where: { userId },
-        create: { userId, ...pickup },
-        update: pickup,
-      }),
-      prisma.user.update({
-        where: { id: userId },
-        data: { needsPickupInfo: false },
-      }),
-    ]);
+    const saved = await prisma.pickupInfo.upsert({
+      where: { userId },
+      create: { userId, ...pickup },
+      update: pickup,
+    });
 
     return NextResponse.json({ pickup: saved });
   } catch (error) {

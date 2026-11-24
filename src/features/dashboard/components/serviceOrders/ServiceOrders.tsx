@@ -15,14 +15,13 @@ import { ServiceDetailsSummary } from '@/features/services/components/servicesSu
 interface Props {
   orders: (UserOrder & { user?: OrderOwner | null })[];
   title?: string;
-  productsVisible?: boolean;
   toolbar?: ReactNode;
 }
 
 type ServiceAddressRow = UserOrder['serviceRequests'][number]['addresses'][number];
 type OrderService = ServiceAddressRow['services'][number];
 
-export default function ServiceOrders({ orders, title, productsVisible = true, toolbar }: Props) {
+export default function ServiceOrders({ orders, title, toolbar }: Props) {
   const t = useTranslations('dashboard.serviceOrders');
   const tDashboard = useTranslations('dashboard');
   const locale = useAppLocale();
@@ -75,6 +74,9 @@ export default function ServiceOrders({ orders, title, productsVisible = true, t
               <div className={styles.resume}>
                 <div className={styles.orderNumber}>
                   <label className={styles.orderNumber}>#{order.orderNumber}</label>
+                  <span className={styles.orderOwner}>
+                    {format.dateTime(order.createdAt, { dateStyle: 'long', timeZone: 'America/Toronto' })}
+                  </span>
                   {order.user && (
                     <span className={styles.orderOwner}>
                       {getDisplayName(order.user)}
@@ -91,7 +93,7 @@ export default function ServiceOrders({ orders, title, productsVisible = true, t
 
               {openOrderId === order.id && (
                 <div className={styles.details}>
-                  {order.products.length !== 0 && productsVisible && (
+                  {order.products.length !== 0 && (
                     <div className={styles.products}>
                       <h3>{t('products')}</h3>
                       {order.products.map((product) => (

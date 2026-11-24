@@ -16,6 +16,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { readErrorCode, type AppErrorCode } from "@/lib/errors/appError";
 import AddressAutocomplete from "@/shared/components/addressAutocomplete/AddressAutocomplete";
 import { useIssueMessage } from "@/shared/hooks/useIssueMessage";
+import { formatPhone } from "@/shared/utils/phone";
+import { useRouter } from "next/navigation";
 
 // Erreurs serveur rattachées à un champ ; les autres s'affichent en message global
 const PROFILE_ERROR_FIELDS: Partial<Record<AppErrorCode, keyof UpdateProfileInput>> = {
@@ -25,6 +27,16 @@ const PROFILE_ERROR_FIELDS: Partial<Record<AppErrorCode, keyof UpdateProfileInpu
 const PASSWORD_ERROR_FIELDS: Partial<Record<AppErrorCode, keyof UpdatePasswordInput>> = {
   currentPasswordIncorrect: "currentPassword",
 };
+
+interface PickupResponse {
+  pickup: { address: string | null; city: string | null; postalCode: string | null } | null;
+  billingAddress?: string | null;
+}
+
+/** Adresse complète affichée dans le champ : « rue, ville, code postal » */
+function formatPickupText(pickup: PickupResponse["pickup"]): string {
+  return [pickup?.address, pickup?.city, pickup?.postalCode].filter(Boolean).join(", ");
+}
 
 interface UpdateProfileProps {
   sessionUser?: User;
@@ -43,6 +55,12 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
   const [profileError, setProfileError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  // Tant que les adresses ne sont pas chargées, enregistrer enverrait des champs vides et les effacerait
+  const [addressesStatus, setAddressesStatus] = useState<"loading" | "ready" | "error">("loading");
+  // Texte affiché dans le champ de ramassage (le formulaire ne garde que la rue)
+  const [pickupText, setPickupText] = useState("");
+
+  const router = useRouter();
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -87,28 +105,32 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       email: sessionUser.email || "",
       username: sessionUser.username || "",
       locale: sessionUser.locale ?? currentLocale,
-      phoneNumber: sessionUser.phoneNumber || "",
+      phoneNumber: formatPhone(sessionUser.phoneNumber || ""),
       companyName: sessionUser.companyName || "",
       groupStatus: sessionUser.groupStatus || "SOLO",
     }));
   }, [sessionUser, resetProfile, currentLocale]);
 
-  // Adresse de ramassage enregistrée
+  // Adresses enregistrées (ramassage et facturation)
   useEffect(() => {
     let cancelled = false;
     fetch("/api/auth/pickup")
-      .then((res) => res.json())
-      .then((body: {
-        pickup: { address: string | null; city: string | null; postalCode: string | null } | null;
-        billingAddress?: string | null;
-      }) => {
+      .then(async (res) => {
+        if (!res.ok) throw new Error(`pickup ${res.status}`);
+        return (await res.json()) as PickupResponse;
+      })
+      .then((body) => {
         if (cancelled) return;
         setProfileFieldValue("billingAddress", body.billingAddress ?? "");
         setProfileFieldValue("pickupAddress", body.pickup?.address ?? "");
         setProfileFieldValue("pickupCity", body.pickup?.city ?? "");
         setProfileFieldValue("pickupPostalCode", body.pickup?.postalCode ?? "");
+        setPickupText(formatPickupText(body.pickup));
+        setAddressesStatus("ready");
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) setAddressesStatus("error");
+      });
     return () => {
       cancelled = true;
     };
@@ -125,6 +147,8 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
   });
 
   const onSubmitProfile = async (data: UpdateProfileInput) => {
+    if (addressesStatus !== "ready") return;
+
     try {
       setIsLoading(true);
       setProfileSuccess(null);
@@ -146,6 +170,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
 
       setProfileSuccess(t("profileUpdated"));
       await update();
+      router.refresh();
 
       // Langue changée : on recharge la même page dans la nouvelle langue
       if (data.locale !== currentLocale) {
@@ -193,6 +218,8 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
     }
   };
 
+  const saveDisabled = isLoading || addressesStatus !== "ready";
+
   return (
     <div className={styles.fixedContainer}>
       <div className={styles.mainContainer}>
@@ -211,6 +238,10 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
 
           {profileError && (
             <p role="alert" className={styles.formError}>{profileError}</p>
+          )}
+
+          {addressesStatus === "error" && (
+            <p role="alert" className={styles.formError}>{tErrors("serverError")}</p>
           )}
 
           <form onSubmit={handleSubmitProfile(onSubmitProfile)} className="space-y-4">
@@ -243,7 +274,16 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
 
               <div className={styles.inputs}>
                 <label className="block text-sm font-medium">{t("phone")}</label>
-                <input {...registerProfile("phoneNumber")} type="tel" className="w-full px-3 py-2 border rounded" />
+                <input
+                  {...registerProfile("phoneNumber", {
+                    // Même format qu'à l'inscription : (438) 722-3922
+                    onChange: (e) => setProfileFieldValue("phoneNumber", formatPhone(e.target.value)),
+                  })}
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  className="w-full px-3 py-2 border rounded"
+                />
                 {profileErrors.phoneNumber && (
                   <span className="text-red-500 text-sm">{tv(profileErrors.phoneNumber.message)}</span>
                 )}
@@ -259,18 +299,25 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
                   render={({ field }) => (
                     <AddressAutocomplete
                       id="pickupAddress"
-                      value={field.value ?? ""}
-                      onChange={field.onChange}
+                      value={pickupText}
+                      onChange={(text: string) => {
+                        // Saisie à la main : l'ancienne ville et l'ancien code postal ne correspondent plus
+                        setPickupText(text);
+                        field.onChange(text);
+                        setProfileFieldValue("pickupCity", "");
+                        setProfileFieldValue("pickupPostalCode", "");
+                      }}
                       onBlur={field.onBlur}
                       inputRef={field.ref}
                       onSelect={(addr) => {
+                        // Ville et code postal d'abord : la validation de la rue en dépend
+                        setProfileFieldValue("pickupCity", addr?.city ?? "");
+                        setProfileFieldValue("pickupPostalCode", addr?.postalCode ?? "");
                         setProfileFieldValue(
                           "pickupAddress",
                           addr ? `${addr.streetNumber} ${addr.streetName}` : "",
                           { shouldValidate: true }
                         );
-                        setProfileFieldValue("pickupCity", addr?.city ?? "");
-                        setProfileFieldValue("pickupPostalCode", addr?.postalCode ?? "");
                       }}
                     />
                   )}
@@ -289,7 +336,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
               </div>
             </div>
 
-                        <div className={styles.formGroup}>
+            <div className={styles.formGroup}>
               <div className={styles.inputs}>
                 <label htmlFor="username">{t("username")}</label>
                 <input
@@ -357,8 +404,8 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
             </div>
 
             <div className={styles.btnSave}>
-              <button type="submit" disabled={isLoading}>
-                {isLoading ? t("saving") : t("saveProfile")}
+              <button type="submit" disabled={saveDisabled}>
+                {addressesStatus === "loading" ? t("loading") : isLoading ? t("saving") : t("saveProfile")}
               </button>
             </div>
           </form>

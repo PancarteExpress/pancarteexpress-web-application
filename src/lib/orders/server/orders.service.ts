@@ -42,6 +42,7 @@ const userOrderSelect = {
       },
     },
   },
+  createdAt: true
 } satisfies Prisma.OrderSelect;
 
 export type UserOrder = Prisma.OrderGetPayload<{ select: typeof userOrderSelect }>;

@@ -63,6 +63,7 @@
     "chooseSuggestion": "Choose an address from the suggestions."
   },
   "completeProfile": {
+    "metaTitle": "Complete my profile",
     "title": "Complete your profile",
     "subtitle": "Tell us how to collect your material before continuing.",
     "save": "Save",

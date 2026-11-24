@@ -1,8 +1,17 @@
+import type { Metadata } from 'next';
+import { getTranslations } from 'next-intl/server';
 import { auth } from '@/app/auth';
 import { DashboardContent } from '@/features/dashboard/components/dashboardContent/DashboardContent';
 import { getGroupDetails } from '@/lib/groups/server/groups.service';
 import { getTeamOrders, getUserOrders } from '@/lib/orders/server/orders.service';
 import { redirect } from 'next/navigation';
+
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'dashboard' });
+
+  return { title: t('metaTitle') };
+}
 
 export default async function DashboardPage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -22,5 +31,5 @@ export default async function DashboardPage({ params }: { params: Promise<{ loca
     role === 'groupAdmin' && groupId ? getTeamOrders(groupId, userId) : Promise.resolve([]),
   ]);
 
-  return <DashboardContent orders={orders} group={group} teamOrders={teamOrders} />;
+  return <DashboardContent user={session.user} orders={orders} group={group} teamOrders={teamOrders} />;
 }

@@ -104,6 +104,13 @@
     gap: 12px;
 }
 
+@media (max-width: 1000px) {
+    .mainContainer .personalInfos .formGroup {
+        grid-template-columns: 1fr;
+    }
+}
+
+
 .mainContainer .personalInfos .inputs {
     display: flex;
     flex-direction: column;

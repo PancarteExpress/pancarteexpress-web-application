@@ -1,6 +1,14 @@
 {
     "errors": {
         "nameTaken": "This team name is already in use",
+        "unauthenticated": "You must be signed in.",
+        "notAllowed": "Action not allowed.",
+        "noGroup": "No team is linked to your account.",
+        "invalidData": "Invalid data.",
+        "memberUnavailable": "One or more teammates are no longer available.",
+        "invalidMemberId": "Invalid member.",
+        "cannotRemoveMember": "This member cannot be removed.",
+        "invalidBillingMode": "Invalid billing mode.",
         "nameTooShort": "The team name must be at least 2 characters long",
         "nameTooLong": "The name cannot exceed 60 characters",
         "noMemberSelected": "Select at least one teammate"

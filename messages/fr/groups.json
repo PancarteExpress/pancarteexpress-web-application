@@ -1,6 +1,14 @@
 {
     "errors": {
         "nameTaken": "Ce nom d'équipe est déjà utilisé",
+        "unauthenticated": "Vous devez être connecté.",
+        "notAllowed": "Action non autorisée.",
+        "noGroup": "Aucune équipe n'est associée à votre compte.",
+        "invalidData": "Données invalides.",
+        "memberUnavailable": "Un ou plusieurs coéquipiers ne sont plus disponibles.",
+        "invalidMemberId": "Membre invalide.",
+        "cannotRemoveMember": "Ce membre ne peut pas être retiré.",
+        "invalidBillingMode": "Mode de facturation invalide.",
         "nameTooShort": "Le nom d'équipe doit contenir au moins 2 caractères",
         "nameTooLong": "Le nom ne peut dépasser 60 caractères",
         "noMemberSelected": "Sélectionnez au moins un coéquipier"

@@ -63,6 +63,7 @@
     "chooseSuggestion": "Choisissez une adresse dans la liste de suggestions."
   },
   "completeProfile": {
+    "metaTitle": "Compléter mon profil",
     "title": "Complétez votre profil",
     "subtitle": "Indiquez comment récupérer votre matériel avant de continuer.",
     "save": "Enregistrer",

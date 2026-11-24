@@ -35,6 +35,8 @@ export function MemberEmailSearch({ selected, onChange }: Props) {
       try {
         const users = await searchUsersByEmailAction(q);
         if (!cancelled) setResults(users);
+      } catch {
+        if (!cancelled) setResults([]);
       } finally {
         if (!cancelled) setIsSearching(false);
       }

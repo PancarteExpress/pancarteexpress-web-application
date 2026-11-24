@@ -31,12 +31,20 @@ export function CreateGroupDialog({ onCreated }: Props) {
 
   const onSubmit = async (values: GroupNameInput) => {
     setServerError(null);
-    const res = await renameGroupAction(values);  // ← Change ici, pas besoin de memberIds
-    if (!res.ok) {
-      setServerError("errorKey" in res ? t(`errors.${res.errorKey}`) : translateError(res.error) ?? null);
-      return;
+    try {
+      const res = await renameGroupAction(values);
+      if (!res.ok) {
+        setServerError(
+          "errorKey" in res
+            ? t(`errors.${res.errorKey}`)
+            : translateError(res.error) ?? t("manage.genericError"),
+        );
+        return;
+      }
+      await onCreated();
+    } catch {
+      setServerError(t("manage.genericError"));
     }
-    await onCreated();
   };
 
 

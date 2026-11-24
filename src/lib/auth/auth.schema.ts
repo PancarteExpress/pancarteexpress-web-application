@@ -155,6 +155,11 @@ export const updateProfileSchema = z.object({
   pickupAddress: z.string().trim().max(300, "tooLong").optional(),
   pickupCity: z.string().trim().max(100, "tooLong").optional(),
   pickupPostalCode: z.string().trim().max(10, "tooLong").optional(),
+}).superRefine((data, ctx) => {
+  // Adresse tapée sans choisir de suggestion : la ville et le code postal viennent de la suggestion
+  if (data.pickupAddress?.trim() && (!data.pickupCity?.trim() || !data.pickupPostalCode?.trim())) {
+    ctx.addIssue({ code: "custom", path: ["pickupAddress"], message: "chooseAddressSuggestion" });
+  }
 });
 
 export const updatePasswordSchema = z.object({

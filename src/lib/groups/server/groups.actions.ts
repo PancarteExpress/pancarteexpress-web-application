@@ -25,7 +25,7 @@ class GroupActionError extends Error {}
 
 // Règle métier : un groupAdmin n'ajoute sans validation que les users en attente d'équipe (PENDING) et sans groupe
 const addableMemberWhere = { groupId: null, groupStatus: "PENDING" } satisfies Prisma.UserWhereInput;
-const MEMBER_UNAVAILABLE = "Un ou plusieurs coéquipiers ne sont plus disponibles";
+const MEMBER_UNAVAILABLE = "memberUnavailable";
 
 export async function searchUsersByEmailAction(query: unknown): Promise<UserSearchResult[]> {
   const session = await auth();
@@ -54,15 +54,15 @@ type AdminContext = { ok: true; groupId: string } | { ok: false; error: string }
 async function getAdminContext(): Promise<AdminContext> {
   const session = await auth();
   const userId = session?.user?.id;
-  if (!userId) return { ok: false, error: "Non authentifié" };
+  if (!userId) return { ok: false, error: "unauthenticated" };
 
   // Rôle et groupe relus en BD, jamais depuis la session
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { role: true, groupId: true },
   });
-  if (user?.role !== "groupAdmin") return { ok: false, error: "Action non autorisée" };
-  if (!user.groupId) return { ok: false, error: "Aucune équipe associée" };
+  if (user?.role !== "groupAdmin") return { ok: false, error: "notAllowed" };
+  if (!user.groupId) return { ok: false, error: "noGroup" };
 
   return { ok: true, groupId: user.groupId };
 }
@@ -73,7 +73,7 @@ export async function renameGroupAction(input: unknown): Promise<RenameGroupResu
 
   const parsed = groupNameSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Données invalides" };
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "invalidData" };
   }
 
   try {
@@ -93,7 +93,7 @@ export async function addGroupMembersAction(input: unknown): Promise<GroupResult
 
   const parsed = addMembersSchema.safeParse(input);
   if (!parsed.success) {
-    return { ok: false, error: parsed.error.issues[0]?.message ?? "Données invalides" };
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "invalidData" };
   }
   const memberIds = [...new Set(parsed.data.memberIds)];
 
@@ -131,14 +131,14 @@ export async function removeGroupMemberAction(memberId: string): Promise<GroupRe
   if (!ctx.ok) return ctx;
 
   const parsed = memberIdSchema.safeParse(memberId);
-  if (!parsed.success) return { ok: false, error: "Identifiant invalide" };
+  if (!parsed.success) return { ok: false, error: "invalidMemberId" };
 
   // role: "user" → impossible de retirer un admin (dont soi-même)
   const { count } = await prisma.user.updateMany({
     where: { id: parsed.data, groupId: ctx.groupId, role: "user" },
     data: { groupId: null, groupStatus: "SOLO", joinedAt: null },
   });
-  if (count === 0) return { ok: false, error: "Ce membre ne peut pas être retiré" };
+  if (count === 0) return { ok: false, error: "cannotRemoveMember" };
 
   // Membre → solo : prévenu après la réponse
   const groupId = ctx.groupId;
@@ -196,7 +196,7 @@ export async function setBillingModeAction(mode: unknown): Promise<GroupResult> 
   if (!ctx.ok) return ctx;
 
   const parsed = billingModeSchema.safeParse(mode);
-  if (!parsed.success) return { ok: false, error: "Mode de facturation invalide" };
+  if (!parsed.success) return { ok: false, error: "invalidBillingMode" };
 
   // Le payeur est figé sur chaque commande : le changement ne vaut que pour les prochaines
   await prisma.group.update({

@@ -10,6 +10,10 @@ import { useTranslations } from "next-intl";
 import type { TeamOrder, UserOrder } from '@/lib/orders/server/orders.service';
 import ServiceOrders from '../serviceOrders/ServiceOrders';
 import { MemberFilter } from '../memberFilter/MemberFilter';
+import type { GroupDetails } from "@/lib/groups/server/groups.service";
+import { useRouter } from "next/navigation";
+import { formatPersonName, getPersonInitials } from "@/shared/utils/personName";
+import { Session } from "next-auth";
 
 const UpdateProfile = dynamic(() => import("../updateProfile/UpdateProfile"), { loading: modalLoading });
 const UpdateGroup = dynamic(() => import("../updateGroup/UpdateGroup"), { loading: modalLoading });
@@ -17,36 +21,35 @@ const CreateGroupDialog = dynamic(
   () => import("../createGroupDialog/CreateGroupDialog").then((m) => m.CreateGroupDialog),
   { loading: modalLoading },
 );
-import type { GroupDetails } from "@/lib/groups/server/groups.service";
-import { useRouter } from "next/navigation";
-import { formatPersonName, getPersonInitials } from "@/shared/utils/personName";
 
 interface Props {
+  user: Session["user"];
   orders: UserOrder[];
   group: GroupDetails | null;
   teamOrders: TeamOrder[];
 }
 
-export function DashboardContent({ orders, group, teamOrders  }: Props) {
+export function DashboardContent({ user, orders, group, teamOrders }: Props) {
   const router = useRouter();
   const t = useTranslations("dashboard");
-  const { data: session, update } = useSession();
-  
-  const sessionUser = session?.user ;
+  const { update } = useSession();
+
+  const sessionUser = user;
   const fullName = formatPersonName(sessionUser?.firstName, sessionUser?.lastName);
   const initials = getPersonInitials(sessionUser?.firstName, sessionUser?.lastName);
   const needsGroup = sessionUser?.role === "groupAdmin" && !sessionUser.groupName;
-  const memberCount = group?.users.filter((u) => u.role === "user").length ?? 0;
 
   const [updateProfileOpen, setUpdateProfileOpen] = useState<boolean>(false);
-
   const [updateGroupOpen, setUpdateGroupOpen] = useState<boolean>(false);
   const canManageGroup = sessionUser?.role === "groupAdmin" && group !== null;
 
+  // Membres ayant rejoint le groupe (les invitations en attente ne comptent pas)
   const teamMembers = useMemo(
     () => group?.users.filter((u) => u.role === "user" && u.groupStatus === "JOINED") ?? [],
     [group],
   );
+  const memberCount = teamMembers.length;
+
   const [memberFilter, setMemberFilter] = useState<string>("");
   // Si le membre sélectionné a été retiré du groupe, on revient à « Tous »
   const activeMemberId = teamMembers.some((m) => m.id === memberFilter) ? memberFilter : "";
@@ -55,21 +58,36 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
     [teamOrders, activeMemberId],
   );
 
+  // Même carte pour l'utilisateur et le groupAdmin
+  const profileCard = (
+    <div className={styles.card} onClick={() => setUpdateProfileOpen(true)}>
+      <div className={styles.qcardIcon}>👤</div>
+      <div>
+        <p className={styles.qcardTitle}>{t('myProfile')}</p>
+        <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
+          {fullName}
+        </p>
+        <p className={styles.qcardDesc}>{sessionUser?.email}</p>
+      </div>
+      <span className={styles.qcardLink}>{t('editAccount')}</span>
+    </div>
+  );
+
   return (
     <div className={styles.mainContainer}>
 
-      {sessionUser?.role === 'groupAdmin' && sessionUser?.groupName !== null && <>
-        <div className={styles.groupStateJoined}>{t('groupAdminBanner', { group: sessionUser?.groupName ?? '' })}</div>
-      </>}
+      {sessionUser?.role === 'groupAdmin' && sessionUser.groupName && (
+        <div className={styles.groupStateJoined}>{t('groupAdminBanner', { group: sessionUser.groupName })}</div>
+      )}
 
-      {sessionUser?.groupStatus === 'PENDING' && sessionUser?.role === 'user' && <>
+      {sessionUser?.groupStatus === 'PENDING' && sessionUser?.role === 'user' && (
         <div className={styles.groupStatePending}>{t('pendingBanner')}</div>
-      </>}
-      
-      {sessionUser?.groupStatus === 'JOINED' && sessionUser?.role === 'user' && <>
+      )}
+
+      {sessionUser?.groupStatus === 'JOINED' && sessionUser?.role === 'user' && (
         <div className={styles.groupStateJoined}>{t('joinedBanner', { group: sessionUser?.groupName ?? '' })}</div>
-      </>}
-      
+      )}
+
       <div className={styles.welcome}>
         <div className={styles.welcomeAvatar}>
           {initials}
@@ -84,73 +102,33 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
         </div>
       </div>
 
-      {sessionUser?.role === 'user' && 
-      <div className={styles.userData}>
-        <div className={styles.card} onClick={() => setUpdateProfileOpen(true)}>
-          <div className={styles.qcardIcon}>👤</div>
-          <div>
-            <p className={styles.qcardTitle}>{t('myProfile')}</p>
-            <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
-              {fullName}
-            </p>
-            <p className={styles.qcardDesc}>{sessionUser?.email}</p>
-          </div>
-          <span className={styles.qcardLink}>{t('editAccount')}</span>
+      {sessionUser?.role === 'user' && (
+        <div className={styles.userData}>
+          {profileCard}
         </div>
+      )}
 
-        <div className={styles.card}>
-          <div className={styles.qcardIcon}>📦</div>
-          <div>
-            <p className={styles.qcardTitle}>{t('orders')}</p>
-            <p className={styles.qcardValue}>{t('serviceRequests')}</p>
-            <p className={styles.qcardDesc}>{t('orderStats')}</p>
-            <p className={styles.qcardValue}>{t('shopProducts')}</p>
-            <p className={styles.qcardDesc}>{t('orderStats')}</p>
-          </div>
-        </div>
-      </div>}
-      
-      {sessionUser?.role === 'groupAdmin' && 
-      <div className={styles.groupAdminData}>
-        <div className={styles.card} onClick={() => setUpdateProfileOpen(true)}>
-          <div className={styles.qcardIcon}>👤</div>
-          <div>
-            <p className={styles.qcardTitle}>{t('myProfile')}</p>
-            <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
-              {fullName}
-            </p>
-            <p className={styles.qcardDesc}>{sessionUser?.email}</p>
-          </div>
-          <span className={styles.qcardLink}>{t('editAccount')}</span>
-        </div>
-        
-        {canManageGroup && (
-        <div className={`${styles.card} ${memberCount === 0 ? styles.groupEmpty : ""}`} onClick={() => setUpdateGroupOpen(true)}>
-          <div className={styles.qcardIcon}>👤</div>
-          <div>
-            <p className={styles.qcardTitle}>{t('groupInfo')}</p>
-            <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
-              {sessionUser?.groupName}
-              <br />
-              <br />
-              {memberCount === 0 && <span style={{ color: 'red'}}>{t('addMemberWarning')}</span>}
-            </p>
-          </div>
-          <span className={styles.qcardLink}>{t('editGroup')}</span>
-        </div>
-        )}
+      {sessionUser?.role === 'groupAdmin' && (
+        <div className={styles.groupAdminData}>
+          {profileCard}
 
-        <div className={styles.card}>
-          <div className={styles.qcardIcon}>📦</div>
-          <div>
-            <p className={styles.qcardTitle}>{t('myOrders')}</p>
-            <p className={styles.qcardValue}>{t('serviceRequests')}</p>
-            <p className={styles.qcardDesc}>{t('orderStats')}</p>
-            <p className={styles.qcardValue}>{t('shopProducts')}</p>
-            <p className={styles.qcardDesc}>{t('orderStats')}</p>
-          </div>
+          {canManageGroup && (
+            <div className={`${styles.card} ${memberCount === 0 ? styles.groupEmpty : ""}`} onClick={() => setUpdateGroupOpen(true)}>
+              <div className={styles.qcardIcon}>👤</div>
+              <div>
+                <p className={styles.qcardTitle}>{t('groupInfo')}</p>
+                <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
+                  {sessionUser?.groupName}
+                  <br />
+                  <br />
+                  {memberCount === 0 && <span style={{ color: 'red'}}>{t('addMemberWarning')}</span>}
+                </p>
+              </div>
+              <span className={styles.qcardLink}>{t('editGroup')}</span>
+            </div>
+          )}
         </div>
-      </div>}
+      )}
 
       <ServiceOrders orders={orders} title={canManageGroup ? t('myServiceRequests') : t('serviceRequests')} />
 
@@ -158,7 +136,6 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
         <ServiceOrders
           orders={filteredTeamOrders}
           title={t('teamServiceRequests')}
-          productsVisible={false}
           toolbar={
             teamMembers.length > 0 && (
               <MemberFilter members={teamMembers} value={activeMemberId} onChange={setMemberFilter} />
@@ -168,12 +145,12 @@ export function DashboardContent({ orders, group, teamOrders  }: Props) {
       )}
 
       {updateProfileOpen && (
-        <UpdateProfile 
+        <UpdateProfile
           sessionUser={sessionUser}
-          onClose={() => setUpdateProfileOpen(false)} 
+          onClose={() => setUpdateProfileOpen(false)}
         />
       )}
-      
+
       {updateGroupOpen && group && (
         <UpdateGroup initialGroup={group} onClose={() => setUpdateGroupOpen(false)} />
       )}

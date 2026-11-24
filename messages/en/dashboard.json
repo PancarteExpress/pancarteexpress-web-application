@@ -1,4 +1,5 @@
 {
+  "metaTitle": "My dashboard",
   "groupAdminBanner": "You are the administrator of the group {group}",
   "pendingBanner": "The person in charge of your group must approve your membership",
   "joinedBanner": "You are part of the team: {group}",
@@ -8,14 +9,14 @@
   "editAccount": "Edit my account →",
   "orders": "Orders",
   "myOrders": "My orders",
-  "serviceRequests": "Service requests",
+  "serviceRequests": "Order requests",
   "shopProducts": "Shop products",
   "orderStats": "X in progress · Y completed · Z cancelled",
   "groupInfo": "Group information",
   "addMemberWarning": "As the group administrator, you must add at least one member to your team",
   "editGroup": "Edit group →",
-  "myServiceRequests": "My service requests",
-  "teamServiceRequests": "Team service requests",
+  "myServiceRequests": "My orders requests",
+  "teamServiceRequests": "Team orders requests",
   "memberFilter": {
     "member": "Member",
     "allMembers": "All members"
@@ -61,6 +62,7 @@
     }
   },
   "profile": {
+    "loading": "Loading…",
     "title": "Update Profile",
     "close": "Close",
     "profileInfo": "Profile Information",
