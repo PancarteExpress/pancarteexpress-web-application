@@ -55,6 +55,9 @@
     "sameDay": "Timeframe: same-day rush",
     "specificDate": "Requested date: {date}",
     "none": "Timeframe: none (large format, handled separately)",
-    "mixedNotice": "The timeframes shown apply to residential requests only. Large-format requests are handled separately by our team, with no guaranteed timeframe."
-  }
+    "mixedNotice": "The timeframes shown apply to residential requests only. Large-format requests are handled separately by our team, with no guaranteed timeframe.",
+    "expired": "This date is no longer available. Remove this request and submit it again with a new date."
+  },
+  "productUnavailable": "This product is no longer available. Remove it to continue.",
+  "removeUnavailableFirst": "Fix the flagged items in your cart to proceed to checkout."
 }

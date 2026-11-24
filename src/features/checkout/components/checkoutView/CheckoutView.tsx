@@ -1,37 +1,41 @@
 'use client';
 
-import Link from 'next/link';
+import styles from './CheckoutView.module.css';
+
+import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
+import { LocalLink } from '@/shared/components/LocalLink';
+
 import { useRouter } from 'next/navigation';
 import { useRef, useState, type ChangeEvent } from 'react';
 import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 import { Elements } from '@stripe/react-stripe-js';
-import { FaRegCheckCircle } from 'react-icons/fa';
-import AddressAutocomplete from '@/shared/components/addressAutocomplete/AddressAutocomplete';
 import { GUEST_INFO_LIMITS } from '@/lib/orders/guestInfo';
 import type { ParsedAddress } from '@/shared/types/address';
 import { useCart } from '@/features/cart/hooks/useCart';
 import { formatCents } from '@/lib/pricing/money';
+import { formatPhone } from '@/shared/utils/phone';
 import { checkoutSchema, type CheckoutInput } from '../../schemas/checkout.schema';
 import { useDelayText } from '@/features/cart/hooks/useDelayText';
-import {
-  buildCheckoutPayload,
-  submitCheckout,
-  CheckoutApiError,
-  type CheckoutErrorCode,
-} from '../../services/checkoutApi';
-
-import styles from './CheckoutView.module.css';
 import { useCardPayment } from '../../hooks/useCardPayment';
 import { CardFields } from '../cardFields/CardFields';
 import { stripePromise } from '../../services/stripeClient';
 import { useIssueMessage } from '@/shared/hooks/useIssueMessage';
+import { getProductBySlug } from '@/lib/catalog/catalog';
+
+import { zodResolver } from '@hookform/resolvers/zod';
+import { buildCheckoutPayload, submitCheckout, CheckoutApiError, type CheckoutErrorCode } from '../../services/checkoutApi';
+
+import { FaRegCheckCircle } from 'react-icons/fa';
+import { randomId } from '@/shared/utils/randomId';
 
 export default function Checkout() {
+  // Langue des messages de Stripe (carte incomplète, refusée…) : celle du site, pas celle du navigateur
+  const stripeLocale = useLocale() === 'en' ? 'en' : 'fr-CA';
+
   return (
-    <Elements stripe={stripePromise}>
+    <Elements stripe={stripePromise} options={{ locale: stripeLocale }}>
       <CheckoutForm />
     </Elements>
   );
@@ -42,13 +46,15 @@ function CheckoutForm() {
   const t = useTranslations('checkout');
   const tCart = useTranslations('cart');
   const delayText = useDelayText(locale);
-  // Messages du schéma : clés de checkout.errors
   const translateError = useIssueMessage('checkout.errors');
   const submitErrorMessage = (code: CheckoutErrorCode) => t(`submitErrors.${code}`);
   const { data: session, status } = useSession();
   const isAuthenticated = status === 'authenticated';
-  const { items, hasHydrated, clear } = useCart();
+  const { items, hasHydrated, clear, estimate, unavailableProductIds, expiredServiceRequestIds } = useCart();
   const router = useRouter();
+
+  // Produit retiré du catalogue ou date dépassée : le serveur refuserait la commande
+  const isBlocked = unavailableProductIds.length > 0 || expiredServiceRequestIds.length > 0;
 
   // Invité qui demande l'entreposage du matériel retiré : il doit ouvrir un compte après sa commande
   const needsAccountForStorage =
@@ -64,7 +70,13 @@ function CheckoutForm() {
     const redirectToRegister = needsAccountForStorage;
     clear();
     if (redirectToRegister) {
-      router.push(`/${locale}/register?storageOrder=${orderNumber}`);
+      // Lu une seule fois par la page d'inscription : invisible pour qui tape l'URL à la main
+      try {
+        sessionStorage.setItem('storageOrder', String(orderNumber));
+      } catch {
+        // Stockage bloqué (navigation privée stricte) : la notice ne s'affichera pas, la commande est déjà envoyée
+      }
+      router.push(`/${locale}/register`);
       return;
     }
     setConfirmation({ mode, orderNumber });
@@ -131,7 +143,7 @@ function CheckoutForm() {
   const attemptRef = useRef<{ fingerprint: string; key: string } | null>(null);
   const getIdempotencyKey = (fingerprint: string): string => {
     if (attemptRef.current?.fingerprint !== fingerprint) {
-      attemptRef.current = { fingerprint, key: crypto.randomUUID() };
+      attemptRef.current = { fingerprint, key: randomId() };
     }
     return attemptRef.current.key;
   };
@@ -205,51 +217,72 @@ function CheckoutForm() {
 
   if (!hasHydrated) return <div className={styles.mainContainer} />;
 
+  // Panier vide ou à corriger (accès direct par l'URL) : retour au panier plutôt qu'un formulaire voué à l'échec.
+  // Pas après une commande réussie : le panier vient d'être vidé, c'est la confirmation qui doit s'afficher.
+  if (!confirmation && (items.length === 0 || isBlocked)) {
+    return (
+      <div className={styles.mainContainer}>
+        <div className={styles.container}>
+          <p className={styles.error} role="alert">
+            {items.length === 0 ? tCart('heroEmptyCart') : tCart('removeUnavailableFirst')}
+          </p>
+          <LocalLink href="/cart" className={styles.confirmationLink}>
+            {t('backToCart')}
+          </LocalLink>
+        </div>
+      </div>
+    );
+  }
+
+  // Inscription Google pas terminée : ni facturation ni ramassage, le profil doit être complété avant de commander
+  if (!confirmation && session?.user?.needsPickupInfo) {
+    return (
+      <div className={styles.mainContainer}>
+        <div className={styles.container}>
+          <p className={styles.error} role="alert">
+            {t('completeProfileFirst')}
+          </p>
+          <LocalLink href="/complete-profile" className={styles.confirmationLink}>
+            {t('completeProfileLink')}
+          </LocalLink>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={styles.mainContainer}>
+      {!confirmation && (
       <div className={styles.container}>
-        {!confirmation && (
-          <div className={styles.items}>
-            <h3>{t('cartSummary')}</h3>
-            {items.map((item) =>
-              item.kind === 'product' ? (
-                <div key={item.id} className={styles.item}>
-                  <span>{locale === 'en' ? item.nameEn || item.nameFr : item.nameFr}</span>
-                  <span>×{item.quantity}</span>
-                  <span>{formatCents(item.unitPrice * item.quantity, locale)}</span>
-                </div>
-              ) : (
-                <div key={item.id} className={styles.item}>
-                  <span>{tCart(`requestType.${item.requestType}`)}</span>
-                  {/* Un délai par adresse : chaque délai différent n'est affiché qu'une fois */}
-                  <span>{[...new Set(item.addresses.map((a) => delayText(a.schedule)))].join(' · ')}</span>
-                  
-                  <span>{tCart('priceOnQuote')}</span>
-                </div>
-              ),
-            )}
-          </div>
-        )}
+        
+        <div className={styles.items}>
+          <h3>{t('cartSummary')}</h3>
+          {items.map((item) =>
+            item.kind === 'product' ? (
+              <div key={item.id} className={styles.item}>
+                <span>{locale === 'en' ? item.nameEn || item.nameFr : item.nameFr}</span>
+                <span>×{item.quantity}</span>
+                {/* Prix actuel du catalogue, comme au paiement */}
+                <span>{formatCents((getProductBySlug(item.productId)?.price ?? 0) * item.quantity, locale)}</span>
+              </div>
+            ) : (
+              <div key={item.id} className={styles.item}>
+                <span>{tCart(`requestType.${item.requestType}`)}</span>
+                {/* Un délai par adresse : chaque délai différent n'est affiché qu'une fois */}
+                <span>{[...new Set(item.addresses.map((a) => delayText(a.schedule)))].join(' · ')}</span>
+                <span>{tCart('priceOnQuote')}</span>
+              </div>
+            ),
+          )}
 
-        {confirmation && (
-          <div className={styles.completedPayment}>
-            <div>
-              <FaRegCheckCircle />
+          {/* Montant à payer, taxes incluses : visible avant de cliquer sur « Payer » */}
+          {hasProducts && (
+            <div className={`${styles.item} ${styles.totalRow}`}>
+              <span>{tCart('total')}</span>
+              <span>{formatCents(estimate.total, locale)}</span>
             </div>
-            <p>
-              {t.rich('confirmation.orderNumber', {
-                number: confirmation.orderNumber,
-                strong: (chunks) => <strong>{chunks}</strong>,
-              })}
-              <br />
-              {confirmation.mode === 'payment' ? t('confirmation.paymentReceived') : t('confirmation.orderSent')}
-              <br />
-              {isAuthenticated
-                ? t('confirmation.trackInDashboard')
-                : t('confirmation.contactByEmail')}
-            </p>
-          </div>
-        )}
+          )}
+        </div>
 
         <form className={styles.form} onSubmit={handleSubmit(onSubmit)} noValidate>
           <div className={styles.section}>
@@ -258,24 +291,54 @@ function CheckoutForm() {
             <div className={styles.name}>
               <div className={styles.formGroup}>
                 <label htmlFor="firstName">{t('firstname')}</label>
-                <input id="firstName" {...register('firstName')} />
+                <input
+                  id="firstName"
+                  autoComplete="given-name"
+                  aria-invalid={Boolean(errors.firstName) || undefined}
+                  {...register('firstName')}
+                />
               </div>
               <div className={styles.formGroup}>
                 <label htmlFor="lastName">{t('lastname')}</label>
-                <input id="lastName" {...register('lastName')} />
+                <input
+                  id="lastName"
+                  autoComplete="family-name"
+                  aria-invalid={Boolean(errors.lastName) || undefined}
+                  {...register('lastName')}
+                />
               </div>
             </div>
 
             <div className={styles.name}>
               <div className={styles.formGroup}>
                 <label htmlFor="email">{t('email')}</label>
-                <input id="email" type="email" {...register('email')} readOnly={isAuthenticated} />
+                <input
+                  id="email"
+                  type="email"
+                  autoComplete="email"
+                  aria-invalid={Boolean(errors.email) || undefined}
+                  {...register('email')}
+                  readOnly={isAuthenticated}
+                />
               </div>
 
               {!isAuthenticated && (
                 <div className={styles.formGroup}>
                   <label htmlFor="phone">{t('phone')}</label>
-                  <input id="phone" type="tel" autoComplete="tel" {...register('phone')} />
+                  <input
+                    id="phone"
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    maxLength={14}
+                    placeholder="(514) 825-2709"
+                    aria-invalid={Boolean(errors.phone) || undefined}
+                    {...register('phone')}
+                    onInput={(e) => {
+                      // Même format que le formulaire de contact : (438) 722-3922
+                      e.currentTarget.value = formatPhone(e.currentTarget.value);
+                    }}
+                  />
                 </div>
               )}
             </div>
@@ -339,23 +402,19 @@ function CheckoutForm() {
               <div className={styles.radioGroup}>
                 <label className={styles.radioLabel}>
                   <input className={styles.radioInput} type="radio" value="pickup" {...deliveryModeField} />
-                  <div className={styles.radioButton} style={{ borderRadius: '10px 0 0 10px' }}>
-                    {t('pickup')}
-                  </div>
+                  <div className={`${styles.radioButton} ${styles.radioButtonLeft}`}>{t('pickup')}</div>
                 </label>
 
                 <label className={styles.radioLabel}>
                   <input className={styles.radioInput} type="radio" value="delivery" {...deliveryModeField} />
-                  <div className={styles.radioButton} style={{ borderRadius: '0 10px 10px 0' }}>
-                    {t('delivery')}
-                  </div>
+                  <div className={`${styles.radioButton} ${styles.radioButtonRight}`}>{t('delivery')}</div>
                 </label>
               </div>
 
               {deliveryMode === 'pickup' && (
                 <div className={styles.formGroup}>
-                  <label>{t('pickupAddress')}</label>
-                  {t('pickupInfo')}
+                  <p className={styles.infoTitle}>{t('pickupAddress')}</p>
+                  <p>{t('pickupInfo')}</p>
                 </div>
               )}
 
@@ -369,7 +428,11 @@ function CheckoutForm() {
                       <AddressAutocomplete
                         id="delivery-address"
                         value={addressText}
-                        onChange={setAddressText}
+                        onChange={(text: string) => {
+                          setAddressText(text);
+                          // Le texte ne correspond plus à la suggestion choisie : il faut en choisir une nouvelle
+                          field.onChange(null);
+                        }}
                         onSelect={(address: ParsedAddress | null) =>
                           field.onChange(
                             address
@@ -382,6 +445,7 @@ function CheckoutForm() {
                               : null,
                           )
                         }
+                        aria-invalid={Boolean(errors.shippingAddress) || undefined}
                       />
                     )}
                   />
@@ -391,22 +455,43 @@ function CheckoutForm() {
           )}
 
           <div className={styles.section}>
-            {firstError && <div className={styles.error}>{firstError}</div>}
-
-            {!confirmation && (
-              <button type="submit" disabled={items.length === 0 || isSubmitting}>
-                {isSubmitting ? t('sending') : requiresPayment ? t('makePay') : t('submitOrder')}
-              </button>
+            {firstError && (
+              <div className={styles.error} role="alert">
+                {firstError}
+              </div>
             )}
 
-            {confirmation && (
-              <Link href={isAuthenticated ? `/${locale}/dashboard` : `/${locale}/shop`}>
-                {isAuthenticated ? t('viewOrders') : t('backToShop')}
-              </Link>
-            )}
+            <button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? t('sending') : requiresPayment ? t('makePay') : t('submitOrder')}
+            </button>
           </div>
         </form>
       </div>
+      )}
+
+      {confirmation && (
+      <div className={styles.confirmation}>
+        <div className={styles.completedPayment} role="status">
+          <div>
+            <FaRegCheckCircle aria-hidden="true" />
+          </div>
+          <p>
+            {t.rich('confirmation.orderNumber', {
+              number: confirmation.orderNumber,
+              strong: (chunks) => <strong>{chunks}</strong>,
+            })}
+            <br />
+            {confirmation.mode === 'payment' ? t('confirmation.paymentReceived') : t('confirmation.orderSent')}
+            <br />
+            {isAuthenticated ? t('confirmation.trackInDashboard') : t('confirmation.contactByEmail')}
+          </p>
+        </div>
+
+        <LocalLink href={isAuthenticated ? '/dashboard' : '/shop'} className={styles.confirmationLink}>
+          {isAuthenticated ? t('viewOrders') : t('backToShop')}
+        </LocalLink>
+      </div>
+      )}
     </div>
   );
 }

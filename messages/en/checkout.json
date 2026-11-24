@@ -57,5 +57,8 @@
   "backToShop": "Back to the shop",
   "companyName": "Company name (optional)",
   "billingAddress": "Billing address",
-  "additionalInfo": "Additional information (optional)"
+  "additionalInfo": "Additional information (optional)",
+  "backToCart": "Back to cart",
+  "completeProfileFirst": "Complete your profile before placing an order.",
+  "completeProfileLink": "Complete my profile"
 }

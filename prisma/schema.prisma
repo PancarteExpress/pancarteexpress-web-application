@@ -376,12 +376,14 @@ model ServiceAttachment {
   @@index([serviceAddressId])
 }
 
-/// Tentatives d'envoi du formulaire de contact, pour limiter le nombre d'envois par IP.
-/// L'IP est hachée : aucune adresse en clair n'est conservée. Nettoyé par le cron quotidien.
-model ContactAttempt {
+/// Tentatives limitées par action (contact, inscription, mot de passe oublié).
+/// `key` est une IP ou un courriel haché avec RATE_LIMIT_SALT : rien n'est stocké en clair.
+/// Nettoyé par le cron quotidien.
+model RateLimitAttempt {
   id        String   @id @default(cuid())
-  ipHash    String
+  action    String
+  key       String
   createdAt DateTime @default(now())
 
-  @@index([ipHash, createdAt])
+  @@index([action, key, createdAt])
 }

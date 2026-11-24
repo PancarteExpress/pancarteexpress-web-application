@@ -1,4 +1,4 @@
-import { isValidReceptionDate } from "@/shared/utils/quebecDates";
+import { isSelectableReceptionDate } from "@/features/services/utils/holidays";
 import * as z from "zod";
 
 // Messages : clés i18n du namespace errors.validation, traduites à l'affichage
@@ -38,11 +38,11 @@ export const billingAddressSchema = z.string().trim().min(1, "billingAddressRequ
 
 export const pickupFieldsSchema = z.object({
   pickupMode: z.enum(["address", "warehouse"]),
-  pickupAddress: z.string().optional(),
-  pickupCity: z.string().optional(),
-  pickupPostalCode: z.string().optional(),
+  pickupAddress: z.string().trim().max(300, "tooLong").optional(),
+  pickupCity: z.string().trim().max(100, "tooLong").optional(),
+  pickupPostalCode: z.string().trim().max(10, "tooLong").optional(),
   receptionDate: z.string().optional(),
-  pickupNotes: z.string().optional(),
+  pickupNotes: z.string().trim().max(1000, "tooLong").optional(),
 });
 
 export type PickupFieldsInput = z.infer<typeof pickupFieldsSchema>;
@@ -51,19 +51,16 @@ export function applyPickupRules(data: PickupFieldsInput, ctx: z.RefinementCtx) 
   if (data.pickupMode === "address") {
     if (!data.pickupAddress?.trim()) {
       ctx.addIssue({ code: "custom", path: ["pickupAddress"], message: "addressRequired" });
-    }
-    if (!data.pickupCity?.trim()) {
-      ctx.addIssue({ code: "custom", path: ["pickupCity"], message: "cityRequired" });
-    }
-    if (!data.pickupPostalCode?.trim()) {
-      ctx.addIssue({ code: "custom", path: ["pickupPostalCode"], message: "postalCodeRequired" });
+    } else if (!data.pickupCity?.trim() || !data.pickupPostalCode?.trim()) {
+      // Adresse tapée sans choisir de suggestion : la ville et le code postal viennent de la suggestion
+      ctx.addIssue({ code: "custom", path: ["pickupAddress"], message: "chooseAddressSuggestion" });
     }
   }
 
   if (data.pickupMode === "warehouse") {
     if (!data.receptionDate) {
       ctx.addIssue({ code: "custom", path: ["receptionDate"], message: "dateRequired" });
-    } else if (!isValidReceptionDate(data.receptionDate)) {
+    } else if (!isSelectableReceptionDate(data.receptionDate)) {
       ctx.addIssue({
         code: "custom",
         path: ["receptionDate"],
@@ -77,8 +74,13 @@ export function applyPickupRules(data: PickupFieldsInput, ctx: z.RefinementCtx) 
 export const pickupSchema = pickupFieldsSchema.superRefine(applyPickupRules);
 
 // Page de complétion (inscription Google) : adresse de facturation et ramassage
+// Page de complétion (inscription Google) : Google ne fournit ni téléphone ni agence
 export const completeProfileSchema = pickupFieldsSchema
-  .extend({ billingAddress: billingAddressSchema })
+  .extend({
+    billingAddress: billingAddressSchema,
+    phoneNumber: phoneSchema,
+    companyName: z.string().trim().max(150, "tooLong").optional(),
+  })
   .superRefine(applyPickupRules);
 export type CompleteProfileInput = z.infer<typeof completeProfileSchema>;
 
@@ -90,7 +92,7 @@ export const registerSchema = z
     password: passwordSchema,
     confirmPassword: z.string(),
     phoneNumber: phoneSchema,
-    companyName: z.string().optional(),
+    companyName: z.string().trim().max(150, "tooLong").optional(),
     billingAddress: billingAddressSchema,
     locale: localeSchema,
     ...pickupFieldsSchema.shape
@@ -114,7 +116,7 @@ export const verifyEmailSchema = z.object({
   lastName: lastNameSchema,
   password: passwordSchema,
   phoneNumber: phoneSchema,
-  companyName: z.string().optional(),
+  companyName: z.string().trim().max(150, "tooLong").optional(),
   billingAddress: billingAddressSchema,
   groupStatus: signupGroupStatusSchema,
   locale: localeSchema,
@@ -146,13 +148,13 @@ export const updateProfileSchema = z.object({
   username: usernameSchema.optional(),
   locale: z.enum(["fr", "en"]),
   phoneNumber: phoneSchema.optional(),
-  companyName: z.string().optional(),
+  companyName: z.string().trim().max(150, "tooLong").optional(),
   // Facultative ici : les comptes créés avant cette question n'en ont pas
   billingAddress: z.string().trim().max(300).optional(),
   groupStatus: z.enum(["SOLO", "PENDING", "JOINED"]).optional(),
-  pickupAddress: z.string().optional(),
-  pickupCity: z.string().optional(),
-  pickupPostalCode: z.string().optional(),
+  pickupAddress: z.string().trim().max(300, "tooLong").optional(),
+  pickupCity: z.string().trim().max(100, "tooLong").optional(),
+  pickupPostalCode: z.string().trim().max(10, "tooLong").optional(),
 });
 
 export const updatePasswordSchema = z.object({

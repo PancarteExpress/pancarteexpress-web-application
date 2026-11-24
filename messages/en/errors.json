@@ -8,6 +8,9 @@
   "emailChangeNotAllowed": "Changing your email address is not allowed.",
   "invalidCode": "Invalid or expired code.",
   "tooManyAttempts": "Too many attempts. Please request a new code.",
+  "tooManyRequests": "Too many requests in a short time. Please try again in a few minutes.",
+  "profileAlreadyCompleted": "Your profile is already completed.",
+  "profileIncomplete": "Complete your profile before placing an order.",
   "validationFailed": "Some information is invalid.",
   "invalidJson": "Invalid request.",
   "emailSendFailed": "Unable to send the email, please try again later",
@@ -32,6 +35,8 @@
     "passwordRequired": "Password required",
     "credentialsRequired": "Please enter your credentials",
     "currentPasswordRequired": "Current password required",
-    "billingAddressRequired": "The billing address is required"
+    "billingAddressRequired": "The billing address is required",
+    "chooseAddressSuggestion": "Choose the pickup address from the suggestions.",
+    "tooLong": "This field is too long."    
   }
 }

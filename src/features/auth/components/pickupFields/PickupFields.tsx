@@ -9,29 +9,33 @@ import type { PickupFieldsInput } from "@/lib/auth/auth.schema";
 import { useState } from "react";
 import { DateField } from "@/features/services/components/fields/DateField";
 import { TextField } from "@/features/services/components/fields";
-import { earliestSpecificDate, isBusinessDay } from "@/features/services/utils/holidays";
+import { earliestReceptionDate, isBusinessDay } from "@/features/services/utils/holidays";
 
 import styles from "@/features/auth/components/registerForm/RegisterForm.module.css";
+import { color } from "framer-motion";
 
 const isNonBusinessDay = (date: Date) => !isBusinessDay(date);
 
 export function PickupFields() {
-  const { register, control, setValue, watch, formState: { errors } } = useFormContext<PickupFieldsInput>();
+  const { register, control, setValue, getValues, watch, formState: { errors } } = useFormContext<PickupFieldsInput>();
   const pickupMode = watch("pickupMode");
-  const [earliestPickupDate] = useState(() => earliestSpecificDate(new Date()));
+  const [earliestPickupDate] = useState(() => earliestReceptionDate());
+  // Texte affiché dans le champ (adresse complète) ; l'adresse enregistrée est découpée en rue, ville et code postal
+  const [addressText, setAddressText] = useState(() => getValues("pickupAddress") ?? "");
+
   const t = useTranslations("register.pickup");
   const tv = useIssueMessage("errors.validation");
 
   return (
     <>
       <fieldset className={styles.inputs}>
-        <legend className="block text-sm font-medium">
-          {t("legend")} <span className={styles.req}>*</span>
-        </legend>
         <label>
+          {t("legend")} <span className={styles.req}>*</span>
+        </label>
+        <label style={{ color: "black", fontSize: "0.875rem"}}>
           <input type="radio" value="address" {...register("pickupMode")} /> {t("atAddress")}
         </label>
-        <label>
+        <label style={{ color: "black", fontSize: "0.875rem"}}>
           <input type="radio" value="warehouse" {...register("pickupMode")} /> {t("atWarehouse")}
         </label>
       </fieldset>
@@ -47,22 +51,28 @@ export function PickupFields() {
             render={({ field }) => (
               <AddressAutocomplete
                 id="pickupAddress"
-                value={field.value ?? ""}
+                value={addressText}
                 inputRef={field.ref}
-                onChange={field.onChange}
+                onChange={(text: string) => {
+                  setAddressText(text);
+                  // Tapée ou modifiée à la main : la ville et le code postal ne correspondent plus, il faut choisir une suggestion
+                  field.onChange(text);
+                  setValue("pickupCity", "");
+                  setValue("pickupPostalCode", "");
+                }}
                 onBlur={field.onBlur}
                 aria-invalid={!!errors.pickupAddress}
                 onSelect={(addr) => {
-                  setValue("pickupAddress", addr ? `${addr.streetNumber} ${addr.streetName}` : "", { shouldValidate: true });
-                  setValue("pickupCity", addr?.city ?? "", { shouldValidate: true });
-                  setValue("pickupPostalCode", addr?.postalCode ?? "", { shouldValidate: true });
+                  // Ville et code postal d'abord : l'adresse est validée en dernier, une fois tout rempli
+                  setValue("pickupCity", addr?.city ?? "");
+                  setValue("pickupPostalCode", addr?.postalCode ?? "");
+                  setValue("pickupAddress", addr ? `${addr.streetNumber} ${addr.streetName}`.trim() : "", {
+                    shouldValidate: true,
+                  });
                 }}
               />
             )}
           />
-          {errors.pickupAddress && <span className={styles.error}>{tv(errors.pickupAddress.message)}</span>}
-          {errors.pickupCity && <span className={styles.error}>{tv(errors.pickupCity.message)}</span>}
-          {errors.pickupPostalCode && <span className={styles.error}>{tv(errors.pickupPostalCode.message)}</span>}
         </div>
       )}
 

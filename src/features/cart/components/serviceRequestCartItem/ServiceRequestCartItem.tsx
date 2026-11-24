@@ -1,11 +1,14 @@
 'use client';
 
+import styles from './ServiceRequestCartItem.module.css';
+
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
+
 import { formatAddress } from '@/features/services/utils/formatAddress';
 import type { ServiceRequestCartItem as ServiceRequestCartItemType } from '../../types/cart';
 import { useDelayText } from '../../hooks/useDelayText';
-import styles from './ServiceRequestCartItem.module.css';
+import { isSelectableSpecificDate } from '@/features/services/utils/holidays';
 
 interface Props {
   item: ServiceRequestCartItemType;
@@ -30,20 +33,25 @@ export default function ServiceRequestCartItem({ item, locale, onRemove }: Props
       </header>
 
       <ul className={styles.addresses}>
-        {addresses.map((address) => (
-          <li key={address.id}>
-            <p className={styles.address}>{formatAddress(address, labels)}</p>
-            {/* Délai propre à chaque adresse */}
-            <p className={styles.delay}>{delayText(address.schedule)}</p>
-            <ul className={styles.services}>
-              {address.services.map((service) => (
-                <li key={service.id} className={styles.service}>
-                  <span>{t(`serviceTypes.${service.type}`)}</span>
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))}
+        {addresses.map((address) => {
+          const isExpired =
+            address.schedule?.delay === 'specificDate' && !isSelectableSpecificDate(address.schedule.date ?? '');
+
+          return (
+            <li key={address.id}>
+              <p className={styles.address}>{formatAddress(address, labels)}</p>
+              <p className={styles.delay}>{delayText(address.schedule)}</p>
+              {isExpired && <p className={styles.expired} role="alert">{t('delay.expired')}</p>}
+              <ul className={styles.services}>
+                {address.services.map((service) => (
+                  <li key={service.id} className={styles.service}>
+                    <span>{t(`serviceTypes.${service.type}`)}</span>
+                  </li>
+                ))}
+              </ul>
+            </li>
+          );
+        })}
       </ul>
 
       <footer className={styles.actions}>

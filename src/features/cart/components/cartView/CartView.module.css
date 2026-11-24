@@ -6,8 +6,6 @@
     padding: 0 20px;
 }
 
-
-
 .mainContainer .hero {
     width: 100%;
 
@@ -88,6 +86,22 @@
   display: flex;
   gap: 10px;
 }
+
+@media (max-width: 1650px) {
+  .mainContainer .cart {
+    width: 80%;
+  }
+}
+
+@media (max-width: 1300px) {
+  .mainContainer .cart {
+    width: 95%;
+    flex-direction: column;
+    padding: 0;
+  }
+}
+
+
 .mainContainer .cartItems {
   flex: 3;
 

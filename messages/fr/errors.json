@@ -8,6 +8,9 @@
   "emailChangeNotAllowed": "Le changement d'adresse courriel n'est pas permis.",
   "invalidCode": "Code invalide ou expiré.",
   "tooManyAttempts": "Trop de tentatives. Demandez un nouveau code.",
+  "tooManyRequests": "Trop de demandes en peu de temps. Veuillez réessayer dans quelques minutes.",
+  "profileAlreadyCompleted": "Votre profil est déjà complété.",
+  "profileIncomplete": "Complétez votre profil avant de passer une commande.",
   "validationFailed": "Certaines informations sont invalides.",
   "invalidJson": "Requête invalide.",
   "emailSendFailed": "Impossible d'envoyer le courriel, réessayez plus tard",
@@ -32,6 +35,8 @@
     "passwordRequired": "Mot de passe requis",
     "credentialsRequired": "Veuillez saisir vos identifiants",
     "currentPasswordRequired": "Mot de passe actuel requis",
-    "billingAddressRequired": "L'adresse de facturation est requise"
+    "billingAddressRequired": "L'adresse de facturation est requise",
+    "chooseAddressSuggestion": "Choisissez l'adresse de ramassage dans la liste de suggestions.",
+    "tooLong": "Ce champ est trop long."
   }
 }

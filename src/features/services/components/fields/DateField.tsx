@@ -53,10 +53,10 @@ export function DateField({ label, value, onChange, span = 1, minDate, isDisable
 
   return (
     <fieldset className={styles.group} aria-describedby={describedBy}>
-      <legend className={styles.legend}>
+      <label className={styles.legend}>
         {label}
         {required && <span aria-hidden="true" className={styles.required}> *</span>}
-      </legend>
+      </label>
       {hint && <p id={hintId} className={styles.hint}>{hint}</p>}
 
       <div className={styles.calendar} data-invalid={Boolean(error)}>

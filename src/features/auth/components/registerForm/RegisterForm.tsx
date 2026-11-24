@@ -1,19 +1,22 @@
 "use client";
 
 import styles from './RegisterForm.module.css';
+
+import * as z from "zod";
 import { useForm, FormProvider } from "react-hook-form";
+import { useEffect, useState } from "react";
+import { useTranslations } from 'next-intl';
+
 import { BillingAddressField } from "../billingAddressField/BillingAddressField";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema, verifyCodeSchema, type RegisterInput, type RegisterPlan } from "@/lib/auth/auth.schema";
 import { useAuth } from "../../hooks/useAuth";
-import { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
-import * as z from "zod";
 import { GoogleLoginButton } from '../googleLoginButton/GoogleLoginButton';
 import { PickupFields } from "../pickupFields/PickupFields";
-import { useTranslations } from 'next-intl';
 import { readErrorCode } from '@/lib/errors/appError';
 import { useIssueMessage } from '@/shared/hooks/useIssueMessage';
+import { formatPhone } from '@/shared/utils/phone';
 
 interface RegisterFormProps {
   locale: string;
@@ -33,9 +36,11 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
   const error = useAuthStore((state) => state.error);
   const isLoading = useAuthStore((state) => state.isLoading);
   const [success, setSuccess] = useState<boolean>(false);
+  const [resent, setResent] = useState(false);
 
   const [step, setStep] = useState<"register" | "verify">("register");
   const [registeredData, setRegisteredData] = useState<RegisterInput | null>(null);
+  const emailLocale = locale === 'en' ? 'en' : 'fr';
 
   const form = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -43,11 +48,10 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
   });
   const { register, handleSubmit, formState: { errors } } = form;
 
-  const { register: registerCode, handleSubmit: handleCodeSubmit, formState: { errors: codeErrors } } =
-    useForm<VerifyCodeInput>({ resolver: zodResolver(verifyCodeSchema) });
+  const { register: registerCode, handleSubmit: handleCodeSubmit, formState: { errors: codeErrors, isSubmitting: isVerifying } } = useForm<VerifyCodeInput>({ resolver: zodResolver(verifyCodeSchema) });
 
   const onSubmit = async (data: RegisterInput) => {
-    const result = await registerUser(data);
+    const result = await registerUser({ ...data, locale: emailLocale });
     if (result.success) {
       setRegisteredData(data);
       setStep("verify");
@@ -56,6 +60,7 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
 
   const onVerifyCode = async (codeData: VerifyCodeInput) => {
     if (!registeredData) return;
+    setResent(false);
 
     try {
       const res = await fetch("/api/auth/verify-email", {
@@ -71,7 +76,7 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
           companyName: registeredData.companyName,
           billingAddress: registeredData.billingAddress,
           groupStatus: plan === 'group' ? 'PENDING' : 'SOLO',
-          locale,
+          locale: emailLocale,
           pickupMode: registeredData.pickupMode,
           pickupAddress: registeredData.pickupAddress,
           pickupCity: registeredData.pickupCity,
@@ -86,10 +91,16 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
         return;
       }
 
-      await login({
+      const loginResult = await login({
         identifier: registeredData.email,
         password: registeredData.password,
       });
+
+      // Compte créé, mais connexion automatique impossible : on l'envoie se connecter
+      if (!loginResult.success) {
+        window.location.replace(`/${locale}/login`);
+        return;
+      }
 
       setSuccess(true);
       setTimeout(() => {
@@ -100,9 +111,30 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
     }
   };
 
+  // Renvoie un nouveau code : register() remplace l'ancien code (5 nouveaux essais)
+  const resendCode = async () => {
+    if (!registeredData) return;
+    setResent(false);
+    const result = await registerUser({ ...registeredData, locale: emailLocale });
+    if (result.success) setResent(true);
+  };
+
   useEffect(() => {
     onStepChange?.(step);
   }, [step, onStepChange]);
+
+  // Première erreur, quel que soit le champ (avant : seuls quelques champs étaient affichés)
+  const firstFieldError = Object.values(errors).find((e) => e?.message)?.message;
+  const errorMessage = tv(firstFieldError || codeErrors.code?.message) || error;
+
+  // Un seul message à la fois : le plus pertinent gagne
+  const feedback =
+    success ? { className: styles.success, role: 'status', text: t('accountCreatedSuccessfully') }
+    : isLoading ? { className: styles.loading, role: 'status', text: t('tryingToCreateAccount') }
+    : errorMessage ? { className: styles.error, role: 'alert', text: errorMessage }
+    : resent ? { className: styles.success, role: 'status', text: t('codeResent') }
+    : step === 'verify' ? { className: styles.loading, role: 'status', text: t('lastStepToCreateAccount') }
+    : null;
 
   return (
     <div className={styles.mainContainer}>
@@ -135,30 +167,39 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
           <div className={styles.groupInputs}>
             <div className={styles.inputs}>
               <label htmlFor="registerFirstName" className="block text-sm font-medium">{t('formFirstName')} <span className={styles.req}>*</span></label>
-              <input id="registerFirstName" {...register("firstName")} type="text" className="w-full px-3 py-2 border rounded" />
+              <input id="registerFirstName" autoComplete="given-name" {...register("firstName")} type="text" />
             </div>
 
             <div className={styles.inputs}>
               <label htmlFor="registerLastName" className="block text-sm font-medium">{t('formLastName')} <span className={styles.req}>*</span></label>
-              <input id="registerLastName" {...register("lastName")} type="text" className="w-full px-3 py-2 border rounded" />
+              <input id="registerLastName" autoComplete="family-name" {...register("lastName")} type="text" />
             </div>
           </div>
 
           <div className={styles.groupInputs}>
             <div className={styles.inputs}>
               <label htmlFor="registerPhoneNumber" className="block text-sm font-medium">{t('formPhoneNumber')} <span className={styles.req}>*</span></label>
-              <input id="registerPhoneNumber" {...register("phoneNumber")} type="text" className="w-full px-3 py-2 border rounded" />
+              <input
+                id="registerPhoneNumber"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                maxLength={14}
+                placeholder="(514) 825-2709"
+                {...register("phoneNumber")}
+                onInput={(e) => { e.currentTarget.value = formatPhone(e.currentTarget.value); }}
+              />
             </div>
 
             <div className={styles.inputs}>
               <label htmlFor="registerCompanyName" className="block text-sm font-medium">{t('formCompanyName')}</label>
-              <input id="registerCompanyName" {...register("companyName")} type="text" className="w-full px-3 py-2 border rounded" />
+              <input id="registerCompanyName" autoComplete="organization" {...register("companyName")} type="text" />
             </div>
           </div>
 
           <div className={styles.inputs}>
             <label htmlFor="registerEmail" className="block text-sm font-medium mb-1">{t('formEmail')} <span className={styles.req}>*</span></label>
-            <input id="registerEmail" type="email" {...register("email")} className="w-full px-3 py-2 border rounded" disabled={isLoading} />
+            <input id="registerEmail" type="email" autoComplete="email" {...register("email")} disabled={isLoading} />
           </div>
 
           <div className={styles.groupInputs}>
@@ -173,7 +214,6 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
             </div>
           </div>
 
-          {/* Adresse de facturation : forfaits solo et équipe */}
           <BillingAddressField />
 
           <PickupFields />
@@ -193,32 +233,28 @@ export function RegisterForm({ locale, plan, onPlanChange, onStepChange }: Regis
               <input
                 id="verifyCode"
                 type="text"
+                inputMode="numeric"
+                autoComplete="one-time-code"
                 maxLength={6}
                 placeholder="000000"
                 {...registerCode("code")}
                 className="w-full px-3 py-2 border rounded text-center text-2xl tracking-widest"
                 disabled={isLoading}
               />
+              <button type="button" className={styles.linkButton} onClick={resendCode} disabled={isLoading}>
+                {t('resendCode')}
+              </button>
             </div>
           </div>
           )}
 
-          {(errors.root || errors.confirmPassword || errors.pickupAddress || errors.pickupCity || errors.receptionDate || codeErrors.code || error) &&
-          <div className={styles.error}>
-            {tv(errors.root?.message || errors.confirmPassword?.message || errors.pickupAddress?.message || errors.pickupCity?.message || errors.receptionDate?.message || codeErrors.code?.message) || error}
-          </div>}
-
-          {success ? (
-            <div className={styles.success}>
-              {t('accountCreatedSuccessfully')}
-            </div>
-          ) : (isLoading || step === "verify") && (
-            <div className={styles.loading}>
-              {isLoading ? t('tryingToCreateAccount') : t('lastStepToCreateAccount')}
+          {feedback && (
+            <div className={feedback.className} role={feedback.role}>
+              {feedback.text}
             </div>
           )}
 
-          <button type="submit" disabled={isLoading} className={styles.btnConnection}>
+          <button type="submit" disabled={isLoading || isVerifying || success} className={styles.btnConnection}>
             {step === "register" ? t('register') : t('confirmVerificationCode')}
           </button>
         </form>

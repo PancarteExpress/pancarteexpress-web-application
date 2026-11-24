@@ -106,3 +106,5 @@
   outline: 2px solid var(--color-primary, #0E4D9A);
   outline-offset: 2px;
 }
+
+.expired { color: #C62828; font-size: 0.85rem; margin: 4px 0 0; }

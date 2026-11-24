@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { AppError } from "@/lib/errors/appError";
 import { hashPassword } from "@/lib/auth/server/password";
 import { publicUserSelect } from "@/lib/users/publicUser";
+import { emailKey, ipKey, isRateLimited, LIMITS } from '@/lib/rateLimit/server/rateLimit';
 
 import {
   sendAccountCreatedEmails,
@@ -69,6 +70,14 @@ export const authService = {
 
     if (existingUser) {
       throw new AppError("userExists");
+    }
+
+    // Limite les envois de code : protège la boîte d'une victime et notre réputation d'expéditeur
+    if (await isRateLimited('register', [
+      { key: emailKey(input.email), limit: LIMITS.codeEmail },
+      { key: await ipKey(), limit: LIMITS.codeIp },
+    ])) {
+      throw new AppError('tooManyRequests');
     }
 
     const code = await issueCode(input.email, "EMAIL_VERIFICATION");
@@ -208,6 +217,14 @@ export const authService = {
    */
   async forgotPassword(input: ForgotPasswordInput): Promise<void> {
     try {
+      // Limité en silence : même réponse qu'un envoi réussi (anti-énumération)
+      if (await isRateLimited('forgotPassword', [
+        { key: emailKey(input.email), limit: LIMITS.codeEmail },
+        { key: await ipKey(), limit: LIMITS.codeIp },
+      ])) {
+        return;
+      }
+      
       const user = await prisma.user.findUnique({
         where: { email: input.email },
         select: { role: true },

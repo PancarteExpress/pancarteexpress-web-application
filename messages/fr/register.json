@@ -1,4 +1,5 @@
 {
+  "metaDescription": "Devenez membre de Pancarte Express : entreposage de votre matériel, tarifs préférentiels et installation d'urgence en moins de 24 h dans le Grand Montréal.",
   "title": "Devenir membre",
   "accountTitle": "Créer votre compte",
   "_commentPackagesView": "--------------- Packages View ---------------",
@@ -58,12 +59,15 @@
     "addressLabel": "Adresse complète de l'endroit où ramasser le matériel",
     "receptionDate": "Quand recevrons-nous le matériel ?",
     "dateHint": "Les fins de semaine et les jours fériés ne sont pas disponibles.",
-    "notes": "Autres détails ?"
+    "notes": "Autres détails ?",
+    "chooseSuggestion": "Choisissez une adresse dans la liste de suggestions."
   },
   "completeProfile": {
     "title": "Complétez votre profil",
     "subtitle": "Indiquez comment récupérer votre matériel avant de continuer.",
-    "save": "Enregistrer"
+    "save": "Enregistrer",
+    "phoneNumber": "Téléphone",
+    "companyName": "Nom de l'agence"
   },
   "pickupEdit": {
     "loadError": "Impossible de charger le ramassage.",
@@ -72,5 +76,7 @@
     "save": "Enregistrer le ramassage"
   },
   "storageOrderNotice": "Votre demande n° <strong>{number}</strong> a bien été envoyée. Créez maintenant votre compte pour que nous puissions entreposer votre matériel.",
-  "formBillingAddress": "Adresse de facturation"
+  "formBillingAddress": "Adresse de facturation",
+  "resendCode": "Renvoyer le code",
+  "codeResent": "Un nouveau code a été envoyé."
 }

@@ -12,8 +12,11 @@ export const APP_ERROR_STATUS = {
   usernameTaken: 409,
   invalidCode: 400,
   tooManyAttempts: 429,
+  tooManyRequests: 429,
   validationFailed: 400,
   invalidJson: 400,
+  profileIncomplete: 403,
+  profileAlreadyCompleted: 409,
   emailSendFailed: 502,
   serverError: 500,
 } as const satisfies Record<string, number>;

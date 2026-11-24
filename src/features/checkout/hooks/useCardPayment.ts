@@ -28,12 +28,23 @@ export function useCardPayment() {
     expiry: false,
     cvc: false,
   });
-  const [cardError, setCardError] = useState<string | null>(null);
+  // Une erreur par champ : corriger le CVC n'efface pas l'erreur du numéro
+  const [fieldErrors, setFieldErrors] = useState<Record<CardField, string | null>>({
+    number: null,
+    expiry: null,
+    cvc: null,
+  });
+  // Erreur imposée de l'extérieur (ex. « carte incomplète » au moment de payer)
+  const [submitCardError, setCardError] = useState<string | null>(null);
 
   const handleCardChange = (field: CardField) => (event: CardChangeEvent) => {
     setComplete((prev) => ({ ...prev, [field]: event.complete }));
-    setCardError(event.error?.message ?? null);
+    setFieldErrors((prev) => ({ ...prev, [field]: event.error?.message ?? null }));
+    setCardError(null); // l'utilisateur corrige : on retire le message « incomplète »
   };
+
+  // Premier message utile, dans l'ordre des champs
+  const cardError = fieldErrors.number ?? fieldErrors.expiry ?? fieldErrors.cvc ?? submitCardError;
 
   const isComplete = complete.number && complete.expiry && complete.cvc;
   const isReady = stripe !== null && elements?.getElement(CardNumberElement) != null;

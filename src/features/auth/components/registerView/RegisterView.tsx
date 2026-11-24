@@ -1,7 +1,8 @@
+import type { ReactNode } from 'react';
 import styles from './RegisterView.module.css';
 
 interface RegisterViewProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function RegisterView({ children }: RegisterViewProps) {

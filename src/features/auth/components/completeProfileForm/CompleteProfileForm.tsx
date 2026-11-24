@@ -1,25 +1,33 @@
 "use client";
 
+import styles from "@/features/auth/components/registerForm/RegisterForm.module.css";
+import googleCompletion from "./CompleteProfileForm.module.css";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FormProvider, useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslations } from "next-intl";
-import { isAppErrorCode } from "@/lib/errors/appError";
+import { useSession } from "next-auth/react";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { readErrorCode } from "@/lib/errors/appError";
 import { completeProfileSchema, type CompleteProfileInput } from "@/lib/auth/auth.schema";
+import { useIssueMessage } from "@/shared/hooks/useIssueMessage";
+import { formatPhone } from "@/shared/utils/phone";
 import { BillingAddressField } from "../billingAddressField/BillingAddressField";
 import { PickupFields } from "../pickupFields/PickupFields";
-import styles from "@/features/auth/components/registerForm/RegisterForm.module.css";
 
 export default function CompleteProfileForm({ locale }: { locale: string }) {
   const router = useRouter();
   const t = useTranslations("register.completeProfile");
   const tErrors = useTranslations("errors");
+  const tv = useIssueMessage("errors.validation");
   const [serverError, setServerError] = useState<string | null>(null);
+  const { update } = useSession();
 
   const form = useForm<CompleteProfileInput>({
     resolver: zodResolver(completeProfileSchema),
-    defaultValues: { pickupMode: "address", billingAddress: "" },
+    defaultValues: { pickupMode: "address", billingAddress: "", phoneNumber: "", companyName: "" },
   });
 
   const onSubmit = async (data: CompleteProfileInput) => {
@@ -31,26 +39,65 @@ export default function CompleteProfileForm({ locale }: { locale: string }) {
     });
 
     if (!res.ok) {
-      const body = await res.json().catch(() => null);
-      const error: unknown = body?.error;
-      // Code d'erreur connu : traduit ; sinon le texte du serveur, à défaut l'erreur générique
-      setServerError(isAppErrorCode(error) ? tErrors(error) : typeof error === "string" ? error : tErrors("serverError"));
+      setServerError(tErrors(await readErrorCode(res)));
       return;
     }
 
+    // Relit la session : needsPickupInfo passe à false, sinon le checkout bloquerait encore
+    await update();
     router.replace(`/${locale}/dashboard`);
     router.refresh();
   };
 
   return (
-    <div className={styles.mainContainer}>
-      <h2>{t("title")}</h2>
-      <p>{t("subtitle")}</p>
+    <div className={`${googleCompletion.mainContainer} ${styles.mainContainer}`}>
+      <div className={googleCompletion.header}>
+        <h1>{t("title")}</h1>
+        <h2>{t("subtitle")}</h2>
+      </div>
+      
       <FormProvider {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
+          {/* Google ne fournit ni téléphone ni agence : demandés ici */}
+          <div className={styles.groupInputs}>
+            <div className={styles.inputs}>
+              <label htmlFor="completePhoneNumber" className="block text-sm font-medium">
+                {t("phoneNumber")} <span className={styles.req}>*</span>
+              </label>
+              <input
+                id="completePhoneNumber"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                maxLength={14}
+                placeholder="(514) 825-2709"
+                aria-invalid={Boolean(form.formState.errors.phoneNumber) || undefined}
+                {...form.register("phoneNumber")}
+                onInput={(e) => { e.currentTarget.value = formatPhone(e.currentTarget.value); }}
+              />
+              {form.formState.errors.phoneNumber && (
+                <span className={styles.error}>{tv(form.formState.errors.phoneNumber.message)}</span>
+              )}
+            </div>
+
+            <div className={styles.inputs}>
+              <label htmlFor="completeCompanyName" className="block text-sm font-medium">
+                {t("companyName")}
+              </label>
+              <input
+                id="completeCompanyName"
+                type="text"
+                autoComplete="organization"
+                {...form.register("companyName")}
+              />
+            </div>
+          </div>
+
           <BillingAddressField />
           <PickupFields />
-          {serverError && <div className={styles.error}>{serverError}</div>}
+
+          {serverError && <div className={styles.error} role="alert">{serverError}</div>}
+
           <button type="submit" disabled={form.formState.isSubmitting} className={styles.btnConnection}>
             {t("save")}
           </button>

@@ -55,6 +55,9 @@
     "sameDay": "Délai : urgence jour même",
     "specificDate": "Date demandée : {date}",
     "none": "Délai : aucun (grand format, traité séparément)",
-    "mixedNotice": "Les délais indiqués s’appliquent uniquement aux demandes résidentielles. Les demandes grand format sont traitées séparément par notre équipe, sans délai garanti."
-  }
+    "mixedNotice": "Les délais indiqués s’appliquent uniquement aux demandes résidentielles. Les demandes grand format sont traitées séparément par notre équipe, sans délai garanti.",
+    "expired": "Cette date n'est plus disponible. Retirez cette demande et refaites-la avec une nouvelle date."
+  },
+  "productUnavailable": "Ce produit n'est plus disponible. Retirez-le pour continuer.",
+  "removeUnavailableFirst": "Corrigez les éléments signalés dans votre panier pour passer au paiement."
 }

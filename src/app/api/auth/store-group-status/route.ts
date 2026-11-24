@@ -12,7 +12,13 @@ export async function POST(req: Request) {
 
   const { intent, groupStatus } = parsed.data;
   const cookieStore = await cookies();
-  const opts = { httpOnly: true, path: "/", maxAge: 300 };
+  const opts = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const, // envoyé au retour de Google (navigation de premier niveau)
+    path: "/",
+    maxAge: 300,
+  };
 
   cookieStore.set("authIntent", intent, opts);
   cookieStore.set("pendingGroupStatus", groupStatus, opts);

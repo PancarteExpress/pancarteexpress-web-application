@@ -32,6 +32,18 @@ vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("@/lib/auth/server/password", () => ({ hashPassword: vi.fn(), bcryptCompare: vi.fn() }));
 vi.mock("@/lib/auth/server/authEmails", () => emailMock);
 
+vi.mock("@/lib/auth/server/authEmails", () => emailMock);
+// La limite est testée dans rateLimit.test.ts : ici, jamais atteinte
+vi.mock("@/lib/rateLimit/server/rateLimit", () => ({
+  isRateLimited: vi.fn(async () => false),
+  ipKey: async () => "ip:test",
+  emailKey: (email: string) => `email:${email}`,
+  LIMITS: {
+    codeEmail: { max: 3, windowMs: 600_000 },
+    codeIp: { max: 10, windowMs: 3_600_000 },
+  },
+}));
+
 const { POST: forgotPassword } = await import("./forgot-password/route");
 const { POST: verifyResetCode } = await import("./verify-reset-code/route");
 

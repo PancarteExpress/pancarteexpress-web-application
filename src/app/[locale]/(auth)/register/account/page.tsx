@@ -16,9 +16,11 @@ interface Props {
 export async function generateMetadata({ params }: Pick<Props, 'params'>): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'register' });
-  return { title: t('accountTitle') };
+  return {
+    title: t('accountTitle'),
+    robots: { index: false, follow: true },
+  };
 }
-
 export default async function RegisterAccountPage({ params, searchParams }: Props) {
   const { locale } = await params;
   const { plan } = await searchParams;

@@ -5,6 +5,7 @@ import styles from "./GoogleLoginButton.module.css";
 import { signIn } from "next-auth/react";
 import { FcGoogle } from "react-icons/fc";
 import { useTranslations } from 'next-intl';
+import { useState } from "react";
 
 interface GoogleLoginButtonProps {
   locale: string;
@@ -15,8 +16,12 @@ interface GoogleLoginButtonProps {
 export function GoogleLoginButton({ locale, intent, groupStatus }: GoogleLoginButtonProps) {
   const login = useTranslations('login');
   const register = useTranslations('register');
+  const [pending, setPending] = useState(false);
 
   const handleGoogleSignIn = async () => {
+    if (pending) return;
+    setPending(true);
+
     await fetch("/api/auth/store-group-status", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -36,7 +41,7 @@ export function GoogleLoginButton({ locale, intent, groupStatus }: GoogleLoginBu
 
   return (
     <div className={styles.googleLoginContainer}>
-      <button type="button" onClick={handleGoogleSignIn} className={styles.googleBtn}>
+      <button type="button" onClick={handleGoogleSignIn} className={styles.googleBtn} disabled={pending}>
         <FcGoogle size={20} />
         {intent === "login" ? login('loginWithGoogle') : register('registerWithGoogle')}
       </button>

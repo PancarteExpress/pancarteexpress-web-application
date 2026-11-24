@@ -3,7 +3,6 @@
 import styles from './ContactView.module.css';
 
 import { useForm } from 'react-hook-form';
-
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 

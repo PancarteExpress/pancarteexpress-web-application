@@ -1,14 +1,16 @@
-// src/features/auth/components/registerCredentials/RegisterCredentials.tsx
 'use client';
 
 import styles from './RegisterCredentials.module.css';
-import Link from "next/link";
+
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
+
 import { RegisterForm } from "../registerForm/RegisterForm";
+import type { RegisterPlan } from '@/lib/auth/auth.schema';
+import { LocalLink } from '@/shared/components/LocalLink';
+
 import { MdGroups2 } from 'react-icons/md';
 import { IoPersonAdd } from 'react-icons/io5';
-import { useTranslations } from 'next-intl';
-import type { RegisterPlan } from '@/lib/auth/auth.schema';
 
 interface RegisterCredentialsProps {
   locale: string;
@@ -31,9 +33,7 @@ export default function RegisterCredentials({ locale, plan: initialPlan }: Regis
   return (
     <>
       {formStep === "register" && (
-        <Link href={`/${locale}/register`} className={styles.backToPackages}>
-          {t('btnPackages')}
-        </Link>
+        <LocalLink href="/register" className={styles.backToPackages}>{t('btnPackages')}</LocalLink>
       )}
 
       <div className={styles.credentials}>
@@ -43,8 +43,8 @@ export default function RegisterCredentials({ locale, plan: initialPlan }: Regis
           ) : (
             <IoPersonAdd  size={70} style={{color: "#0E4D9A"}}/>
           )}
-          <label>{t('formTitle')}</label>
-          <h3>{plan === 'group' ? t('formPackageGroup') : t('formPackageSolo')}</h3>
+          <h1 className={styles.title}>{t('formTitle')}</h1>
+          <h2>{plan === 'group' ? t('formPackageGroup') : t('formPackageSolo')}</h2>
         </div>
 
         <RegisterForm
@@ -56,9 +56,7 @@ export default function RegisterCredentials({ locale, plan: initialPlan }: Regis
 
         <p style={{ color: '#7691B4', fontWeight: '700', textAlign: 'center', marginTop: '1rem' }}>
           {t('alreadyMember')}{" "}
-          <Link href={`/${locale}/login`} style={{ textDecoration: 'none', color: '#0E4D9A', fontWeight: '700' }}>
-            {t('connect')}
-          </Link>
+          <LocalLink href="/login" style={{ textDecoration: 'none', color: '#0E4D9A', fontWeight: '700' }} className={styles.loginLink}>{t('connect')}</LocalLink>
         </p>
       </div>
     </>

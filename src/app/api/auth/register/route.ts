@@ -10,13 +10,10 @@ export async function POST(request: NextRequest) {
     // Validation
     const validatedData = registerSchema.parse(body);
 
-    // Register
-    const user = await authService.register(validatedData);
+    // Envoie le code de vérification : aucun compte n'est encore créé à cette étape
+    const result = await authService.register(validatedData);
 
-    return NextResponse.json(
-      { user, message: "Registration successful" },
-      { status: 201 }
-    );
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
     return errorResponse(error, "register");
   }

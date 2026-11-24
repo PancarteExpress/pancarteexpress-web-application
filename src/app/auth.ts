@@ -65,7 +65,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     error: "/login", // Auth.js ajoute ?error=<code>, affiché par LoginErrorMessage
   },
   callbacks: {
-    async signIn({ user, account }) {
+    async signIn({ user, account, profile }) {
       if (!user?.id && !user?.email) return false;
 
       if (account?.provider === "google" && user.email) {
@@ -85,10 +85,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         cookieStore.delete("pendingGroupStatus");
         cookieStore.delete("pendingLocale");
 
+        // Courriel non confirmé par Google : on ne peut ni lier ni créer un compte à ce nom
+        if (profile?.email_verified !== true) {
+          return `/${locale}/login?error=AccessDenied`;
+        }
+
         const existingUser = await prisma.user.findUnique({ where: { email } });
 
-        // Connexion : le compte doit exister, sinon on ne crée rien
-        if (intent === "login" && !existingUser) {
+        // Connexion, ou intention perdue (cookie expiré, appel échoué) : jamais de compte créé sans demande explicite
+        if (intent !== "register" && !existingUser) {
           return `/${locale}/login?error=no_account`;
         }
 
@@ -99,6 +104,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (existingUser) {
           if (existingUser.role === "superAdmin") return `/${locale}/login?error=AccessDenied`;
+
+          // Déjà lié à un AUTRE compte Google : on refuse
+          if (existingUser.provider === "google" && existingUser.providerAccountId !== account.providerAccountId) {
+            return `/${locale}/login?error=AccessDenied`;
+          }
 
           if (!existingUser.provider) {
             // Liaison Google seulement si l'adresse du compte a été vérifiée
@@ -129,7 +139,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               provider: account.provider,
               providerAccountId: account.providerAccountId,
               groupStatus,
-              locale, 
+              locale,
               needsPickupInfo: true,
             },
           });

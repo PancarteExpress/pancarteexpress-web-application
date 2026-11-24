@@ -13,6 +13,17 @@ const emailMock = vi.hoisted(() => ({
   sendVerificationEmail: vi.fn(),
 }));
 
+// La limite est testée dans rateLimit.test.ts : ici, jamais atteinte
+vi.mock('@/lib/rateLimit/server/rateLimit', () => ({
+  isRateLimited: vi.fn(async () => false),
+  ipKey: async () => 'ip:test',
+  emailKey: (email: string) => `email:${email}`,
+  LIMITS: {
+    codeEmail: { max: 3, windowMs: 600_000 },
+    codeIp: { max: 10, windowMs: 3_600_000 },
+  },
+}));
+
 vi.mock("@/lib/prisma", () => ({ prisma: prismaMock }));
 vi.mock("@/lib/auth/server/password", () => ({
   hashPassword: vi.fn(async () => "new-hash"),
@@ -20,6 +31,8 @@ vi.mock("@/lib/auth/server/password", () => ({
 }));
 vi.mock("@/lib/auth/server/authEmails", () => emailMock);
 vi.mock("server-only", () => ({}));
+
+const { isRateLimited } = await import('@/lib/rateLimit/server/rateLimit');
 
 const { authService } = await import("./auth.service");
 const { AppError } = await import("@/lib/errors/appError");
@@ -127,6 +140,17 @@ describe("authService — erreurs métier (AppError)", () => {
     expect(console.error).toHaveBeenCalledWith(expect.any(String), smtp);
   });
 
+  it("register : trop de demandes → tooManyRequests, aucun code envoyé", async () => {
+    prismaMock.user.findUnique.mockResolvedValue(null); // courriel libre
+    vi.mocked(isRateLimited).mockResolvedValueOnce(true);
+
+    await expect(
+      authService.register({ email: "ana@example.com", locale: "fr" } as Parameters<typeof authService.register>[0]),
+    ).rejects.toMatchObject({ code: "tooManyRequests" });
+    expect(prismaMock.$transaction).not.toHaveBeenCalled(); // aucun code émis
+    expect(emailMock.sendVerificationEmail).not.toHaveBeenCalled();
+  });
+
   it("register : compte existant → userExists", async () => {
     prismaMock.user.findUnique.mockResolvedValue({ id: "u1" });
 
@@ -174,6 +198,14 @@ describe("authService — anti-énumération du reset de mot de passe", () => {
     prismaMock.user.findUnique.mockResolvedValue(null);
 
     await expect(authService.forgotPassword(input)).resolves.toBeUndefined();
+    expect(emailMock.sendPasswordResetEmail).not.toHaveBeenCalled();
+  });
+
+  it("forgotPassword : limite atteinte → résout en silence, sans lire la base ni envoyer", async () => {
+    vi.mocked(isRateLimited).mockResolvedValueOnce(true);
+
+    await expect(authService.forgotPassword(input)).resolves.toBeUndefined();
+    expect(prismaMock.user.findUnique).not.toHaveBeenCalled();
     expect(emailMock.sendPasswordResetEmail).not.toHaveBeenCalled();
   });
 

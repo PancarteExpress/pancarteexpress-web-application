@@ -13,6 +13,7 @@ import { getServiceAccess } from '@/lib/users/server/serviceAccess.service';
 import { after } from 'next/server';
 import { sendReceipts } from '@/lib/orders/server/receipts.email';
 import { syncOrderToOptimoRoute } from '@/lib/optimoroute/server/syncOrder';
+import { AppError } from '@/lib/errors/appError';
 
 export interface CheckoutUser {
   id: string;
@@ -264,11 +265,13 @@ async function getCheckoutAccount(
   userId: string,
 ): Promise<{ phone: string | null; billedToId: string; billedToEmail: string }> {
   const account = await prisma.user.findUniqueOrThrow({
+    
     where: { id: userId },
     select: {
       email: true,
       phoneNumber: true,
       groupStatus: true,
+      needsPickupInfo: true,
       group: {
         select: {
           billingMode: true,
@@ -277,6 +280,9 @@ async function getCheckoutAccount(
       },
     },
   });
+
+  // Inscription Google pas terminée : ni facturation ni ramassage, la commande ne peut pas être traitée
+  if (account.needsPickupInfo) throw new AppError("profileIncomplete");
 
   const admin = account.group?.users[0] ?? null;
   const billedToId = resolveBilledToId({

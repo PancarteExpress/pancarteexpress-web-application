@@ -14,7 +14,7 @@ export function BillingAddressField() {
 
   return (
     <div className={styles.inputs}>
-      <label htmlFor="billingAddress" className="block text-sm font-medium mb-1">
+      <label htmlFor="billingAddress">
         {t("formBillingAddress")} <span className={styles.req}>*</span>
       </label>
       <Controller

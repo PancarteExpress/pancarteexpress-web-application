@@ -16,7 +16,6 @@
 
 .mainContainer fieldset .radioGroup .radioLabel {
   flex: 1;
-  position: relative;
 }
 
 .mainContainer fieldset .radioGroup .radioInput {
@@ -44,21 +43,9 @@
   font-size: 16px;
   transition: all 0.3s ease;
   text-align: center;
+  align-items: center;
+  height: 100%;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 .mainContainer fieldset .addressSelected {
     text-align: center;
@@ -92,16 +79,12 @@
     background-color: #E8F1FB;
 }
 
-
-
-
-
-
-
 .mainContainer .groupInputs {
     display: flex;
     gap: 10px;
 }
+
+@media (max-width: 1000px) { .mainContainer .groupInputs { flex-direction: column; } }
 
 .mainContainer .inputs {
     display: flex;
@@ -188,4 +171,24 @@
   border-radius: 10px;
   min-height: 90px;
   background: #F8FAFD;
+}
+
+.linkButton {
+    background: none;
+    border: none;
+    font: inherit;
+    color: #0E4D9A;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.linkButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btnConnection:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }

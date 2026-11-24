@@ -1,4 +1,5 @@
 {
+  "metaDescription": "Become a Pancarte Express member: storage for your signage equipment, preferred rates, and emergency installation in under 24 hours across Greater Montreal.",
   "title": "Become a member",
   "accountTitle": "Create your account",
   "_commentPackagesView": "--------------- Packages View ---------------",
@@ -58,12 +59,15 @@
     "addressLabel": "Full address where the material should be picked up",
     "receptionDate": "When will we receive the material?",
     "dateHint": "Weekends and statutory holidays are not available.",
-    "notes": "Other details?"
+    "notes": "Other details?",
+    "chooseSuggestion": "Choose an address from the suggestions."
   },
   "completeProfile": {
     "title": "Complete your profile",
     "subtitle": "Tell us how to collect your material before continuing.",
-    "save": "Save"
+    "save": "Save",
+    "phoneNumber": "Phone",
+    "companyName": "Agency name"
   },
   "pickupEdit": {
     "loadError": "Unable to load the pickup information.",
@@ -72,5 +76,7 @@
     "save": "Save pickup"
   },
   "storageOrderNotice": "Your request no. <strong>{number}</strong> has been sent. Now create your account so we can store your material.",
-  "formBillingAddress": "Billing address"
+  "formBillingAddress": "Billing address",
+  "resendCode": "Resend code",
+  "codeResent": "A new code has been sent."
 }

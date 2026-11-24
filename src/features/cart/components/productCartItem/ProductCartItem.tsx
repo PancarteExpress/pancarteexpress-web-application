@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 import { TiDeleteOutline } from 'react-icons/ti';
 import { formatCents } from '@/lib/pricing/money';
+import { getProductBySlug } from '@/lib/catalog/catalog';
 import type { ProductCartItem as ProductCartItemType } from '../../types/cart';
 import QuantityStepper from '../quantityStepper/QuantityStepper';
 import styles from './ProductCartItem.module.css';
@@ -19,11 +20,15 @@ export default function ProductCartItem({ item, locale, onQuantityChange, onRemo
   const t = useTranslations('cart');
   const name = locale === 'en' ? item.nameEn || item.nameFr : item.nameFr;
 
+  // Prix et image actuels du catalogue, comme au checkout ; undefined si le produit est retiré ou désactivé
+  const product = getProductBySlug(item.productId);
+  const imageUrl = product?.image ?? item.imageUrl;
+
   return (
-    <article className={styles.row}>
+    <article className={`${styles.row} ${product ? '' : styles.unavailableRow}`}>
       <div className={styles.image}>
-        {item.imageUrl ? (
-          <Image src={item.imageUrl} alt={name} fill sizes="72px" style={{ objectFit: 'contain' }} />
+        {imageUrl ? (
+          <Image src={imageUrl} alt={name} fill sizes="72px" style={{ objectFit: 'contain' }} />
         ) : (
           <span aria-hidden="true">—</span>
         )}
@@ -31,16 +36,20 @@ export default function ProductCartItem({ item, locale, onQuantityChange, onRemo
 
       <div>
         <p className={styles.name}>{name}</p>
-        <p className={styles.unit}>{t('unitPrice', { price: formatCents(item.unitPrice, locale) })}</p>
+        {product ? (
+          <p className={styles.unit}>{t('unitPrice', { price: formatCents(product.price, locale) })}</p>
+        ) : (
+          <p className={styles.unavailable} role="alert">{t('productUnavailable')}</p>
+        )}
       </div>
 
-      <QuantityStepper
-        value={item.quantity}
-        onChange={onQuantityChange}
-        label={t('quantityOf', { name })}
-      />
+      {product ? (
+        <QuantityStepper value={item.quantity} onChange={onQuantityChange} label={t('quantityOf', { name })} />
+      ) : (
+        <span aria-hidden="true" />
+      )}
 
-      <p className={styles.lineTotal}>{formatCents(item.unitPrice * item.quantity, locale)}</p>
+      <p className={styles.lineTotal}>{product ? formatCents(product.price * item.quantity, locale) : '—'}</p>
 
       <button
         type="button"

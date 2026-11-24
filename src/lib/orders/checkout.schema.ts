@@ -1,15 +1,12 @@
-import { GUEST_INFO_LIMITS } from './guestInfo';
 import * as z from 'zod';
-import { format } from 'date-fns';
+
+import { GUEST_INFO_LIMITS } from './guestInfo';
 import { MAX_QUANTITY, REQUEST_TYPES, SERVICE_DELAYS } from '@/lib/orders/constants';
 import { SERVICE_TYPES } from '@/lib/pricing/constants';
-import { earliestSpecificDate, isBusinessDay, parseIso, todayInMontreal } from '@/features/services/utils/holidays';
-import { isValidIsoDate } from '@/features/services/utils/time';
+import { isSelectableSpecificDate } from '@/features/services/utils/holidays';
 import { LARGE_FORMAT_SERVICES } from '@/features/services/constants/largeFormat';
 import { parseServiceDetails } from '@/features/services/schemas/serviceDetails.schema';
-import {
-  ATTACHMENT_CONTENT_TYPES, ATTACHMENT_PREFIX, MAX_ATTACHMENT_SIZE, MAX_ATTACHMENTS_PER_ADDRESS,
-} from '@/lib/attachments/constants';
+import { ATTACHMENT_CONTENT_TYPES, ATTACHMENT_PREFIX, MAX_ATTACHMENT_SIZE, MAX_ATTACHMENTS_PER_ADDRESS, } from '@/lib/attachments/constants';
 
 const LARGE_FORMAT_SET: ReadonlySet<string> = new Set(LARGE_FORMAT_SERVICES);
 const isLargeFormatService = (type: string) => LARGE_FORMAT_SET.has(type);
@@ -42,9 +39,9 @@ const scheduleSchema = z
   .superRefine((s, ctx) => {
     if (s.delay !== 'specificDate') return;
     // Revalidé côté serveur : le client peut être modifié
-    const earliest = format(earliestSpecificDate(todayInMontreal()), 'yyyy-MM-dd');
-    const valid = s.date !== undefined && isValidIsoDate(s.date) && s.date >= earliest && isBusinessDay(parseIso(s.date));
-    if (!valid) ctx.addIssue({ code: 'custom', path: ['date'], message: 'invalidServiceDate' });
+    if (s.date === undefined || !isSelectableSpecificDate(s.date)) {
+      ctx.addIssue({ code: 'custom', path: ['date'], message: 'invalidServiceDate' });
+    }
   });
 
 /* ── Formulaire (coordonnées + livraison) ─────────────────────── */

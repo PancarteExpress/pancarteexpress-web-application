@@ -1,24 +1,21 @@
-// src/features/auth/components/registerPackages/RegisterPackages.tsx
 'use client';
 
-import Link from 'next/link';
 import styles from './RegisterPackages.module.css';
+
 import { motion } from "framer-motion";
 import { useTranslations } from 'next-intl';
 
-interface RegisterPackagesProps {
-  locale: string;
-}
+import { LocalLink } from '@/shared/components/LocalLink';
 
-const MotionLink = motion.create(Link);
+const MotionLink = motion.create(LocalLink);
 
-export default function RegisterPackages({ locale }: RegisterPackagesProps) {
+export default function RegisterPackages() {
   const t = useTranslations('register');
 
   return (
     <div className={styles.mainContainer}>
       <div className={styles.packages}>
-        <MotionLink initial={{ opacity: 0, x: -100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} href={`/${locale}/services`}>
+        <MotionLink initial={{ opacity: 0, x: -100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} href="/services">
           <div className={styles.header}>
             <h2 className={styles.title}>{t('package1Title')}</h2>
             
@@ -49,7 +46,7 @@ export default function RegisterPackages({ locale }: RegisterPackagesProps) {
           </span>
         </MotionLink>
         
-        <MotionLink initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className={styles.package} href={`/${locale}/register/account?plan=group`}>
+        <MotionLink initial={{ opacity: 0, y: 100 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1 }} className={styles.package} href="/register/account?plan=group">
           <div className={styles.header}>
             
             <h2 className={styles.title}>{t('package2Title')}</h2>
@@ -83,7 +80,7 @@ export default function RegisterPackages({ locale }: RegisterPackagesProps) {
           </span>
         </MotionLink>
 
-        <MotionLink initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} href={`/${locale}/register/account?plan=solo`}>
+        <MotionLink initial={{ opacity: 0, x: 100 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 1 }} className={styles.package} href="/register/account?plan=solo">
           <div className={styles.header}>
             <h2 className={styles.title}>{t('package3Title')}</h2>
             

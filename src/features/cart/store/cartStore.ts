@@ -11,6 +11,7 @@ import type { ServiceSchedule } from '@/features/services/types/schedule';
 import type { Service } from '@/features/services/types/services';
 import { upgradeInstallationDetails } from '@/features/services/utils/legacyInstallation';
 import { MAX_QUANTITY } from '@/lib/orders/constants';
+import { randomId } from '@/shared/utils/randomId';
 
 const STORAGE_KEY = 'pancarte-cart';
 const STORAGE_VERSION = 8;
@@ -130,7 +131,7 @@ export const useCartStore = create<CartState>()(
               {
                 ...item,
                 kind: 'product',
-                id: crypto.randomUUID(),
+                id: randomId(),
                 addedAt: Date.now(),
                 quantity: clampQuantity(item.quantity),
               },
@@ -139,7 +140,7 @@ export const useCartStore = create<CartState>()(
         }),
 
       addServiceRequest: (item) => {
-        const id = crypto.randomUUID();
+        const id = randomId();
         set((state) => ({
           items: [
             ...state.items,

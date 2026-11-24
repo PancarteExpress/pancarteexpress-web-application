@@ -1,9 +1,15 @@
 .mainContainer .packages {
     display: flex;
+    margin: 10px auto;
     gap: 20px;
-    align-items: stretch;
+    width: 80%;
 }
 
+@media (max-width: 1300px) {
+    .mainContainer .packages {
+        width: 100%;
+    }
+}
 
 @media (max-width: 700px) { .mainContainer .packages { flex-direction: column; } }
 

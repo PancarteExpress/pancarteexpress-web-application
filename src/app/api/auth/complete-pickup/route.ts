@@ -6,12 +6,13 @@ import { completeProfileSchema } from "@/lib/auth/auth.schema";
 import { toPickupCreateInput } from "@/lib/auth/server/pickup";
 import { sendAccountCreatedEmails } from "@/lib/auth/server/authEmails";
 import { errorResponse } from "@/lib/errors/server/toClientError";
+import { AppError } from "@/lib/errors/appError";
 
 export async function POST(request: Request) {
   const session = await auth();
   const userId = session?.user?.id;
   if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return errorResponse(new AppError("unauthorized"), "complete-pickup");
   }
 
   try {
@@ -25,7 +26,6 @@ export async function POST(request: Request) {
         firstName: true,
         lastName: true,
         email: true,
-        companyName: true,
         groupStatus: true,
         provider: true,
         locale: true,
@@ -33,14 +33,22 @@ export async function POST(request: Request) {
     });
 
     if (!user?.needsPickupInfo) {
-      return NextResponse.json({ error: "Ramassage déjà enregistré" }, { status: 409 });
+      throw new AppError("profileAlreadyCompleted");
     }
 
     const pickup = toPickupCreateInput(data);
 
     await prisma.$transaction([
       prisma.pickupInfo.create({ data: { userId, ...pickup } }),
-      prisma.user.update({ where: { id: userId }, data: { needsPickupInfo: false, billingAddress: data.billingAddress } }),
+      prisma.user.update({
+        where: { id: userId },
+        data: {
+          needsPickupInfo: false,
+          billingAddress: data.billingAddress,
+          phoneNumber: data.phoneNumber,
+          companyName: data.companyName || null,
+        },
+      }),
     ]);
 
     // Inscription Google : bienvenue et notification interne attendaient le ramassage pour être complètes
@@ -55,7 +63,8 @@ export async function POST(request: Request) {
           provider: "google",
           locale: user.locale,
           groupStatus,
-          companyName: user.companyName ?? undefined,
+          phoneNumber: data.phoneNumber,
+          companyName: data.companyName || undefined,
           billingAddress: data.billingAddress,
           pickup,
         }),
