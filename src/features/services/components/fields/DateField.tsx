@@ -34,9 +34,16 @@ interface DateFieldProps {
   error?: string;
   hint?: ReactNode;
   required?: boolean;
+  /**
+   * Taille constante : largeur fixe, toujours 6 semaines, place réservée aux textes d'aide
+   * (ex. visite libre, où le texte change avec le nombre de jours)
+   */
+  fixedSize?: boolean;
 }
 
-export function DateField({ label, value, onChange, span = 1, minDate, isDisabled, error, hint, required }: DateFieldProps) {
+export function DateField({
+  label, value, onChange, span = 1, minDate, isDisabled, error, hint, required, fixedSize = false,
+}: DateFieldProps) {
   const { hintId, errorId, describedBy } = useFieldIds({ hint, error });
   const t = useTranslations('services.fields');
   const formatter = useFormatter();
@@ -49,41 +56,46 @@ export function DateField({ label, value, onChange, span = 1, minDate, isDisable
     locale: locale === 'en' ? enCA : frCA,
     defaultMonth: selected[0] ?? fromDate,
     disabled: isDisabled ? [{ before: fromDate }, isDisabled] : { before: fromDate },
+    // Toujours 6 rangées : la hauteur ne change pas d'un mois à l'autre
+    fixedWeeks: fixedSize,
   };
 
   return (
-    <fieldset className={styles.group} aria-describedby={describedBy}>
+    <fieldset className={fixedSize ? `${styles.group} ${styles.dateFixed}` : styles.group} aria-describedby={describedBy}>
       <label className={styles.legend}>
         {label}
         {required && <span aria-hidden="true" className={styles.required}> *</span>}
       </label>
-      {hint && <p id={hintId} className={styles.hint}>{hint}</p>}
+      {hint && <p id={hintId} className={`${styles.hint} ${styles.dateHint}`}>{hint}</p>}
 
-      <div className={styles.calendar} data-invalid={Boolean(error)}>
-        {span === 1 ? (
-          <DayPicker
-            {...shared}
-            mode="single"
-            selected={selected[0]}
-            // Recliquer sur la date sélectionnée renvoie undefined : on garde la date actuelle
-            onSelect={(date) => {
-              if (date) onChange([toIso(date)]);
-            }}
-          />
-        ) : (
-          <DayPicker
-            {...shared}
-            mode="range"
-            selected={selected[0] ? { from: selected[0], to: addDays(selected[0], span - 1) } : undefined}
-            // Le jour cliqué devient le premier jour ; les suivants sont ajoutés automatiquement
-            onSelect={(_range, clickedDay) => {
-              onChange(Array.from({ length: span }, (_, i) => toIso(addDays(clickedDay, i))));
-            }}
-          />
-        )}
+      {/* Bloc : le titre reste au-dessus du calendrier, même sans texte d'aide */}
+      <div>
+        <div className={styles.calendar} data-invalid={Boolean(error)}>
+          {span === 1 ? (
+            <DayPicker
+              {...shared}
+              mode="single"
+              selected={selected[0]}
+              // Recliquer sur la date sélectionnée renvoie undefined : on garde la date actuelle
+              onSelect={(date) => {
+                if (date) onChange([toIso(date)]);
+              }}
+            />
+          ) : (
+            <DayPicker
+              {...shared}
+              mode="range"
+              selected={selected[0] ? { from: selected[0], to: addDays(selected[0], span - 1) } : undefined}
+              // Le jour cliqué devient le premier jour ; les suivants sont ajoutés automatiquement
+              onSelect={(_range, clickedDay) => {
+                onChange(Array.from({ length: span }, (_, i) => toIso(addDays(clickedDay, i))));
+              }}
+            />
+          )}
+        </div>
       </div>
 
-      <p className={styles.hint} aria-live="polite">
+      <p className={`${styles.hint} ${styles.dateSelection}`} aria-live="polite">
         {selected.length > 0
           ? t('selectedDates', {
               count: selected.length,

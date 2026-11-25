@@ -197,6 +197,20 @@
 
 .calendar[data-invalid='true'] { border-color: #c62828; }
 
+/* Calendrier de taille constante (DateField fixedSize) : largeur fixe, place réservée aux textes */
+.dateFixed {
+  inline-size: 24rem;
+  max-inline-size: 100%;
+}
+
+.dateFixed .dateHint {
+  min-block-size: 3lh;
+}
+
+.dateFixed .dateSelection {
+  min-block-size: 2lh;
+}
+
 /* Jour sélectionné (une date, ou chacune des deux dates) */
 .calendar :global(.rdp-selected .rdp-day_button) {
   background-color: #0e4d9a;

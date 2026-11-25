@@ -1,6 +1,6 @@
 import type { ServiceType } from '@prisma/client';
 import type { Locale } from '@/shared/constants/locales';
-import type { InstallationDetails } from '../types/installation';
+import type { InstallationDetails, Placement } from '../types/installation';
 import type { RemovalDetails } from '../types/removal';
 import type { CorrectionDetails } from '../types/correction';
 import type { PickupDetails } from '../types/pickup';
@@ -13,6 +13,7 @@ import {
 import { describeLargeFormatServiceTranslated } from './largeFormatTranslatedText';
 import { removalDayAfter } from './time';
 import { formatIsoDay } from './formatDay';
+import { parseIso } from './holidays';
 
 /*
  * Détail complet d'un service en texte (courriel), dans la langue du traducteur.
@@ -44,6 +45,24 @@ function installationText({ pickupAddress, frames, kits, addons, openHouse, keyb
   const list = (items: string[]) => new Intl.ListFormat(`${c.locale}-CA`, { type: 'conjunction' }).format(items);
   const lines: string[] = [];
 
+  // Visite libre telle qu'affichée sur l'ajout : « Visite libre dimanche 13 h 30 à 14 h 30 »
+  const weekday = (iso: string) => parseIso(iso).toLocaleDateString(`${c.locale}-CA`, { weekday: 'long' });
+  const openHouseLabel = openHouse
+    ? t('summary.openHouseOnFrame', {
+        days: list(openHouse.dates.map(weekday)),
+        range: t('summary.timeRange', { start: formatTime(openHouse.startTime, t), end: formatTime(openHouse.endTime, t) }),
+      })
+    : '';
+  /** Ajouts posés sur une pancarte de la demande (visite libre en premier) */
+  const frameAddons = (uid: string) => [
+    ...(openHouse?.frameUids.includes(uid) ? [openHouseLabel] : []),
+    ...(addons ?? []).filter((a) => a.frameUids.includes(uid)).map((a) => describeAddon(a, t)),
+  ];
+  /** Unités sur des pancartes déjà sur place : leur emplacement, sinon « Sur place » */
+  const onSiteLines = (placements: Placement[] | null) =>
+    placements ? [pair(t('summary.placement'), describePlacements(placements, t))] : [t('summary.onSite')];
+  const countSuffix = (n: number) => (n > 1 ? ` ×${n}` : '');
+
   // Invités : matériel à aller chercher à une autre adresse (null : non requis, ou membre)
   if (pickupAddress) lines.push(...block(t('summary.materialPickup'), [pair(t('summary.pickupAddress'), pickupAddress)]));
 
@@ -55,6 +74,7 @@ function installationText({ pickupAddress, frames, kits, addons, openHouse, keyb
           block(t('summary.frame', { number: i + 1 }), [
             ...(unit.model ? [pair(t('summary.model'), describeModel(unit.model, t))] : []),
             ...(unit.displayName ? [pair(t('summary.displayName'), describeDisplayName(unit.displayName))] : []),
+            ...(frameAddons(unit.uid).length > 0 ? [pair(t('summary.addons'), frameAddons(unit.uid).join(', '))] : []),
             pair(t('summary.placement'), describePlacement(unit.placement, t)),
           ]),
         ),
@@ -76,7 +96,17 @@ function installationText({ pickupAddress, frames, kits, addons, openHouse, keyb
     );
   }
 
-  if (addons) {
+  if (frames) {
+    // Avec pancartes : les ajouts sont sous leur pancarte ; ici, seulement ceux pour des pancartes déjà sur place
+    const onSite = [
+      ...(addons ?? []).filter((a) => a.onSiteCount > 0).map((a) =>
+        block(`${describeAddon(a, t)}${countSuffix(a.onSiteCount)}`, onSiteLines(a.placements))),
+      ...(openHouse && openHouse.onSiteCount > 0
+        ? [block(`${openHouseLabel}${countSuffix(openHouse.onSiteCount)}`, onSiteLines(openHouse.placements))]
+        : []),
+    ];
+    if (onSite.length > 0) lines.push(...block(t('summary.onSiteAddons'), onSite.flat()));
+  } else if (addons) {
     lines.push(
       ...block(
         t('summary.addons'),
@@ -93,14 +123,19 @@ function installationText({ pickupAddress, frames, kits, addons, openHouse, keyb
 
   if (openHouse) {
     lines.push(
-      ...block(t('summary.openHouse'), [
+      ...block(t('summary.openHouseDetails'), [
         pair(t('summary.dates', { count: openHouse.dates.length }), list(openHouse.dates.map(formatDate))),
         pair(
           t('summary.hours'),
           t('summary.timeRange', { start: formatTime(openHouse.startTime, t), end: formatTime(openHouse.endTime, t) }),
         ),
-        pair(t('summary.signs', { count: openHouse.quantity }), describeTargets(openHouse, frameNumbers, t)),
-        ...(openHouse.placements ? [pair(t('summary.placement'), describePlacements(openHouse.placements, t))] : []),
+        // Avec pancartes : les affichettes sont déjà sous leur pancarte ou dans « pancartes sur place »
+        ...(frames
+          ? []
+          : [
+              pair(t('summary.signs', { count: openHouse.quantity }), describeTargets(openHouse, frameNumbers, t)),
+              ...(openHouse.placements ? [pair(t('summary.placement'), describePlacements(openHouse.placements, t))] : []),
+            ]),
         ...(openHouse.directionals.length > 0
           ? block(
               t('summary.directionals', { count: openHouse.directionals.length }),

@@ -51,8 +51,9 @@ function targets(t: { quantity: number; frameUids: string[]; onSite: boolean }):
   };
 }
 
-const ownPlacements = (placements: PlacementFormValues[], hasFrames: boolean): Placement[] | null =>
-  hasFrames ? null : placements.map((p) => completePlacement(p)).filter((p): p is Placement => p !== null);
+/** Emplacements des pancartes déjà sur place ; `skip` (non coché) → null */
+const ownPlacements = (placements: PlacementFormValues[], skip: boolean): Placement[] | null =>
+  skip ? null : placements.map((p) => completePlacement(p)).filter((p): p is Placement => p !== null);
 
 /** Installation telle que saisie jusqu'ici ; les parties incomplètes sont ignorées */
 export function installationPreviewDetails(v: InstallationFormValues, accountName: string | null): InstallationDetails {
@@ -61,7 +62,8 @@ export function installationPreviewDetails(v: InstallationFormValues, accountNam
 
   const addons: AddonAssignment[] = has('addons')
     ? v.addons.map((a) => {
-        const base = { ...targets(a), placements: ownPlacements(a.placements, hasFrames) };
+        // Emplacements des pancartes déjà sur place
+        const base = { ...targets(a), placements: ownPlacements(a.placements, !a.onSite) };
         const { addon } = a;
         switch (addon) {
           case 'other':
@@ -107,7 +109,7 @@ export function installationPreviewDetails(v: InstallationFormValues, accountNam
     openHouse: has('openHouse')
       ? {
           ...targets(v.openHouse),
-          placements: ownPlacements(v.openHouse.placements, hasFrames),
+          placements: ownPlacements(v.openHouse.placements, !v.openHouse.onSite),
           dates: v.openHouse.dates,
           startTime: v.openHouse.startTime,
           endTime: v.openHouse.endTime,

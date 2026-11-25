@@ -17,7 +17,7 @@ export const MAX_REMOVAL_DIRECTIONALS = 3;
 
 export const REMOVAL_TEXT_LIMITS = {
   addonsDetails: 100,
-  keyboxPlacement: 50,
+  keyboxPlacement: 100,
   flagsPlacement: 50,
   directionalPlacement: 50,
   otherDetails: 100,

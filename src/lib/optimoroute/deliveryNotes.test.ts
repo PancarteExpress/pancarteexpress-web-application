@@ -3,88 +3,64 @@ import type { DeliveryDetails } from '@/features/services/types/delivery';
 import { buildDeliveryNotes } from './deliveryNotes';
 
 const empty: DeliveryDetails = { frames: null, addons: null, keybox: null, directionals: null, others: null };
+const NAME = 'Natasha Fournier';
 
-describe('buildDeliveryNotes — pancartes', () => {
-  it('ton exemple : total, nombre de modèles, compte, liste des modèles', () => {
-    const notes = buildDeliveryNotes({
-      ...empty,
-      frames: [
-        { model: 'regular', quantity: 20, withAnchorsAndPoles: false },
-        { model: 'prestige', quantity: 10, withAnchorsAndPoles: true },
-        { model: 'custom', description: 'Ceci est un modele iphone', quantity: 5, withAnchorsAndPoles: false },
-        { model: 'custom', description: 'Ancienne photo', quantity: 1, withAnchorsAndPoles: false },
-      ],
-    }, 'Cristian Fermin Lopez');
-    expect(notes).toBe(
-      'LIVRER 36x PANCARTES (4 modèles) CRISTIAN FERMIN LOPEZ: [20x KIT RÉGULIER, '
-      + '10x KIT PRESTIGE (avec poteaux et ancrages), 5x KIT CECI EST UN MODELE IPHONE, 1x KIT ANCIENNE PHOTO]',
-    );
-  });
-
-  it('une seule pancarte, sans compte', () => {
-    const notes = buildDeliveryNotes({ ...empty, frames: [{ model: 'regular', quantity: 1, withAnchorsAndPoles: false }] }, null);
-    expect(notes).toBe('LIVRER 1x PANCARTE (1 modèle): [1x KIT RÉGULIER]');
-  });
-
-  it('ajouts : ton exemple', () => {
-    const notes = buildDeliveryNotes({
-      ...empty,
-      addons: [
-        { addon: 'forSale', quantity: 20 },
-        { addon: 'customNoMention', model: "c'es le modele avec des etoiles par dessus", quantity: 10 },
-        { addon: 'other', mention: "c'es le modele avec des cercles par dessus", quantity: 5 },
-        { addon: 'openHouse', hours: null, quantity: 3 },
-        { addon: 'rented', quantity: 1 },
-      ],
-    }, 'Cristian Fermin Lopez');
-    expect(notes).toBe(
-      "LIVRER 39x AJOUTS (5 modèles) CRISTIAN FERMIN LOPEZ: [20x AJOUT À VENDRE, 10x PERSO (c'es le modele avec des etoiles par dessus), "
-      + "5x AJOUT C'ES LE MODELE AVEC DES CERCLES PAR DESSUS, 3x AJOUT VISITE LIBRE, 1x AJOUT LOUÉ]",
-    );
-  });
-
-  it('visite libre : heures entre parenthèses si elles sont précisées', () => {
-    const notes = buildDeliveryNotes({ ...empty, addons: [{ addon: 'openHouse', hours: 'Samedi 14 h à 16 h', quantity: 3 }] }, null);
-    expect(notes).toBe('LIVRER 3x AJOUTS (1 modèle): [3x AJOUT VISITE LIBRE (Samedi 14 h à 16 h)]');
-  });
-
-  it('pancartes puis ajouts : le nom du compte une seule fois', () => {
+describe('buildDeliveryNotes', () => {
+  it('pancartes et ajouts : une seule liste', () => {
     const notes = buildDeliveryNotes({
       ...empty,
       frames: [{ model: 'regular', quantity: 2, withAnchorsAndPoles: false }],
-      addons: [{ addon: 'sold', quantity: 10 }],
-    }, 'Cristian Fermin Lopez');
+      addons: [{ addon: 'forSale', quantity: 1 }],
+    }, NAME);
+    expect(notes).toBe('LIVRER NATASHA FOURNIER: [2x KIT RÉGULIER, 1x AJOUT À VENDRE]');
+  });
+
+  it('un seul modèle Régulier : LIVRER 2x KIT {COMPTE}', () => {
+    const notes = buildDeliveryNotes({ ...empty, frames: [{ model: 'regular', quantity: 2, withAnchorsAndPoles: false }] }, NAME);
+    expect(notes).toBe('LIVRER 2x KIT NATASHA FOURNIER');
+  });
+
+  it('un seul modèle, autre que Régulier : le modèle est gardé', () => {
+    const notes = buildDeliveryNotes({ ...empty, frames: [{ model: 'prestige', quantity: 1, withAnchorsAndPoles: true }] }, NAME);
+    expect(notes).toBe('LIVRER 1x KIT PRESTIGE (avec poteaux et ancrages) NATASHA FOURNIER');
+  });
+
+  it('plusieurs modèles de chaque : tous dans la même liste, dans l\'ordre', () => {
+    const notes = buildDeliveryNotes({
+      ...empty,
+      frames: [
+        { model: 'regular', quantity: 2, withAnchorsAndPoles: false },
+        { model: 'prestige', quantity: 1, withAnchorsAndPoles: false },
+      ],
+      addons: [
+        { addon: 'forSale', quantity: 5 },
+        { addon: 'sold', quantity: 5 },
+        { addon: 'customNoMention', model: 'modèle étoilé', quantity: 2 },
+        { addon: 'openHouse', hours: 'Samedi 14 h à 16 h', quantity: 3 },
+      ],
+      keybox: { quantity: 3, code: '111111' },
+      directionals: [{ model: 'custom', description: 'le modele avec les etoiles', quantity: 5, withPoles: true }],
+      others: [{ description: 'Panneaux solaires', quantity: 4 }],
+    }, NAME);
     expect(notes).toBe(
-      'LIVRER 2x PANCARTES (1 modèle) CRISTIAN FERMIN LOPEZ: [2x KIT RÉGULIER] + LIVRER 10x AJOUTS (1 modèle): [10x AJOUT VENDU]',
+      'LIVRER NATASHA FOURNIER: [2x KIT RÉGULIER, 1x KIT PRESTIGE, 5x AJOUT À VENDRE, 5x AJOUT VENDU, '
+      + '2x PERSO (modèle étoilé), 3x AJOUT VISITE LIBRE (Samedi 14 h à 16 h), 3x BAC111111, '
+      + '5x DIRECTIONNELLES *le modele avec les etoiles* (avec poteaux), 4x PANNEAUX SOLAIRES]',
     );
   });
 
-  it('boîtes à clés : LIVRER 3x BAC{CODE} {COMPTE}', () => {
+  it('un seul élément, boîte à clés : LIVRER 3x BAC{CODE} {COMPTE}', () => {
     expect(buildDeliveryNotes({ ...empty, keybox: { quantity: 3, code: '111111' } }, 'Cristian Fermin Lopez'))
       .toBe('LIVRER 3x BAC111111 CRISTIAN FERMIN LOPEZ');
   });
 
-  it('directionnelles : ton exemple', () => {
+  it('sans compte (nom déjà donné à un autre service de l\'adresse)', () => {
     const notes = buildDeliveryNotes({
       ...empty,
-      directionals: [
-        { model: 'forSale', quantity: 5, withPoles: true },
-        { model: 'openHouse', quantity: 5, withPoles: false },
-        { model: 'custom', description: 'le modele avec les etoiles', quantity: 5, withPoles: true },
-      ],
-    }, 'Cristian Fermin Lopez');
-    expect(notes).toBe(
-      'LIVRER 15x DIRECTIONNELLES (3 modèles) CRISTIAN FERMIN LOPEZ: [5x DIRECTIONNELLES À VENDRE (avec poteaux), '
-      + '5x DIRECTIONNELLES VISITE LIBRE, 5x DIRECTIONNELLES *le modele avec les etoiles* (avec poteaux)]',
-    );
-  });
-
-  it('autres : LIVRER MATÉRIEL {COMPTE}: [liste]', () => {
-    const notes = buildDeliveryNotes({
-      ...empty,
-      others: [{ description: 'Panneaux solaires', quantity: 4 }, { description: 'Kit de déménagement', quantity: 1 }],
-    }, 'Cristian Fermin Lopez');
-    expect(notes).toBe('LIVRER MATÉRIEL CRISTIAN FERMIN LOPEZ: [4x PANNEAUX SOLAIRES, 1x KIT DE DÉMÉNAGEMENT]');
+      frames: [{ model: 'regular', quantity: 2, withAnchorsAndPoles: false }],
+      addons: [{ addon: 'sold', quantity: 10 }],
+    }, null);
+    expect(notes).toBe('LIVRER: [2x KIT RÉGULIER, 10x AJOUT VENDU]');
   });
 
   it('rien de couvert encore : LIVRER', () => {

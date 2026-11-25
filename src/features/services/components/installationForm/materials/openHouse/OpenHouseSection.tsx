@@ -108,26 +108,9 @@ export function OpenHouseSection() {
           />
         )}
       />
-      <button
-          type="button"
-          className={styles.toggleButton}
-          aria-pressed={openHouse.twoDates}
-          onClick={() => {
-            const next = !openHouse.twoDates;
-            update('openHouse.twoDates', next);
-              const [first] = getValues('openHouse.dates');
-              // Deux dates : on ajoute le lendemain ; une seule : on garde la première
-              if (first) {
-                update('openHouse.dates', next
-                  ? [first, format(addDays(parse(first, 'yyyy-MM-dd', new Date()), 1), 'yyyy-MM-dd')]
-                  : [first]);
-              }
-          }}
-        >
-          {openHouse.twoDates ? t('installation.oneDate') : t('installation.twoDates')}
-      </button>
 
-      <div style={{ display: 'flex', gap:'2rem' }}>
+      {/* Calendrier et heures côte à côte ; heures en dessous quand l'écran est trop étroit */}
+      <div className={styles.openHouseSchedule}>
         <Controller
           control={control}
           name="openHouse.dates"
@@ -137,44 +120,67 @@ export function OpenHouseSection() {
               value={field.value}
               onChange={field.onChange}
               span={openHouse.twoDates ? OPEN_HOUSE.maxDates : 1}
-              hint={openHouse.twoDates ? t('installation.twoDatesHint') : undefined}
+              hint={openHouse.twoDates ? t('installation.twoDatesHint') : t('installation.oneDateHint')}
+              fixedSize
               error={fieldState.error?.message}
               required
             />
           )}
         />
 
-        <div className={styles.timeRow}>
-          <Controller
-            control={control}
-            name="openHouse.startTime"
-            render={(props) => (
-              <TimeField
-                {...bindField(props)}
-                onChange={handleStartChange}
-                label={t('installation.startTime')}
-                minuteStep={TIME_MINUTE_STEP}
-                required
-              />
-            )}
-          />
-          <Controller
-            control={control}
-            name="openHouse.endTime"
-            render={(props) => (
-              <TimeField
-                {...bindField(props)}
-                onChange={(end) => {
-                  props.field.onChange(end);
-                  setEndEdited(true);
-                }}
-                after={openHouse.startTime}
-                label={t('installation.endTime')}
-                minuteStep={TIME_MINUTE_STEP}
-                required
-              />
-            )}
-          />
+        {/* Heures, puis le choix de deux jours juste en dessous */}
+        <div className={styles.openHouseTimes}>
+          <div className={styles.timeRow}>
+            <Controller
+              control={control}
+              name="openHouse.startTime"
+              render={(props) => (
+                <TimeField
+                  {...bindField(props)}
+                  onChange={handleStartChange}
+                  label={t('installation.startTime')}
+                  minuteStep={TIME_MINUTE_STEP}
+                  required
+                />
+              )}
+            />
+            <Controller
+              control={control}
+              name="openHouse.endTime"
+              render={(props) => (
+                <TimeField
+                  {...bindField(props)}
+                  onChange={(end) => {
+                    props.field.onChange(end);
+                    setEndEdited(true);
+                  }}
+                  after={openHouse.startTime}
+                  label={t('installation.endTime')}
+                  minuteStep={TIME_MINUTE_STEP}
+                  required
+                />
+              )}
+            />
+          </div>
+
+          <button
+            type="button"
+            className={styles.toggleButton}
+            aria-pressed={openHouse.twoDates}
+            onClick={() => {
+              const next = !openHouse.twoDates;
+              update('openHouse.twoDates', next);
+              const [first] = getValues('openHouse.dates');
+              // Deux dates : on ajoute le lendemain ; une seule : on garde la première
+              if (first) {
+                update('openHouse.dates', next
+                  ? [first, format(addDays(parse(first, 'yyyy-MM-dd', new Date()), 1), 'yyyy-MM-dd')]
+                  : [first]);
+              }
+            }}
+          >
+            {openHouse.twoDates ? t('installation.oneDate') : t('installation.twoDates')}
+          </button>
         </div>
       </div>
 

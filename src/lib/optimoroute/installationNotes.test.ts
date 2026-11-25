@@ -32,7 +32,7 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
       directionals: { mention: 'forSale', units: [{ uid: 'd1', placement: 'Ste Catherine et St-Pierre' }] },
     }, ACCOUNT);
     expect(notes).toBe(
-      'KIT STEPHANY (NATASHA FOURNIER) + AJOUT PERSO **AU SOL** + BAC1234 (SUR LA RAMPE) + DIRECTIONNELLE **À VENDRE** [Ste Catherine et St-Pierre]',
+      'KIT STEPHANY (NATASHA FOURNIER) + AJOUT PERSO (au sol) + BAC1234 [Sur la rampe] + DIRECTIONNELLE **À VENDRE** [Ste Catherine et St-Pierre]',
     );
   });
 
@@ -83,8 +83,17 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
       ],
     }, ACCOUNT);
     expect(notes).toBe(
-      'KIT STEPHANY (NATASHA FOURNIER) + AJOUT À VENDRE + AJOUT 2e ÉTAGE **AU SOL** + 1x AJOUT 2e ÉTAGE [PANCARTE DÉJÀ SUR PLACE]',
+      'KIT STEPHANY (NATASHA FOURNIER) + AJOUT À VENDRE + AJOUT 2e ÉTAGE (au sol) + 1x AJOUT 2e ÉTAGE [PANCARTE DÉJÀ SUR PLACE]',
     );
+  });
+
+  it('ajout sur une pancarte déjà sur place : emplacement de cette pancarte', () => {
+    const notes = buildInstallationNotes({
+      ...empty,
+      frames: frames(frame('f1')),
+      addons: [{ addon: 'sold', model: { type: 'regular' }, quantity: 2, frameUids: ['f1'], onSiteCount: 1, placements: [{ location: 'ramp' }] }],
+    }, ACCOUNT);
+    expect(notes).toBe('KIT NATASHA FOURNIER + AJOUT VENDU (au sol) + 1x AJOUT VENDU [PANCARTE DÉJÀ SUR PLACE] **SUR RAMPE**');
   });
 
   it('visite libre : ajout « VISITE LIBRE » sur la pancarte et sur une pancarte déjà sur place', () => {
@@ -97,7 +106,7 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
       },
     }, ACCOUNT);
     expect(notes).toBe(
-      'KIT NATASHA FOURNIER + AJOUT VISITE LIBRE SAMEDI 14h00-16h00 **AU SOL** + 2x AJOUT VISITE LIBRE SAMEDI 14h00-16h00 [PANCARTE DÉJÀ SUR PLACE]',
+      'KIT NATASHA FOURNIER + AJOUT VISITE LIBRE SAMEDI 14h00-16h00 (au sol) + 2x AJOUT VISITE LIBRE SAMEDI 14h00-16h00 [PANCARTE DÉJÀ SUR PLACE]',
     );
   });
 
@@ -111,7 +120,7 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
         { addon: 'secondFloor', quantity: 1, onSiteCount: 1, ...onSite },
       ],
     }, 'Cristian Fermin Lopez');
-    expect(notes).toBe('AJOUT À VENDRE CRISTIAN FERMIN LOPEZ **AU SOL** + AJOUT REZ-DE-CHAUSSÉE **AU SOL** + AJOUT 2e ÉTAGE **AU SOL**');
+    expect(notes).toBe('AJOUT À VENDRE CRISTIAN FERMIN LOPEZ (au sol) + AJOUT REZ-DE-CHAUSSÉE (au sol) + AJOUT 2e ÉTAGE (au sol)');
   });
 
   it('ajouts sans pancarte commandée : quantité à partir de 2, emplacements', () => {
@@ -145,7 +154,7 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
       ...empty,
       kits: { units: [{ uid: 'k1', model: { type: 'shortPost36' }, placement: { location: 'ground' } }] },
     }, 'Cristian Fermin Lopez');
-    expect(notes).toBe('POTEAU 36" CRISTIAN FERMIN LOPEZ **AU SOL**');
+    expect(notes).toBe('POTEAU 36" CRISTIAN FERMIN LOPEZ (au sol)');
   });
 
   it('kit spécifique : description entre parenthèses, « Autres » entre crochets ; fenêtre ignorée', () => {
@@ -187,9 +196,10 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
       },
     };
 
-    it('note de l\'installation : jour, heures, compte, emplacement, directionnelles', () => {
+    it('note de l\'installation : jour, heures, compte, emplacement, drapeaux, directionnelles', () => {
       expect(buildInstallationNotes(openHouse, 'Cristian Fermin Lopez')).toBe(
         '2x AJOUT VISITE LIBRE MERCREDI 14h15-16h15 CRISTIAN FERMIN LOPEZ **BALCON VIA BAC** (12344) '
+        + '+ 2x DRAPEAU VISITE LIBRE '
         + '+ 5x DIRECTIONNELLES [Newman et léger / Léger et Newman / ... / Jean Talon et St-Michel / ...]',
       );
     });
@@ -197,8 +207,27 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
     it('note du retrait du lundi : RECUP, sans jour ni heure', () => {
       expect(buildOpenHouseRemovalNotes(openHouse, 'Cristian Fermin Lopez')).toBe(
         '2x RECUP AJOUT VISITE LIBRE CRISTIAN FERMIN LOPEZ **BALCON VIA BAC** (12344) '
+        + '+ 2x RECUP DRAPEAU VISITE LIBRE '
         + '+ 5x RECUP DIRECTIONNELLES [Newman et léger / Léger et Newman / ... / Jean Talon et St-Michel / ...]',
       );
+    });
+
+    it('avec pancarte commandée : emplacement de la pancarte déjà sur place à l\'installation, pas au retrait', () => {
+      const withFrame: InstallationDetails = {
+        ...empty,
+        frames: frames(frame('f1')),
+        openHouse: { ...openHouse.openHouse!, frameUids: ['f1'], onSiteCount: 1, placements: [{ location: 'ramp' }], directionals: [], flagCount: 0 },
+      };
+      expect(buildInstallationNotes(withFrame, ACCOUNT)).toBe(
+        'KIT NATASHA FOURNIER + AJOUT VISITE LIBRE MERCREDI 14h15-16h15 (au sol) '
+        + '+ 1x AJOUT VISITE LIBRE MERCREDI 14h15-16h15 [PANCARTE DÉJÀ SUR PLACE] **SUR RAMPE**',
+      );
+      expect(buildOpenHouseRemovalNotes(withFrame, ACCOUNT)).toBe('2x RECUP AJOUT VISITE LIBRE NATASHA FOURNIER');
+    });
+
+    it('un drapeau : DRAPEAU VISITE LIBRE, sans quantité', () => {
+      const one = { ...openHouse, openHouse: openHouse.openHouse && { ...openHouse.openHouse, flagCount: 1, directionals: [] } };
+      expect(buildInstallationNotes(one, null)).toContain(' + DRAPEAU VISITE LIBRE');
     });
 
     it('pas de retrait demandé : pas de note du lundi', () => {
@@ -230,6 +259,14 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
     expect(notes).toBe('2x DRAPEAU DRAPEAUX DU CANADA CRISTIAN FERMIN LOPEZ (Newman et léger)');
   });
 
+  it('boîte à clés : emplacement tel que saisi, entre crochets', () => {
+    const notes = buildInstallationNotes(
+      { ...empty, keybox: { code: '0123', placement: 'Installer la boîte à clé sur la thermopompe.s' } },
+      'Natasha Fournier',
+    );
+    expect(notes).toBe('BAC0123 NATASHA FOURNIER [Installer la boîte à clé sur la thermopompe.s]');
+  });
+
   it('boîte à clés seule : BAC{CODE} {COMPTE}', () => {
     const notes = buildInstallationNotes({ ...empty, keybox: { code: '111111', placement: '' } }, 'Cristian Fermin Lopez');
     expect(notes).toBe('BAC111111 CRISTIAN FERMIN LOPEZ');
@@ -256,7 +293,7 @@ describe('buildInstallationNotes — exemples de la nomenclature', () => {
     expect(notes).toBe(
       'KIT NATASHA FOURNIER **PRESTIGE** **BALCON AVEC RDV - EN V** (438 722 3922) '
       + '+ KIT NATASHA FOURNIER **IPHONE** [La pancarte se trouve dans le ciel] '
-      + '+ KIT NATASHA FOURNIER **AU SOL** '
+      + '+ KIT NATASHA FOURNIER (au sol) '
       + '+ KIT NATASHA FOURNIER **FENÊTRE EXTÉRIEUR VIA BAC** (Le code est 1234)',
     );
   });

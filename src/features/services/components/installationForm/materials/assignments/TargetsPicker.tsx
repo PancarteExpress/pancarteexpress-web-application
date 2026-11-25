@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { maxTargetsQuantity } from '@/features/services/constants/installation';
 import { CheckboxGroup, Notice, QuantityField, type ChoiceOption, type Columns } from '@/features/services/components/fields';
 
 const ON_SITE = 'onSite';
@@ -28,6 +29,8 @@ export function TargetsPicker({
 }: TargetsPickerProps) {
   const t = useTranslations('services.installation');
   const assigned = value.frameUids.length;
+  // Une unité par choix affiché (pancartes + « déjà sur place »), ou par emplacement sans pancarte
+  const maxQuantity = maxTargetsQuantity(frameUids.length);
   // « Sur place » réserve au moins une unité
   const frameSlots = value.quantity - (value.onSite ? 1 : 0);
 
@@ -60,7 +63,14 @@ export function TargetsPicker({
 
   return (
     <>
-      <QuantityField label={quantityLabel ?? t('targetsQuantity')} value={value.quantity} onChange={handleQuantity} min={1} error={quantityError} />
+      <QuantityField
+        label={quantityLabel ?? t('targetsQuantity')}
+        value={value.quantity}
+        onChange={handleQuantity}
+        min={1}
+        max={maxQuantity}
+        error={quantityError}
+      />
       <CheckboxGroup
         legend={t('targetsLegend', { label })}
         hideLegend

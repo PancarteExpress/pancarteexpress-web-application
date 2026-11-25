@@ -178,7 +178,7 @@ export function buildClientReceipt(order: Receipt): ClientReceipt {
     title: l.title,
     sections: [
       [l.greeting(order.firstName), '', l.thanks(order.orderNumber)],
-      // Invités : rappel des informations de facturation saisies
+      // Rappel de la facturation figée à la commande (invité : formulaire ; membre : compte du payeur)
       [
         ...(order.companyName ? [`${l.companyName}${l.colon}${order.companyName}`] : []),
         ...(order.billingAddress ? [`${l.billingAddress}${l.colon}${order.billingAddress}`] : []),

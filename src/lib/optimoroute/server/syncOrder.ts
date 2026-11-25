@@ -2,9 +2,7 @@
 import 'server-only';
 import type { OrderStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import type { IsoDate } from '../calendar';
-import { openHouseRemovalDate } from '../openHouse';
-import { buildOpenHouseRemovalPayload, buildOptimoPayload } from '../payload';
+import { buildOptimoPayload } from '../payload';
 import { sendOptimoOrder } from './client';
 import { formatAddressNumber } from '@/lib/services/addressNumber';
  
@@ -13,9 +11,10 @@ const RETRY_BATCH = 50;
 const SENDABLE_STATUSES: OrderStatus[] = ['PENDING', 'PAID'];
  
 /**
- * Une adresse de service = un arrêt OptimoRoute (tous les services de l'adresse dans la même tâche),
- * plus une tâche de retrait par visite libre dont le retrait est demandé.
- * orderNo = "PE-<addressNumber>" (retrait : "PE-<addressNumber>-R") : unique et stable,
+ * Une adresse de service = un arrêt OptimoRoute (tous les services de l'adresse dans la même tâche).
+ * Le retrait du lundi de la visite libre n'est pas envoyé pour l'instant (buildOpenHouseRemovalPayload
+ * et openHouseRemovalDate sont conservés pour le réactiver).
+ * orderNo = "PE-<addressNumber>" : unique et stable,
  * donc SYNC rend les réessais idempotents.
  * Le préfixe évite toute collision avec les numéros de l'ancien site (50 000+).
  */
@@ -81,28 +80,10 @@ async function syncAddresses(addressIds?: string[], orderId?: string): Promise<v
           customer: order,
         });
  
-        // Une tâche de retrait par date distincte (en pratique : une seule installation par adresse)
-        const removalDates = [
-          ...new Set(
-            address.services
-              .filter((s) => s.type === 'installation')
-              .map((s) => openHouseRemovalDate(s.details))
-              .filter((date): date is IsoDate => date !== null),
-          ),
-        ];
-        const removalPayloads = removalDates.map((date, i) =>
-          buildOpenHouseRemovalPayload({
-            orderNo: `${orderNo}-R${i === 0 ? '' : i + 1}`,
-            date,
-            address,
-            customer: order,
-          }),
-        );
- 
-        const [main, ...removals] = await Promise.all([mainPayload, ...removalPayloads].map(sendOptimoOrder));
-        const errors = [main, ...removals].flatMap((r) => (r.ok ? [] : [r.error]));
- 
-        // SYNCED seulement si toutes les tâches sont parties ; sinon le cron renvoie tout (SYNC = sans doublon)
+        const main = await sendOptimoOrder(mainPayload);
+        const errors = main.ok ? [] : [main.error];
+
+        // SYNCED seulement si la tâche est partie ; sinon le cron la renvoie (SYNC = sans doublon)
         await prisma.serviceAddress.update({
           where: { id: address.id },
           data:

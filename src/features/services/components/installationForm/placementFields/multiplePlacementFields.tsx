@@ -23,13 +23,16 @@ interface MultiplePlacementFieldsProps {
   quantity: number;
   /** Nom de l'ajout (ex. « À vendre », « Visite libre ») */
   label: string;
+  /** Question et aide propres (ex. emplacement des pancartes déjà sur place) */
+  legend?: string;
+  hint?: string;
 }
 
 /**
  * De 1 à `quantity` emplacements distincts. Un seul : toutes les unités vont au même endroit ;
  * moins que d'unités : l'équipe les répartit.
  */
-export function MultiplePlacementFields({ name, quantity, label }: MultiplePlacementFieldsProps) {
+export function MultiplePlacementFields({ name, quantity, label, legend, hint }: MultiplePlacementFieldsProps) {
   const t = useTranslations('services');
   const { control } = useInstallationFormContext();
   const update = useFormUpdater();
@@ -42,10 +45,12 @@ export function MultiplePlacementFields({ name, quantity, label }: MultiplePlace
   const locations = placements.flatMap((p) => (p.location ? [p.location] : []));
 
   const handleLocations = (next: Location[]) => {
+    // Un seul emplacement possible : le nouveau choix remplace l'ancien
+    const chosen = quantity === 1 && next.length > 1 ? next.filter((l) => !locations.includes(l)) : next;
     // Garde les sous-options des emplacements conservés, dans l'ordre de la liste
     update(
       name,
-      LOCATIONS.filter((l) => next.includes(l)).map(
+      LOCATIONS.filter((l) => chosen.includes(l)).map(
         (l) => placements.find((p) => p.location === l) ?? { ...createEmptyPlacement(), location: l },
       ),
     );
@@ -54,12 +59,13 @@ export function MultiplePlacementFields({ name, quantity, label }: MultiplePlace
   return (
     <div className={styles.ownPlacements}>
       <CheckboxGroup
-        legend={t('installation.ownPlacementsLegend', { count: quantity, label })}
+        legend={legend ?? t('installation.ownPlacementsLegend', { count: quantity, label })}
         options={toOptions(LOCATIONS, (l) => t(`locations.${l}`))}
         value={locations}
         onChange={handleLocations}
-        max={quantity}
-        hint={quantity > 1 ? t('installation.ownPlacementsHint') : undefined}
+        // À 1, pas de limite : un clic remplace le choix (voir handleLocations)
+        max={quantity > 1 ? quantity : undefined}
+        hint={quantity > 1 ? hint ?? t('installation.ownPlacementsHint') : undefined}
         error={listErrors?.message ?? listErrors?.root?.message}
         required
       />

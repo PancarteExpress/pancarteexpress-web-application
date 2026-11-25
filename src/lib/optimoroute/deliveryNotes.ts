@@ -16,14 +16,6 @@ function frameModelNote(f: DeliveryFrame): string {
   return `${f.quantity}x KIT ${model}${f.withAnchorsAndPoles ? ' (avec poteaux et ancrages)' : ''}`;
 }
 
-/** LIVRER 36x PANCARTES (4 modèles) {COMPTE}: [20x KIT RÉGULIER, 10x KIT PRESTIGE (avec poteaux et ancrages), …] */
-function framesNote(frames: DeliveryDetails['frames'], account: string | null): string | null {
-  if (!frames || frames.length === 0) return null;
-  const total = frames.reduce((sum, f) => sum + f.quantity, 0);
-  const models = `${frames.length} ${frames.length > 1 ? 'modèles' : 'modèle'}`;
-  const name = account ? ` ${upper(account)}` : '';
-  return `LIVRER ${total}x ${total > 1 ? 'PANCARTES' : 'PANCARTE'} (${models})${name}: [${frames.map(frameModelNote).join(', ')}]`;
-}
 
 const ADDON_LABELS = {
   forSale: 'À VENDRE',
@@ -47,21 +39,7 @@ function addonModelNote(a: DeliveryAddonItem): string {
   }
 }
 
-/** LIVRER 39x AJOUTS (5 modèles) {COMPTE}: [20x AJOUT À VENDRE, 10x PERSO (…), …] */
-function addonsNote(addons: DeliveryDetails['addons'], account: string | null): string | null {
-  if (!addons || addons.length === 0) return null;
-  const total = addons.reduce((sum, a) => sum + a.quantity, 0);
-  const models = `${addons.length} ${addons.length > 1 ? 'modèles' : 'modèle'}`;
-  const name = account ? ` ${upper(account)}` : '';
-  return `LIVRER ${total}x ${total > 1 ? 'AJOUTS' : 'AJOUT'} (${models})${name}: [${addons.map(addonModelNote).join(', ')}]`;
-}
 
-/** LIVRER 3x BAC{CODE} {COMPTE} */
-function keyboxNote(keybox: DeliveryDetails['keybox'], account: string | null): string | null {
-  if (!keybox) return null;
-  const name = account ? ` ${upper(account)}` : '';
-  return `LIVRER ${keybox.quantity}x BAC${keybox.code ?? ''}${name}`;
-}
 
 const DIRECTIONAL_LABELS = { forSale: 'À VENDRE', openHouse: 'VISITE LIBRE' } as const;
 
@@ -72,42 +50,27 @@ function directionalModelNote(d: DeliveryDirectional): string {
   return `${d.quantity}x ${name} ${model}${d.withPoles ? ' (avec poteaux)' : ''}`;
 }
 
-/** LIVRER 15x DIRECTIONNELLES (3 modèles) {COMPTE}: [5x DIRECTIONNELLES À VENDRE (avec poteaux), …] */
-function directionalsNote(directionals: DeliveryDetails['directionals'], account: string | null): string | null {
-  if (!directionals || directionals.length === 0) return null;
-  const total = directionals.reduce((sum, d) => sum + d.quantity, 0);
-  const models = `${directionals.length} ${directionals.length > 1 ? 'modèles' : 'modèle'}`;
-  const name = account ? ` ${upper(account)}` : '';
-  const head = `LIVRER ${total}x ${total > 1 ? 'DIRECTIONNELLES' : 'DIRECTIONNELLE'} (${models})${name}`;
-  return `${head}: [${directionals.map(directionalModelNote).join(', ')}]`;
-}
 
-/** LIVRER MATÉRIEL {COMPTE}: [4x PANNEAUX SOLAIRES, 1x KIT DE DÉMÉNAGEMENT] */
-function othersNote(others: DeliveryDetails['others'], account: string | null): string | null {
-  if (!others || others.length === 0) return null;
-  const name = account ? ` ${upper(account)}` : '';
-  return `LIVRER MATÉRIEL${name}: [${others.map((o) => `${o.quantity}x ${upper(o.description)}`).join(', ')}]`;
-}
 
 /**
- * Résumé de la livraison : pancartes, ajouts, boîtes à clés, directionnelles, autres.
- * Le nom du compte n'apparaît qu'une fois, sur le premier élément. Si rien n'est couvert, « LIVRER ».
+ * Résumé de la livraison : tous les modèles dans une seule liste, dans l'ordre
+ * pancartes, ajouts, boîtes à clés, directionnelles, autres.
+ * - plusieurs modèles : LIVRER {COMPTE}: [2x KIT RÉGULIER, 1x KIT PRESTIGE, 5x AJOUT À VENDRE]
+ * - un seul : LIVRER 2x KIT {COMPTE} (Régulier sous-entendu)
+ * Si rien n'est couvert, « LIVRER ».
  */
 export function buildDeliveryNotes(details: DeliveryDetails, accountName: string | null): string {
-  const parts: string[] = [];
-  let account = accountName;
-  for (const build of [
-    (a: string | null) => framesNote(details.frames, a),
-    (a: string | null) => addonsNote(details.addons, a),
-    (a: string | null) => keyboxNote(details.keybox, a),
-    (a: string | null) => directionalsNote(details.directionals, a),
-    (a: string | null) => othersNote(details.others, a),
-  ]) {
-    const note = build(account);
-    if (note) {
-      parts.push(note);
-      account = null;
-    }
-  }
-  return parts.length > 0 ? parts.join(' + ') : 'LIVRER';
+  const items = [
+    ...(details.frames ?? []).map(frameModelNote),
+    ...(details.addons ?? []).map(addonModelNote),
+    ...(details.keybox ? [`${details.keybox.quantity}x BAC${details.keybox.code ?? ''}`] : []),
+    ...(details.directionals ?? []).map(directionalModelNote),
+    ...(details.others ?? []).map((o) => `${o.quantity}x ${upper(o.description)}`),
+  ];
+  const name = accountName ? ` ${upper(accountName)}` : '';
+
+  if (items.length === 0) return 'LIVRER';
+  // Un seul modèle : le Régulier est sous-entendu
+  if (items.length === 1) return `LIVRER ${items[0].replace(/^(\d+x KIT) RÉGULIER/, '$1')}${name}`;
+  return `LIVRER${name}: [${items.join(', ')}]`;
 }

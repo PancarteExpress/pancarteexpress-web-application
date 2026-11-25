@@ -73,9 +73,17 @@ const hasPickupDetails = (s: NoteService): s is { type: 'pickup' } & PickupDetai
  * Notes d'une adresse : les services dans l'ordre des notes, détaillés selon la nomenclature quand c'est prévu.
  * Le nom du compte n'apparaît qu'une fois pour toute l'adresse : dans le premier service détaillé.
  */
-export function buildAddressNotes(services: readonly NoteService[], accountName: string | null): string {
+export function buildAddressNotes(
+  services: readonly NoteService[],
+  accountName: string | null,
+  /**
+   * terrain : description d'une adresse de type terrain, ajoutée à la fin : **TERRAIN** [description]
+   * hasAttachments : fichiers joints à l'adresse, **VOIR PHOTO** à la toute fin
+   */
+  { terrain = null, hasAttachments = false }: { terrain?: string | null; hasAttachments?: boolean } = {},
+): string {
   let account = accountName;
-  return SERVICE_NOTE_ORDER.flatMap((type) => {
+  const notes = SERVICE_NOTE_ORDER.flatMap((type) => {
     const service = services.find((s) => s.type === type);
     if (!service) return [];
     if (hasInstallationDetails(service)) {
@@ -105,4 +113,9 @@ export function buildAddressNotes(services: readonly NoteService[], accountName:
     }
     return [SERVICE_NOTE_LABELS[type]];
   }).join(' + ');
+  if (!notes) return notes;
+  const description = terrain?.replace(/\s*\n\s*/g, ' ').trim();
+  return [notes, description ? `**TERRAIN** [${description}]` : '', hasAttachments ? '**VOIR PHOTO**' : '']
+    .filter(Boolean)
+    .join(' ');
 }

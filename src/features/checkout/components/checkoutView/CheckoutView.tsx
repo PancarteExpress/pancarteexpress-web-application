@@ -343,7 +343,7 @@ function CheckoutForm() {
               )}
             </div>
 
-            {/* Invités : facturation, chaque champ sur toute la largeur */}
+            {/* Invités : facturation, chaque champ sur toute la largeur (membres : celle du compte) */}
             {!isAuthenticated && (
               <>
                 <div className={styles.formGroup}>
@@ -373,18 +373,19 @@ function CheckoutForm() {
                     )}
                   />
                 </div>
-
-                <div className={styles.formGroup}>
-                  <label htmlFor="additionalInfo">{t('additionalInfo')}</label>
-                  <textarea
-                    id="additionalInfo"
-                    rows={4}
-                    maxLength={GUEST_INFO_LIMITS.additionalInfo}
-                    {...register('additionalInfo')}
-                  />
-                </div>
               </>
             )}
+
+            {/* Tous : informations supplémentaires pour la facturation */}
+            <div className={styles.formGroup}>
+              <label htmlFor="additionalInfo">{t('additionalInfo')}</label>
+              <textarea
+                id="additionalInfo"
+                rows={4}
+                maxLength={GUEST_INFO_LIMITS.additionalInfo}
+                {...register('additionalInfo')}
+              />
+            </div>
           </div>
 
           {requiresPayment && (

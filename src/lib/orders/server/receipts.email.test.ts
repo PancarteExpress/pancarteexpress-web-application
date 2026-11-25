@@ -22,6 +22,7 @@ const order = {
   lastName: 'Roy',
   email: 'ana@example.com',
   phone: null,
+  billedToEmail: null as string | null,
   companyName: null as string | null,
   billingAddress: null as string | null,
   additionalInfo: null as string | null,
@@ -192,6 +193,23 @@ describe('sendReceipts', () => {
     expect(internal).toContain('Adresse de facturation : 123 rue Principale, Montréal');
     expect(internal).toContain('Informations supplémentaires : Appeler avant');
     expect((sendEmail.mock.calls[1][0] as { text: string }).text).toContain('123 rue Principale, Montréal');
+  });
+
+  it('membre facturé à son admin : facturation du payeur et « Facturé à »', async () => {
+    prismaMock.order.findUnique.mockResolvedValue({
+      ...order, userId: 'u1', billedToEmail: 'admin@agence.test', companyName: 'Agence Roy', billingAddress: '500 boul. Lebeau, Montréal',
+    });
+    await sendReceipts('o1');
+    const internal = (sendEmail.mock.calls[0][0] as { text: string }).text;
+    expect(internal).toContain('Facturé à : admin@agence.test');
+    expect(internal).toContain('Entreprise : Agence Roy');
+    expect(internal).toContain('Adresse de facturation : 500 boul. Lebeau, Montréal');
+  });
+
+  it('membre qui paie lui-même : pas de ligne « Facturé à »', async () => {
+    prismaMock.order.findUnique.mockResolvedValue({ ...order, userId: 'u1', billedToEmail: order.email });
+    await sendReceipts('o1');
+    expect((sendEmail.mock.calls[0][0] as { text: string }).text).not.toContain('Facturé à');
   });
 
   it('envoie aussi la confirmation à un client connecté', async () => {

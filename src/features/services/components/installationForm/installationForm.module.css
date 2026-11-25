@@ -425,6 +425,22 @@
   flex-wrap: wrap;
   gap: 0 2rem;
 }
+
+/* Visite libre : calendrier puis heures ; passe en colonne quand la place manque */
+.openHouseSchedule {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0 2rem;
+}
+
+/* Heures (début et fin, superposées si besoin), puis le bouton deux jours */
+.openHouseTimes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
 /* Emplacements d'un ajout sans pancarte : chaque emplacement à sous-options dans son encadré */
 .ownPlacements {
   margin-top: 0.75rem;

@@ -82,10 +82,10 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
         // Connecté : le courriel du compte fait foi, pas celui du formulaire
         email: user?.email ?? payload.contact.email,
         phone, // NOUVEAU
-        // Invités seulement : les membres ont ces informations dans leur compte
-        companyName: user ? null : payload.contact.companyName || null,
-        billingAddress: user ? null : payload.contact.billingAddress || null,
-        additionalInfo: user ? null : payload.contact.additionalInfo || null,
+        // Facturation figée à la commande : invité → formulaire ; membre → compte du payeur (admin si facturé à l'équipe)
+        companyName: account ? account.companyName : payload.contact.companyName || null,
+        billingAddress: account ? account.billingAddress : payload.contact.billingAddress || null,
+        additionalInfo: payload.contact.additionalInfo || null,
         deliveryMode: payload.fulfillment?.method ?? null,
         deliveryStreet: shipping?.street ?? null,
         deliveryCity: shipping?.city ?? null,
@@ -263,19 +263,31 @@ async function replay(order: ExistingOrder): Promise<CheckoutResponse> {
 
 async function getCheckoutAccount(
   userId: string,
-): Promise<{ phone: string | null; billedToId: string; billedToEmail: string }> {
+): Promise<{
+  phone: string | null;
+  billedToId: string;
+  billedToEmail: string;
+  companyName: string | null;
+  billingAddress: string | null;
+}> {
   const account = await prisma.user.findUniqueOrThrow({
     
     where: { id: userId },
     select: {
       email: true,
       phoneNumber: true,
+      companyName: true,
+      billingAddress: true,
       groupStatus: true,
       needsPickupInfo: true,
       group: {
         select: {
           billingMode: true,
-          users: { where: { role: 'groupAdmin' }, select: { id: true, email: true }, take: 1 },
+          users: {
+            where: { role: 'groupAdmin' },
+            select: { id: true, email: true, companyName: true, billingAddress: true },
+            take: 1,
+          },
         },
       },
     },
@@ -291,9 +303,13 @@ async function getCheckoutAccount(
     group: account.group && { billingMode: account.group.billingMode, adminId: admin?.id ?? null },
   });
 
+  // Facturation : celle de celui qui paie
+  const payer = admin && billedToId === admin.id ? admin : account;
   return {
     phone: account.phoneNumber,
     billedToId,
-    billedToEmail: admin && billedToId === admin.id ? admin.email : account.email,
+    billedToEmail: payer.email,
+    companyName: payer.companyName,
+    billingAddress: payer.billingAddress,
   };
 }

@@ -214,7 +214,7 @@ describe('createInstallationSchema — emplacements des ajouts sans pancarte', (
     expect(result.success && result.data.addons?.[0].placements).toEqual([{ location: 'ground' }, { location: 'ramp' }]);
   });
 
-  it('avec des pancartes : aucun emplacement propre (null), même invalide', () => {
+  it('sans « déjà sur place » : aucun emplacement (null), même invalide', () => {
     const unit = frame();
     const result = memberSchema.safeParse(form({
       materials: ['frames', 'addons'],
@@ -222,6 +222,20 @@ describe('createInstallationSchema — emplacements des ajouts sans pancarte', (
       addons: [{ ...createAddonEntry('forSale'), frameUids: [unit.uid], placements: [] }],
     }));
     expect(result.success && result.data.addons?.[0].placements).toBeNull();
+  });
+
+  it('avec des pancartes et « déjà sur place » : exige l\'emplacement de ces pancartes', () => {
+    const unit = frame();
+    const withOnSite = (placements: AddonEntryFormValues['placements']) => form({
+      materials: ['frames', 'addons'],
+      frames: { units: [unit] },
+      addons: [{ ...createAddonEntry('forSale'), quantity: 2, frameUids: [unit.uid], onSite: true, placements }],
+    });
+    expect(issuePaths(memberSchema.safeParse(withOnSite([])))).toContain('addons.0.placements');
+    // 1 unité sur place : 1 emplacement au maximum
+    expect(issuePaths(memberSchema.safeParse(withOnSite([ground, ramp])))).toContain('addons.0.placements');
+    const result = memberSchema.safeParse(withOnSite([ramp]));
+    expect(result.success && result.data.addons?.[0].placements).toEqual([{ location: 'ramp' }]);
   });
 });
 
@@ -274,19 +288,29 @@ describe('createInstallationSchema — ajouts', () => {
 
   it('répartition valide : calcule onSiteCount', () => {
     const result = memberSchema.safeParse(withAddons([
-      addon({ quantity: 3, frameUids: [unit.uid], onSite: true }),
+      addon({ quantity: 2, frameUids: [unit.uid], onSite: true }),
     ]));
 
     expect(result.success).toBe(true);
     if (!result.success) return;
     expect(result.data.addons?.[0]).toEqual({
       addon: 'secondFloor',
-      quantity: 3,
+      quantity: 2,
       frameUids: [unit.uid],
-      onSiteCount: 2,
-      // Pancartes commandées : l'ajout va sur elles, sans emplacement propre
-      placements: null,
+      onSiteCount: 1,
+      // Emplacement de la pancarte déjà sur place (« Au sol » par défaut)
+      placements: [{ location: 'ground' }],
     });
+  });
+
+  it('quantité maximale : une par pancarte + « déjà sur place », ou une par emplacement sans pancarte', () => {
+    // 1 pancarte : 2 au maximum
+    expect(issuePaths(memberSchema.safeParse(withAddons([addon({ quantity: 3, frameUids: [unit.uid], onSite: true })]))))
+      .toContain('addons.0.quantity');
+    // Sans pancarte : 6 au maximum (un par emplacement)
+    expect(issuePaths(memberSchema.safeParse(withAddons([addon({ quantity: 7 })], false))))
+      .toContain('addons.0.quantity');
+    expect(memberSchema.safeParse(withAddons([addon({ quantity: 6 })], false)).success).toBe(true);
   });
 
   it('refuse une pancarte cible inexistante (pancartes non sélectionnées)', () => {
@@ -414,6 +438,26 @@ describe('createInstallationSchema — visite libre', () => {
   it('applique les règles de répartition des ajouts', () => {
     expect(issuePaths(memberSchema.safeParse(withOpenHouse({ onSite: false }))))
       .toContain('openHouse.frameUids');
+  });
+
+  it('avec des pancartes et « déjà sur place » : exige l\'emplacement de ces pancartes', () => {
+    const unit = frame();
+    const withFrames = (placements: OpenHouseFormValues['placements']) => form({
+      materials: ['frames', 'openHouse'],
+      frames: { units: [unit] },
+      openHouse: openHouse({ quantity: 2, frameUids: [unit.uid], placements }),
+    });
+    expect(issuePaths(memberSchema.safeParse(withFrames([])))).toContain('openHouse.placements');
+    const ramp = { ...createEmptyPlacement(), location: 'ramp' as const };
+    const result = memberSchema.safeParse(withFrames([ramp]));
+    expect(result.success && result.data.openHouse?.placements).toEqual([{ location: 'ramp' }]);
+    // Non coché : aucun emplacement
+    const unchecked = memberSchema.safeParse(form({
+      materials: ['frames', 'openHouse'],
+      frames: { units: [unit] },
+      openHouse: openHouse({ quantity: 1, frameUids: [unit.uid], onSite: false }),
+    }));
+    expect(unchecked.success && unchecked.data.openHouse?.placements).toBeNull();
   });
 
   it('deux dates : exige exactement deux dates, triées dans le domaine', () => {

@@ -49,7 +49,7 @@ export const TEXT_LIMITS = {
   directionalPlacement: 50,
   /** Invités : mention des directionnelles, saisie librement */
   directionalMention: 50,
-  keyboxPlacement: 50,
+  keyboxPlacement: 100,
   flagMention: 50,
   flagPlacement: 50,
   otherNeeds: 250,
@@ -67,6 +67,13 @@ export type KitModelType = (typeof KIT_MODELS)[number];
 export const LOCATIONS = ['ground', 'ramp', 'window', 'wall', 'balcony', 'other'] as const;
 export const KIT_LOCATIONS = ['ground', 'ramp', 'other'] as const satisfies readonly (typeof LOCATIONS)[number][];
 export type Location = (typeof LOCATIONS)[number];
+
+/**
+ * Quantité maximale d'un ajout ou d'affichettes de visite libre : une unité par choix affiché
+ * (chaque pancarte + « déjà sur place »), ou, sans pancarte commandée, une par emplacement possible.
+ */
+export const maxTargetsQuantity = (frameCount: number): number =>
+  frameCount > 0 ? frameCount + 1 : LOCATIONS.length;
 
 export const WINDOW_SIDES = ['interior', 'exterior'] as const;
 export type WindowSide = (typeof WINDOW_SIDES)[number];

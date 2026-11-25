@@ -31,6 +31,8 @@ export function AddonAssignmentRow({ index, frameUids }: AddonAssignmentRowProps
   const t = useTranslations('services');
   const label = t(`addons.${entry.addon}`);
   const mentionField = MENTION_FIELDS[entry.addon];
+  // Unités prévues sur des pancartes déjà sur place : leur emplacement est demandé
+  const onSiteUnits = Math.max(1, entry.quantity - entry.frameUids.length);
 
   return (
     <fieldset className={styles.unit}>
@@ -95,16 +97,26 @@ export function AddonAssignmentRow({ index, frameUids }: AddonAssignmentRowProps
         value={entry}
         // Une seule mise à jour de l'entrée : quantité, cibles et emplacements restent cohérents
         onChange={(targets) =>
-          update(path, { ...entry, ...targets, placements: entry.placements.slice(0, targets.quantity) })
+          update(path, {
+            ...entry,
+            ...targets,
+            placements: entry.placements.slice(0, Math.max(1, targets.quantity - targets.frameUids.length)),
+          })
         }
         frameUids={frameUids}
         quantityError={entryErrors?.quantity?.message}
         targetsError={entryErrors?.frameUids?.message ?? entryErrors?.onSite?.message}
       />
 
-      {/* Sans pancarte commandée, l'ajout a ses propres emplacements */}
-      {frameUids.length === 0 && (
-        <MultiplePlacementFields name={`${path}.placements`} quantity={entry.quantity} label={label} />
+      {/* « Pancarte déjà sur place » coché : on demande où se trouvent ces pancartes */}
+      {entry.onSite && (
+        <MultiplePlacementFields
+          name={`${path}.placements`}
+          quantity={onSiteUnits}
+          label={label}
+          legend={t('installation.onSitePlacementsLegend', { count: onSiteUnits })}
+          hint={t('installation.onSitePlacementsHint')}
+        />
       )}
     </fieldset>
   );

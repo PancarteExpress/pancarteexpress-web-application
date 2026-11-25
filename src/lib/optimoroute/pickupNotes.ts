@@ -18,13 +18,14 @@ const capitalize = (text: string): string => text.charAt(0).toLocaleUpperCase('f
 
 /**
  * Ramassage dans les notes OptimoRoute :
- * PICK UP {COMPTE} [Pancartes, Ajouts, …] **Détails supplémentaires**
+ * PICK UP {COMPTE} [Pancartes, Ajouts, … / Détails supplémentaires]
  */
 export function buildPickupNotes(details: PickupDetails, accountName: string | null): string {
   const name = accountName ? ` ${upper(accountName)}` : '';
   const materials = PICKUP_MATERIALS.filter((m) => details.materials.includes(m)).map((m) => PICKUP_MATERIAL_NOTE_LABELS[m]);
-  const list = materials.length > 0 ? ` [${materials.join(', ')}]` : '';
   // Sur une seule ligne, pour ne pas couper la note
   const text = details.details?.replace(/\s*\n\s*/g, ' ').trim();
-  return `PICK UP${name}${list}${text ? ` **${capitalize(text)}**` : ''}`;
+  // Les détails suivent les matériels dans les mêmes crochets, après « / »
+  const content = [materials.join(', '), text ? capitalize(text) : ''].filter(Boolean).join(' / ');
+  return `PICK UP${name}${content ? ` [${content}]` : ''}`;
 }

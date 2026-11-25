@@ -18,6 +18,9 @@ export function OpenHouseAssignmentRow({ frameUids }: { frameUids: string[] }) {
   const { errors } = useFormState({ control, name: 'openHouse' });
   const e = errors.openHouse;
   const t = useTranslations('services.materials');
+  const tInstallation = useTranslations('services.installation');
+  // Affichettes prévues sur des pancartes déjà sur place : leur emplacement est demandé
+  const onSiteUnits = Math.max(1, quantity - targetUids.length);
 
   return (
     <fieldset className={styles.unit}>
@@ -29,17 +32,24 @@ export function OpenHouseAssignmentRow({ frameUids }: { frameUids: string[] }) {
           update('openHouse.quantity', t.quantity);
           update('openHouse.frameUids', t.frameUids);
           update('openHouse.onSite', t.onSite);
-          // Pas plus d'emplacements que d'affichettes
-          if (placements.length > t.quantity) update('openHouse.placements', placements.slice(0, t.quantity));
+          // Pas plus d'emplacements que d'affichettes sur place
+          const max = Math.max(1, t.quantity - t.frameUids.length);
+          if (placements.length > max) update('openHouse.placements', placements.slice(0, max));
         }}
         frameUids={frameUids}
         quantityError={e?.quantity?.message}
         targetsError={e?.frameUids?.message ?? e?.onSite?.message}
       />
 
-      {/* Sans pancarte commandée, les affichettes ont leurs propres emplacements */}
-      {frameUids.length === 0 && (
-        <MultiplePlacementFields name="openHouse.placements" quantity={quantity} label={t('openHouse')} />
+      {/* « Pancarte déjà sur place » coché : on demande où se trouvent ces pancartes */}
+      {onSite && (
+        <MultiplePlacementFields
+          name="openHouse.placements"
+          quantity={onSiteUnits}
+          label={t('openHouse')}
+          legend={tInstallation('onSitePlacementsLegend', { count: onSiteUnits })}
+          hint={tInstallation('onSitePlacementsHint')}
+        />
       )}
     </fieldset>
   );

@@ -98,6 +98,19 @@ describe('courriel par numéro PE', () => {
 });
 
 describe('texte détaillé des services', () => {
+  it('installation : ajouts sous leur pancarte, ceux sur place à part', () => {
+    const lines = describeServiceDetailsText('installation', installationDetails, servicesTranslator('fr'), 'fr') ?? [];
+
+    // Pancarte 1 : ajout « Vendu » ; pancarte 2 : visite libre du samedi
+    expect(lines).toContain('    Ajouts : Vendu — Régulier');
+    expect(lines).toContain('    Ajouts : Visite libre samedi 13 h 30 à 16 h 00');
+    // L'unité restante de « Vendu » va sur une pancarte déjà sur place
+    const onSite = lines.indexOf('Ajouts — pancartes sur place');
+    expect(lines.slice(onSite, onSite + 3)).toEqual(['Ajouts — pancartes sur place', '  Vendu — Régulier', '    Sur place']);
+    expect(lines).toContain('Détails de la visite libre');
+    expect(lines.some((l) => l.includes('Affichettes'))).toBe(false);
+  });
+
   it('existe aussi en anglais', () => {
     const lines = describeServiceDetailsText('installation', installationDetails, servicesTranslator('en'), 'en');
 

@@ -89,10 +89,10 @@ function addonsNote(addons: RemovalDetails['addons'], account: string | null): s
 const name = (account: string | null): string => (account ? ` ${upper(account)}` : '');
 const typed = (text: string): string => (text.trim() ? ` (${text.trim()})` : '');
 
-/** Boîtes à clés à retirer : 2x BAC{CODE} {COMPTE} ({emplacement}), sans « RECUP » */
+/** Boîtes à clés à retirer : 2x RECUP BAC{CODE} {COMPTE} ({emplacement}) */
 function keyboxNote(keybox: RemovalDetails['keybox'], account: string | null): string | null {
   if (!keybox) return null;
-  return `${quantityPrefix(keybox.quantity)}BAC${keybox.code}${name(account)}${typed(keybox.placement)}`;
+  return `${quantityPrefix(keybox.quantity)}RECUP BAC${keybox.code}${name(account)}${typed(keybox.placement)}`;
 }
 
 const FLAG_MENTION_LABELS = { forSale: 'À VENDRE', sold: 'VENDU' } as const;

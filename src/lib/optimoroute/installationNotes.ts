@@ -117,6 +117,11 @@ function openHouseDirectionalsNote(units: readonly { placement: string }[], verb
   return `${quantityPrefix(units.length)}${verb}${name}${placesList(units.map((u) => u.placement))}`;
 }
 
+/** Drapeaux de la visite libre : 2x DRAPEAU VISITE LIBRE (aucun : rien) */
+function openHouseFlagsNote(count: number, verb = ''): string | null {
+  return count > 0 ? `${quantityPrefix(count)}${verb}DRAPEAU VISITE LIBRE` : null;
+}
+
 /** Accès (fenêtre, balcon) : le libellé, et le détail entre parenthèses (téléphone, infos de la boîte) */
 export function accessNote(access: PlacementAccess): { label: string; detail: string | null } {
   switch (access.type) {
@@ -133,7 +138,7 @@ export function accessNote(access: PlacementAccess): { label: string; detail: st
 export function placementNote(p: Placement): string | null {
   switch (p.location) {
     case 'ground':
-      return '**AU SOL**';
+      return '(au sol)';
     case 'ramp':
       return '**SUR RAMPE**';
     case 'window': {
@@ -216,15 +221,18 @@ const quantityPrefix = (n: number): string => (n > 1 ? `${n}x ` : '');
 /**
  * Ajouts qui ne vont pas sur une pancarte de la demande.
  * - Avec des pancartes commandées : les unités prévues pour une pancarte déjà sur place,
- *   toujours avec leur nombre : 1x AJOUT 2e ÉTAGE [PANCARTE DÉJÀ SUR PLACE]
+ *   toujours avec leur nombre et l'emplacement de ces pancartes : 1x AJOUT 2e ÉTAGE [PANCARTE DÉJÀ SUR PLACE] **SUR RAMPE**
  * - Sans pancarte commandée : AJOUT À VENDRE {COMPTE} + AJOUT REZ-DE-CHAUSSÉE **SUR RAMPE**
  *   (quantité à partir de 2, nom du compte une seule fois, après le premier ajout)
  */
 function standaloneAddonNotes(addons: readonly AddonEntry[], hasFrames: boolean, accountName: string | null): string[] {
   if (hasFrames) {
-    return addons.flatMap((a) =>
-      a.onSiteCount > 0 ? [`${a.onSiteCount}x AJOUT ${a.label} [PANCARTE DÉJÀ SUR PLACE]`] : [],
-    );
+    return addons.flatMap((a) => {
+      if (a.onSiteCount === 0) return [];
+      const places = (a.placements ?? []).map(placementNote).filter((p): p is string => p !== null);
+      const note = `${a.onSiteCount}x AJOUT ${a.label} [PANCARTE DÉJÀ SUR PLACE]`;
+      return [places.length > 0 ? `${note} ${places.join(' / ')}` : note];
+    });
   }
 
   return addons.map((a, index) => {
@@ -242,7 +250,7 @@ function standaloneAddonNotes(addons: readonly AddonEntry[], hasFrames: boolean,
 function kitPlacementNote(p: Placement): string | null {
   switch (p.location) {
     case 'ground':
-      return '**AU SOL**';
+      return '(au sol)';
     case 'ramp':
       return '**SUR RAMPE**';
     case 'other':
@@ -317,7 +325,13 @@ export function buildInstallationNotes(details: InstallationDetails, accountName
   if (details.frames) add((a) => framesNotes(details.frames?.units ?? [], addons, a));
   if (details.kits) add((a) => kitsNotes(details.kits?.units ?? [], a));
   add((a) => standaloneAddonNotes(addons, hasFrames, a));
-  if (details.openHouse) add(() => [openHouseDirectionalsNote(details.openHouse?.directionals ?? [])]);
+  // Visite libre : drapeaux, puis directionnelles (après les affichettes)
+  if (details.openHouse) {
+    add(() => [
+      openHouseFlagsNote(details.openHouse?.flagCount ?? 0),
+      openHouseDirectionalsNote(details.openHouse?.directionals ?? []),
+    ]);
+  }
   if (details.keybox) add((a) => [keyboxNote(details.keybox, a)]);
   if (details.directionals) add((a) => [directionalsNote(details.directionals, a)]);
   if (details.flags) add((a) => [flagsNote(details.flags, a)]);
@@ -326,11 +340,12 @@ export function buildInstallationNotes(details: InstallationDetails, accountName
   return parts.length > 0 ? parts.join(' + ') : 'INSTALLATION';
 }
 
-/** BAC{CODE} {COMPTE} ({EMPLACEMENT}) */
+/** BAC{CODE} {COMPTE} [emplacement tel que saisi] */
 function keyboxNote(keybox: InstallationDetails['keybox'], account: string | null): string | null {
   if (!keybox) return null;
   const name = account ? ` ${upper(account)}` : '';
-  const placement = keybox.placement.trim() ? ` (${upper(keybox.placement)})` : '';
+  // Emplacement tel que saisi, entre crochets
+  const placement = keybox.placement.trim() ? ` [${keybox.placement.trim()}]` : '';
   return `BAC${keybox.code}${name}${placement}`;
 }
 
@@ -347,7 +362,7 @@ function flagsNote(flags: InstallationDetails['flags'], account: string | null):
 
 /**
  * Note de la tâche de retrait du lundi suivant la visite libre (« Oui » au retrait), à part de l'installation :
- * 2x RECUP AJOUT VISITE LIBRE {COMPTE} **EMPLACEMENT** + 5x RECUP DIRECTIONNELLES [...]
+ * 2x RECUP AJOUT VISITE LIBRE {COMPTE} **EMPLACEMENT** + 2x RECUP DRAPEAU VISITE LIBRE + 5x RECUP DIRECTIONNELLES [...]
  * Sans jour ni heure : la date est celle de la tâche. null si aucun retrait n'est demandé.
  */
 export function buildOpenHouseRemovalNotes(details: InstallationDetails, accountName: string | null): string | null {
@@ -355,9 +370,13 @@ export function buildOpenHouseRemovalNotes(details: InstallationDetails, account
   if (!o?.removeNextMonday) return null;
 
   const account = accountName ? ` ${upper(accountName)}` : '';
-  // Sans pancarte commandée, les affichettes ont leurs propres emplacements
-  const places = (o.placements ?? []).map(placementNote).filter((p): p is string => p !== null);
+  // Emplacements seulement si toutes les affichettes sont sur des pancartes déjà sur place
+  const places = o.frameUids.length === 0
+    ? (o.placements ?? []).map(placementNote).filter((p): p is string => p !== null)
+    : [];
   const signs = `${quantityPrefix(o.quantity)}RECUP AJOUT VISITE LIBRE${account}${places.length > 0 ? ` ${places.join(' / ')}` : ''}`;
 
-  return [signs, openHouseDirectionalsNote(o.directionals, 'RECUP ')].filter((n): n is string => n !== null).join(' + ');
+  return [signs, openHouseFlagsNote(o.flagCount, 'RECUP '), openHouseDirectionalsNote(o.directionals, 'RECUP ')]
+    .filter((n): n is string => n !== null)
+    .join(' + ');
 }

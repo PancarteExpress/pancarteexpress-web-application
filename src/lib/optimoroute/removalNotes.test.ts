@@ -79,12 +79,12 @@ describe('buildRemovalNotes — pancartes', () => {
     expect(notes).toBe('RECUP CRISTIAN FERMIN LOPEZ [Au sol] + RECUP AJOUT [Au sol]');
   });
 
-  it('boîtes à clés : sans RECUP, emplacement tel que saisi', () => {
+  it('boîtes à clés : RECUP BAC, emplacement tel que saisi', () => {
     const notes = buildRemovalNotes({
       ...empty,
       keybox: { quantity: 2, code: '111111', placement: "l'emplacement de la boite à clé est ici" },
     }, 'Cristian Fermin Lopez');
-    expect(notes).toBe("2x BAC111111 CRISTIAN FERMIN LOPEZ (l'emplacement de la boite à clé est ici)");
+    expect(notes).toBe("2x RECUP BAC111111 CRISTIAN FERMIN LOPEZ (l'emplacement de la boite à clé est ici)");
   });
 
   it('drapeaux : mention « Autres » en majuscules, emplacement tel que saisi', () => {

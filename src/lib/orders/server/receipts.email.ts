@@ -23,6 +23,7 @@ const receiptSelect = {
   lastName: true,
   email: true,
   phone: true,
+  billedToEmail: true,
   companyName: true,
   billingAddress: true,
   additionalInfo: true,
@@ -157,7 +158,8 @@ export async function sendReceipts(orderId: string): Promise<void> {
       `Client : ${order.firstName} ${order.lastName}`,
       `Courriel : ${order.email}`,
       `Téléphone : ${order.phone ?? '—'}`,
-      // Invités : informations de facturation
+      // Facturation figée à la commande (invité : formulaire ; membre : compte du payeur)
+      ...(order.billedToEmail && order.billedToEmail !== order.email ? [`Facturé à : ${order.billedToEmail}`] : []),
       ...(order.companyName ? [`Entreprise : ${order.companyName}`] : []),
       ...(order.billingAddress ? [`Adresse de facturation : ${order.billingAddress}`] : []),
       ...(order.additionalInfo ? [`Informations supplémentaires : ${order.additionalInfo}`] : []),

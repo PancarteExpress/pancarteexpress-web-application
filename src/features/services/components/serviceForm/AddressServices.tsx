@@ -46,6 +46,7 @@ const IMPLEMENTED: readonly ServiceType[] = IMPLEMENTED_SERVICES;
 export function AddressServices({ address }: { address: Address }) {
   const t = useTranslations('services');
   const saveService = useAddressStore((s) => s.saveService);
+  const previewPendingFiles = useAddressStore((s) => s.pendingFiles[address.id]?.length ?? 0);
   const { data: session, status: sessionStatus } = useSession();
   const locale = useLocale();
   // Livraison et ramassage : réservés aux membres ; un invité voit un message à la place des questions
@@ -210,6 +211,11 @@ export function AddressServices({ address }: { address: Address }) {
                 : { type },
               ),
               previewAccountName,
+              // Fichiers envoyés ou en attente d'envoi
+              {
+                terrain: address.type === 'terrain' ? address.description : null,
+                hasAttachments: (address.attachments?.length ?? 0) > 0 || previewPendingFiles > 0,
+              },
             )}
           </p>
 

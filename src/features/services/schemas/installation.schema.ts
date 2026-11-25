@@ -1,6 +1,6 @@
 import * as z from 'zod';
 import {
-  ADDONS, ADDONS_WITH_MODEL, FLAG_MENTIONS, FRAME_MODELS, IMPLEMENTED_MATERIALS, KIT_LOCATIONS, KIT_MODELS,
+  ADDONS, ADDONS_WITH_MODEL, FLAG_MENTIONS, FRAME_MODELS, IMPLEMENTED_MATERIALS, KIT_LOCATIONS, KIT_MODELS, maxTargetsQuantity,
   MAX_ADDONS, MAX_DIRECTIONALS, MAX_FLAGS, MAX_FRAMES, MAX_KITS, OPEN_HOUSE, SIGN_MENTIONS, TEXT_LIMITS,
   type Addon, type AddonWithModel, type FrameModelType, type ImplementedMaterial,
 } from '../constants/installation';
@@ -70,13 +70,13 @@ const addonEntryFormSchema = z.object({
   model: z.enum(FRAME_MODELS).nullable(),
   modelDescription: text(TEXT_LIMITS.modelDescription),
   ...targetsFormShape,
-  /** Utilisés seulement sans pancarte commandée */
+  /** Emplacements des pancartes déjà sur place : utilisés seulement si `onSite` */
   placements: z.array(placementFormSchema),
 });
 
 const openHouseFormSchema = z.object({
   ...targetsFormShape,
-  /** Utilisés seulement sans pancarte commandée */
+  /** Emplacements des pancartes déjà sur place : utilisés seulement si `onSite` */
   placements: z.array(placementFormSchema),
   dates: z.array(z.string()).max(OPEN_HOUSE.maxDates),
   twoDates: z.boolean(),
@@ -185,6 +185,10 @@ function validateOwnPlacements(placements: PlacementOutput[], quantity: number, 
 }
 
 function validateTargets(t: TargetsOutput, path: Path, validFrameUids: Set<string>, report: Report) {
+  // Une unité par choix affiché ; validFrameUids est vide sans pancarte commandée
+  const max = maxTargetsQuantity(validFrameUids.size);
+  if (t.quantity > max) report([...path, 'quantity'], issueMessage('maxQuantity', { max }));
+
   const assigned = t.frameUids.length;
   const hasInvalidTarget =
     new Set(t.frameUids).size !== assigned || t.frameUids.some((uid) => !validFrameUids.has(uid));
@@ -202,10 +206,12 @@ function validateTargets(t: TargetsOutput, path: Path, validFrameUids: Set<strin
   }
 }
 
-function validateAddon(
-  a: AddonEntryOutput, path: Path, validFrameUids: Set<string>, hasFrames: boolean, report: Report,
-) {
-  if (!hasFrames) validateOwnPlacements(a.placements, a.quantity, path, report);
+/** Unités prévues sur des pancartes déjà sur place (au moins 1 si coché) */
+const onSiteUnits = (t: TargetsOutput): number => Math.max(1, t.quantity - t.frameUids.length);
+
+function validateAddon(a: AddonEntryOutput, path: Path, validFrameUids: Set<string>, report: Report) {
+  // Emplacement des pancartes déjà sur place, avec ou sans pancarte commandée
+  if (a.onSite) validateOwnPlacements(a.placements, onSiteUnits(a), path, report);
   if (a.addon === 'other' && !a.mention) report([...path, 'mention'], 'mentionRequired');
   if (hasModel(a.addon)) {
     if (a.model === null) report([...path, 'model'], 'chooseModel');
@@ -220,11 +226,10 @@ function validatePlacedUnits(units: PlacedUnitOutput[], path: Path, emptyMessage
   if (units.length === 0) report(path, emptyMessage);
 }
 
-function validateOpenHouse(
-  o: OpenHouseOutput, path: Path, validFrameUids: Set<string>, hasFrames: boolean, report: Report,
-) {
+function validateOpenHouse(o: OpenHouseOutput, path: Path, validFrameUids: Set<string>, report: Report) {
   validateTargets(o, path, validFrameUids, report);
-  if (!hasFrames) validateOwnPlacements(o.placements, o.quantity, path, report);
+  // Emplacement des pancartes déjà sur place, avec ou sans pancarte commandée
+  if (o.onSite) validateOwnPlacements(o.placements, onSiteUnits(o), path, report);
 
   const expected = o.twoDates ? 2 : 1;
   if (o.dates.length !== expected || !o.dates.every(isValidIsoDate)) {
@@ -270,10 +275,6 @@ function toKitUnit(k: KitUnitOutput): KitUnit {
   };
 }
 
-/** Avec des pancartes commandées, les ajouts vont sur elles : pas d'emplacement propre */
-const toOwnPlacements = (placements: PlacementOutput[], hasFrames: boolean): Placement[] | null =>
-  hasFrames ? null : placements.map(toPlacement);
-
 function toTargets(t: TargetsOutput): UnitTargets {
   return {
     quantity: t.quantity,
@@ -284,8 +285,9 @@ function toTargets(t: TargetsOutput): UnitTargets {
 
 const toPlacedUnit = (u: PlacedUnitOutput): PlacedUnit => ({ uid: u.uid, placement: u.placement });
 
-function toAddonAssignment(a: AddonEntryOutput, hasFrames: boolean): AddonAssignment {
-  const base = { ...toTargets(a), placements: toOwnPlacements(a.placements, hasFrames) };
+function toAddonAssignment(a: AddonEntryOutput): AddonAssignment {
+  // Emplacements des pancartes déjà sur place ; aucun sinon
+  const base = { ...toTargets(a), placements: a.onSite ? a.placements.map(toPlacement) : null };
   const { addon } = a;
   switch (addon) {
     case 'other':
@@ -299,10 +301,11 @@ function toAddonAssignment(a: AddonEntryOutput, hasFrames: boolean): AddonAssign
   }
 }
 
-function toOpenHouse(o: OpenHouseOutput, hasFrames: boolean): OpenHouseDetails {
+function toOpenHouse(o: OpenHouseOutput): OpenHouseDetails {
   return {
     ...toTargets(o),
-    placements: toOwnPlacements(o.placements, hasFrames),
+    // Emplacements des pancartes déjà sur place ; aucun sinon
+    placements: o.onSite ? o.placements.map(toPlacement) : null,
     // Le format yyyy-MM-dd se trie correctement comme une chaîne
     dates: [...o.dates].sort(),
     startTime: o.startTime,
@@ -358,10 +361,10 @@ export function createInstallationSchema(session: SessionContext) {
         if (v.addons.length === 0) report(['addons'], 'selectAddon');
         const keys = v.addons.map((a) => a.addon);
         if (new Set(keys).size !== keys.length) report(['addons'], 'duplicateAddon');
-        v.addons.forEach((a, i) => validateAddon(a, ['addons', i], validFrameUids, hasFrames, report));
+        v.addons.forEach((a, i) => validateAddon(a, ['addons', i], validFrameUids, report));
       }
 
-      if (has('openHouse')) validateOpenHouse(v.openHouse, ['openHouse'], validFrameUids, hasFrames, report);
+      if (has('openHouse')) validateOpenHouse(v.openHouse, ['openHouse'], validFrameUids, report);
 
       if (has('keybox') && !v.keybox.code) report(['keybox', 'code'], 'keyboxCodeRequired');
 
@@ -394,8 +397,8 @@ export function createInstallationSchema(session: SessionContext) {
         pickupAddress: !isMember && v.pickup ? v.pickupAddress : null,
         frames: hasFrames ? { units: v.frames.units.map((u) => toFrameUnit(u, session)) } : null,
         kits: has('kit') && !hasFrames ? { units: v.kits.units.map(toKitUnit) } : null,
-        addons: has('addons') ? v.addons.map((a) => toAddonAssignment(a, hasFrames)) : null,
-        openHouse: has('openHouse') ? toOpenHouse(v.openHouse, hasFrames) : null,
+        addons: has('addons') ? v.addons.map(toAddonAssignment) : null,
+        openHouse: has('openHouse') ? toOpenHouse(v.openHouse) : null,
         keybox: has('keybox') ? { code: v.keybox.code, placement: v.keybox.placement } : null,
         flags: has('flags')
           ? isMember
