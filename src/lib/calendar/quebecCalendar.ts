@@ -8,10 +8,9 @@
 export type IsoDate = string;
  
 /**
- * Congés de Pâques chômés par l'entreprise.
- * La loi laisse le choix entre le Vendredi saint et le lundi de Pâques : retirer celui qui est travaillé.
+ * Congés de Pâques chômés par l'entreprise : lundi de Pâques seulement (Vendredi saint travaillé, confirmé nov. 2026).
  */
-const EASTER_HOLIDAYS = ['goodFriday', 'easterMonday'] as const satisfies ReadonlyArray<'goodFriday' | 'easterMonday'>;
+const EASTER_HOLIDAYS = ['easterMonday'] as const satisfies ReadonlyArray<'goodFriday' | 'easterMonday'>;
  
 const TIME_ZONE = 'America/Toronto';
 const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;

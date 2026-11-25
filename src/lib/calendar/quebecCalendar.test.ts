@@ -5,7 +5,6 @@ import { isQuebecHoliday, nextBusinessDay, removalDateAfter } from './quebecCale
 describe('isQuebecHoliday', () => {
   it.each([
     '2026-01-01', // Jour de l'An
-    '2026-04-03', // Vendredi saint
     '2026-04-06', // Lundi de Pâques
     '2026-05-18', // Patriotes
     '2026-06-24', // Fête nationale
@@ -18,6 +17,10 @@ describe('isQuebecHoliday', () => {
   it('Fête nationale un dimanche → chômée le lundi', () => {
     expect(isQuebecHoliday('2029-06-25')).toBe(true);
   });
+
+  it('Vendredi saint travaillé (seul le lundi de Pâques est chômé)', () => {
+    expect(isQuebecHoliday('2026-04-03')).toBe(false);
+  });
  
   it('lendemain de Noël non chômé', () => {
     expect(isQuebecHoliday('2026-12-26')).toBe(false);
@@ -25,8 +28,12 @@ describe('isQuebecHoliday', () => {
 });
  
 describe('nextBusinessDay', () => {
-  it('jeudi saint → mardi (Vendredi saint, fin de semaine et lundi de Pâques sautés)', () => {
-    expect(nextBusinessDay('2026-04-02')).toBe('2026-04-07');
+  it('jeudi saint → Vendredi saint (travaillé)', () => {
+    expect(nextBusinessDay('2026-04-02')).toBe('2026-04-03');
+  });
+
+  it('Vendredi saint → mardi (fin de semaine et lundi de Pâques sautés)', () => {
+    expect(nextBusinessDay('2026-04-03')).toBe('2026-04-07');
   });
 });
  

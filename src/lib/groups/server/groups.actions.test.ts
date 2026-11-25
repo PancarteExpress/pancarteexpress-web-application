@@ -18,40 +18,62 @@ vi.mock("./groups.service", () => ({ getGroupDetails: vi.fn(async () => ({ id: "
 vi.mock("next/server", () => ({ after: afterMock }));
 vi.mock("@/lib/users/server/accountType.emails", () => ({ notifyAccountTypeChanges }));
 
+const { rateLimitMock } = vi.hoisted(() => ({ rateLimitMock: vi.fn() }));
+
+vi.mock("@/lib/rateLimit/server/rateLimit", () => ({
+  isRateLimited: rateLimitMock,
+  LIMITS: { memberSearchUser: {} },
+}));
+
 const { searchUsersByEmailAction, addGroupMembersAction, renameGroupAction, deleteGroupAction } = await import("./groups.actions");
 
 describe("searchUsersByEmailAction", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
     authMock.mockResolvedValue({ user: { id: "admin", role: "groupAdmin" } });
+    rateLimitMock.mockResolvedValue(false);
     prismaMock.user.findMany.mockResolvedValue([]);
   });
 
-  it("ne cherche que les users PENDING sans groupe", async () => {
-    await searchUsersByEmailAction(" Ana@ ");
+  it("cherche le courriel exact parmi les users PENDING sans groupe", async () => {
+    await expect(searchUsersByEmailAction(" Ana@exemple.com ")).resolves.toEqual({ ok: true, users: [] });
 
     expect(prismaMock.user.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          email: { startsWith: "ana@" },
+          email: { equals: "Ana@exemple.com", mode: "insensitive" },
           groupId: null,
           groupStatus: "PENDING",
           role: "user",
+          id: { not: "admin" },
         }),
+        take: 1,
       }),
     );
   });
 
-  it("refuse une requête invalide sans interroger la base", async () => {
-    await expect(searchUsersByEmailAction("ab")).resolves.toEqual([]);
-    await expect(searchUsersByEmailAction(42)).resolves.toEqual([]);
+  it("refuse un courriel partiel sans compter d'essai ni interroger la base", async () => {
+    await expect(searchUsersByEmailAction("ana@")).resolves.toEqual({ ok: false, error: "invalidEmail" });
+    await expect(searchUsersByEmailAction("ana")).resolves.toEqual({ ok: false, error: "invalidEmail" });
+    await expect(searchUsersByEmailAction(42)).resolves.toEqual({ ok: false, error: "invalidEmail" });
+    expect(rateLimitMock).not.toHaveBeenCalled();
+    expect(prismaMock.user.findMany).not.toHaveBeenCalled();
+  });
+
+  it("bloque après trop de recherches", async () => {
+    rateLimitMock.mockResolvedValue(true);
+
+    await expect(searchUsersByEmailAction("ana@exemple.com")).resolves.toEqual({ ok: false, error: "tooManyAttempts" });
+    expect(rateLimitMock).toHaveBeenCalledWith("memberSearch", [
+      expect.objectContaining({ key: "user:admin" }),
+    ]);
     expect(prismaMock.user.findMany).not.toHaveBeenCalled();
   });
 
   it("refuse un user qui n'est pas groupAdmin", async () => {
     authMock.mockResolvedValue({ user: { id: "u1", role: "user" } });
 
-    await expect(searchUsersByEmailAction("ana@")).resolves.toEqual([]);
+    await expect(searchUsersByEmailAction("ana@exemple.com")).resolves.toEqual({ ok: true, users: [] });
+    expect(rateLimitMock).not.toHaveBeenCalled();
     expect(prismaMock.user.findMany).not.toHaveBeenCalled();
   });
 });

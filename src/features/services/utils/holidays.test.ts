@@ -8,7 +8,7 @@ const iso = (date: Date) => format(date, 'yyyy-MM-dd');
 describe('jours fériés du Québec', () => {
   it('calcule les fêtes mobiles de 2026', () => {
     const h = quebecHolidays(2026);
-    expect(h.has('2026-04-03')).toBe(true); // Vendredi saint
+    expect(h.has('2026-04-03')).toBe(false); // Vendredi saint
     expect(h.has('2026-04-06')).toBe(true); // Lundi de Pâques
     expect(h.has('2026-05-18')).toBe(true); // Patriotes (25 mai est un lundi → lundi précédent)
     expect(h.has('2026-09-07')).toBe(true); // Fête du Travail

@@ -22,6 +22,6 @@ export type GroupNameInput = z.infer<typeof groupNameSchema>;
 export type AddMembersInput = z.infer<typeof addMembersSchema>;
 export const memberIdSchema = z.string().min(1);
 
-export const userSearchQuerySchema = z.string().trim().toLowerCase().min(3).max(254);
+export const userSearchQuerySchema = z.string().trim().max(254).pipe(z.email());
 
 export const billingModeSchema = z.enum(["INDIVIDUAL", "GROUP"]);

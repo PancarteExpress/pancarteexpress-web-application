@@ -8,6 +8,7 @@ import { ActionError, requireSuperAdminAction, toActionError, type ActionResult 
 import { addMembersSchema, groupNameSchema, memberIdSchema, billingModeSchema, userSearchQuerySchema } from "../groups.schema";
 import { getGroupDetails, type GroupDetails } from "./groups.service";
 import { notifyAccountTypeChanges } from "@/lib/users/server/accountType.emails";
+import { isRateLimited, LIMITS } from "@/lib/rateLimit/server/rateLimit";
 
 const userSearchSelect = {
   id: true,
@@ -27,24 +28,34 @@ class GroupActionError extends Error {}
 const addableMemberWhere = { groupId: null, groupStatus: "PENDING" } satisfies Prisma.UserWhereInput;
 const MEMBER_UNAVAILABLE = "memberUnavailable";
 
-export async function searchUsersByEmailAction(query: unknown): Promise<UserSearchResult[]> {
+export type MemberSearchError = "invalidEmail" | "tooManyAttempts";
+export type MemberSearchResult = { ok: true; users: UserSearchResult[] } | { ok: false; error: MemberSearchError };
+
+// Courriel complet et exact seulement : un groupAdmin ne peut pas parcourir les comptes en attente
+export async function searchUsersByEmailAction(query: unknown): Promise<MemberSearchResult> {
   const session = await auth();
-  if (!session?.user?.id || session.user.role !== "groupAdmin") return [];
+  if (!session?.user?.id || session.user.role !== "groupAdmin") return { ok: true, users: [] };
 
   const parsed = userSearchQuerySchema.safeParse(query);
-  if (!parsed.success) return [];
+  if (!parsed.success) return { ok: false, error: "invalidEmail" };
 
-  return prisma.user.findMany({
+  // Empêche de tester des courriels en boucle pour savoir lesquels ont un compte
+  const limited = await isRateLimited("memberSearch", [
+    { key: `user:${session.user.id}`, limit: LIMITS.memberSearchUser },
+  ]);
+  if (limited) return { ok: false, error: "tooManyAttempts" };
+
+  const users = await prisma.user.findMany({
     where: {
-      email: { startsWith: parsed.data },
+      email: { equals: parsed.data, mode: "insensitive" },
       ...addableMemberWhere,
       role: "user",
       id: { not: session.user.id },
     },
     select: userSearchSelect,
-    orderBy: { email: "asc" },
-    take: 5,
+    take: 1,
   });
+  return { ok: true, users };
 }
 
 export type GroupResult = { ok: true; group: GroupDetails } | { ok: false; error: string };

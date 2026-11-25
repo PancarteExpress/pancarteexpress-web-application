@@ -22,10 +22,17 @@
         "create": "Create team"
     },
     "memberSearch": {
-        "label": "Teammates' email",
-        "placeholder": "Search by email…",
+        "label": "Member's full email",
+        "placeholder": "e.g. marie.tremblay@example.com",
+        "searchButton": "Search",
+        "notFound": "No pending account with this email.",
+        "errors": {
+            "invalidEmail": "Enter the full email.",
+            "tooManyAttempts": "Too many searches. Please try again in a few minutes.",
+            "generic": "The search failed. Please try again."
+        },
+
         "searching": "Searching…",
-        "notFound": "No users available",
         "remove": "Remove {email}"
     },
     "manage": {

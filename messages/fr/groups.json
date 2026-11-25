@@ -22,10 +22,17 @@
         "create": "Créer l'équipe"
     },
     "memberSearch": {
-        "label": "Courriel des coéquipiers",
-        "placeholder": "Rechercher par courriel…",
+        "label": "Courriel complet du membre",
+        "placeholder": "ex. marie.tremblay@exemple.com",
+        "searchButton": "Rechercher",
+        "notFound": "Aucun compte en attente avec ce courriel.",
+        "errors": {
+            "invalidEmail": "Entrez le courriel complet.",
+            "tooManyAttempts": "Trop de recherches. Réessayez dans quelques minutes.",
+            "generic": "La recherche a échoué. Réessayez."
+        },
+
         "searching": "Recherche…",
-        "notFound": "Aucun utilisateur disponible",
         "remove": "Retirer {email}"
     },
     "manage": {
