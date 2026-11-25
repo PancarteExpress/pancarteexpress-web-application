@@ -16,6 +16,7 @@ export const APP_ERROR_STATUS = {
   validationFailed: 400,
   invalidJson: 400,
   profileIncomplete: 403,
+  membersOnlyService: 403,
   profileAlreadyCompleted: 409,
   emailSendFailed: 502,
   serverError: 500,

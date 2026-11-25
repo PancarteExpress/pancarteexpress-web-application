@@ -1,39 +1,37 @@
 'use client';
 
+import styles from '../installationForm/installationForm.module.css';
+
 import { useRef } from 'react';
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
+import { useSession } from 'next-auth/react';
+
 import { IMPLEMENTED_SERVICES, SERVICE_CHOICES, type ServiceType } from '@/features/services/constants/installation';
 import { CheckboxGroup, Notice, type ChoiceOption } from '@/features/services/components/fields';
-
 import { useAddressStore } from '@/features/services/store/addressStore';
 import type { Address } from '@/features/services/types/address';
 import type { Service } from '@/features/services/types/services';
-
 import { InstallationForm } from '@/features/services/components/installationForm/InstallationForm';
 import { RemovalForm } from '@/features/services/components/removalForm/RemovalForm';
 import { CorrectionForm } from '@/features/services/components/correctionForm/CorrectionForm';
 import { PickupForm } from '@/features/services/components/pickupForm/PickupForm';
 import { DeliveryForm } from '@/features/services/components/deliveryForm/DeliveryForm';
 import { ScheduleForm } from '@/features/services/components/scheduleForm/ScheduleForm';
-
 import type { InstallationDetails } from '@/features/services/types/installation';
 import type { RemovalDetails } from '@/features/services/types/removal';
 import type { CorrectionDetails } from '@/features/services/types/correction';
 import type { PickupDetails } from '@/features/services/types/pickup';
 import type { DeliveryDetails } from '@/features/services/types/delivery';
 import type { ServiceSchedule } from '@/features/services/types/schedule';
-
 import type { ServiceFormHandle } from './serviceFormHandle';
 import { useServiceSelection } from './useServiceSelection';
-import { useSession } from 'next-auth/react';
 import { buildAddressNotes } from '@/lib/optimoroute/notes';
 import { buildOpenHouseRemovalNotes } from '@/lib/optimoroute/installationNotes';
 import { installationPreviewDetails } from '@/features/services/utils/installationNotesPreview';
 import { removalPreviewDetails } from '@/features/services/utils/removalNotesPreview';
 import { deliveryPreviewDetails } from '@/features/services/utils/deliveryNotesPreview';
 import { getFullName } from '@/shared/utils/displayName';
-import styles from '../installationForm/installationForm.module.css';
+import { LocalLink } from '@/shared/components/LocalLink';
 
 type Find<T extends Service['type']> = Extract<Service, { type: T }>;
 
@@ -54,8 +52,9 @@ export function AddressServices({ address }: { address: Address }) {
   const membersOnlyNotice = (
     <Notice>
       {t.rich('serviceForm.membersOnly', {
-        register: (chunks) => <Link href={`/${locale}/register`}>{chunks}</Link>,
-        login: (chunks) => <Link href={`/${locale}/login`}>{chunks}</Link>,
+        
+        register: (chunks) => <LocalLink href="/register">{chunks}</LocalLink>,
+        login: (chunks) => <LocalLink href="/login">{chunks}</LocalLink>,
       })}
     </Notice>
   );

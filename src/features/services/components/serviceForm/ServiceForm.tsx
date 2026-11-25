@@ -1,37 +1,34 @@
 'use client';
 
+import styles from './ServiceForm.module.css';
+
 import { useState } from 'react';
-import Link from 'next/link';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
+
 import { inlineLoading } from '@/shared/components/deferredLoading/DeferredLoading';
 import { RadioGroup } from '@/features/services/components/fields/RadioGroup';
 import { toOptions } from '@/features/services/components/fields/types';
 import { AttachmentsField } from '../attachments/AttachmentsField';
 import type { CartAddress } from '@/features/cart/types/cart';
 import { createEmptyScheduleForm, createScheduleSchema } from '@/features/services/schemas/schedule.schema';
-
 import { useAddressStore } from '@/features/services/store/addressStore';
-
 import { REQUEST_TYPES } from '@/lib/orders/constants';
 import type { RequestType } from '@/features/services/types/services';
 import { useCartStore } from '@/features/cart/store/cartStore';
-import styles from './ServiceForm.module.css';
 import { formatAddress } from '@/features/services/utils/formatAddress';
 import { ServicesSummary } from '../servicesSummary/ServicesSummary';
-
 import { addressesWithServicesOf, requestTypeOf } from '@/features/services/utils/serviceRequestType';
 import type { ServiceKey } from '@/features/services/store/addressStore';
+import { LocalLink } from '@/shared/components/LocalLink';
 
 const AddressManager = dynamic(() => import('@/features/services/components/addressManager/AddressManager'), { loading: inlineLoading });
 const AddressServices = dynamic(() => import('./AddressServices').then((m) => m.AddressServices), { loading: inlineLoading });
-// Recherche d'une commande : visiteurs non connectés seulement, chargée à la demande
 const OrderLookup = dynamic(() => import('../orderLookup/OrderLookup').then((m) => m.OrderLookup), { loading: inlineLoading });
 const LargeAddressServices = dynamic(() => import('./LargeAddressServices').then((m) => m.LargeAddressServices), { loading: inlineLoading });
 
 export default function ServiceForm() {
-  const locale = useLocale();
   const t = useTranslations('services');
   const { status: sessionStatus } = useSession();
   const addServiceRequest = useCartStore((s) => s.addServiceRequest);
@@ -82,7 +79,7 @@ export default function ServiceForm() {
     setEditingAddress(false);
   };
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = () => {
     if (requestType === null) {
       setError(t('serviceForm.requestTypeRequired'));
       return;
@@ -165,7 +162,7 @@ export default function ServiceForm() {
         {addedToCart && (
           <div role="status" className={styles.addedToCart}>
             <p>{t('serviceForm.addedToCart')}</p>
-            <Link href={`/${locale}/cart`}>{t('serviceForm.viewCart')}</Link>
+            <LocalLink href="/cart">{t('serviceForm.viewCart')}</LocalLink>
           </div>
         )}
       </div>

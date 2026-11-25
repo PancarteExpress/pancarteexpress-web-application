@@ -95,7 +95,9 @@
     "companyName": "Company",
     "billingAddress": "Billing",
     "additionalInfo": "Additional info",
-    "status": "Status"
+    "status": "Status",
+    "details": "Details",
+    "hideDetails": "Hide"
   },
   "serviceStatuses": {
     "TO_SCHEDULE": "To schedule",

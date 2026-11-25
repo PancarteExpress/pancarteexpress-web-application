@@ -3,7 +3,7 @@ import { handleUpload, type HandleUploadBody } from '@vercel/blob/client';
 import {
   ATTACHMENT_CONTENT_TYPES, ATTACHMENT_PREFIX, MAX_ATTACHMENT_SIZE,
 } from '@/lib/attachments/constants';
-import { clientIp, takeToken } from '@/lib/security/server/rateLimit';
+import { ipKey, isRateLimited, LIMITS } from '@/lib/rateLimit/server/rateLimit';
 
 /*
  * Délivre un jeton d'envoi temporaire : le navigateur envoie ensuite le fichier
@@ -11,10 +11,6 @@ import { clientIp, takeToken } from '@/lib/security/server/rateLimit';
  * Types, taille et dossier sont imposés ici : Vercel les applique, même si le navigateur est contourné.
  * Les invités peuvent commander : pas de connexion exigée, mais un nombre d'envois limité par IP.
  */
-
-// 30 fichiers par 15 minutes et par IP : large pour une demande, assez pour freiner les abus
-const UPLOAD_LIMIT = { limit: 30, windowMs: 15 * 60 * 1000 };
-
 export async function POST(request: Request) {
   let body: HandleUploadBody;
   try {
@@ -28,7 +24,8 @@ export async function POST(request: Request) {
       body,
       request,
       onBeforeGenerateToken: async (pathname) => {
-        if (!takeToken(`attachment-upload:${clientIp(request)}`, UPLOAD_LIMIT)) {
+        // 30 fichiers par 15 minutes et par IP : large pour une demande, assez pour freiner les abus
+        if (await isRateLimited('attachmentUpload', [{ key: await ipKey(), limit: LIMITS.uploadIp }])) {
           throw new Error('tooManyUploads');
         }
         // Seulement dans le dossier des pièces jointes

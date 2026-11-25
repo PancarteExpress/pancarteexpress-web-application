@@ -3,7 +3,7 @@ import { headers } from 'next/headers';
 import { createHash } from 'node:crypto';
 import { prisma } from '@/lib/prisma';
 
-export type RateLimitAction = 'contact' | 'register' | 'forgotPassword' | 'login';
+export type RateLimitAction = 'contact' | 'register' | 'forgotPassword' | 'login' | 'orderLookup' | 'attachmentUpload';
 
 interface Limit {
   max: number;
@@ -19,6 +19,9 @@ export const LIMITS = {
   codeIp: { max: 10, windowMs: 60 * MINUTE },
   loginIdentifier: { max: 10, windowMs: 15 * MINUTE },
   loginIp: { max: 30, windowMs: 15 * MINUTE },
+  lookupIp: { max: 10, windowMs: 15 * MINUTE },
+  lookupEmail: { max: 5, windowMs: 15 * MINUTE },
+  uploadIp: { max: 30, windowMs: 15 * MINUTE },
 } as const satisfies Record<string, Limit>;
 
 /** Hachage salé : ni les IP ni les courriels ne sont stockés en clair */

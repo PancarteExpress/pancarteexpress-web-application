@@ -5,7 +5,7 @@ import { sendEmail, INTERNAL_EMAIL } from '@/lib/email/sendEmail';
 import { renderTextEmail } from '@/lib/email/renderTextEmail';
 import { servicesTranslator } from '@/lib/i18n/looseTranslator';
 import { formatServiceDelay } from '@/lib/orders/serviceDelay';
-import { SITE_URL } from '@/lib/siteUrl';
+import { attachmentLink } from '@/lib/attachments/server/signedLink';
 import { formatAddressNumber } from '@/lib/services/addressNumber';
 import { describeServiceDetailsText } from '@/features/services/utils/serviceDetailsText';
 import { CONFIRMED_ORDER_WHERE } from '@/lib/orders/constants';
@@ -78,9 +78,9 @@ export function buildServiceAddressEmail(a: EmailAddress) {
         ...(lines ?? ['Détails illisibles : voir la base de données.']),
       ];
     }),
-    // Liens ouverts après connexion à l'espace superAdmin
+    // Liens signés : ouverts sans connexion pendant 30 jours
     ...(a.attachments.length > 0
-      ? [['PIÈCES JOINTES', ...a.attachments.map((f) => `${f.fileName} : ${SITE_URL}/api/attachments/${f.id}`)]]
+      ? [['PIÈCES JOINTES', ...a.attachments.map((f) => `${f.fileName} : ${attachmentLink(f.id)}`)]]
       : []),
   ];
 

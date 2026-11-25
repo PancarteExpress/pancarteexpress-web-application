@@ -11,6 +11,7 @@ const adminServiceSelect = {
   status: true,
   price: true,
   scheduledFor: true,
+  details: true,
   serviceAddress: {
     select: {
       addressNumber: true,
@@ -55,6 +56,7 @@ export interface AdminServiceRow {
   /** Pièces jointes de l'adresse du service, ouvertes par /api/attachments/[id] */
   attachments: { id: string; fileName: string }[];
   type: ServiceType;
+  details: Prisma.JsonValue;
   status: ServiceStatus;
   price: number | null;
   orderId: string;
@@ -116,6 +118,7 @@ export async function listServicesForAdmin(): Promise<AdminClientServices[]> {
     client.services.push({
       id: s.id,
       type: s.type,
+      details: s.details,
       status: s.status,
       price: s.price,
       orderId: order.id,

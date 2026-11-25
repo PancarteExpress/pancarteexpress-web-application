@@ -1,4 +1,5 @@
 {
+  "membersOnlyService": "La livraison et le ramassage de matériel sont réservés aux membres. Connectez-vous ou créez un compte.",
   "unauthorized": "Vous devez être connecté pour effectuer cette action.",
   "invalidCredentials": "Identifiants invalides.",
   "userExists": "Un compte existe déjà avec cette adresse courriel.",

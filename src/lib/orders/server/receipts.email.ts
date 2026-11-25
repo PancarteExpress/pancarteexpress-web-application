@@ -9,6 +9,7 @@ import { buildClientReceipt } from './clientReceipt';
 import { sendServiceAddressEmails } from './serviceAddress.email';
 import { formatAddressNumber } from '@/lib/services/addressNumber';
 import { servicesTranslator } from '@/lib/i18n/looseTranslator';
+import { attachmentLink } from '@/lib/attachments/server/signedLink';
 
 /* ── Données de la commande ───────────────────────────────────── */
 
@@ -53,6 +54,7 @@ const receiptSelect = {
           nearbyAddress: true,
           city: true,
           services: { select: { type: true, details: true } },
+          attachments: { orderBy: { createdAt: 'asc' }, select: { id: true, fileName: true } },
         },
       },
     },
@@ -112,6 +114,21 @@ function serviceLines(order: Receipt): string[] {
   ];
 }
 
+/** Pièces jointes de toute la commande, regroupées par numéro PE (liens signés, 30 jours) */
+function attachmentLines(order: Receipt): string[] {
+  const addresses = order.serviceRequests
+    .flatMap((request) => request.addresses)
+    .filter((address) => (address.attachments?.length ?? 0) > 0);
+  if (addresses.length === 0) return [];
+  return [
+    'Pièces jointes :',
+    ...addresses.flatMap((address) => [
+      `${formatAddressNumber(address.addressNumber)} :`,
+      ...address.attachments.map((f) => `- ${f.fileName} : ${attachmentLink(f.id)}`),
+    ]),
+  ];
+}
+
 /** Rappel à l'équipe que les services ne sont jamais payés en ligne : leur prix suit sur soumission */
 function servicePricingNote(order: Receipt): string[] {
   if (order.serviceRequests.length === 0) return [];
@@ -167,6 +184,7 @@ export async function sendReceipts(orderId: string): Promise<void> {
     deliveryLines(order),
     productLines(order),
     serviceLines(order),
+    attachmentLines(order),
     servicePricingNote(order),
   ].filter((section) => section.length > 0);
 

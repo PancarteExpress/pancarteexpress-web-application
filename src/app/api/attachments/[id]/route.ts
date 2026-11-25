@@ -2,9 +2,11 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { get } from '@vercel/blob';
 import { auth } from '@/app/auth';
 import { prisma } from '@/lib/prisma';
+import { isValidAttachmentSignature } from '@/lib/attachments/server/signedLink';
 
 /*
- * Ouvre une pièce jointe du stockage privé, pour le superAdmin seulement.
+ * Ouvre une pièce jointe du stockage privé.
+ * Accès : superAdmin connecté, ou lien signé non expiré (courriels internes).
  * L'accès est vérifié ici, juste avant la lecture, et la réponse n'est jamais mise en cache par le CDN.
  */
 
@@ -18,21 +20,28 @@ const contentDisposition = (type: 'inline' | 'attachment', fileName: string): st
 };
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await auth();
-
-  // Non connecté : connexion, puis retour au fichier
-  if (!session?.user) {
-    const login = new URL('/fr/login', request.nextUrl.origin);
-    login.searchParams.set('callbackUrl', request.nextUrl.pathname);
-    return NextResponse.redirect(login);
-  }
-  // Connecté sans droit : même réponse qu'un fichier inexistant
-  if (session.user.role !== 'superAdmin') {
-    console.warn('[attachments] Accès refusé : rôle', session.user.role);
-    return new NextResponse('Not found', { status: 404 });
-  }
-
   const { id } = await params;
+  const { searchParams } = request.nextUrl;
+
+  // Lien signé d'un courriel interne : valide et non expiré → pas de connexion exigée
+  const signed = isValidAttachmentSignature(id, searchParams.get('exp'), searchParams.get('sig'));
+
+  if (!signed) {
+    const session = await auth();
+
+    // Non connecté : connexion, puis retour au fichier
+    if (!session?.user) {
+      const login = new URL('/fr/login', request.nextUrl.origin);
+      login.searchParams.set('callbackUrl', request.nextUrl.pathname);
+      return NextResponse.redirect(login);
+    }
+    // Connecté sans droit : même réponse qu'un fichier inexistant
+    if (session.user.role !== 'superAdmin') {
+      console.warn('[attachments] Accès refusé : rôle', session.user.role);
+      return new NextResponse('Not found', { status: 404 });
+    }
+  }
+
   const attachment = await prisma.serviceAttachment.findUnique({
     where: { id },
     select: { pathname: true, fileName: true, contentType: true },
@@ -61,6 +70,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       'Content-Type': attachment.contentType,
       'Content-Disposition': contentDisposition(disposition, attachment.fileName),
       'X-Content-Type-Options': 'nosniff',
+      // Fichier fourni par un client : aucun script ne peut s'y exécuter, même ouvert dans le navigateur
+      'Content-Security-Policy': 'sandbox',
+      // Le lien signé n'est jamais transmis à un autre site
+      'Referrer-Policy': 'no-referrer',
       // Données privées : rien n'est gardé sur disque
       'Cache-Control': 'private, no-store',
     },

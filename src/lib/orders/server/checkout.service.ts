@@ -15,6 +15,8 @@ import { sendReceipts } from '@/lib/orders/server/receipts.email';
 import { syncOrderToOptimoRoute } from '@/lib/optimoroute/server/syncOrder';
 import { AppError } from '@/lib/errors/appError';
 
+const MEMBERS_ONLY_SERVICES: ReadonlySet<string> = new Set(['pickup', 'delivery']);
+
 export interface CheckoutUser {
   id: string;
   email: string;
@@ -50,6 +52,13 @@ export async function createOrder(payload: CheckoutPayload, user: CheckoutUser |
   if (user && serviceItems.length > 0) {
     const access = await getServiceAccess(user.id);
     if (access.status === 'blocked') throw new ServiceBlockedError();
+  }
+
+  // Livraison et ramassage : réservés aux membres (le formulaire les cache aux invités, le serveur les refuse)
+  if (!user && serviceItems.some((item) =>
+    item.addresses.some((a) => a.services.some((s) => MEMBERS_ONLY_SERVICES.has(s.type))),
+  )) {
+    throw new AppError('membersOnlyService');
   }
 
   const orderLines = await buildProductLines(productItems);

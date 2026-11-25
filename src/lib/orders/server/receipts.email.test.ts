@@ -142,6 +142,7 @@ describe('sendReceipts', () => {
               nearbyAddress: null,
               city: 'Montréal',
               services: [{ type: 'removal', details: {} }],
+              attachments: [],
             },
           ],
         },

@@ -1,4 +1,6 @@
 {
+  "metaTitle": "Demandes de service en ligne",
+  "metaDescription": "Commandez en ligne l'installation, le retrait ou la correction de vos pancartes immobilières, résidentielles ou grand format, dans le Grand Montréal et ses environs. Service en 24 h, du lundi au vendredi.",
   "requestTypes": {
     "residential": "Demande résidentielle",
     "commercial": "Grand format"

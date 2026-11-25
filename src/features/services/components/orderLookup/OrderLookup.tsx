@@ -1,8 +1,10 @@
 'use client';
 
-import { useId, useState, type FormEvent } from 'react';
-import Link from 'next/link';
+import styles from './orderLookup.module.css';
+
+import { useId, useState, type SyntheticEvent  } from 'react';
 import { useTranslations } from 'next-intl';
+
 import type { LookupAddress, OrderLookupResult } from '@/lib/orders/server/orderLookup.service';
 import { formatServiceDate, isoToUtcDate } from '@/lib/orders/serviceDelay';
 import { formatAddressNumber } from '@/lib/services/addressNumber';
@@ -11,7 +13,7 @@ import { Notice } from '@/features/services/components/fields/Notice';
 import { TextField } from '@/features/services/components/fields/TextField';
 import { ServiceDetailsSummary } from '../servicesSummary/ServiceDetailsSummary';
 import summaryStyles from '../servicesSummary/servicesSummary.module.css';
-import styles from './orderLookup.module.css';
+import { LocalLink } from '@/shared/components/LocalLink';
 
 /**
  * Recherche d'une demande par un visiteur non connecté : numéro d'adresse (PE-…) + courriel.
@@ -28,7 +30,7 @@ export function OrderLookup() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<OrderLookupResult | null>(null);
 
-  const handleSubmit = async (event: FormEvent) => {
+  const handleSubmit = async (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
     setError(null);
@@ -75,7 +77,7 @@ export function OrderLookup() {
         {result?.status === 'member' && (
           <Notice>
             {t('lookup.member')}{' '}
-            <Link href={`/${locale}/dashboard`} className={styles.link}>{t('lookup.toDashboard')}</Link>
+            <LocalLink href="/dashboard" className={styles.link}>{t('lookup.toDashboard')}</LocalLink>
           </Notice>
         )}
         {result?.status === 'found' && <LookupResult address={result.address} onClose={() => setResult(null)} />}

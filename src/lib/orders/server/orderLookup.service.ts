@@ -2,6 +2,7 @@ import 'server-only';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import type { OrderLookupInput } from '@/lib/orders/orderLookup.schema';
+import { CONFIRMED_ORDER_WHERE } from '@/lib/orders/constants';
 
 /*
  * Ne sélectionne que ce qu'affiche le résumé : ni téléphone, ni prix, ni paiement.
@@ -42,7 +43,9 @@ export async function lookupOrder({ addressNumber, email }: OrderLookupInput): P
   const row = await prisma.serviceAddress.findFirst({
     where: {
       addressNumber,
-      serviceRequest: { order: { email: { equals: email, mode: 'insensitive' } } },
+      serviceRequest: {
+        order: { ...CONFIRMED_ORDER_WHERE, email: { equals: email, mode: 'insensitive' } },
+      },
     },
     select: lookupSelect,
   });

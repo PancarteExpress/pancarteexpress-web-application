@@ -95,7 +95,9 @@
     "companyName": "Entreprise",
     "billingAddress": "Facturation",
     "additionalInfo": "Infos supplémentaires",
-    "status": "Statut"
+    "status": "Statut",
+    "details": "Détails",
+    "hideDetails": "Masquer"
   },
   "serviceStatuses": {
     "TO_SCHEDULE": "À planifier",
