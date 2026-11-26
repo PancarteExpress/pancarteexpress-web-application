@@ -1,7 +1,17 @@
 {
   "metaTitle": "My dashboard",
-  "groupAdminBanner": "You are the administrator of the group {group}",
+  "groupAdminBanner": "You are a team administrator",
   "pendingBanner": "The person in charge of your group must approve your membership",
+  "invitations": {
+    "title": "{count, plural, one {Invitation to join a team} other {Invitations to join a team}}",
+    "text": "The team “{team}” has invited you to join.",
+    "expires": "Invitation valid until {date}.",
+    "accept": "Accept",
+    "decline": "Decline",
+    "processing": "Processing…",
+    "confirmDecline": "Decline the invitation from the team “{team}”?",
+    "unnamedTeam": "unnamed"
+  },
   "joinedBanner": "You are part of the team: {group}",
   "greeting": "Hello, {name} 👋",
   "welcome": "Welcome to your personal space. Manage your orders, addresses and account information.",
@@ -13,7 +23,7 @@
   "shopProducts": "Shop products",
   "orderStats": "X in progress · Y completed · Z cancelled",
   "groupInfo": "Group information",
-  "addMemberWarning": "As the group administrator, you must add at least one member to your team",
+  "addMemberWarning": "As the group administrator, you can add members to your team",
   "editGroup": "Edit group →",
   "myServiceRequests": "My orders requests",
   "teamServiceRequests": "Team orders requests",
@@ -22,6 +32,7 @@
     "allMembers": "All members"
   },
   "serviceOrders": {
+    "productsSummary": "Products: {list}",
     "statuses": {
       "TO_SCHEDULE": "To schedule",
       "SCHEDULED": "Scheduled",
@@ -65,6 +76,13 @@
     "loading": "Loading…",
     "title": "Update Profile",
     "close": "Close",
+    "billingInfo": "Billing information",
+    "billingEmail": "Billing email",
+    "billingEmailHint": {
+      "self": "Optional. If left blank, invoices are sent to {email}.",
+      "payerForTeam": "Optional. <br /> You pay for the whole team: invoices for all members are sent to the email below. If left blank, they are sent to {email}.",
+      "billedToAdmin": "Your service requests are billed to your team administrator. This information will only be used if you leave the team or if the billing method changes."
+    },
     "profileInfo": "Profile Information",
     "profileUpdated": "Profile updated successfully",
     "passwordUpdated": "Password updated successfully",

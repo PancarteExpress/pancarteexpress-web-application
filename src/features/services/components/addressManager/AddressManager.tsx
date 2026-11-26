@@ -1,8 +1,10 @@
 'use client'
 
+import styles from './AddressManager.module.css';
+
 import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import styles from './AddressManager.module.css';
+
 import { createStreetAddress, createTerrainAddress, StreetAddress, TerrainAddress } from '../../types/address';
 import { useAddresses } from '../../hooks/useAddresses';
 import { ParsedAddress } from '@/shared/types/address';
@@ -32,6 +34,8 @@ export default function AddressManager({ onEditingChange }: AddressManagerProps)
 
   const [addNewAddress, setAddNewAddress] = useState<boolean>(false);
   const [editingAddressId, setEditingAddressId] = useState<string | null>(null);
+
+  const isFormOpen = addNewAddress;
 
   const handleApartmentChange = (val: string) => {
     setApartmentNumber(val === '' || val === '0' ? null : val);
@@ -145,44 +149,47 @@ export default function AddressManager({ onEditingChange }: AddressManagerProps)
 
   return (
     <>
-    <fieldset style={{ border: 'none' }}>
-        <legend>{t('savedListLegend')}</legend>
-        <div>
-            {addresses.length === 0 ? (
-                <p>{t('noAddress')}</p>
-              ) : (
-                addresses.map((addr) => (
-                  <label key={addr.id} className={styles.addressLabel}>
-                    <div className={styles.address}>
-                      <input 
-                      type="radio" 
-                      name="address" 
-                      value={addr.id}
-                      checked={selectedAddressId === addr.id}
-                      disabled={editingAddressId !== null && editingAddressId !== addr.id}
-                      onChange={() => setSelectedAddressId(addr.id)} />
-                        
-                        {addr.type === 'address' && t('addressLine', { address: `${addr.streetNumber} ${addr.streetName} ${addr.apartment ? `#${addr.apartment}` : ''}` })}
-                        {addr.type === 'terrain' && t('terrainLine', { details: `${addr.description} - ${addr.city} ${addr.nearbyAddress ? `( ${addr.nearbyAddress} )` : ''}` })}
+    <fieldset className={styles.fieldset}>
+        <legend className={styles.legend}>{t('savedListLegend')}</legend>
+          <div className={styles.addressList}>
+          {addresses.length === 0 ? (
+            <p className={styles.empty}>{t('noAddress')}</p>
+          ) : (
+            addresses.map((addr) => (
+              <div key={addr.id} className={styles.addressRow}>
+                <label className={styles.address}>
+                  <input
+                    type="radio"
+                    name="address"
+                    value={addr.id}
+                    checked={selectedAddressId === addr.id}
+                    disabled={editingAddressId !== null && editingAddressId !== addr.id}
+                    onChange={() => setSelectedAddressId(addr.id)}
+                  />
+                  {addr.type === 'address' && t('addressLine', { address: `${addr.streetNumber} ${addr.streetName} ${addr.apartment ? `#${addr.apartment}` : ''}` })}
+                  {addr.type === 'terrain' && t('terrainLine', { details: `${addr.description} - ${addr.city} ${addr.nearbyAddress ? `( ${addr.nearbyAddress} )` : ''}` })}
+                </label>
 
-                    </div>
-
-                    <div className={styles.addressBtn}>
-                      <button type="button" className={styles.editButton} onClick={() => handleEdit(addr.id)}>{t('edit')}</button>
-                      <button type="button" className={styles.deleteButton} onClick={() => removeAddress(addr.id)}>{t('delete')}</button>
-                    </div>
-                  </label>
-                ))
-              )}
+                <div className={styles.addressBtn}>
+                  <button type="button" className={styles.editButton} onClick={() => handleEdit(addr.id)} disabled={isFormOpen}>
+                    {t('edit')}
+                  </button>
+                  <button type="button" className={styles.deleteButton} onClick={() => removeAddress(addr.id)} disabled={isFormOpen}>
+                    {t('delete')}
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
         </div>
-        <button type='button' className={styles.addAddressButton} onClick={handleAddNewAddress}>
+        <button type='button' className={styles.addAddressButton} onClick={handleAddNewAddress} disabled={isFormOpen}>
           {t('addAddress')}
         </button>
     </fieldset>
 
     {addNewAddress &&
-    <fieldset style={{ border: 'none' }}>
-      <legend>{t('typeLegend')}</legend>
+    <fieldset className={styles.fieldset}>
+      <legend className={styles.legend}>{t('typeLegend')}</legend>
       <div className={styles.userChoice}>
           <label className={typeAddress === 'streetAddress' ? styles.checked : ''}>
               <input type="radio" id="residential" name="typeAddress" value="streetAddress" checked={typeAddress === "streetAddress"} onChange={() => setTypeAddress("streetAddress")} /> 
@@ -199,8 +206,9 @@ export default function AddressManager({ onEditingChange }: AddressManagerProps)
         <label>{t('enterAddress')}</label>
         <div className={styles.addressDetails}>
           <div>
-              <label htmlFor="civicAddress">{t('fullAddress')} <span style={{color: 'red'}}>*</span></label>
+              <label htmlFor="civicAddress">{t('fullAddress')} <span className={styles.required}>*</span></label>
               <AddressAutocomplete
+                id="civicAddress"
                 value={address}
                 onChange={setAddress}
                 onSelect={setParsedAddress}
@@ -208,7 +216,7 @@ export default function AddressManager({ onEditingChange }: AddressManagerProps)
           </div>
           
           <div>
-              <label htmlFor="appartmentAddress">{t('apartment')}</label>
+              <label htmlFor="appartmentNumber">{t('apartment')}</label>
               <input
                   id="appartmentNumber"
                   type="number"
@@ -233,28 +241,29 @@ export default function AddressManager({ onEditingChange }: AddressManagerProps)
 
         <div className={styles.terrainDetails}>
           <div>
-              <label htmlFor="terrainDescription">{t('terrainDescription')} <span style={{color: 'red'}}>*</span></label>
-              <textarea id="terrainDescription" value={terrainDescription} onChange={(e) => setTerrainDescription(e.target.value)}/>
+              <label htmlFor="terrainDescription">{t('terrainDescription')} <span className={styles.required}>*</span></label>
+              <textarea id="terrainDescription" placeholder={t('terrainPlaceholder')} value={terrainDescription} onChange={(e) => setTerrainDescription(e.target.value)}/>
           </div>
       
           <div>
-              <label htmlFor="terrainCity">{t('city')} <span style={{color: 'red'}}>*</span></label>
+              <label htmlFor="terrainCity">{t('city')} <span className={styles.required}>*</span></label>
               <input id="terrainCity" type="text" value={terrainCity} onChange={(e) => setTerrainCity(e.target.value)}/>
           </div>
 
-          <div className={styles.inputs}>
-              <div>
-                  <label htmlFor="terrainAddress">
-                    {t('fullAddress')} <span className={styles.info}>{t('nearbyAddressHint')}</span>
-                  </label>
-                  <AddressAutocomplete id="terrainAddress" value={terrainAddress} onChange={setTerrainAddress}/>
-              </div>
+          <div>
+              <label htmlFor="terrainAddress">
+                {t('fullAddress')} <span className={styles.info}>{t('nearbyAddressHint')}</span>
+              </label>
+              <AddressAutocomplete id="terrainAddress" value={terrainAddress} onChange={setTerrainAddress}/>
           </div>
         </div>
       </div>
       </>}
-      {typeAddress && <button type="button" className={styles.btnSave} onClick={handleSave}>{t('save')}</button>}
-      <button type="button" className={styles.btnCancel} onClick={handleCancel}>{t('cancel')}</button>
+            
+      <div className={styles.actions}>
+        {typeAddress && <button type="button" className={styles.btnSave} onClick={handleSave}>{t('save')}</button>}
+        <button type="button" className={styles.btnCancel} onClick={handleCancel}>{t('cancel')}</button>
+      </div>
     </fieldset>
     }
     </>

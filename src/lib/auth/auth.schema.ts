@@ -35,6 +35,13 @@ export const storeGroupStatusSchema = z.object({
 
 // Adresse de facturation : demandée à l'inscription (forfaits solo et équipe)
 export const billingAddressSchema = z.string().trim().min(1, "billingAddressRequired").max(300);
+// Courriel de facturation : facultatif ; chaîne vide = utiliser le courriel du compte (null en base)
+export const billingEmailSchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .max(254, "tooLong")
+  .refine((v) => v === "" || z.string().email().safeParse(v).success, "emailRequired");
 
 export const pickupFieldsSchema = z.object({
   pickupMode: z.enum(["address", "warehouse"]),
@@ -147,6 +154,7 @@ export const updateProfileSchema = z.object({
   companyName: z.string().trim().max(150, "tooLong").optional(),
   // Facultative ici : les comptes créés avant cette question n'en ont pas
   billingAddress: z.string().trim().max(300).optional(),
+  billingEmail: billingEmailSchema.optional(),
   groupStatus: z.enum(["SOLO", "PENDING", "JOINED"]).optional(),
   pickupAddress: z.string().trim().max(300, "tooLong").optional(),
   pickupCity: z.string().trim().max(100, "tooLong").optional(),

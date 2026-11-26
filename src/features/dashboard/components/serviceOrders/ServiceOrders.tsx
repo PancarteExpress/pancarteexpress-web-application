@@ -48,6 +48,17 @@ export default function ServiceOrders({ orders, title, toolbar }: Props) {
 
   const [openOrderId, setOpenOrderId] = useState<string | null>(null);
   const toggleOrder = (id: string) => setOpenOrderId((prev) => (prev === id ? null : id));
+  
+  // Une ligne d'adresse : PE-xxxxx · Résidence / Terrain · adresse
+  const renderAddressLine = (address: ServiceAddressRow) => (
+    <p className={styles.addressLine}>
+      <span className={styles.addressNumber}>{formatAddressNumber(address.addressNumber)}</span>
+      <span className={styles.addressKind}>
+        {address.kind === 'civicAddress' ? t('residence') : t('terrain')}
+      </span>
+      <span className={styles.addressDetails}>{formatAddress(address)}</span>
+    </p>
+  );
 
   return (
     <div className={styles.mainContainer}>
@@ -65,7 +76,7 @@ export default function ServiceOrders({ orders, title, toolbar }: Props) {
 
           return (
             <div key={order.id} className={styles.orders}>
-              <div className={styles.resume}>
+              <div className={styles.resume} onClick={() => toggleOrder(order.id)}>
                 <div className={styles.orderNumber}>
                   <label className={styles.orderNumber}>#{order.orderNumber}</label>
                   <span className={styles.orderOwner}>
@@ -79,11 +90,27 @@ export default function ServiceOrders({ orders, title, toolbar }: Props) {
                 </div>
 
                 <div className={styles.status}>
-                  <button type="button" onClick={() => toggleOrder(order.id)} aria-expanded={openOrderId === order.id}>
+                  <button type="button"  aria-expanded={openOrderId === order.id}>
                     {openOrderId === order.id ? t('close') : t('details')}
                   </button>
                 </div>
               </div>
+
+              {/* Toujours visible : adresses et produits de la commande, en résumé */}
+              {openOrderId !== order.id && (addresses.length !== 0 || order.products.length !== 0) && (
+                <ul className={styles.addressSummary}>
+                  {addresses.map((address) => (
+                    <li key={address.id}>{renderAddressLine(address)}</li>
+                  ))}
+                  {order.products.length !== 0 && (
+                    <li className={styles.productSummary}>
+                      {t('productsSummary', {
+                        list: order.products.map((p) => `${p.productName} ×${p.quantity}`).join(', '),
+                      })}
+                    </li>
+                  )}
+                </ul>
+              )}
 
               {openOrderId === order.id && (
                 <div className={styles.details}>
@@ -103,13 +130,7 @@ export default function ServiceOrders({ orders, title, toolbar }: Props) {
                       <h3>{t('services')}</h3>
                       {addresses.map((address) => (
                         <div key={address.id} className={styles.address}>
-                          <p className={styles.addressLine}>
-                            <span className={styles.addressNumber}>{formatAddressNumber(address.addressNumber)}</span>
-                            <span className={styles.addressKind}>
-                              {address.kind === 'civicAddress' ? t('residence') : t('terrain')}
-                            </span>
-                            <span className={styles.addressDetails}>{formatAddress(address)}</span>
-                          </p>
+                          {renderAddressLine(address)}
                           {/* Délai propre à l'adresse */}
                           <p className={styles.delay}>{t('delay', { delay: formatDelay(address) })}</p>
                           {address.kind === 'terrain' && address.description && (

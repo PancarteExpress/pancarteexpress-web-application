@@ -284,6 +284,7 @@ async function getCheckoutAccount(
     where: { id: userId },
     select: {
       email: true,
+      billingEmail: true,
       phoneNumber: true,
       companyName: true,
       billingAddress: true,
@@ -294,7 +295,7 @@ async function getCheckoutAccount(
           billingMode: true,
           users: {
             where: { role: 'groupAdmin' },
-            select: { id: true, email: true, companyName: true, billingAddress: true },
+            select: { id: true, email: true, billingEmail: true, companyName: true, billingAddress: true },
             take: 1,
           },
         },
@@ -317,7 +318,7 @@ async function getCheckoutAccount(
   return {
     phone: account.phoneNumber,
     billedToId,
-    billedToEmail: payer.email,
+    billedToEmail: payer.billingEmail ?? payer.email,
     companyName: payer.companyName,
     billingAddress: payer.billingAddress,
   };

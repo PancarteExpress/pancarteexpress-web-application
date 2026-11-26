@@ -5,8 +5,9 @@ import { after } from "next/server";
 import { auth } from "@/app/auth";
 import { prisma } from "@/lib/prisma";
 import { ActionError, requireSuperAdminAction, toActionError, type ActionResult } from "@/lib/auth/actionGuard";
-import { addMembersSchema, groupNameSchema, memberIdSchema, billingModeSchema, userSearchQuerySchema } from "../groups.schema";
+import { addMembersSchema, groupNameSchema, memberIdSchema, billingModeSchema, userSearchQuerySchema, invitationResponseSchema } from "../groups.schema";
 import { getGroupDetails, type GroupDetails } from "./groups.service";
+import { sendGroupInvitationEmails, sendInvitationResponseEmail } from "./groupInvitation.emails";
 import { notifyAccountTypeChanges } from "@/lib/users/server/accountType.emails";
 import { isRateLimited, LIMITS } from "@/lib/rateLimit/server/rateLimit";
 
@@ -27,6 +28,16 @@ class GroupActionError extends Error {}
 // Règle métier : un groupAdmin n'ajoute sans validation que les users en attente d'équipe (PENDING) et sans groupe
 const addableMemberWhere = { groupId: null, groupStatus: "PENDING" } satisfies Prisma.UserWhereInput;
 const MEMBER_UNAVAILABLE = "memberUnavailable";
+const INVITATION_UNAVAILABLE = "invitationUnavailable";
+const INVITATION_TTL_MS = 14 * 24 * 60 * 60 * 1000; // 14 jours
+
+// Invitation encore valable : en attente et non expirée
+const activeInvitationWhere = (now: Date): Prisma.GroupInvitationWhereInput => ({
+  status: "PENDING",
+  expiresAt: { gt: now },
+});
+
+export type InvitationResult = { ok: true } | { ok: false; error: string };
 
 export type MemberSearchError = "invalidEmail" | "tooManyAttempts";
 export type MemberSearchResult = { ok: true; users: UserSearchResult[] } | { ok: false; error: MemberSearchError };
@@ -98,7 +109,8 @@ export async function renameGroupAction(input: unknown): Promise<RenameGroupResu
   return { ok: true, group: await getGroupDetails(ctx.groupId) };
 }
 
-export async function addGroupMembersAction(input: unknown): Promise<GroupResult> {
+// Le groupAdmin invite ; le compte ne rejoint l'équipe qu'en acceptant depuis son dashboard
+export async function inviteGroupMembersAction(input: unknown): Promise<GroupResult> {
   const ctx = await getAdminContext();
   if (!ctx.ok) return ctx;
 
@@ -107,33 +119,152 @@ export async function addGroupMembersAction(input: unknown): Promise<GroupResult
     return { ok: false, error: parsed.error.issues[0]?.message ?? "invalidData" };
   }
   const memberIds = [...new Set(parsed.data.memberIds)];
+  const groupId = ctx.groupId;
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + INVITATION_TTL_MS);
 
+  let newlyInvited: string[];
   try {
-    await prisma.$transaction(async (tx) => {
-      const { count } = await tx.user.updateMany({
+    newlyInvited = await prisma.$transaction(async (tx) => {
+      const available = await tx.user.count({
         where: { id: { in: memberIds }, ...addableMemberWhere, role: "user" },
-        data: { groupId: ctx.groupId, groupStatus: "JOINED", joinedAt: new Date() },
       });
-      if (count !== memberIds.length) {
-        throw new GroupActionError(MEMBER_UNAVAILABLE);
+      if (available !== memberIds.length) throw new GroupActionError(MEMBER_UNAVAILABLE);
+
+      // Déjà invités (invitation encore valable) : ni nouvelle invitation ni second courriel
+      const active = await tx.groupInvitation.findMany({
+        where: { groupId, userId: { in: memberIds }, ...activeInvitationWhere(now) },
+        select: { userId: true },
+      });
+      const activeIds = new Set(active.map((i) => i.userId));
+      const toInvite = memberIds.filter((id) => !activeIds.has(id));
+
+      // Réinviter après un refus, une annulation ou une expiration relance l'invitation pour 14 jours
+      for (const userId of toInvite) {
+        await tx.groupInvitation.upsert({
+          where: { groupId_userId: { groupId, userId } },
+          create: { groupId, userId, expiresAt },
+          update: { status: "PENDING", expiresAt, respondedAt: null },
+        });
       }
+      return toInvite;
     });
   } catch (e) {
     if (e instanceof GroupActionError) return { ok: false, error: e.message };
     throw e;
   }
 
-  // En attente → membre : chaque nouveau coéquipier est prévenu, après la réponse
-  const groupId = ctx.groupId;
+  if (newlyInvited.length > 0) {
+    after(async () => {
+      const [invitees, group] = await Promise.all([
+        prisma.user.findMany({ where: { id: { in: newlyInvited } }, select: { email: true, firstName: true, locale: true } }),
+        prisma.group.findUnique({ where: { id: groupId }, select: { name: true } }),
+      ]);
+      await sendGroupInvitationEmails(invitees, group?.name ?? null);
+    });
+  }
+  return { ok: true, group: await getGroupDetails(groupId) };
+}
+
+// Le membre accepte ou refuse depuis son dashboard
+export async function respondToGroupInvitationAction(input: unknown): Promise<InvitationResult> {
+  const session = await auth();
+  const userId = session?.user?.id;
+  if (!userId) return { ok: false, error: "unauthenticated" };
+
+  const parsed = invitationResponseSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "invalidData" };
+  const { invitationId, accept } = parsed.data;
+  const now = new Date();
+
+  let groupId: string;
+  try {
+    groupId = await prisma.$transaction(async (tx) => {
+      // Seulement une invitation à ce compte, encore valable (double clic, expirée ou annulée → refus)
+      const { count } = await tx.groupInvitation.updateMany({
+        where: { id: invitationId, userId, ...activeInvitationWhere(now) },
+        data: { status: accept ? "ACCEPTED" : "DECLINED", respondedAt: now },
+      });
+      if (count === 0) throw new GroupActionError(INVITATION_UNAVAILABLE);
+
+      const { groupId } = await tx.groupInvitation.findUniqueOrThrow({
+        where: { id: invitationId },
+        select: { groupId: true },
+      });
+
+      if (accept) {
+        // Toujours en attente et sans équipe (sinon tout est annulé)
+        const joined = await tx.user.updateMany({
+          where: { id: userId, ...addableMemberWhere, role: "user" },
+          data: { groupId, groupStatus: "JOINED", joinedAt: now },
+        });
+        if (joined.count === 0) throw new GroupActionError(INVITATION_UNAVAILABLE);
+
+        // Une seule équipe : les autres invitations sont annulées
+        await tx.groupInvitation.updateMany({
+          where: { userId, status: "PENDING", id: { not: invitationId } },
+          data: { status: "CANCELLED", respondedAt: now },
+        });
+      }
+      return groupId;
+    });
+  } catch (e) {
+    if (e instanceof GroupActionError) return { ok: false, error: e.message };
+    throw e;
+  }
+
+  // Le groupAdmin actuel est prévenu ; le nouveau membre reçoit le courriel habituel (mode de facturation)
   after(async () => {
-    const [members, group] = await Promise.all([
-      prisma.user.findMany({ where: { id: { in: memberIds } }, select: { email: true, firstName: true, locale: true } }),
-      prisma.group.findUnique({ where: { id: groupId }, select: { name: true, billingMode: true } }),
+    const [member, group] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true, firstName: true, lastName: true, locale: true },
+      }),
+      prisma.group.findUnique({
+        where: { id: groupId },
+        select: {
+          name: true,
+          billingMode: true,
+          users: { where: { role: "groupAdmin" }, take: 1, select: { email: true, firstName: true, locale: true } },
+        },
+      }),
     ]);
-    await notifyAccountTypeChanges(
-      members.map((m) => ({ ...m, to: "member", groupName: group?.name ?? null, billingMode: group?.billingMode })),
-    );
+    if (!member || !group) return;
+
+    const admin = group.users[0];
+    if (admin) {
+      await sendInvitationResponseEmail({ admin, member, groupName: group.name, accepted: accept });
+    }
+    if (accept) {
+      await notifyAccountTypeChanges([
+        {
+          email: member.email,
+          firstName: member.firstName,
+          locale: member.locale,
+          to: "member",
+          groupName: group.name,
+          billingMode: group.billingMode,
+        },
+      ]);
+    }
   });
+  return { ok: true };
+}
+
+// Le groupAdmin annule une invitation encore en attente de son équipe
+export async function cancelGroupInvitationAction(invitationId: unknown): Promise<GroupResult> {
+  const ctx = await getAdminContext();
+  if (!ctx.ok) return ctx;
+
+  const parsed = memberIdSchema.safeParse(invitationId);
+  if (!parsed.success) return { ok: false, error: "invalidData" };
+
+  const { count } = await prisma.groupInvitation.updateMany({
+    where: { id: parsed.data, groupId: ctx.groupId, status: "PENDING" },
+    data: { status: "CANCELLED", respondedAt: new Date() },
+  });
+  if (count === 0) return { ok: false, error: INVITATION_UNAVAILABLE };
+
   return { ok: true, group: await getGroupDetails(ctx.groupId) };
 }
 

@@ -28,9 +28,13 @@ const PASSWORD_ERROR_FIELDS: Partial<Record<AppErrorCode, keyof UpdatePasswordIn
   currentPasswordIncorrect: "currentPassword",
 };
 
+type BillingContext = "self" | "payerForTeam" | "billedToAdmin";
+
 interface PickupResponse {
   pickup: { address: string | null; city: string | null; postalCode: string | null } | null;
   billingAddress?: string | null;
+  billingEmail?: string | null;
+  billingContext?: BillingContext;
 }
 
 /** Adresse complète affichée dans le champ : « rue, ville, code postal » */
@@ -59,7 +63,8 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
   const [addressesStatus, setAddressesStatus] = useState<"loading" | "ready" | "error">("loading");
   // Texte affiché dans le champ de ramassage (le formulaire ne garde que la rue)
   const [pickupText, setPickupText] = useState("");
-
+  const [billingContext, setBillingContext] = useState<BillingContext>("self");
+  
   const router = useRouter();
 
   useEffect(() => {
@@ -87,6 +92,7 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       locale: currentLocale,
       phoneNumber: "",
       companyName: "",
+      billingEmail: "",
       billingAddress: "",
       pickupAddress: "",
       pickupCity: "",
@@ -121,6 +127,8 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
       })
       .then((body) => {
         if (cancelled) return;
+        setBillingContext(body.billingContext ?? "self");
+        setProfileFieldValue("billingEmail", body.billingEmail ?? "");
         setProfileFieldValue("billingAddress", body.billingAddress ?? "");
         setProfileFieldValue("pickupAddress", body.pickup?.address ?? "");
         setProfileFieldValue("pickupCity", body.pickup?.city ?? "");
@@ -372,6 +380,32 @@ export default function UpdateProfile({ sessionUser, onClose }: UpdateProfilePro
                   )}
                 />
               </div>
+            </div>
+
+            {/* Courriel de facturation, sur toute la largeur */}
+            <div className={styles.inputs}>
+              
+
+              <div id="billingEmailHint" className={styles.hint}>
+                <label>{t("billingInfos")}</label>
+                <br />
+                <p>{t(`billingEmailHint.${billingContext}`, { email: sessionUser?.email ?? "" })}</p>
+              </div>
+
+              <label htmlFor="billingEmail">{t("billingEmail")}</label>
+              <input
+                id="billingEmail"
+                {...registerProfile("billingEmail")}
+                type="email"
+                autoComplete="email"
+                placeholder={sessionUser?.email ?? ""}
+                aria-invalid={!!profileErrors.billingEmail}
+                aria-describedby="billingEmailHint"
+                className="w-full px-3 py-2 border rounded"
+              />
+              {profileErrors.billingEmail && (
+                <span className="text-red-500 text-sm">{tv(profileErrors.billingEmail.message)}</span>
+              )}
             </div>
 
             {/* Adresse de facturation, sur toute la largeur */}

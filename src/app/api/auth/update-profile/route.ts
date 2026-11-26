@@ -15,10 +15,18 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-    const { pickupAddress, pickupCity, pickupPostalCode, ...profileData } =
+    const { pickupAddress, pickupCity, pickupPostalCode, billingEmail, ...profileData } =
       updateProfileSchema.parse(body);
 
     const user = await authService.updateProfile(userId, profileData);
+
+    // Courriel de facturation : vide = courriel du compte (null en base)
+    if (billingEmail !== undefined) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { billingEmail: billingEmail || null },
+      });
+    }
 
     // Adresse de ramassage : seulement si une adresse complète est fournie
     if (pickupAddress?.trim() && pickupCity?.trim() && pickupPostalCode?.trim()) {

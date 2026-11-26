@@ -1,70 +1,187 @@
 .container {
-
     display: flex;
     flex-direction: column;
-
-    gap: 30px;
-
+    gap: 10px;
 }
 
-.container .input {
+/* ─── Champ + bouton ─── */
+
+.input {
     display: flex;
-    align-items: center;
-    gap: 20px;
+    flex-direction: column;
+    gap: 5px;
 }
 
-.container .input input {
+.input label {
+    font-size: 0.8875rem;
+    font-weight: 700;
+    color: #5F7FA8;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+
+.row {
+    display: flex;
+    gap: 8px;
+}
+
+.row input {
     flex: 1;
+    min-width: 0;
+    padding: 9px 12px;
+    border: 1px solid #C5D8EF;
+    border-radius: 8px;
+    font-size: 13px;
+    color: #1A1A2E;
+    background: #F8FAFD;
+    outline: none;
+    font-family: var(--font-text), sans-serif;
 }
 
-.container .results {
+.row input:focus {
+    border-color: #0E4D9A;
+    background: #fff;
 }
 
-.container .results .search {
-    color: #0E4D9A;
-    font-weight: 700;
-    font-size: 1.2rem;
-}
-.container .results .notFound {
-    color: red;
-    font-weight: 700;
-    font-size: 1.2rem;
-}
-
-.container .results .listFound {
-    list-style: none;
-    padding: 0;
-}
-
-.container .results .listFound li .btnAdd {
+.row button {
     all: unset;
+    flex: none;
+    background: #0E4D9A;
+    color: #fff;
+    border-radius: 8px;
+    padding: 9px 16px;
+    font-family: var(--font-title), sans-serif;
+    font-size: 11px;
+    font-weight: 700;
     cursor: pointer;
-    padding: 5px 10px;
-    border-radius: 10px;
-    background-color: #D8E8F8;
+    transition: background .15s;
+}
 
+.row button:hover {
+    background: #092E5B;
+}
+
+.row button:disabled {
+    background: #C5D8EF;
+    cursor: not-allowed;
+}
+
+/* ─── Résultats ─── */
+
+.results {
     display: flex;
-    gap: 10px;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.container .results .listAdded {
+.results:empty {
+    display: none;
+}
+
+.search {
+    font-size: 11px;
+    font-weight: 600;
+    color: #0E4D9A;
+}
+
+/* Aucun résultat : information, pas une erreur */
+.notFound {
+    font-size: 11px;
+    font-weight: 600;
+    color: #5F7FA8;
+    background: #F4F6F9;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+.error {
+    font-size: 11px;
+    font-weight: 600;
+    color: #C62828;
+    background: #FDECEA;
+    border-radius: 6px;
+    padding: 6px 10px;
+}
+
+/* Résultat trouvé : même allure qu'une ligne de membre */
+.listFound,
+.listAdded {
     list-style: none;
+    margin: 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.container .results .listAdded li {
+.btnAdd {
+    all: unset;
+    box-sizing: border-box;
+    width: 100%;
+    cursor: pointer;
     display: flex;
     align-items: center;
-
-    gap: 10px;
+    gap: 12px;
+    padding: 10px 14px;
+    background: #F8FAFD;
+    border: 1px solid #C5D8EF;
+    border-radius: 9px;
+    transition: background .15s, border-color .15s;
 }
 
-.container .results .listAdded .btnDelete {
+.btnAdd:hover {
+    background: #E8F1FB;
+    border-color: #0E4D9A;
+}
+
+.btnAdd .name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1A1A2E;
+}
+
+.btnAdd .email {
+    font-size: 11px;
+    color: #5F7FA8;
+}
+
+.btnAdd .addLabel {
+    margin-left: auto;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 20px;
+    background: #0E4D9A;
+    color: #fff;
+    white-space: nowrap;
+}
+
+/* Personnes sélectionnées, à inviter */
+.listAdded li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #E8F1FB;
+    border: 1px solid #C5D8EF;
+    border-radius: 9px;
+    font-size: 13px;
+    color: #092E5B;
+    font-weight: 600;
+}
+
+.btnDelete {
     all: unset;
+    margin-left: auto;
     cursor: pointer;
-    border-radius: 10px;
     display: flex;
     align-items: center;
     line-height: 0;
-    border: 1px solid red;
+    color: #C62828;
+    border-radius: 50%;
+    transition: color .15s;
+}
+
+.btnDelete:hover {
+    color: #8E1B1B;
 }

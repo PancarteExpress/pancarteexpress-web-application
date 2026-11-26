@@ -39,7 +39,6 @@
 }
 
 .mainContainer .header h2 {
-    font-family: var(--font-title), sans-serif;
     font-size: 13px;
     font-weight: 700;
     color: #fff;
@@ -89,8 +88,7 @@
 }
 
 .mainContainer .section h3 {
-    font-family: var(--font-title), sans-serif;
-    font-size: 10px;
+    font-size: 0.8rem;
     font-weight: 700;
     color: #092E5B;
     text-transform: uppercase;
@@ -221,7 +219,7 @@
 }
 
 .mainContainer .memberName {
-    font-size: 13px;
+    font-size: 0.875rem;
     font-weight: 600;
     color: #1A1A2E;
 }
@@ -267,7 +265,7 @@
 }
 
 .mainContainer .membersLabel {
-    font-size: 10px;
+    font-size: 0.8875rem;
     font-weight: 700;
     color: #5F7FA8;
     text-transform: uppercase;

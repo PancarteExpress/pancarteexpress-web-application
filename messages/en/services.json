@@ -48,6 +48,7 @@
     "membersOnly": "Material delivery and pickup are reserved for members. <register>Create your account</register> or <login>log in</login> to access them."
   },
   "addressManager": {
+    "terrainPlaceholder": "Please give us a landmark or the lot number",
     "selectFromList": "Please select an address from the list",
     "incompleteAddress": "Incomplete address: civic number or postal code missing",
     "terrainDescriptionRequired": "Please enter a description of the terrain",
@@ -56,7 +57,7 @@
     "noAddress": "No saved address",
     "addressLine": "Address: {address}",
     "terrainLine": "Terrain: {details}",
-    "edit": "Edit",
+    "edit": "Edit address",
     "delete": "Delete",
     "addAddress": "Add an address",
     "typeLegend": "Please indicate the type of location",

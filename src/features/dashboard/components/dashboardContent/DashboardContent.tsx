@@ -10,9 +10,11 @@ import { useTranslations } from "next-intl";
 import type { TeamOrder, UserOrder } from '@/lib/orders/server/orders.service';
 import ServiceOrders from '../serviceOrders/ServiceOrders';
 import { MemberFilter } from '../memberFilter/MemberFilter';
-import type { GroupDetails } from "@/lib/groups/server/groups.service";
+import type { GroupDetails, UserGroupInvitation } from "@/lib/groups/server/groups.service";
+import { GroupInvitations } from "../groupInvitations/GroupInvitations";
 import { useRouter } from "next/navigation";
 import { formatPersonName, getPersonInitials } from "@/shared/utils/personName";
+
 import { Session } from "next-auth";
 
 const UpdateProfile = dynamic(() => import("../updateProfile/UpdateProfile"), { loading: modalLoading });
@@ -27,9 +29,10 @@ interface Props {
   orders: UserOrder[];
   group: GroupDetails | null;
   teamOrders: TeamOrder[];
+  invitations: UserGroupInvitation[];
 }
 
-export function DashboardContent({ user, orders, group, teamOrders }: Props) {
+export function DashboardContent({ user, orders, group, teamOrders, invitations }: Props) {
   const router = useRouter();
   const t = useTranslations("dashboard");
   const { update } = useSession();
@@ -80,9 +83,11 @@ export function DashboardContent({ user, orders, group, teamOrders }: Props) {
         <div className={styles.groupStateJoined}>{t('groupAdminBanner', { group: sessionUser.groupName })}</div>
       )}
 
-      {sessionUser?.groupStatus === 'PENDING' && sessionUser?.role === 'user' && (
+      {sessionUser?.groupStatus === 'PENDING' && sessionUser?.role === 'user' && invitations.length === 0 && (
         <div className={styles.groupStatePending}>{t('pendingBanner')}</div>
       )}
+
+      <GroupInvitations invitations={invitations} />
 
       {sessionUser?.groupStatus === 'JOINED' && sessionUser?.role === 'user' && (
         <div className={styles.groupStateJoined}>{t('joinedBanner', { group: sessionUser?.groupName ?? '' })}</div>
@@ -117,11 +122,11 @@ export function DashboardContent({ user, orders, group, teamOrders }: Props) {
               <div className={styles.qcardIcon}>👤</div>
               <div>
                 <p className={styles.qcardTitle}>{t('groupInfo')}</p>
-                <p className={styles.qcardValue} style={{ fontSize: '13px' }}>
+                <p className={styles.qcardValue} style={{ fontSize: '1rem' }}>
                   {sessionUser?.groupName}
                   <br />
                   <br />
-                  {memberCount === 0 && <span style={{ color: 'red'}}>{t('addMemberWarning')}</span>}
+                  <span>{t('addMemberWarning')}</span>
                 </p>
               </div>
               <span className={styles.qcardLink}>{t('editGroup')}</span>

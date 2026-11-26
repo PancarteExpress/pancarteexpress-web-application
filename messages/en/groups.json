@@ -11,7 +11,8 @@
         "invalidBillingMode": "Invalid billing mode.",
         "nameTooShort": "The team name must be at least 2 characters long",
         "nameTooLong": "The name cannot exceed 60 characters",
-        "noMemberSelected": "Select at least one teammate"
+        "noMemberSelected": "Select at least one teammate",
+        "invitationUnavailable": "This invitation is no longer valid (expired, cancelled or already answered)."
     },
     "createDialog": {
         "title": "Please enter a team name to get started",
@@ -32,10 +33,12 @@
             "generic": "The search failed. Please try again."
         },
 
+        "select": "+ Add",
+
         "searching": "Searching…",
         "remove": "Remove {email}"
     },
-    "manage": {
+        "manage": {
         "title": "Manage my team",
         "close": "Close",
         "teamName": "Team name",
@@ -68,8 +71,15 @@
         "confirmRemove": "Remove {email} from the team?",
         "removing": "Removing…",
         "remove": "Remove",
-        "membersAdded": "{count, plural, one {# teammate added} other {# teammates added}}",
-        "adding": "Adding…",
-        "add": "Add ({count})"
+        "pendingInvitations": "Pending invitations",
+        "noInvitations": "No pending invitations.",
+        "invited": "Invited",
+        "invitationExpires": "Expires on {date}",
+        "cancelInvitation": "Cancel",
+        "cancelling": "Cancelling…",
+        "confirmCancelInvitation": "Cancel the invitation for {email}?",
+        "invite": "{count, plural, =0 {Invite} one {Invite # person} other {Invite # people}}",
+        "inviting": "Sending…",
+        "invitationsSent": "{count, plural, one {Invitation sent. The person must accept it from their dashboard.} other {Invitations sent. Each person must accept from their dashboard.}}"
     }
 }

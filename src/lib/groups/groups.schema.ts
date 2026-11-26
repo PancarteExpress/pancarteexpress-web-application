@@ -22,6 +22,11 @@ export type GroupNameInput = z.infer<typeof groupNameSchema>;
 export type AddMembersInput = z.infer<typeof addMembersSchema>;
 export const memberIdSchema = z.string().min(1);
 
+export const invitationResponseSchema = z.object({
+  invitationId: memberIdSchema,
+  accept: z.boolean(),
+});
+
 export const userSearchQuerySchema = z.string().trim().max(254).pipe(z.email());
 
 export const billingModeSchema = z.enum(["INDIVIDUAL", "GROUP"]);

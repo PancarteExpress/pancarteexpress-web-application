@@ -6,17 +6,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { groupNameSchema, type GroupNameInput } from "@/lib/groups/groups.schema";
 import type { BillingMode } from "@prisma/client";
 import {
   renameGroupAction,
-  addGroupMembersAction,
+  inviteGroupMembersAction,
+  cancelGroupInvitationAction,
   removeGroupMemberAction,
   setBillingModeAction,
   type UserSearchResult,
 } from "@/lib/groups/server/groups.actions";
-import type { GroupDetails, GroupMember } from "@/lib/groups/server/groups.service";
+import type { GroupDetails, GroupMember, PendingGroupInvitation } from "@/lib/groups/server/groups.service";
 import { MemberEmailSearch } from "../memberEmailSearch/MemberEmailSearch";
 import { useIssueMessage } from "@/shared/hooks/useIssueMessage";
 
@@ -45,6 +46,8 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
   const [toAdd, setToAdd] = useState<UserSearchResult[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const locale = useLocale();
 
   const [billingMode, setBillingMode] = useState<BillingMode>(initialGroup.billingMode);
   const [billingFeedback, setBillingFeedback] = useState<Feedback>(null);
@@ -90,13 +93,13 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
     setIsAdding(true);
     setMembersFeedback(null);
     try {
-      const res = await addGroupMembersAction({ memberIds: toAdd.map((u) => u.id) });
+      const res = await inviteGroupMembersAction({ memberIds: toAdd.map((u) => u.id) });
       if (!res.ok) {
         setMembersFeedback({ type: "error", message: translateError(res.error) });
         return;
       }
       setGroup(res.group);
-      setMembersFeedback({ type: "success", message: t("manage.membersAdded", { count: toAdd.length }) });
+      setMembersFeedback({ type: "success", message: t("manage.invitationsSent", { count: toAdd.length }) });
       setToAdd([]);
       router.refresh();
     } catch {
@@ -124,6 +127,31 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
       setRemovingId(null);
     }
   };
+
+    const handleCancelInvitation = async (invitation: PendingGroupInvitation) => {
+    if (!window.confirm(t("manage.confirmCancelInvitation", { email: invitation.user.email }))) return;
+    setCancellingId(invitation.id);
+    setMembersFeedback(null);
+    try {
+      const res = await cancelGroupInvitationAction(invitation.id);
+      if (!res.ok) {
+        setMembersFeedback({ type: "error", message: translateError(res.error) });
+        return;
+      }
+      setGroup(res.group);
+      router.refresh();
+    } catch {
+      setMembersFeedback({ type: "error", message: t("manage.genericError") });
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
+  const formatDate = (date: Date) =>
+    new Intl.DateTimeFormat(locale === "en" ? "en-CA" : "fr-CA", {
+      dateStyle: "long",
+      timeZone: "America/Toronto",
+    }).format(date);
 
   const handleSaveBilling = async () => {
     setIsSavingBilling(true);
@@ -260,9 +288,43 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
                       ))}
                   </ul>
               </div>
-          </div>
+            </div>
 
-            <MemberEmailSearch selected={toAdd} onChange={setToAdd} />
+            <div>
+              <span className={styles.membersLabel}>{t("manage.pendingInvitations")}</span>
+              {group.invitations.length === 0 ? (
+                <p className={styles.memberEmail}>{t("manage.noInvitations")}</p>
+              ) : (
+                <div className={styles.memberListWrap}>
+                  <ul className={styles.memberList}>
+                    {group.invitations.map((invitation) => (
+                      <li key={invitation.id} className={styles.memberRow}>
+                        <div>
+                          <p className={styles.memberName}>{invitation.user.firstName} {invitation.user.lastName}</p>
+                          <p className={styles.memberEmail}>{invitation.user.email}</p>
+                          <p className={styles.memberEmail}>{t("manage.invitationExpires", { date: formatDate(invitation.expiresAt) })}</p>
+                        </div>
+                        <span className={`${styles.badge} ${styles.badgePending}`}>{t("manage.invited")}</span>
+                        <button
+                          type="button"
+                          className={styles.btnRemove}
+                          onClick={() => handleCancelInvitation(invitation)}
+                          disabled={cancellingId === invitation.id}
+                        >
+                          {cancellingId === invitation.id ? t("manage.cancelling") : t("manage.cancelInvitation")}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            <MemberEmailSearch
+              selected={toAdd}
+              onChange={setToAdd}
+              excludedIds={group.invitations.map((i) => i.user.id)}
+            />
 
             {membersFeedback && (
               <p className={membersFeedback.type === "error" ? styles.error : styles.success}>
@@ -272,7 +334,7 @@ export default function UpdateGroup({ initialGroup, onClose }: UpdateGroupProps)
 
             <div className={styles.btnSave}>
               <button type="button" onClick={handleAdd} disabled={isAdding || toAdd.length === 0}>
-                {isAdding ? t("manage.adding") : t("manage.add", { count: toAdd.length })}
+                {isAdding ? t("manage.inviting") : t("manage.invite", { count: toAdd.length })}
               </button>
             </div>
           </section>

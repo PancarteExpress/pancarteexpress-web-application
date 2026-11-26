@@ -10,16 +10,17 @@ import {
 import styles from "./MemberEmailSearch.module.css";
 
 import { IoMdCloseCircle } from "react-icons/io";
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const normalize = (value: string) => value.trim().toLowerCase();
 
 interface Props {
   selected: UserSearchResult[];
   onChange: (next: UserSearchResult[]) => void;
+  /** Comptes déjà invités : masqués des résultats */
+  excludedIds?: string[];
 }
 
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const normalize = (value: string) => value.trim().toLowerCase();
-
-export function MemberEmailSearch({ selected, onChange }: Props) {
+export function MemberEmailSearch({ selected, onChange, excludedIds = [] }: Props) {
   const t = useTranslations("groups.memberSearch");
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UserSearchResult[]>([]);
@@ -52,7 +53,7 @@ export function MemberEmailSearch({ selected, onChange }: Props) {
     }
   };
 
-  const selectedIds = new Set(selected.map((u) => u.id));
+  const selectedIds = new Set([...selected.map((u) => u.id), ...excludedIds]);
   const visibleResults = isCurrent ? results.filter((u) => !selectedIds.has(u.id)) : [];
 
   const add = (user: UserSearchResult) => {
@@ -76,19 +77,23 @@ export function MemberEmailSearch({ selected, onChange }: Props) {
     <div className={styles.container}>
 
       <div className={styles.input}>
+        
         <label htmlFor="member-email">{t("label")}</label>
-        <input
-          id="member-email"
-          type="email"
-          autoComplete="off"
-          placeholder={t("placeholder")}
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-        />
-        <button type="button" onClick={search} disabled={!EMAIL_PATTERN.test(q) || isSearching}>
-          {t("searchButton")}
-        </button>
+
+        <div className={styles.row}>
+          <input
+            id="member-email"
+            type="email"
+            autoComplete="off"
+            placeholder={t("placeholder")}
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onKeyDown={handleKeyDown}
+          />
+          <button type="button" onClick={search} disabled={!EMAIL_PATTERN.test(q) || isSearching}>
+            {t("searchButton")}
+          </button>
+        </div>
       </div>
 
       <div className={styles.results}>
@@ -96,7 +101,7 @@ export function MemberEmailSearch({ selected, onChange }: Props) {
         {isSearching && <p className={styles.search}>{t("searching")}</p>}
 
         {!isSearching && isCurrent && error && (
-          <p className={styles.notFound}>{t(`errors.${error}`)}</p>
+          <p className={styles.error}>{t(`errors.${error}`)}</p>
         )}
 
         {!isSearching && isCurrent && !error && visibleResults.length === 0 && (
@@ -108,8 +113,12 @@ export function MemberEmailSearch({ selected, onChange }: Props) {
             {visibleResults.map((user) => (
               <li key={user.id}>
                 <button className={styles.btnAdd} type="button" onClick={() => add(user)}>
-                  <span>{user.email}</span> :
-                  <span className={styles.name}>{user.firstName} {user.lastName}</span>
+                  <span>
+                    <span className={styles.name}>{user.firstName} {user.lastName}</span>
+                    <br />
+                    <span className={styles.email}>{user.email}</span>
+                  </span>
+                  <span className={styles.addLabel}>{t("select")}</span>
                 </button>
               </li>
             ))}
@@ -122,7 +131,7 @@ export function MemberEmailSearch({ selected, onChange }: Props) {
               <li key={user.id}>
                 {user.email}
                 <button className={styles.btnDelete} type="button" onClick={() => remove(user.id)} aria-label={t("remove", { email: user.email })}>
-                  <IoMdCloseCircle size={20} style={{ color: "red" }} />
+                  <IoMdCloseCircle size={20} />
                 </button>
               </li>
             ))}

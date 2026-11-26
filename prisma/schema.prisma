@@ -26,6 +26,7 @@ model User {
   billingAddress String?
   needsPickupInfo Boolean    @default(false)
   pickupInfo  PickupInfo?
+  billingEmail   String?
 
   emailVerified DateTime?
   password      String? // null si OAuth
@@ -42,6 +43,7 @@ model User {
   group       Group?      @relation("GroupUsers", fields: [groupId], references: [id], onDelete: SetNull)
   // Entrée dans le groupe actuel : le groupAdmin ne voit que les commandes postérieures. null = sans groupe
   joinedAt    DateTime?
+  groupInvitations     GroupInvitation[] @relation("InvitedUser")
 
   // Blocage manuel des demandes de service par le superAdmin :
   // date à partir de laquelle elles sont refusées (clic + 3 jours). null = aucun blocage.
@@ -102,9 +104,30 @@ model Group {
   name        String?     @unique
   billingMode BillingMode @default(INDIVIDUAL)
   users       User[]      @relation("GroupUsers")
+  invitations GroupInvitation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+/// Invitation d'un compte en attente à rejoindre une équipe (valide 14 jours).
+/// Expirée = PENDING avec expiresAt passé (aucun statut à mettre à jour).
+model GroupInvitation {
+  id          String                @id @default(cuid())
+  groupId     String
+  group       Group                 @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User                  @relation("InvitedUser", fields: [userId], references: [id], onDelete: Cascade)
+  status      GroupInvitationStatus @default(PENDING)
+  expiresAt   DateTime
+  respondedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Une seule invitation par équipe et par compte : réinviter la relance (14 jours de plus)
+  @@unique([groupId, userId])
+  @@index([userId, status])
 }
 
 enum Locale {
@@ -122,6 +145,13 @@ enum GroupStatus {
   SOLO
   PENDING
   JOINED
+}
+
+enum GroupInvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  CANCELLED
 }
 
 enum TokenType {

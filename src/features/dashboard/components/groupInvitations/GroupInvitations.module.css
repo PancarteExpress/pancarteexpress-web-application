@@ -1,0 +1,78 @@
+.container {
+  border: 2px solid #f0b429;
+  background: #fffbea;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 18px;
+  margin: 0 0 12px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fff;
+  border-radius: 6px;
+  padding: 12px;
+}
+
+.text {
+  margin: 0;
+  font-weight: 600;
+}
+
+.expires {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #666;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.accept,
+.decline {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.accept {
+  background: #2f855a;
+  color: #fff;
+}
+
+.decline {
+  background: #e2e8f0;
+  color: #1a202c;
+}
+
+.accept:disabled,
+.decline:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  color: #c53030;
+  margin: 12px 0 0;
+}

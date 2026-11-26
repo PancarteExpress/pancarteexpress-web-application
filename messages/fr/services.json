@@ -48,6 +48,7 @@
     "membersOnly": "La livraison et le ramassage de matériel sont réservés aux membres. <register>Créez votre compte</register> ou <login>connectez-vous</login> pour y accéder."
   },
   "addressManager": {
+    "terrainPlaceholder": "Veuillez nous indiquer un point de repère ou le numéro de lot",
     "selectFromList": "Veuillez sélectionner une adresse dans la liste",
     "incompleteAddress": "Adresse incomplète : numéro civique ou code postal manquant",
     "terrainDescriptionRequired": "Veuillez entrer une description du terrain",
@@ -56,7 +57,7 @@
     "noAddress": "Aucune adresse enregistrée",
     "addressLine": "Adresse : {address}",
     "terrainLine": "Terrain : {details}",
-    "edit": "Modifier",
+    "edit": "Modifier l'adresse",
     "delete": "Supprimer",
     "addAddress": "Ajouter une adresse",
     "typeLegend": "Veuillez indiquer le type d'emplacement",

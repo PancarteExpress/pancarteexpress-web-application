@@ -1,54 +1,134 @@
-.addressLabel {
+/* ─── Cadres (liste et formulaire) ─── */
+
+.fieldset {
+    border: 1px solid #D8E8F8;
+    border-radius: 12px;
+    background: #fff;
+    margin: 20px 0;
+    padding: 16px;
+    min-width: 0;
+}
+
+/* Titre au-dessus du contenu, et non posé sur la bordure */
+.legend {
+    float: left;
+    width: 100%;
+    padding: 0;
+    margin-bottom: 12px;
+    font-family: var(--font-title), sans-serif;
+    font-size: 1.125rem;
     font-weight: 700;
+    color: #092E5B;
+}
+
+.legend + * {
+    clear: both;
+}
+
+.empty {
+    margin: 0 0 12px;
+    color: #5F7FA8;
+    font-weight: 600;
+}
+
+/* ─── Adresses enregistrées ─── */
+
+.addressList {
     display: flex;
-    margin: 10px 0;
-    padding: 10px;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+
+.addressRow {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 2px solid #D8E8F8;
     border-radius: 10px;
-    border: 2px solid #0E4D9A;
-    background-color: white;
+    background: white;
+    transition: border-color .15s, background .15s;
 }
 
-.addressLabel .address {
+/* Adresse sélectionnée */
+.addressRow:has(input:checked) {
+    background: #0E3A8C;
+}
+
+.address {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     cursor: pointer;
-    display: flex;
-    gap: 10px;
+    font-weight: 700;
+    color: #1A1A2E;
 }
 
-.addressLabel .addressBtn {
-    display: flex;
-    gap: 10px;
+.addressRow:has(input:checked) .address {
+    color: #D8E8F8;
 }
 
-.addressLabel .addressBtn .editButton {
+.address input {
+    accent-color: #0E4D9A;
+}
+
+.address:has(input:disabled) {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.addressBtn {
+    display: flex;
+    gap: 14px;
+    flex: none;
+}
+
+.editButton,
+.deleteButton {
     all: unset;
     cursor: pointer;
-    color: #0E4D9A;
     font-weight: 700;
+    font-size: 0.95rem;
 }
 
-.addressLabel .addressBtn .deleteButton {
-    all: unset;
-    cursor: pointer;
-    color: red;
-    font-weight: 700;
+.editButton { color: #0E3A8C; }
+.deleteButton { color: #ff3434; }
+
+.editButton:hover,
+.deleteButton:hover {
+    text-decoration: underline;
 }
+
+.addressRow:has(input:checked) .editButton {
+    color: #D8E8F8;
+}
+
+/* ─── Choix du type (Adresse / Terrain) ─── */
 
 .userChoice {
     display: flex;
     gap: 10px;
+    margin-bottom: 4px;
 }
 
 .userChoice label {
     flex: 1;
-    font-weight: 700;
-    text-transform: uppercase;
+    cursor: pointer;
     text-align: center;
-    padding: 5px;
-    font-size: 1.2rem;
-    color: black;
+    padding: 10px;
+    font-weight: 700;
+    color: #0E4D9A;
+    background: #F8FAFD;
+    border: 2px solid #D8E8F8;
     border-radius: 10px;
-    border: 2px solid #0E4D9A;
+    transition: background .15s, color .15s;
+}
+
+.userChoice label:hover {
+    background: #E8F1FB;
 }
 
 .userChoice label input {
@@ -56,45 +136,58 @@
 }
 
 .userChoice label.checked {
-    background-color: #E8F1FB;
+    background: #0E4D9A;
+    border-color: #0E4D9A;
+    color: #fff;
 }
+
+/* ─── Formulaire d'adresse / de terrain ─── */
 
 .addAddress,
 .addTerrain {
     display: flex;
-    gap: 10px;
     flex-direction: column;
-    padding: 20px 0;
+    gap: 12px;
+    padding: 16px 0 4px;
 }
 
-.addAddress label,
-.addTerrain label {
-    font-size: 1.2rem;
-    color: #5F7FA8;
-    font-weight: 900;
+/* Sous-titre du formulaire */
+.addAddress > label,
+.addTerrain > label {
+    font-family: var(--font-title), sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #092E5B;
 }
 
-.addAddress .addressDetails {
+.addressDetails {
     display: flex;
-    gap: 20px;
+    gap: 16px;
 }
 
-.addAddress .addressDetails div {
+.addressDetails > div,
+.terrainDetails > div {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
 }
 
-.addAddress .addressDetails div:first-child {
-    flex: 4;
+.addressDetails > div:first-child { flex: 4; }
+.addressDetails > div:last-child { flex: 1; }
+
+.terrainDetails {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
 }
 
-.addAddress .addressDetails div:last-child {
-    flex: 1;
-}
-
-.addAddress .addressDetails div label,
-.addTerrain .terrainDetails div label {
+/* Libellés des champs */
+.addressDetails label,
+.terrainDetails label {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
     font-size: 0.8rem;
     font-weight: 600;
     color: #5F7FA8;
@@ -102,80 +195,109 @@
     letter-spacing: .05em;
 }
 
-.addAddress .addressDetails div input,
-.addTerrain .terrainDetails div input,
-.addTerrain .terrainDetails div textarea {
+.required {
+    color: #C62828;
+}
+
+.addressDetails input,
+.terrainDetails input,
+.terrainDetails textarea {
     border: 1px solid #C5D8EF;
     border-radius: 10px;
-    padding: 5px;
-    font-size: 1.2rem;
-}
-
-.addTerrain {
-    display: flex;
-    flex-direction: column;
-}
-
-.addTerrain .terrainDetails div {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin: 5px 0;
-}
-
-.addTerrain .terrainDetails .inputs label {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-
-}
-
-.addTerrain .terrainDetails .info {
-    
-    color: #876816;
-    background-color: #FFEECF;
-    padding: 3px;
-    font-weight: 700;
-    border: 1px solid #FFA500;
-    border-radius: 10px;
-    
-}
-
-.btnSave {
-    all: unset;
-    cursor: pointer;
-    background: #0E4D9A;
-    color: #fff;
-    border-radius: 10px;
-    padding: 9px 18px;
-    font-family: var(--font-title), sans-serif;
+    padding: 8px 10px;
     font-size: 1rem;
-    font-weight: 700;
-    margin-right: 10px;
-    margin-top: 10px;
+    font-family: inherit;
 }
 
+.addressDetails input:focus,
+.terrainDetails input:focus,
+.terrainDetails textarea:focus {
+    outline: none;
+    border-color: #0E4D9A;
+    box-shadow: 0 0 0 3px #E8F1FB;
+}
+
+.terrainDetails textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+/* Pastille d'aide (adresse à proximité) */
+.info {
+    text-transform: none;
+    letter-spacing: 0;
+    color: #876816;
+    background: #FFEECF;
+    border: 1px solid #FFA500;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+/* ─── Boutons ─── */
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.btnSave,
+.addAddressButton,
 .btnCancel {
     all: unset;
     cursor: pointer;
-    background: red;
-    color: #fff;
     border-radius: 10px;
     padding: 9px 18px;
     font-family: var(--font-title), sans-serif;
     font-size: 1rem;
     font-weight: 700;
-    margin-top: 10px;
+    transition: background .15s;
 }
 
+.btnSave,
 .addAddressButton {
-    all: unset;
-    cursor: pointer;
     background: #0E4D9A;
     color: #fff;
-    border-radius: 10px;
-    padding: 9px 18px;
-    font-family: var(--font-title), sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
+}
+
+.btnSave:hover,
+.addAddressButton:hover {
+    background: #092E5B;
+}
+
+/* Annuler : bouton secondaire, moins voyant que l'action principale */
+.btnCancel {
+    background: #fff;
+    color: #C62828;
+    border: 2px solid #F5C2C0;
+    padding: 7px 16px;
+}
+
+.btnCancel:hover {
+    background: #FDECEA;
+}
+
+.editButton:disabled,
+.deleteButton:disabled,
+.addAddressButton:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+    text-decoration: none;
+}
+
+/* ─── Cellulaire ─── */
+
+@media (max-width: 600px) {
+    .addressRow {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .addressDetails,
+    .userChoice {
+        flex-direction: column;
+    }
 }

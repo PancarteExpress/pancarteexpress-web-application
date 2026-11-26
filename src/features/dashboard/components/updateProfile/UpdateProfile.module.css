@@ -258,3 +258,23 @@
     outline: 2px solid #0E4D9A;
     outline-offset: -2px;
 }
+
+.inputs .hint {
+    text-align: center;
+}
+
+.inputs .hint label {
+
+    text-align: center;
+    color: #5F7FA8;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.inputs .hint p {
+    margin: 10px 0;
+    text-align: center;
+    color: #5F7FA8;
+    font-size: .875rem;
+    font-weight: 700;
+}

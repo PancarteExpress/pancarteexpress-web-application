@@ -11,7 +11,8 @@
         "invalidBillingMode": "Mode de facturation invalide.",
         "nameTooShort": "Le nom d'équipe doit contenir au moins 2 caractères",
         "nameTooLong": "Le nom ne peut dépasser 60 caractères",
-        "noMemberSelected": "Sélectionnez au moins un coéquipier"
+        "noMemberSelected": "Sélectionnez au moins un coéquipier",
+        "invitationUnavailable": "Cette invitation n'est plus valide (expirée, annulée ou déjà traitée)."
     },
     "createDialog": {
         "title": "Veuillez inscrire un nom d'équipe pour débuter",
@@ -31,6 +32,8 @@
             "tooManyAttempts": "Trop de recherches. Réessayez dans quelques minutes.",
             "generic": "La recherche a échoué. Réessayez."
         },
+
+        "select": "+ Ajouter",
 
         "searching": "Recherche…",
         "remove": "Retirer {email}"
@@ -68,8 +71,15 @@
         "confirmRemove": "Retirer {email} de l'équipe ?",
         "removing": "Retrait…",
         "remove": "Retirer",
-        "membersAdded": "{count, plural, one {# coéquipier ajouté} other {# coéquipiers ajoutés}}",
-        "adding": "Ajout…",
-        "add": "Ajouter ({count})"
+        "pendingInvitations": "Invitations en attente",
+        "noInvitations": "Aucune invitation en attente.",
+        "invited": "Invité",
+        "invitationExpires": "Expire le {date}",
+        "cancelInvitation": "Annuler",
+        "cancelling": "Annulation…",
+        "confirmCancelInvitation": "Annuler l'invitation de {email} ?",
+        "invite": "{count, plural, =0 {Inviter} one {Inviter # personne} other {Inviter # personnes}}",
+        "inviting": "Envoi…",
+        "invitationsSent": "{count, plural, one {Invitation envoyée. La personne doit l'accepter depuis son tableau de bord.} other {Invitations envoyées. Chaque personne doit accepter depuis son tableau de bord.}}"
     }
 }
