@@ -429,7 +429,7 @@
     "delays": {
       "standard24h": "Standard 24 h*",
       "urgent12h": "Urgence 12 h (lendemain avant midi**)",
-      "sameDay": "Urgence jour même (aujourd'hui avant la fin de la journée**)",
+      "sameDay": "Urgence pour aujourd'hui (ce délai doit être confirmé par téléphone : appelez au 514-825-2709**)",
       "specificDate": "Date précise"
     },
     "notes": "* En zone principale. ** Confirmer par téléphone au {phone}.",

@@ -151,10 +151,19 @@ export default function ServiceForm() {
             <p>{formatAddress(selectedAddress, { terrain: t('address.terrain'), near: t('address.near'), apartment: t('address.apartment') })}</p>
           </div>
 
-          {requestType === 'residential'
-            ? <AddressServices key={selectedAddress.id} address={selectedAddress} />
-            : <LargeAddressServices key={selectedAddress.id} address={selectedAddress} />}
-            <AttachmentsField key={`attachments-${selectedAddress.id}`} address={selectedAddress} />
+          {/* Résidentiel : pièces jointes juste au-dessus du délai ; grand format (sans délai) : à la fin */}
+          {requestType === 'residential' ? (
+            <AddressServices
+              key={selectedAddress.id}
+              address={selectedAddress}
+              attachments={<AttachmentsField key={`attachments-${selectedAddress.id}`} address={selectedAddress} />}
+            />
+          ) : (
+            <>
+              <LargeAddressServices key={selectedAddress.id} address={selectedAddress} />
+              <AttachmentsField key={`attachments-${selectedAddress.id}`} address={selectedAddress} />
+            </>
+          )}
          </>)}
         </>
         )}

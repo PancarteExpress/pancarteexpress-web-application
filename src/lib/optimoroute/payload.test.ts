@@ -39,19 +39,37 @@ describe('buildOptimoPayload', () => {
     delay: 'standard24h' as const,
     requestedDate: null,
     customer: { firstName: 'Élise', lastName: 'Tremblay', email: 'e@x.ca', phone: null },
+    accountName: null,
+    hasAttachments: false,
   };
 
   it('date figée sur la création de la commande, notes regroupées', () => {
-    const p = buildOptimoPayload({ ...base, address: civic, serviceTypes: ['removal', 'installation', 'removal'] });
+    const p = buildOptimoPayload({ ...base, address: civic, services: [{ type: 'removal' }, { type: 'installation' }, { type: 'removal' }] });
     expect(p).toMatchObject({ orderNo: '42-1', type: 'T', operation: 'SYNC', date: '2026-11-09', priority: 'M' });
     // Ordre des notes : l'installation avant la récupération
-    expect(p.notes).toBe('INSTALLATION + RECUP — ÉLISE TREMBLAY');
+    // Texte de l'aperçu, tel quel : pas de nom du client ajouté
+    expect(p.notes).toBe('INSTALLATION + RECUP');
     expect(p).not.toHaveProperty('phone');
   });
 
-  it('terrain : description dans les notes', () => {
-    const p = buildOptimoPayload({ ...base, address: terrain, serviceTypes: ['installation'] });
-    expect(p.notes).toContain('Terrain : Coin nord-est');
+  it('terrain : **TERRAIN** [description] à la fin des notes', () => {
+    const p = buildOptimoPayload({ ...base, address: terrain, services: [{ type: 'installation' }] });
+    expect(p.notes).toBe('INSTALLATION **TERRAIN** [Coin nord-est, près du lampadaire]');
+  });
+
+  it('fichiers joints : **VOIR PHOTO** à la toute fin', () => {
+    const p = buildOptimoPayload({ ...base, address: terrain, services: [{ type: 'installation' }], hasAttachments: true });
+    expect(p.notes).toBe('INSTALLATION **TERRAIN** [Coin nord-est, près du lampadaire] **VOIR PHOTO**');
+  });
+
+  it('notes détaillées avec le nom du compte, comme l\'aperçu', () => {
+    const p = buildOptimoPayload({
+      ...base,
+      address: civic,
+      accountName: 'Natasha Fournier',
+      services: [{ type: 'pickup', materials: ['frames', 'anchors'], newModels: false, details: null }],
+    });
+    expect(p.notes).toBe('PICK UP NATASHA FOURNIER [Pancartes, Ancrages]');
   });
 
   it('date précise depuis une colonne @db.Date', () => {
@@ -60,7 +78,7 @@ describe('buildOptimoPayload', () => {
       delay: 'specificDate',
       requestedDate: new Date('2026-12-25T00:00:00Z'),
       address: civic,
-      serviceTypes: ['installation'],
+      services: [{ type: 'installation' }],
     });
     expect(p.date).toBe('2026-12-28');
   });

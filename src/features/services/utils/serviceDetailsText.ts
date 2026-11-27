@@ -69,7 +69,7 @@ function installationText({ pickupAddress, frames, kits, addons, openHouse, keyb
   if (frames) {
     lines.push(
       ...block(
-        `${t('summary.frames', { count: frames.units.length })} — ${t('summary.kitIncluded')}`,
+        t('summary.frames', { count: frames.units.length }),
         frames.units.flatMap((unit, i) =>
           block(t('summary.frame', { number: i + 1 }), [
             ...(unit.model ? [pair(t('summary.model'), describeModel(unit.model, t))] : []),

@@ -429,7 +429,7 @@
     "delays": {
       "standard24h": "Standard 24 h*",
       "urgent12h": "Urgent 12 h (next day before noon**)",
-      "sameDay": "Same-day urgent (today before the end of the day**)",
+      "sameDay": "Emergency for today (this timing must be confirmed by phone : call 514-825-2709**)",
       "specificDate": "Specific date"
     },
     "notes": "* In the main service area. ** Confirm by phone at {phone}.",

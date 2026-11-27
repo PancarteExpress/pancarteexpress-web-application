@@ -46,7 +46,7 @@ export function buildServiceNotes(serviceTypes: readonly ServiceType[]): string 
 }
 
 /** Service d'une adresse : le type suffit, sauf les services qui ont déjà leur résumé détaillé */
-type NoteService =
+export type NoteService =
   | { type: ServiceType }
   | ({ type: 'installation' } & InstallationDetails)
   | ({ type: 'removal' } & RemovalDetails)

@@ -120,15 +120,11 @@
     text-align: center;
     padding: 10px;
     font-weight: 700;
-    color: #0E4D9A;
+    color: #0E3A8C;
     background: #F8FAFD;
     border: 2px solid #D8E8F8;
     border-radius: 10px;
     transition: background .15s, color .15s;
-}
-
-.userChoice label:hover {
-    background: #E8F1FB;
 }
 
 .userChoice label input {
@@ -136,9 +132,9 @@
 }
 
 .userChoice label.checked {
-    background: #0E4D9A;
-    border-color: #0E4D9A;
-    color: #fff;
+    background: #0E3A8C;
+    border-color: #0E3A8C;
+    color: #D8E8F8;
 }
 
 /* ─── Formulaire d'adresse / de terrain ─── */

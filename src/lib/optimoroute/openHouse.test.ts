@@ -43,10 +43,12 @@ describe('buildOpenHouseRemovalPayload', () => {
         nearbyAddress: null,
         city: 'Montréal',
       },
+      notes: '2x RECUP AJOUT VISITE LIBRE ÉLISE TREMBLAY',
       customer: { firstName: 'Élise', lastName: 'Tremblay', email: 'e@x.ca', phone: null },
     });
     expect(p).toMatchObject({ orderNo: 'PE-11111-R', date: '2026-11-23', priority: 'M', type: 'T' });
-    expect(p.notes).toBe('RECUP VISITE LIBRE — ÉLISE TREMBLAY');
+    // Note reçue telle quelle (2e aperçu du formulaire)
+    expect(p.notes).toBe('2x RECUP AJOUT VISITE LIBRE ÉLISE TREMBLAY');
   });
 });
  

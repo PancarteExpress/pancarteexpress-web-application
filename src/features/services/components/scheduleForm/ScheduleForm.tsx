@@ -66,7 +66,6 @@ export function ScheduleForm({ handle, draft, onAutoSave }: ScheduleFormProps) {
               value={field.value}
               onChange={(next) => {
                 field.onChange(next);
-                // Hors « date précise », la date n'a plus lieu d'être
                 if (next !== 'specificDate') setValue('date', null, { shouldValidate: formState.isSubmitted });
               }}
               onBlur={field.onBlur}

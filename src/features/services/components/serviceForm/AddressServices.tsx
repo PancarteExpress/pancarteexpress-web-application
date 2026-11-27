@@ -2,7 +2,7 @@
 
 import styles from '../installationForm/installationForm.module.css';
 
-import { useRef } from 'react';
+import { useRef, type ReactNode } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useSession } from 'next-auth/react';
 
@@ -41,7 +41,11 @@ const IMPLEMENTED: readonly ServiceType[] = IMPLEMENTED_SERVICES;
  * Services résidentiels d'une adresse, enregistrés automatiquement à chaque modification.
  * Monté avec key={address.id} : l'état local repart de zéro à chaque changement d'adresse.
  */
-export function AddressServices({ address }: { address: Address }) {
+export function AddressServices({ address, attachments }: {
+  address: Address;
+  /** Pièces jointes de l'adresse, affichées juste au-dessus du délai */
+  attachments?: ReactNode;
+}) {
   const t = useTranslations('services');
   const saveService = useAddressStore((s) => s.saveService);
   const previewPendingFiles = useAddressStore((s) => s.pendingFiles[address.id]?.length ?? 0);
@@ -58,7 +62,8 @@ export function AddressServices({ address }: { address: Address }) {
       })}
     </Notice>
   );
-  // Aperçu des notes OptimoRoute : affiché à tous pendant la mise au point de la nomenclature
+  // Aperçu des notes OptimoRoute : réservé au superAdmin
+  const showNotesPreview = session?.user?.role === 'superAdmin';
   const setAddressSchedule = useAddressStore((s) => s.setAddressSchedule);
 
   const serviceOptions: ChoiceOption<ServiceType>[] = SERVICE_CHOICES.map((type) => ({
@@ -195,7 +200,7 @@ export function AddressServices({ address }: { address: Address }) {
 
 
       {/* Aperçu des notes OptimoRoute : même texte que l'envoi réel */}
-      {selected.length > 0 && (
+      {showNotesPreview && selected.length > 0 && (
         <div style={{ margin: '100px 0' }}>
           <p className={styles.notesPreview}>
             <span className={styles.notesPreviewLabel}>{t('serviceForm.notesPreview')}</span>
@@ -228,6 +233,8 @@ export function AddressServices({ address }: { address: Address }) {
         </div>
       )}
       
+
+      {attachments}
 
       {/* Délai propre à cette adresse, dès qu'un service est coché */}
       {selected.length > 0 && (

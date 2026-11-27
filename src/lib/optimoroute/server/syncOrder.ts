@@ -1,22 +1,34 @@
 
 import 'server-only';
-import type { OrderStatus } from '@prisma/client';
+import type { OrderStatus, Prisma, ServiceType } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
-import { buildOptimoPayload } from '../payload';
+import type { IsoDate } from '../calendar';
+import { openHouseRemovalDate } from '../openHouse';
+import { buildOpenHouseRemovalPayload, buildOptimoPayload } from '../payload';
 import { sendOptimoOrder } from './client';
 import { formatAddressNumber } from '@/lib/services/addressNumber';
+import { buildOpenHouseRemovalNotes } from '../installationNotes';
+import type { NoteService } from '../notes';
+import { parseServiceDetails } from '@/features/services/schemas/serviceDetails.schema';
+import { getFullName } from '@/shared/utils/displayName';
  
 const MAX_ERROR_LENGTH = 500;
 const RETRY_BATCH = 50;
 const SENDABLE_STATUSES: OrderStatus[] = ['PENDING', 'PAID'];
+
+/** Service tel que l'aperçu du formulaire le reçoit : type + détails relus */
+function toNoteService(type: ServiceType, details: Prisma.JsonValue): NoteService {
+  const parsed = parseServiceDetails(type, details);
+  if (!parsed || parsed.kind === 'largeFormat') return { type };
+  return { type, ...parsed.details } as NoteService;
+}
  
 /**
- * Une adresse de service = un arrêt OptimoRoute (tous les services de l'adresse dans la même tâche).
- * Le retrait du lundi de la visite libre n'est pas envoyé pour l'instant (buildOpenHouseRemovalPayload
- * et openHouseRemovalDate sont conservés pour le réactiver).
- * orderNo = "PE-<addressNumber>" : unique et stable,
- * donc SYNC rend les réessais idempotents.
- * Le préfixe évite toute collision avec les numéros de l'ancien site (50 000+).
+  * Une adresse de service = un arrêt OptimoRoute (tous les services de l'adresse dans la même tâche),
+  * plus une tâche de retrait par visite libre dont le retrait est demandé.
+  * orderNo = "PE-<addressNumber>" (retrait : "PE-<addressNumber>-R") : unique et stable,
+  * donc SYNC rend les réessais idempotents.
+  * Le préfixe évite toute collision avec les numéros de l'ancien site (50 000+).
  */
 async function syncAddresses(addressIds?: string[], orderId?: string): Promise<void> {
   const orders = await prisma.order.findMany({
@@ -29,6 +41,8 @@ async function syncAddresses(addressIds?: string[], orderId?: string): Promise<v
     },
     select: {
       createdAt: true,
+      // Nom du compte dans les notes (comme l'aperçu) ; null pour un invité
+      user: { select: { firstName: true, lastName: true } },
       firstName: true,
       lastName: true,
       email: true,
@@ -54,6 +68,8 @@ async function syncAddresses(addressIds?: string[], orderId?: string): Promise<v
               delay: true,
               requestedDate: true,
               optimoSyncStatus: true,
+              // Fichiers joints : **VOIR PHOTO**
+              _count: { select: { attachments: true } },
               services: { where: { status: { not: 'CANCELLED' } }, select: { type: true, details: true } },
             },
           },
@@ -68,6 +84,9 @@ async function syncAddresses(addressIds?: string[], orderId?: string): Promise<v
       .filter(({ address }) => address.services.length > 0 && address.optimoSyncStatus !== 'SYNCED')
       .filter(({ address }) => !addressIds || addressIds.includes(address.id))
       .map(async ({ address, orderNo }) => {
+        const accountName = getFullName(order.user) || null;
+        const noteServices = address.services.map((s) => toNoteService(s.type, s.details));
+
         const mainPayload = buildOptimoPayload({
           orderNo,
           orderCreatedAt: order.createdAt,
@@ -76,14 +95,36 @@ async function syncAddresses(addressIds?: string[], orderId?: string): Promise<v
           delay: address.delay ?? 'standard24h',
           requestedDate: address.requestedDate,
           address,
-          serviceTypes: address.services.map((s) => s.type),
+          services: noteServices,
+          accountName,
+          hasAttachments: address._count.attachments > 0,
           customer: order,
         });
  
-        const main = await sendOptimoOrder(mainPayload);
-        const errors = main.ok ? [] : [main.error];
+        // Une tâche de retrait par date distincte (en pratique : une seule installation par adresse),
+        // avec la note du 2e aperçu du formulaire
+        const removalNotes = new Map<IsoDate, string>();
+        for (const s of address.services) {
+          if (s.type !== 'installation') continue;
+          const date = openHouseRemovalDate(s.details);
+          const parsed = parseServiceDetails(s.type, s.details);
+          const notes = parsed?.kind === 'installation' ? buildOpenHouseRemovalNotes(parsed.details, accountName) : null;
+          if (date && notes && !removalNotes.has(date)) removalNotes.set(date, notes);
+        }
+        const removalPayloads = [...removalNotes].map(([date, notes], i) =>
+          buildOpenHouseRemovalPayload({
+            orderNo: `${orderNo}-R${i === 0 ? '' : i + 1}`,
+            date,
+            notes,
+            address,
+            customer: order,
+          }),
+        );
 
-        // SYNCED seulement si la tâche est partie ; sinon le cron la renvoie (SYNC = sans doublon)
+        const [main, ...removals] = await Promise.all([mainPayload, ...removalPayloads].map(sendOptimoOrder));
+        const errors = [main, ...removals].flatMap((r) => (r.ok ? [] : [r.error]));
+
+        // SYNCED seulement si toutes les tâches sont parties ; sinon le cron renvoie tout (SYNC = sans doublon)
         await prisma.serviceAddress.update({
           where: { id: address.id },
           data:
